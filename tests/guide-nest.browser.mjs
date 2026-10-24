@@ -110,9 +110,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.doesNotMatch(copyMessage, /Hola|MBW006/);
     assert.match(copyMessage, /\n\nThank you\.$/);
     assert.equal(await page.locator(".tourCard").first().innerText().then(text => text.includes("private@example")), false);
-    await page.getByRole("button", { name: "Aceptar tour" }).click();
-    await page.getByText("Aceptado", { exact: true }).waitFor();
-    assert.equal(writes.some(write => write.url.endsWith("/api/guide/assignments/A-1/accept")), true);
+    assert.equal(await page.getByRole("button", { name: "Aceptar tour" }).count(), 0);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-tours.png", fullPage: true });
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#calendarMonthPanel").isVisible(), true);

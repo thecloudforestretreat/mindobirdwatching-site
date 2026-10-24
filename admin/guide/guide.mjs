@@ -196,14 +196,12 @@ function tourCard(tour, { next = false } = {}) {
   const map = tour.pickup ? `<a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(tour.pickup)}" target="_blank" rel="noopener noreferrer">${icon("map")}${t("openMap")}</a>` : "";
   const afterTour = tour.status === "completed" || (tour.serviceDate && tour.serviceDate < todayInEcuador());
   const finalAction = afterTour ? `<button type="button" data-route="share">${icon("share")}${t("shareLinks")}</button>` : `<button type="button" data-copy="${encodeURIComponent(tipMessage())}">${icon("tip")}${t("tip")}</button>`;
-  const canAccept = data?.identity?.role === "guide" && tour.acceptanceRequired;
   const reportLabel = reportState(tour);
   const lifecycle = tour.status === "completed" ? { key: "completed", label: t("completed") } : tour.status === "pending" ? { key: "pending", label: t("pending") } : { key: "scheduled", label: t("scheduled") };
   const conflict = tour.hasConflict ? `<div class="conflict"><b>${t("scheduleConflict")}</b><span>${t(tour.conflictReason === "availability" ? "unavailableConflict" : "assignmentConflict")}</span></div>` : "";
-  const acceptanceBadge = tour.accepted ? `<span class="statusBadge statusBadge--ok">${t("accepted")}</span>` : tour.acceptanceRequired ? `<span class="statusBadge statusBadge--pending">${t("awaitingAcceptance")}</span>` : "";
   const flag = countryFlag(tour.countryCode);
   const country = tour.country ? `${flag ? `${flag} ` : ""}${tour.country}` : t("unavailablePhone");
-  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""} ${next ? "tourCard--next" : ""}">${next ? `<div class="nextTourLabel">${t("nextTour")}</div>` : ""}<div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span>${acceptanceBadge}<span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("country")}</small><strong>${esc(country)}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${canAccept ? `<button class="acceptButton" type="button" data-accept="${esc(tour.assignmentId)}">${t("acceptTour")}</button>` : ""}${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button>${map}<a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}${finalAction}</div></article>`;
+  return `<article class="tourCard tourCard--${lifecycle.key} ${tour.hasConflict ? "tourCard--conflict" : ""} ${next ? "tourCard--next" : ""}">${next ? `<div class="nextTourLabel">${t("nextTour")}</div>` : ""}<div class="tourHead"><h2>${esc(tour.guestName)}</h2><div class="tourBadges"><span class="statusBadge statusBadge--${lifecycle.key}">${esc(lifecycle.label)}</span><span class="statusBadge ${reportLabel.key === "reportSubmitted" ? "statusBadge--ok" : ""}">${t(reportLabel.key)}</span></div></div>${conflict}<div class="tourInfo"><div><small>${t("dateTime")}</small><strong>${esc(dateLabel(tour.serviceDate))}${tour.startTime ? ` · ${esc(tour.startTime)}` : ""}</strong></div><div><small>${t("service")}</small><strong>${esc(tour.service)}</strong></div><div><small>${t("pickup")}</small><strong>${esc(tour.pickup || t("pickupMissing"))}</strong></div><div><small>${t("country")}</small><strong>${esc(country)}</strong></div><div><small>${t("guests")}</small><strong>${countLabel(tour.guestCount)}</strong></div><div><small>${t("phone")}</small><strong>${esc(tour.phone || t(tour.contactAvailable ? "unavailablePhone" : "contactClosed"))}</strong></div></div><div class="tourActions">${phone}<button type="button" ${tour.contactAvailable ? `data-copy="${encodeURIComponent(guestMessage(tour))}"` : "disabled"}>${icon("copy")}${tour.contactAvailable ? t("copyGuest") : t("contactClosed")}</button>${map}<a href="${esc(reportUrl(tour))}" target="_blank" rel="noopener noreferrer">${icon("bird")}${t("report")}</a>${calendar}${finalAction}</div></article>`;
 }
 
 function reportState(tour) {
@@ -216,7 +214,7 @@ function reportState(tour) {
 function reportEligibleTours() {
   const today = todayInEcuador();
   return (data?.tours || []).filter(tour =>
-    tour.accepted === true && (!tour.serviceDate || tour.serviceDate <= today)
+    ["confirmed", "completed"].includes(tour.status) && (!tour.serviceDate || tour.serviceDate <= today)
   );
 }
 
@@ -248,7 +246,7 @@ function renderTours() {
   $("#tourRange").hidden = Boolean(selectedCalendarDate || selectedAssignmentId) || tourView === "all";
   $("#tourSearchWrap").hidden = Boolean(selectedCalendarDate || selectedAssignmentId) || tourView !== "all";
   if ($("#tourSearch").value !== tourSearch) $("#tourSearch").value = tourSearch;
-  const attention = visible.filter(tour => tour.acceptanceRequired || tour.hasConflict || (reportsLoaded && reportState(tour).key === "reportNeeded")).length;
+  const attention = visible.filter(tour => tour.hasConflict || (reportsLoaded && reportState(tour).key === "reportNeeded")).length;
   const synced = data.checkedAt ? new Intl.DateTimeFormat(language === "es" ? "es-EC" : "en-US", { hour: "numeric", minute: "2-digit" }).format(new Date(data.checkedAt)) : "—";
   const attentionLabel = language === "es" ? `${attention} ${attention === 1 ? "requiere" : "requieren"} atención` : `${attention} ${attention === 1 ? "needs" : "need"} attention`;
   const visibleLabel = language === "es" ? `${visible.length} tour${visible.length === 1 ? "" : "s"} visible${visible.length === 1 ? "" : "s"}` : `${visible.length} tour${visible.length === 1 ? "" : "s"} shown`;
@@ -397,8 +395,6 @@ document.addEventListener("click", event => {
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const languageButton = event.target.closest("[data-language]");
   if (languageButton) { language = languageButton.dataset.language; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(); }
-  const accept = event.target.closest("[data-accept]");
-  if (accept) { accept.disabled = true; mutate(`/api/guide/assignments/${encodeURIComponent(accept.dataset.accept)}/accept`).then(refreshCurrent).catch(error => { accept.disabled = false; alert(error.message); }); }
   const removeAvailability = event.target.closest("[data-remove-availability]");
   if (removeAvailability) { removeAvailability.disabled = true; mutate(`/api/guide/availability/${encodeURIComponent(removeAvailability.dataset.removeAvailability)}`, "DELETE").then(refreshCurrent).catch(error => { removeAvailability.disabled = false; alert(error.message); }); }
   const offerResponse = event.target.closest("[data-offer-response]");
