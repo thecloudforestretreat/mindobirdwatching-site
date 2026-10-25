@@ -1280,9 +1280,11 @@
       let referenceMatch=null,referenceGeneration=0;
       function referenceId(value){return String(value||"").trim().match(/^(?:Reference:\s*)?(ci_[A-Za-z0-9_-]{4,120})$/i)?.[1]||"";}
       function referenceStatus(text){const node=document.getElementById("referenceStatus");if(node)node.textContent=text;}
+      function preservedReferenceList(raw,saved){const value=clean(raw),parts=value.split("|").map(clean);return value===clean(saved)&&parts.length>1&&parts.every(part=>Boolean(referenceId(part)));}
       async function resolveReference(){
         const raw=clean(els.referenceIdInput.value);
         if(!raw){referenceMatch=null;referenceStatus("Optional. Existing attribution is preserved.");return null;}
+        if(preservedReferenceList(raw,getSelected()?.contact_intent_id)){referenceMatch=null;referenceStatus("Existing merged references preserved.");return null;}
         const id=referenceId(raw);
         if(!id){referenceStatus("Paste a ci_... ID or Reference: ci_...");throw new Error("Invalid Reference ID");}
         if(referenceMatch&&referenceMatch.contact_intent_id===id)return referenceMatch;

@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const html=fs.readFileSync(new URL('../admin/guest-crm/index.html',import.meta.url),'utf8'),c={clean:v=>String(v||'').trim()};vm.createContext(c);for(const name of ['referenceId','preservedReferenceList']){const line=html.split('\n').find(l=>l.includes('function '+name+'('));vm.runInContext(line,c);}
+test('unchanged merged CRM references do not block an unrelated payment edit',()=>{assert.equal(c.preservedReferenceList('ci_first123 | ci_second456','ci_first123 | ci_second456'),true);});
+test('new, modified or malformed multi-reference input is not exempted from validation',()=>{for(const [raw,saved]of [['ci_first123 | invalid','ci_first123 | invalid'],['ci_first123 | ci_second456','ci_first123'],['ci_first123','ci_first123']])assert.equal(c.preservedReferenceList(raw,saved),false);});
