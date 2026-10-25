@@ -242,17 +242,24 @@
   }
   function render() { renderCounts(); renderCards(); }
 
-  function openComposer() { $("composerBackdrop").hidden = false; document.body.style.overflow = "hidden"; if (!$("batchItems").children.length) addBatchRow(); }
+  function openComposer() { setDefaultBatchSchedule(false); $("composerBackdrop").hidden = false; document.body.style.overflow = "hidden"; if (!$("batchItems").children.length) addBatchRow(); }
   function closeComposer() { $("composerBackdrop").hidden = true; document.body.style.overflow = ""; }
   function todayInEastern() { return easternNow().date; }
+  function defaultStartDate() { return addDays(todayInEastern(), 1, false); }
   function addDays(dateString, offset, weekdaysOnly) {
     var date = new Date(dateString + "T12:00:00Z");
     var remaining = offset;
     while (remaining > 0) { date.setUTCDate(date.getUTCDate() + 1); if (!weekdaysOnly || ![0,6].includes(date.getUTCDay())) remaining -= 1; }
     return date.toISOString().slice(0, 10);
   }
+  function setDefaultBatchSchedule(force) {
+    var start = $("batchStartDate");
+    start.min = todayInEastern();
+    if (force || !start.value || start.value < start.min) start.value = defaultStartDate();
+    if (force) $("batchTime").value = "07:00";
+  }
   function refreshBatchDates() {
-    var start = $("batchStartDate").value || todayInEastern();
+    var start = $("batchStartDate").value || defaultStartDate();
     var time = $("batchTime").value || "07:00";
     var pattern = $("batchPattern").value;
     Array.from($("batchItems").children).forEach(function (item, index) {
@@ -317,6 +324,7 @@
       window.setTimeout(function () {
         closeComposer();
         $("batchItems").innerHTML = "";
+        setDefaultBatchSchedule(true);
         addBatchRow();
         state.activeStatus = "review";
         syncTabs();
@@ -511,8 +519,7 @@
       $("backToMedia").textContent = returnPath.includes("view=queue") ? "← Back to queue" : returnPath.includes("view=analytics") ? "← Back to analytics" : "← Back to calendar";
     }
     if (routeParams.get("new") === "1") window.setTimeout(openComposer, 0);
-    $("batchStartDate").min = todayInEastern();
-    $("batchStartDate").value = todayInEastern();
+    setDefaultBatchSchedule(true);
     bindEvents(); addBatchRow(); loadRows(); loadHealth();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
