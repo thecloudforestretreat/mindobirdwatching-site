@@ -187,7 +187,7 @@ const CRM_FIELD_VALUES = {
     booking_status: { values: ["pending", "tentative", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled"], fallback: "pending" }
   },
   crm_payments: {
-    payment_status: { values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"], fallback: "unpaid" }
+    payment_status: { values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded", "void", "uncollectible"], fallback: "unpaid" }
   }
 };
 
@@ -2725,7 +2725,7 @@ function resetCrmDataValidations_() {
     { sheet: CRM_TABS.followups, column: "channel", values: ["manual", "email", "telegram", "calendar"] },
     { sheet: CRM_TABS.followups, column: "send_status", values: ["pending", "sent", "skipped", "failed"] },
     { sheet: CRM_TABS.bookings, column: "booking_status", values: ["pending", "tentative", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled"] },
-    { sheet: CRM_TABS.payments, column: "payment_status", values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"] }
+    { sheet: CRM_TABS.payments, column: "payment_status", values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded", "void", "uncollectible"] }
   ];
 
   Object.keys(CRM_TABS).forEach(function(key) {

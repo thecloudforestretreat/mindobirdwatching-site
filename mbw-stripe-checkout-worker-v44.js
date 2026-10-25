@@ -1,5 +1,7 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v49
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v50
+ *
+ * v50: Synchronizes void/uncollectible invoice status without changing tours or deposits.
  *
  * v49 updates:
  * - Binds invoice items and historical credits to an isolated draft.
@@ -2331,6 +2333,34 @@ async function postCrmLedgerAction(env, action, recordKey, record) {
   }
 }
 
+// Invoice cancellation never cancels the guest's tour or consumes/releases a deposit.
+async function listCrmInvoicePayments(env, inquiryId) {
+  const endpoint = env.CRM_API_URL || "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
+  const response = await fetch(endpoint, {
+    method: "POST", headers: {"content-type":"application/x-www-form-urlencoded;charset=UTF-8"},
+    body: new URLSearchParams({payload:JSON.stringify({action:"list_payments",inquiry_id:inquiryId})}),
+  });
+  const data = await response.json();
+  if (!response.ok || data.ok !== true || !Array.isArray(data.records)) throw new Error("CRM invoice lookup failed");
+  return data.records.filter(row => row.inquiry_id === inquiryId);
+}
+
+async function syncNonPayableInvoice(env, invoice, payments) {
+  const status = String(invoice.status || "");
+  if (!["void", "uncollectible"].includes(status)) return {updated:false};
+  const existing = payments.find(row => row.invoice_id === invoice.id);
+  if (!existing) return {updated:false}; // Never create a payment or booking from a cancellation.
+  const md = invoice.metadata || {};
+  if ((md.inquiry_id && md.inquiry_id !== existing.inquiry_id) || (md.guest_id && md.guest_id !== existing.guest_id)) throw new Error("Invoice identity mismatch");
+  if (existing.payment_status === status) return {updated:false};
+  const note = "Stripe invoice " + status + "; historical amounts retained. Not payable through this invoice.";
+  const record = {...existing, payment_status:status, notes:[existing.notes || "",note].filter(Boolean).join("\n")};
+  // Keep original amounts for audit. The terminal invoice status controls collectibility.
+  const result = await postCrmLedgerAction(env,"upsert_payment","payment",record);
+  if (!result.ok) throw new Error("CRM invoice status sync failed");
+  return {updated:true,invoice_id:invoice.id,status};
+}
+
 async function syncCrmInvoiceLedger(env, payload) {
   const inquiryId = String(payload.inquiry_id || "").trim();
   const guestId = String(payload.guest_id || "").trim();
@@ -3006,7 +3036,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v49-isolated-deposit-invoices-2026-10-24", 200);
+      return text("MBW Stripe Worker is running. version=v50-invoice-status-sync-2026-10-24", 200);
     }
 
     // Fixed USD deposit Checkout. No browser-supplied amount or guest identity is trusted.
@@ -3124,6 +3154,27 @@ export default {
         }).sort((a,b)=>String(b.paid_at || "").localeCompare(String(a.paid_at || "")));
         return privateReply({ok:true,inquiry_id:inquiryId,deposits,more:!!result.has_more,checked_at:new Date().toISOString()});
       } catch { return privateReply({ok:false,error:"Stripe deposit history is unavailable. Retry; no records were changed."},503); }
+    }
+
+    if (path === "/api/invoices/reconcile" && request.method === "POST") {
+      const privateReply = (body,status=200) => new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"private, no-store"}});
+      if (!env.CF_SHARED_SECRET || request.headers.get("Authorization") !== "Bearer " + env.CF_SHARED_SECRET) return privateReply({ok:false,error:"Staff authentication required."},401);
+      let inquiryId;
+      try { inquiryId=validInternalId((await request.json()).inquiry_id,"INQ"); if(!inquiryId)throw Error(); }
+      catch { return privateReply({ok:false,error:"Select a saved inquiry."},400); }
+      try {
+        const payments=await listCrmInvoicePayments(env,inquiryId);
+        const rows=[...new Map(payments.filter(row=>/^in_[A-Za-z0-9]+$/.test(row.invoice_id || "")).map(row=>[row.invoice_id,row])).values()];
+        if(rows.length>100)throw Error("Invoice history exceeds review limit");
+        const updates=[];
+        for(const row of rows){
+          const invoice=await stripeRequest(env,false,"GET","/v1/invoices/"+encodeURIComponent(row.invoice_id),null);
+          if(invoice.livemode === false)throw Error("Sandbox invoice cannot update live CRM");
+          const result=await syncNonPayableInvoice(env,invoice,[row]);
+          if(result.updated)updates.push(result);
+        }
+        return privateReply({ok:true,inquiry_id:inquiryId,checked:rows.length,updates});
+      } catch { return privateReply({ok:false,error:"Invoice reconciliation incomplete. Retry safely; no invoice was created or sent."},503); }
     }
 
     if (path === "/api/deposits/available" && request.method === "GET") {
@@ -4389,6 +4440,7 @@ export default {
         event.type === "checkout.session.completed" &&
         String(eventMetadata.payment_purpose || "").toLowerCase() === "guide_tip" &&
         String(eventMetadata.source_system || "").toLowerCase() === "mbw_tip_page";
+      const requiresSynchronousInvoiceStatus = ["invoice.voided","invoice.marked_uncollectible"].includes(event.type);
       const requiresSynchronousPaidInvoice = [
         "invoice_payment.paid",
         "invoice.paid",
@@ -4708,6 +4760,23 @@ export default {
 
           }
         })();
+      }
+
+      if (requiresSynchronousInvoiceStatus) {
+        // Test events cannot mutate the production CRM.
+        if (!event.livemode) return;
+        const object=event.data?.object || {};
+        if (!/^in_[A-Za-z0-9]+$/.test(object.id || "")) throw new Error("Invoice status event missing ID");
+        // Re-fetch current state: a delayed event must never overwrite a newer paid invoice.
+        const invoice=await stripeRequest(env,false,"GET","/v1/invoices/"+encodeURIComponent(object.id),null);
+        if (["void","uncollectible"].includes(invoice.status)) {
+          const md=invoice.metadata || {};
+          const inquiryId=String(md.inquiry_id || (invoice.lines?.data || []).find(line=>line.metadata?.inquiry_id)?.metadata.inquiry_id || "");
+          if(inquiryId){
+            const payments=await listCrmInvoicePayments(env,inquiryId);
+            await syncNonPayableInvoice(env,invoice,payments);
+          }
+        }
       }
 
       if (["invoice_payment.paid", "invoice.paid", "invoice.payment_succeeded"].includes(event.type)) {
@@ -5167,7 +5236,7 @@ export default {
       // the webhook if accounting, CRM ledger, or notification writes fail. All
       // writes use Stripe identifiers as idempotency keys, so a retry cannot
       // overwrite or duplicate an existing payment.
-      if (requiresSynchronousDeposit || requiresSynchronousGuideTip || requiresSynchronousPaidInvoice) {
+      if (requiresSynchronousDeposit || requiresSynchronousGuideTip || requiresSynchronousPaidInvoice || requiresSynchronousInvoiceStatus) {
         try {
           await processVerifiedWebhookEvent;
           return text("ok", 200);
