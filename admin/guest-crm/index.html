@@ -1816,6 +1816,7 @@
           if(!guide) throw new Error(`Add the provider name for ${date} before posting to accounting`);
           const product=productCodeFromValue(item.product_selected||item.tour);
           if(!product) throw new Error(`Select the accounting product code for ${date}`);
+          const accountingServiceType=product==="MBW016"?"Wildlife":clean(item.service_type||deriveServiceType(item.product_selected||item.tour));
           const standard=accountingNumber(MBW_PRODUCT_PRICE_BY_CODE[product]);
           const amount=Math.round(unitPrice*party*100)/100;
           const itemId=clean(item.id)||String(index+1);
@@ -1823,7 +1824,7 @@
           return {
             created_at_iso:createdAt,stripe_environment:"manual",invoice_no:clean(record.invoice_no),invoice_no_txt:clean(record.invoice_no),date_paid:toDateValue(record.date_paid),tour_date:date,
             tour_completed:(normalizeStatus(item.status)==="completed"||normalizeStatus(record.status)==="completed")?"Yes":"No",guest_first_name:clean(record.first_name),guest_last_name:clean(record.last_name),guest_email:clean(record.email),guest_phone:clean(record.phone_normalized||record.phone_number),home_country:clean(record.home_country||record.country),party_size:String(party),
-            service_type:clean(item.service_type||deriveServiceType(item.product_selected||item.tour)),product_selected:product,tour_title:productTitle(item.product_selected)||clean(item.tour),tour_guide:guide,payment_method:"Zelle",
+            service_type:accountingServiceType,product_selected:product,tour_title:productTitle(item.product_selected)||clean(item.tour),tour_guide:guide,payment_method:"Zelle",
             invoice_id:"zelle|"+clean(record.invoice_no)+"|"+clean(record.inquiry_id),transaction_id:"zelle|"+clean(record.inquiry_id),payment_reference_note:"Manual Zelle payment posted from CRM "+clean(record.inquiry_id),
             guest_rate_override:unitPrice,standard_price_per_person:standard||unitPrice,final_price_per_person:unitPrice,pricing_reason:standard&&Math.abs(unitPrice-standard)>.009?"CRM price override":"Catalog price",pricing_notes:"Posted from CRM using Zelle to Accounting",
             amount_received:amount,transaction_fee_total:0,pickup_location:clean(item.pickup_location||record.pickup_location),pickup_address_or_hotel:clean(item.pickup_location||record.pickup_location),notes:[clean(item.notes),"CRM Zelle payment"].filter(Boolean).join(" · "),
