@@ -11,8 +11,15 @@ assert(script.includes('"https://www.youtube.com/watch?v="+encodeURIComponent(id
 assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary previews must fall back to the published YouTube video");
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
-assert(page.includes("media-studio.css?v=17"), "Media Studio CSS cache key must be current");
-assert(page.includes("media-studio.js?v=15"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.css?v=18"), "Media Studio CSS cache key must be current");
+assert(page.includes("media-studio.js?v=16"), "Media Studio JS cache key must be current");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
+assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
+assert(script.includes('class="calendarEventEdit"'), "Calendar cards must expose a direct editor link");
+assert(script.includes('class="agendaEdit"'), "Upcoming schedule rows must expose a direct editor link");
+assert(script.includes('item.href+"?id="+encodeURIComponent(item.id)'), "Editor links must deep-link to the selected record");
+assert(script.includes('"&return="+encodeURIComponent(ret)'), "Editor links must preserve the Media Studio return location");
+assert(styles.includes(".calendarEventEdit"), "Calendar editor links must be visibly styled");
+assert(styles.includes(".agendaEdit"), "Upcoming schedule editor links must be visibly styled");
 
-console.log(JSON.stringify({ ok: true, checks: 9, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: 16, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true }, null, 2));
