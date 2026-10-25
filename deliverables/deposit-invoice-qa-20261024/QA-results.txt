@@ -10,12 +10,14 @@ Fixes:
 - Count attached deposit payments once in paid-invoice CRM totals; historical negative invoice credits retain correct gross booking value.
 
 Verification:
-- 85 targeted automated tests passed across deposit, pricing, invoice ledger, handoff and CRM preservation suites.
+- 89 targeted automated tests passed across deposit, pricing, invoice ledger, handoff and CRM preservation suites.
 - Isolated browser tests at 390px and 1440px passed: $198 agreed total - $100 deposit = $98, mismatched totals blocked, no invoice/payment sends, no page errors or horizontal overflow.
-- Current Worker deployed: 25e594a8-f079-48f3-a868-436fee15e90f.
+- Current Worker deployed: See deployment record in this chat for latest version..
 - Existing guest payment was not reapplied as part of QA. No invoice was sent and no guest was charged.
 
 Historical audit:
 - Twenty $100 legacy Payment Link records reviewed against CRM inquiries and payment ledger.
 - Historical credit application cannot be inferred from email matching alone. Settled bookings and ambiguous matches require invoice-level review before a deposit can be made available again.
 - Private record-level audit is stored outside the public repository.
+
+Final checks: corrected three historical deposit payment summaries and preserved existing merged campaign references during unrelated CRM saves. Live accepted quote preview confirmed $98 remaining; no invoice sent.

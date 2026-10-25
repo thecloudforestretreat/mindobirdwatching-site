@@ -2985,44 +2985,18 @@ async function enrichChargeAndFees(env, isTest, paymentIntentId) {
 }
 
 function getInvoicePaymentIntentId(inv, eventObj) {
-  const eventPaymentIntentId =
-    eventObj &&
-    eventObj.object === "invoice_payment" &&
-    eventObj.payment &&
-    eventObj.payment.payment_intent
-      ? String(eventObj.payment.payment_intent)
-      : "";
-
-  if (eventPaymentIntentId) return eventPaymentIntentId;
-
-  const invoicePaymentIntentId =
-    inv && inv.payment_intent && typeof inv.payment_intent === "string"
-      ? inv.payment_intent
-      : inv && inv.payment_intent && inv.payment_intent.id
-        ? inv.payment_intent.id
-        : "";
-
-  if (invoicePaymentIntentId) return invoicePaymentIntentId;
-
-  const payments = inv && inv.payments && Array.isArray(inv.payments.data) ? inv.payments.data : [];
-  for (const invoicePayment of payments) {
-    const payment = invoicePayment && invoicePayment.payment ? invoicePayment.payment : null;
-    if (!payment) continue;
-
-    if (typeof payment.payment_intent === "string" && payment.payment_intent) {
-      return payment.payment_intent;
-    }
-
-    if (payment.payment_intent && payment.payment_intent.id) {
-      return payment.payment_intent.id;
-    }
-
-    if (payment.type === "payment_intent" && typeof payment.id === "string" && payment.id.startsWith("pi_")) {
-      return payment.id;
-    }
+  const id=value=>typeof value === "string" ? value : value?.id || "";
+  const candidates=[];
+  if(eventObj?.object === "invoice_payment")candidates.push(id(eventObj.payment?.payment_intent));
+  candidates.push(id(inv?.payment_intent));
+  for(const entry of inv?.payments?.data || []){
+    const payment=entry?.payment;
+    candidates.push(id(payment?.payment_intent));
+    if(payment?.type === "payment_intent")candidates.push(id(payment.id));
   }
-
-  return "";
+  const valid=candidates.filter(value=>/^pi_[A-Za-z0-9]+$/.test(value));
+  const deposit=String(inv?.metadata?.deposit_payment_intent_id || "");
+  return valid.find(value=>value!==deposit) || valid[0] || "";
 }
 
 export default {
