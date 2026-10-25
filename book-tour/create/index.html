@@ -839,7 +839,8 @@
     invoiceRequestInFlight: false,
     lastInvoiceFingerprint: "",
     lastInvoiceResult: null,
-    deposit: null
+    deposit: null,
+    acceptedQuoteTotal: null
   };
 
   const els = {
@@ -900,6 +901,7 @@
     els.depositDetails.textContent = message || "No available Stripe deposit found for this inquiry.";
     clearGeneratedResult();
     renderSummary();
+    updateModeUI();
   }
 
   function renderDeposit(deposit) {
@@ -916,6 +918,7 @@
     `;
     clearGeneratedResult();
     renderSummary();
+    updateModeUI();
   }
 
   async function lookupDeposit() {
@@ -977,7 +980,7 @@
 
   function setInvoiceBusy(isBusy) {
     state.invoiceRequestInFlight = isBusy;
-    els.sendInvoiceBtn.disabled = isBusy;
+    els.sendInvoiceBtn.disabled = isBusy || acceptedQuoteMismatch();
     els.sendInvoiceBtn.textContent = isBusy ? "Creating invoice..." : "Send invoice";
   }
 
@@ -1371,6 +1374,32 @@ function createItem(initial = {}) {
     });
   }
 
+  function importedAcceptedTotal(data) {
+    const total=Number(getInboundValue(data,"quoted_amount"));
+    return getInboundValue(data,"quote_status")==="accepted" && Number.isInteger(total) && total>0 ? total : null;
+  }
+
+  function applyAcceptedQuote(data) {
+    state.acceptedQuoteTotal=importedAcceptedTotal(data);
+    if(state.acceptedQuoteTotal===null || state.items.length!==1)return;
+    const item=state.items[0],tour=getTourByCodeAndLanguage(item.tour_code,item.language);
+    if(!tour)return;
+    const quantity=billingQuantity(tour,item.quantity),unit=state.acceptedQuoteTotal/quantity;
+    if(!Number.isInteger(unit)||unit<=0)return;
+    const adjustment=unit-parseTourAmount(tour);
+    item.price_override_per_person=adjustment?String(adjustment):"";
+    item.pricing_reason=adjustment?"custom_quote":"";
+    item.pricing_notes=`CRM accepted booking total: $${state.acceptedQuoteTotal} USD`;
+  }
+
+  function currentBookingSubtotal() {
+    return state.items.reduce((sum,item)=>{const tour=getTourByCodeAndLanguage(item.tour_code,item.language);return sum+(tour?getFinalAdjustedPrice(item,tour)*billingQuantity(tour,item.quantity):0);},0);
+  }
+
+  function acceptedQuoteMismatch() {
+    return state.acceptedQuoteTotal!==null && Math.round(currentBookingSubtotal()*100)!==state.acceptedQuoteTotal*100;
+  }
+
   function applyInboundPrefill() {
     const data = getInboundData();
     const fullName = getInboundValue(data, "full_name", "name", "guest", "guest_name", "guestName");
@@ -1417,6 +1446,7 @@ function createItem(initial = {}) {
 
     if (inboundItems.length) {
       state.items = inboundItems.flatMap(item => createInboundBookingItems(item, data, language));
+      applyAcceptedQuote(data);
       renderItems();
       renderSummary();
       updateModeUI();
@@ -1428,6 +1458,7 @@ function createItem(initial = {}) {
         quantity: quantity || state.items[0].quantity,
         item_notes: tourText && !tourCode ? `CRM tour interest: ${tourText}` : state.items[0].item_notes
       });
+      applyAcceptedQuote(data);
       renderItems();
       renderSummary();
       updateModeUI();
@@ -1704,6 +1735,7 @@ function createItem(initial = {}) {
       : 0;
     const amountRemaining = Math.max(0, bookingSubtotal - depositAmount);
     els.summaryTotals.innerHTML = `
+      ${state.acceptedQuoteTotal!==null?`<p class="small-note">CRM accepted total: $${state.acceptedQuoteTotal} USD${acceptedQuoteMismatch()?" · Adjust item prices to match before invoicing.":" · Matches this booking."}</p>`:""}
       <div class="summary-total-row">
         <span>Booking subtotal</span>
         <strong>$${bookingSubtotal.toFixed(2)} USD</strong>
@@ -1724,8 +1756,8 @@ function createItem(initial = {}) {
     const hasQuadRental = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad");
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi || hasQuadRental;
-    els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight;
+    els.generateLinkBtn.disabled = multi || hasQuadRental || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
+    els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch();
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
 
@@ -1737,6 +1769,8 @@ function createItem(initial = {}) {
         <br />
         Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
       `;
+    } else if (state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked)) {
+      els.actionSummary.textContent = "Use Send Invoice to preserve the agreed price and verified deposit credit. Generate Link is disabled.";
     } else if (hasQuadRental) {
       els.actionSummary.textContent = "Quad rentals use Send Invoice. Quantity determines the units billed.";
     } else {
@@ -1769,6 +1803,7 @@ function createItem(initial = {}) {
 
   function validateItems() {
     const errors = [];
+    if(acceptedQuoteMismatch())errors.push("Item prices do not match the accepted CRM quote. Review the prices or update the agreed quote in CRM before invoicing.");
 
     state.items.forEach((item, idx) => {
       if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
@@ -2300,6 +2335,7 @@ function createItem(initial = {}) {
   els.applyDeposit.addEventListener("change", () => {
     clearGeneratedResult();
     renderSummary();
+    updateModeUI();
   });
   els.depositPaymentIntentId.addEventListener("input", () => {
     els.depositLookupBtn.disabled = !els.inquiryId.value.trim() && !els.depositPaymentIntentId.value.trim();

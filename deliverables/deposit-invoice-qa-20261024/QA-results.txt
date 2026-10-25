@@ -1,0 +1,21 @@
+Deposit and invoice handoff QA — 2026-10-24
+
+Fixes:
+- Preserve an accepted CRM quote on single-service handoff; do not silently revert to today's catalog rate.
+- Block a mismatched accepted total and disable Generate Link when invoice pricing/deposit application is required.
+- Create an isolated USD draft before line items; exclude other pending customer items.
+- Bind every service line and historical deposit credit to that draft.
+- Use stable Stripe idempotency keys for deposit-related customer, invoice, line, credit and finalize/attach requests.
+- Reject refunded, disputed, missing-charge, wrong-inquiry, wrong-guest and already-applied deposits.
+- Count attached deposit payments once in paid-invoice CRM totals; historical negative invoice credits retain correct gross booking value.
+
+Verification:
+- 85 targeted automated tests passed across deposit, pricing, invoice ledger, handoff and CRM preservation suites.
+- Isolated browser tests at 390px and 1440px passed: $198 agreed total - $100 deposit = $98, mismatched totals blocked, no invoice/payment sends, no page errors or horizontal overflow.
+- Current Worker deployed: 25e594a8-f079-48f3-a868-436fee15e90f.
+- Existing guest payment was not reapplied as part of QA. No invoice was sent and no guest was charged.
+
+Historical audit:
+- Twenty $100 legacy Payment Link records reviewed against CRM inquiries and payment ledger.
+- Historical credit application cannot be inferred from email matching alone. Settled bookings and ambiguous matches require invoice-level review before a deposit can be made available again.
+- Private record-level audit is stored outside the public repository.

@@ -1,5 +1,10 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v47
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v49
+ *
+ * v49 updates:
+ * - Binds invoice items and historical credits to an isolated draft.
+ * - Rejects refunded, disputed, mismatched and already-applied deposits.
+ * - Prevents duplicate credits on retries and duplicate deposit reporting.
  *
  * v47 updates:
  * - Requires successful CRM booking and payment ledger sync before acknowledging linked paid invoices.
@@ -2394,12 +2399,12 @@ async function findAvailableDeposit(env, isTest, inquiryId) {
     null,
   );
   const deposits = (result.data || [])
-    .filter((pi) => !String(pi.metadata && pi.metadata.applied_invoice_id || "").trim())
+    .filter((pi) => !String(pi.metadata && pi.metadata.applied_invoice_id || "").trim() && pi.latest_charge && typeof pi.latest_charge === "object" && !pi.latest_charge.disputed && !pi.latest_charge.refunded && !Number(pi.latest_charge.amount_refunded || 0))
     .sort((a, b) => Number(b.created || 0) - Number(a.created || 0));
   return deposits[0] || null;
 }
 
-async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId, currency) {
+async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId, currency, guestId = "") {
   if (!paymentIntentId) return null;
   const pi = await stripeRequest(
     env,
@@ -2413,19 +2418,33 @@ async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId
     throw new Error("Deposit currency does not match the invoice currency.");
   }
   const md = pi.metadata || {};
-  if (inquiryId && md.inquiry_id && String(md.inquiry_id) !== inquiryId) {
+  if (!inquiryId || md.inquiry_id !== inquiryId || md.payment_purpose !== "tour_deposit") {
     throw new Error("Deposit belongs to a different CRM inquiry.");
   }
+  if (guestId && md.guest_id !== guestId) throw new Error("Deposit guest identity does not match this booking.");
   if (md.applied_invoice_id) throw new Error("This deposit is already applied to an invoice.");
+  const charge = pi.latest_charge && typeof pi.latest_charge === "object" ? pi.latest_charge : null;
+  if (!charge || Number(charge.amount_refunded || 0) > 0 || charge.refunded || charge.disputed) throw new Error("This deposit needs manual review because its charge is unavailable, refunded or disputed.");
+  if (!Number.isSafeInteger(pi.amount_received) || pi.amount_received <= 0) throw new Error("Deposit has no verified received amount.");
   return pi;
 }
 
-async function createHistoricalDepositCredit(env, isTest, customerId, deposit, currency, inquiryId, guestId) {
+function invoiceDepositTotals(invoice) {
+  const md=invoice.metadata || {};
+  const deposit=Math.max(0,parseAmountDisplayToCents(md.deposit_applied_amount || ""));
+  const paid=Math.max(0,Number(invoice.amount_paid || 0));
+  const attached=md.deposit_application_method === "stripe_attach_payment";
+  return {deposit, additional:Math.max(0,paid-(attached?deposit:0)), total:paid+(attached?0:deposit)};
+}
+
+async function createHistoricalDepositCredit(env, isTest, customerId, deposit, currency, inquiryId, guestId, invoiceId) {
   if (!deposit || deposit.customer) return;
+  if (!invoiceId) throw new Error("Deposit credit requires a specific draft invoice.");
   const amountCents = Number(deposit.amount_received || deposit.amount || 0);
   if (!amountCents) throw new Error("Historical deposit amount is missing.");
   const form = new URLSearchParams();
   form.set("customer", customerId);
+  form.set("invoice", invoiceId);
   form.set("amount", String(-amountCents));
   form.set("currency", String(currency || deposit.currency || "usd").toLowerCase());
   form.set("description", `Deposit previously paid (${deposit.id})`);
@@ -2434,7 +2453,7 @@ async function createHistoricalDepositCredit(env, isTest, customerId, deposit, c
   form.set("metadata[deposit_payment_intent_id]", deposit.id);
   if (inquiryId) form.set("metadata[inquiry_id]", inquiryId);
   if (guestId) form.set("metadata[guest_id]", guestId);
-  await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", form);
+  await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", form, `deposit-credit-${deposit.id}-${invoiceId}`);
 }
 
 async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, guestId) {
@@ -2445,7 +2464,7 @@ async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, 
   if (deposit.customer) {
     const attachForm = new URLSearchParams();
     attachForm.set("payment_intent", deposit.id);
-    await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/attach_payment`, attachForm);
+    await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/attach_payment`, attachForm, `deposit-attach-${deposit.id}-${invoice.id}`);
   }
 
   const metadataForm = new URLSearchParams();
@@ -3013,7 +3032,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v48-deposit-history-2026-10-24", 200);
+      return text("MBW Stripe Worker is running. version=v49-isolated-deposit-invoices-2026-10-24", 200);
     }
 
     // Fixed USD deposit Checkout. No browser-supplied amount or guest identity is trusted.
@@ -3166,6 +3185,7 @@ export default {
           return json({ ok: false, error: "This deposit belongs to a different CRM inquiry." }, 400);
         }
         const crm = await lookupCrmInquiry(env, inquiryId);
+        await validateDepositForInvoice(env, isTest, deposit.id, inquiryId, "USD", crm?.guest_id || "");
         return json({
           ok: true,
           found: true,
@@ -3580,7 +3600,7 @@ export default {
         if (!tour) throw new Error("Tour not found for selected language");
         const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, number_of_people, body.quad_count) : null;
         if (Number(tour.max_person) > 0 && number_of_people > Number(tour.max_person)) throw new Error(`Maximum ${tour.max_person} people allowed`);
-        const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, tour.currency || "USD");
+        const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, tour.currency || "USD", guest_id);
 
         const ids = resolveTourIdsStrict(tour, isTest);
         if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
@@ -3678,11 +3698,25 @@ export default {
             const v = md[k];
             if (v !== undefined && v !== null) custForm.set(`metadata[${k}]`, String(v));
           });
-          customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm);
+          customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm, deposit ? `deposit-customer-${deposit.id}` : undefined);
         }
+
+        const invForm = new URLSearchParams();
+        invForm.set("customer", customer.id);
+        invForm.set("collection_method", "send_invoice");
+        invForm.set("currency", "usd");
+        invForm.set("days_until_due", String(invoice_due_days));
+        invForm.set("auto_advance", "false");
+        invForm.set("pending_invoice_items_behavior", "exclude");
+        Object.keys(md).forEach((k) => {
+          const v = md[k];
+          if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
+        });
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
 
         const itemForm = new URLSearchParams();
         itemForm.set("customer", customer.id);
+        itemForm.set("invoice", invoice.id);
         if (tour.use_inline_price || overridePriceCents !== null || !ids.price_id) {
           await setInvoiceItemPriceData(env, isTest, itemForm, { tour, tour_code, ids }, invoiceUnitAmountCents);
         } else {
@@ -3694,7 +3728,7 @@ export default {
           const v = md[k];
           if (v !== undefined && v !== null) itemForm.set(`metadata[${k}]`, String(v));
         });
-        await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm);
+        await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm, deposit ? `deposit-line-${deposit.id}-${invoice.id}-0` : undefined);
         await createHistoricalDepositCredit(
           env,
           isTest,
@@ -3703,21 +3737,10 @@ export default {
           tour.currency || "USD",
           inquiry_id,
           guest_id,
+          invoice.id,
         );
 
-        const invForm = new URLSearchParams();
-        invForm.set("customer", customer.id);
-        invForm.set("collection_method", "send_invoice");
-        invForm.set("days_until_due", String(invoice_due_days));
-        invForm.set("auto_advance", "true");
-        invForm.set("pending_invoice_items_behavior", "include");
-        Object.keys(md).forEach((k) => {
-          const v = md[k];
-          if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
-        });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm);
-
-        let finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams());
+        let finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams(), deposit ? `deposit-finalize-${deposit.id}-${invoice.id}` : undefined);
         finalized = await attachDepositToInvoice(env, isTest, finalized, deposit, inquiry_id, guest_id);
         if (!isTest) {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
@@ -3931,7 +3954,7 @@ export default {
         if (normalizedItems.some((item) => String(item.tour.currency || "USD").toLowerCase() !== String(invoiceCurrency).toLowerCase())) {
           throw new Error("All invoice items must use the same currency.");
         }
-        const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, invoiceCurrency);
+        const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, invoiceCurrency, guest_id);
         const expectedInvoiceCents = normalizedItems.reduce(
           (sum, item) => sum + calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
           0,
@@ -3980,8 +4003,50 @@ export default {
             const v = custMd[k];
             if (v !== undefined && v !== null && v !== "") custForm.set(`metadata[${k}]`, String(v));
           });
-          customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm);
+          customer = await stripeRequest(env, isTest, "POST", "/v1/customers", custForm, deposit ? `deposit-customer-${deposit.id}` : undefined);
         }
+
+        const invMd = {
+          stripe_environment: stripeEnv,
+          booking_mode: "multi_item",
+          itinerary_summary,
+          main_contact_name: main_name,
+          main_contact_email: main_email,
+          main_contact_phone: main_phone,
+          whatsapp_number,
+          pickup_location_label,
+          pickup_address_or_hotel,
+          notes,
+          total_items: String(normalizedItems.length),
+          agent_id,
+          inquiry_id,
+          guest_id,
+          booking_id,
+          quote_id,
+          minimum_party_override: belowMinimumItems.length && minimum_party_override ? "true" : "false",
+          minimum_party_override_reason: belowMinimumItems.length ? minimum_party_override_reason : "",
+          minimum_party_override_items: minimumPartyOverrideSummary,
+          deposit_payment_intent_id: deposit ? deposit.id : "",
+          deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
+          deposit_payment_method: deposit ? "Stripe" : "",
+          deposit_application_method: deposit
+            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
+            : "",
+          stripe_customer_id: customer.id,
+        };
+
+        const invForm = new URLSearchParams();
+        invForm.set("customer", customer.id);
+        invForm.set("collection_method", "send_invoice");
+        invForm.set("currency", "usd");
+        invForm.set("days_until_due", String(invoice_due_days));
+        invForm.set("auto_advance", "false");
+        invForm.set("pending_invoice_items_behavior", "exclude");
+        Object.keys(invMd).forEach((k) => {
+          const v = invMd[k];
+          if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));
+        });
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
 
         for (const item of normalizedItems) {
           const lineMd = {
@@ -4033,6 +4098,7 @@ export default {
 
           const itemForm = new URLSearchParams();
           itemForm.set("customer", customer.id);
+        itemForm.set("invoice", invoice.id);
           if (item.tour.use_inline_price || item.overridePriceCents !== null || !item.ids.price_id) {
             await setInvoiceItemPriceData(env, isTest, itemForm, item, item.unitAmountCents);
           } else {
@@ -4045,7 +4111,7 @@ export default {
             const v = lineMd[k];
             if (v !== undefined && v !== null && v !== "") itemForm.set(`metadata[${k}]`, String(v));
           });
-          await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm);
+          await stripeRequest(env, isTest, "POST", "/v1/invoiceitems", itemForm, deposit ? `deposit-line-${deposit.id}-${invoice.id}-${item.index}` : undefined);
         }
 
         await createHistoricalDepositCredit(
@@ -4056,50 +4122,10 @@ export default {
           invoiceCurrency,
           inquiry_id,
           guest_id,
+          invoice.id,
         );
 
-        const invMd = {
-          stripe_environment: stripeEnv,
-          booking_mode: "multi_item",
-          itinerary_summary,
-          main_contact_name: main_name,
-          main_contact_email: main_email,
-          main_contact_phone: main_phone,
-          whatsapp_number,
-          pickup_location_label,
-          pickup_address_or_hotel,
-          notes,
-          total_items: String(normalizedItems.length),
-          agent_id,
-          inquiry_id,
-          guest_id,
-          booking_id,
-          quote_id,
-          minimum_party_override: belowMinimumItems.length && minimum_party_override ? "true" : "false",
-          minimum_party_override_reason: belowMinimumItems.length ? minimum_party_override_reason : "",
-          minimum_party_override_items: minimumPartyOverrideSummary,
-          deposit_payment_intent_id: deposit ? deposit.id : "",
-          deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
-          deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
-          stripe_customer_id: customer.id,
-        };
-
-        const invForm = new URLSearchParams();
-        invForm.set("customer", customer.id);
-        invForm.set("collection_method", "send_invoice");
-        invForm.set("days_until_due", String(invoice_due_days));
-        invForm.set("auto_advance", "true");
-        invForm.set("pending_invoice_items_behavior", "include");
-        Object.keys(invMd).forEach((k) => {
-          const v = invMd[k];
-          if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));
-        });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm);
-
-        let finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams());
+        let finalized = await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/finalize`, new URLSearchParams(), deposit ? `deposit-finalize-${deposit.id}-${invoice.id}` : undefined);
         finalized = await attachDepositToInvoice(env, isTest, finalized, deposit, inquiry_id, guest_id);
         if (!isTest) {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
@@ -4789,7 +4815,7 @@ export default {
               const depositAppliedCents = parseAmountDisplayToCents(invMd.deposit_applied_amount || "");
               const serviceTotalCents = serviceLines.length
                 ? serviceLines.reduce((sum, line) => sum + Number(line.amount || 0), 0)
-                : Number(inv.amount_paid || 0) + depositAppliedCents;
+                : invoiceDepositTotals(inv).total;
               const invoiceCustomerId = typeof inv.customer === "string"
                 ? inv.customer
                 : customerObj && customerObj.id
@@ -5129,8 +5155,8 @@ export default {
                 transaction_id: paymentIntentId,
                 total_booking_price: serviceTotalCents / 100,
                 deposit_amount_paid: depositAppliedCents / 100,
-                additional_amount_paid: Number(inv.amount_paid || 0) / 100,
-                total_amount_paid: (Number(inv.amount_paid || 0) + depositAppliedCents) / 100,
+                additional_amount_paid: invoiceDepositTotals(inv).additional / 100,
+                total_amount_paid: invoiceDepositTotals(inv).total / 100,
                 balance_remaining: Number(inv.amount_remaining || 0) / 100,
                 payment_date: formatDateNY(paidAt),
                 tour_date_start: firstServiceMetadata.tour_date || "",

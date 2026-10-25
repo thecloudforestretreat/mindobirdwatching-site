@@ -16,7 +16,7 @@ function harness({status='quoted',payment='unpaid',existing=false,crmFailure=fal
    assert.equal(payload.action,'update_inquiry');assert.equal(payload.record.payment_status,payment==='paid'?'paid':'deposit_paid');assert.equal(payload.record.status,undefined);
    return Response.json({ok:true});
   }
-  if(address.startsWith('https://api.stripe.com/v1/payment_intents/search'))return Response.json({data:existing?[{id:'pi_existing',metadata:{}}]:[]});
+  if(address.startsWith('https://api.stripe.com/v1/payment_intents/search'))return Response.json({data:existing?[{id:'pi_existing',metadata:{},latest_charge:{amount_refunded:0}}]:[]});
   if(address==='https://api.stripe.com/v1/checkout/sessions')return Response.json({id:'cs_test_QA123',url:'https://checkout.stripe.com/c/pay/cs_test_QA123',currency:'usd',amount_total:10000,adaptive_pricing:{enabled:false}});
   if(address.startsWith('https://api.stripe.com/v1/payment_intents/pi_QA'))return Response.json({id:'pi_QA',latest_charge:{id:'ch_QA',receipt_url:'https://pay.stripe.com/receipts/QA',balance_transaction:{fee:320}}});
   if(address==='https://qa.invalid/logger'){const body=JSON.parse(options.body);logged.set(body.fields.stripe_payment_intent,body.fields);return Response.json({ok:true});}
