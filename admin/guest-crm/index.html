@@ -1288,6 +1288,7 @@
           referenceStatus("Reference matched: "+(referenceMatch.last_touch_source||referenceMatch.utm_source||"source unavailable"));return referenceMatch;
         }catch(error){if(generation===referenceGeneration){referenceMatch=null;referenceStatus("Could not match reference: "+error.message);}throw error;}
       }
+      function missingReferenceError(error){return /(?:contact_intent_not_found|reference_session_not_found|reference not found)/i.test(String(error&&error.message||error||""));}
       document.addEventListener("focusout",event=>{if(event.target.id==="referenceIdInput")resolveReference().catch(()=>{});});
       document.addEventListener("input",event=>{if(event.target.id==="referenceIdInput"){referenceGeneration++;referenceMatch=null;referenceStatus("Reference will be checked before saving.");}});
       function savedInquiryFromResponse(response,requested){
@@ -1312,7 +1313,22 @@
             state.records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
             payload=buildSavePayload();
           }
-          const attribution=await resolveReference();
+          let attribution=null;
+          try{attribution=await resolveReference();}
+          catch(error){
+            if(!missingReferenceError(error))throw error;
+            const enteredReference=referenceId(els.referenceIdInput&&els.referenceIdInput.value);
+            const savedReference=referenceId((getSelected()||{}).contact_intent_id);
+            const preserveHistorical=!isCreate&&enteredReference&&enteredReference===savedReference;
+            if(!preserveHistorical){
+              delete payload.record.contact_intent_id;
+              delete payload.inquiry_row.contact_intent_id;
+              if(els.referenceIdInput)els.referenceIdInput.value="";
+            }
+            referenceStatus(preserveHistorical
+              ?"Saved historical reference is unavailable. It will be preserved without relinking."
+              :"Reference was not found. Saving this record without website attribution.");
+          }
           if(attribution){Object.assign(payload.record,attribution);Object.assign(payload.inquiry_row,attribution);}
           const duplicate=findBookingDuplicate(payload.record);
           if(isCreate&&duplicate){
