@@ -31,9 +31,13 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=7") && html.includes("carousel-studio.js?v=11"), "Carousel asset cache keys must expose the current recovery controls");
+  assert(html.includes("carousel-studio.css?v=7") && html.includes("carousel-studio.js?v=12"), "Carousel asset cache keys must expose tomorrow-first scheduling");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
+  assert(html.includes('id="scheduledDate"') && html.includes('id="scheduledTime"'), "Carousel intake must expose editable date and time fields");
+  assert(ui.includes("function defaultSchedule(){return{date:addDays(today(),1),time:\"07:00\"}}"), "New carousels must default to tomorrow at 7:00 AM Eastern");
+  assert(ui.includes('$("scheduledDate").min=today()'), "Carousel intake must still allow a future time today");
+  assert(!ui.includes("Date.now()+15*60000"), "Carousel intake must not default to the next 15-minute slot");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
   assert(ui.includes("x[-_ ]?ray") && ui.includes("sticky|graphic|infographic|notes"), "UI must identify educational graphics for fit/pad treatment");
   assert(/aspect-ratio\s*:\s*4\s*\/\s*5/.test(css), "Previews must use the Instagram 4:5 aspect ratio");
@@ -176,6 +180,13 @@ function compileWorkflow(path) {
     post_to_instagram: true, images: [{ original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/a.jpg" }, { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/b.jpg" }],
   }});
   assert.strictEqual(response.status, 400, "Past dates must fail at the API boundary");
+  const easternParts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const eastern = Object.fromEntries(easternParts.map((part) => [part.type, part.value]));
+  response = await call({ action: "create_carousel", carousel: {
+    featured_birds: "Rufous Motmot", carousel_description: "A factual three-slide Rufous Motmot feature.", scheduled_date: `${eastern.year}-${eastern.month}-${eastern.day}`, scheduled_time: "00:00",
+    post_to_instagram: true, images: [{ original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/a.jpg" }, { original_url: "https://res.cloudinary.com/dd25hpdx3/image/upload/b.jpg" }],
+  }});
+  assert.strictEqual(response.status, 400, "A time that already passed today must fail at the API boundary");
 
   const originalFetch = global.fetch;
   let gatewayPayload;

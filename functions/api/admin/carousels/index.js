@@ -4,6 +4,7 @@ const EDITABLE=new Set(["carousel_title","caption","instagram_hashtags","faceboo
 function h(request){const o=request.headers.get("origin")||"";return{"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-origin":o===ADMIN_ORIGIN?o:ADMIN_ORIGIN,"access-control-allow-methods":"GET, POST, OPTIONS","access-control-allow-headers":"content-type",vary:"Origin"}}
 function out(request,body,status=200){return new Response(JSON.stringify(body),{status,headers:h(request)})}function clean(v,n=5000){return String(v==null?"":v).trim().slice(0,n)}function bool(v){return v===true||["true","1","yes","on"].includes(clean(v,10).toLowerCase())}function date(v){return /^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T12:00:00Z"))}function time(v){return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(v)}
 function nyToday(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),p={};for(const x of parts)p[x.type]=x.value;return `${p.year}-${p.month}-${p.day}`}
+function futureEastern(dateValue,timeValue){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()),p={};for(const x of parts)p[x.type]=x.value;return `${dateValue}T${timeValue}`>`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`}
 function cloudinaryDelivery(url,fit,gravity="auto"){const safeGravity=["auto","center","north","south","east","west"].includes(gravity)?gravity:"auto";return url.replace("/upload/","/upload/"+(fit==="fill"?`c_fill,g_${safeGravity}`:"c_pad,b_rgb:f7f4e8")+",h_1350,w_1080,q_auto,f_auto/")}
 async function workflow(request,env,payload){if(!env.N8N_ADMIN_CAROUSELS_WEBHOOK_URL)return{error:out(request,{ok:false,message:"N8N_ADMIN_CAROUSELS_WEBHOOK_URL is not configured."},503)};try{const r=await fetch(env.N8N_ADMIN_CAROUSELS_WEBHOOK_URL,{method:"POST",headers:{"content-type":"application/json","x-mbw-request-id":payload.request_id},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)}),t=await r.text();if(!r.ok)throw new Error("Carousel workflow returned "+r.status+": "+t.slice(0,200));return{data:JSON.parse(t||"{}")}}catch(e){console.error("Carousel workflow failed",{action:payload.action,message:e.message});return{error:out(request,{ok:false,message:"The Carousel workflow is temporarily unavailable."},502)}}}
 async function upload(request,env,form){
@@ -55,7 +56,7 @@ export async function onRequestPost({request,env}){
     if(normalized.error)return normalized.error;
     if(!clean(c.featured_birds,300))return out(request,{ok:false,message:"Carousel subject is required."},400);
     if(!date(clean(c.scheduled_date,10))||!time(clean(c.scheduled_time,5)))return out(request,{ok:false,message:"A valid date and time are required."},400);
-    if(clean(c.scheduled_date,10)<nyToday())return out(request,{ok:false,message:"Choose today or a future date."},400);
+    if(!futureEastern(clean(c.scheduled_date,10),clean(c.scheduled_time,5)))return out(request,{ok:false,message:"Choose a future Eastern date and time."},400);
     if(!bool(c.post_to_instagram)&&!bool(c.post_to_facebook))return out(request,{ok:false,message:"Select Instagram or Facebook."},400);
     payload={...payload,mode:input.mode==="auto"?"auto":"review",timezone:"America/New_York",carousel:{carousel_id:"CAR-"+crypto.randomUUID(),submitted_at:new Date().toISOString(),source:"admin_carousel_studio",carousel_description:clean(c.carousel_description,1600),featured_birds:clean(c.featured_birds,300),scientific_name:clean(c.scientific_name,180),location:clean(c.location,120)||"Mindo, Ecuador",scheduled_date:clean(c.scheduled_date,10),scheduled_time:clean(c.scheduled_time,5),post_to_instagram:bool(c.post_to_instagram),post_to_facebook:bool(c.post_to_facebook),images:normalized.images}};
   }else{
@@ -68,6 +69,7 @@ export async function onRequestPost({request,env}){
       if(payload.edits.scheduled_date&&!date(payload.edits.scheduled_date))return out(request,{ok:false,message:"Invalid scheduled date."},400);
       if(payload.edits.scheduled_date&&payload.edits.scheduled_date<nyToday())return out(request,{ok:false,message:"Choose today or a future date."},400);
       if(payload.edits.scheduled_time&&!time(payload.edits.scheduled_time))return out(request,{ok:false,message:"Invalid scheduled time."},400);
+      if(payload.edits.scheduled_date&&payload.edits.scheduled_time&&!futureEastern(payload.edits.scheduled_date,payload.edits.scheduled_time))return out(request,{ok:false,message:"Choose a future Eastern date and time."},400);
     }
     if(action==="update_carousel_images"){
       const normalized=normalizeImages(input.images);
