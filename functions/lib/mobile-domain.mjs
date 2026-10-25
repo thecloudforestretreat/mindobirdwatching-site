@@ -1,6 +1,6 @@
 import { country } from "./maps.mjs";
 
-export const MOBILE_DOMAIN_VERSION = "2026-10-20-readiness-v4";
+export const MOBILE_DOMAIN_VERSION = "2026-10-24-invoice-status-v5";
 
 const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
 const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
@@ -185,6 +185,7 @@ export function normalizeProvider(row) {
 }
 
 export function normalizePayment(row) {
+  const nonPayable = ["void", "voided", "cancelled", "canceled", "uncollectible"].includes(key(row.payment_status));
   return {
     paymentId: text(row.payment_id, 128),
     inquiryId: text(row.inquiry_id, 128),
@@ -196,8 +197,10 @@ export function normalizePayment(row) {
     status: key(row.payment_status || "unpaid"),
     totalPaid: amount(row.total_amount_paid),
     bookingPrice: amount(row.total_booking_price),
-    balance: amount(row.balance_remaining),
-    fullyPaid: yes(row.is_fully_paid),
+    balance: nonPayable ? 0 : amount(row.balance_remaining),
+    historicalBalance: amount(row.balance_remaining),
+    nonPayable,
+    fullyPaid: !nonPayable && yes(row.is_fully_paid),
     currency: text(row.currency || "USD", 10),
   };
 }
@@ -235,6 +238,7 @@ function bookingMatch(record, booking) {
 }
 
 function paymentMatches(record, payment, bookings) {
+  if (payment.nonPayable || ["void", "voided", "cancelled", "canceled", "uncollectible"].includes(payment.status)) return false;
   if (payment.inquiryId && payment.inquiryId === record.inquiryId) return true;
   if (payment.bookingId && record.bookingId && payment.bookingId === record.bookingId) return true;
   if (payment.invoiceNo && record.invoiceNo && payment.invoiceNo === record.invoiceNo) return true;
