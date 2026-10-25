@@ -1,3 +1,5 @@
+import { mountTripBuilder, renderTripQuoteRequests } from "./trip-builder.mjs";
+
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 const LANGUAGE_KEY = "mbw-guide-language-v1";
@@ -18,7 +20,7 @@ const COPY = {
     instagram: "Instagram", instagramSub: "Compartir novedades", facebook: "Facebook", facebookSub: "Compartir la página de MBW", youtube: "YouTube", youtubeSub: "Compartir el canal de MBW", shop: "Tienda MBW", shopSub: "Compartir la tienda oficial", copy: "Copiar",
     acceptTour: "Aceptar tour", awaitingAcceptance: "Por aceptar", accepted: "Aceptado", scheduleConflict: "Conflicto de horario", unavailableConflict: "Coincide con un bloqueo de disponibilidad", assignmentConflict: "Coincide con otro tour asignado", contactClosed: "Contacto cerrado", reportNeeded: "Reporte pendiente", reportSubmitted: "Reporte enviado", reportScheduled: "Reporte después del tour",
     availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
-    futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
+    futureWork: "Próximas oportunidades", offers: "Cotizaciones", offersPrivacy: "Las solicitudes y ofertas están separadas de los tours confirmados. Solo pasan al calendario después de la aprobación del administrador.", noOffers: "No hay otras ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.", tripBuilderEyebrow: "SOLICITUD DE VIAJE", addOption: "+ Agregar opción", guideSummary: "Resumen y recomendaciones del guía", close: "Cerrar", saveDraft: "Guardar borrador", submitQuote: "Enviar cotización",
     upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio, país o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", tip: "Propina", shareLinks: "Compartir enlaces",
   },
   en: {
@@ -36,7 +38,7 @@ const COPY = {
     instagram: "Instagram", instagramSub: "Share birding updates", facebook: "Facebook", facebookSub: "Share the MBW page", youtube: "YouTube", youtubeSub: "Share the MBW channel", shop: "MBW Shop", shopSub: "Share the official shop", copy: "Copy",
     acceptTour: "Accept tour", awaitingAcceptance: "Awaiting acceptance", accepted: "Accepted", scheduleConflict: "Schedule conflict", unavailableConflict: "Overlaps an unavailable block", assignmentConflict: "Overlaps another assigned tour", contactClosed: "Contact closed", reportNeeded: "Report needed", reportSubmitted: "Report submitted", reportScheduled: "Report after tour",
     availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
-    futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
+    futureWork: "Future opportunities", offers: "Quotes", offersPrivacy: "Quote requests and offers remain separate from confirmed tours. They enter the calendar only after admin approval.", noOffers: "No other tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.", tripBuilderEyebrow: "TRIP REQUEST", addOption: "+ Add option", guideSummary: "Guide summary and recommendations", close: "Close", saveDraft: "Save draft", submitQuote: "Submit quote",
     upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, country, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", tip: "Tip", shareLinks: "Share links",
   },
 };
@@ -271,6 +273,7 @@ function renderAvailability() {
 
 function renderOffers() {
   const canRespond = data?.identity?.role === "guide";
+  renderTripQuoteRequests(data?.quoteRequests || [], { currentLanguage: language, readOnly: !canRespond });
   const offers = data?.offers || [];
   $("#offerList").innerHTML = offers.length ? offers.map(offer => `<article class="offerCard"><div class="offerHead"><div><h2>${esc(offer.service)}</h2><p>${esc(dateLabel(offer.serviceDate))}${offer.startTime ? ` · ${esc(offer.startTime)}` : ""}${offer.pickup ? ` · ${esc(offer.pickup)}` : ""}</p></div><span>${esc(offer.response ? t(offer.response === "pass" ? "pass" : "interested") : t("pendingResponse"))}</span></div>${canRespond ? `<label>${t("bidOptional")}<input type="number" min="1" step="0.01" inputmode="decimal" data-bid="${esc(offer.assignmentId)}" value="${esc(offer.bidAmount || "")}"></label><div class="offerActions"><button type="button" data-offer-response="interested" data-id="${esc(offer.assignmentId)}">${t("interested")}</button><button type="button" data-offer-response="pass" data-id="${esc(offer.assignmentId)}">${t("pass")}</button></div>` : `<p>${t("adminReadOnly")}</p>`}</article>`).join("") : empty(t("noOffers"));
 }
@@ -406,6 +409,7 @@ $("#tourSearch").addEventListener("input", event => { tourSearch = event.target.
 $("#reportTour").addEventListener("change", updateReportLink);
 $("#refresh").addEventListener("click", () => load(data?.providerId || data?.providerName || ""));
 $("#retry").addEventListener("click", () => load());
+mountTripBuilder({ getLanguage: () => language, onSaved: refreshCurrent });
 applyLanguage();
 const initialParams = new URLSearchParams(location.search);
 load(initialParams.get("provider") || "").then(() => route(initialParams.get("view") || "today"));

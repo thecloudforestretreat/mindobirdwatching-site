@@ -87,6 +87,80 @@ class StudioStoreTests(unittest.TestCase):
         self.assertEqual(requests[0]["inquiry_row"]["guest_count"], "2")
         self.assertEqual(requests[0]["inquiry_row"]["inquiry_studio_id"], "IST-20261001190000-ABC123")
 
+    def test_list_guides_filters_inactive_and_non_guide_providers(self):
+        def opener(request, timeout):
+            return io.BytesIO(json.dumps({"ok": True, "records": [
+                {"provider_id": "P-2", "provider_name": "Transporter", "provider_role": "driver", "active": "yes"},
+                {"provider_id": "P-3", "provider_name": "Inactive Guide", "provider_role": "guide", "active": "no"},
+                {"provider_id": "P-1", "provider_name": "Neicer", "provider_role": "guide", "active": "yes"},
+            ]}).encode())
+
+        self.assertEqual(studio_store.list_guides(opener), [{"provider_id": "P-1", "provider_name": "Neicer"}])
+
+    def test_create_guide_quote_request_links_assignment_and_handoff(self):
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-1", "guest_id": "G-1"},
+            {"subject": "Older traveler route", "message": "Request"},
+            self.analysis(),
+            [],
+        )
+        requests = []
+        created_assignment = None
+
+        def opener(request, timeout):
+            nonlocal created_assignment
+            payload = json.loads(request.data)
+            requests.append(payload)
+            if payload["action"] == "list_assignments":
+                result = {"ok": True, "records": [created_assignment] if created_assignment else []}
+            elif payload["action"] == "create_assignment":
+                created_assignment = {**payload["assignment"], "assignment_id": "A-QUOTE"}
+                result = {"ok": True, "record": created_assignment}
+            else:
+                result = {"ok": True}
+            return io.BytesIO(json.dumps(result).encode())
+
+        updated, _ = studio_store.create_guide_quote_request(record, "P-1", "Neicer", "mindo-tours", "2026-11-01", opener)
+        assignment = next(item["assignment"] for item in requests if item["action"] == "create_assignment")
+        self.assertEqual(assignment["assignment_kind"], "quote_request")
+        self.assertEqual(assignment["provider_id"], "P-1")
+        self.assertIn("brand=mindo-tours", assignment["internal_note"])
+        handoff = json.loads(updated["handoff_json"])
+        self.assertEqual(handoff["brand_id"], "mindo-tours")
+        self.assertEqual(handoff["guide_quote_requests"][0]["provider_name"], "Neicer")
+        self.assertEqual([item["action"] for item in requests], ["list_assignments", "create_assignment", "list_assignments", "save_inquiry_studio", "update_inquiry"])
+
+    def test_approve_guide_quote_prepares_final_plan_for_markup(self):
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-1", "guest_id": "G-1"},
+            {"message": "Request"},
+            self.analysis(),
+            [],
+        )
+        record["guide_quotes_json"] = json.dumps([{
+            "quote_id": "GQ-1", "version": 1, "status": "submitted", "provider_id": "P-1", "provider_name": "Neicer",
+            "brand_id": "mindo-tours", "currency": "USD", "options": [{"name": "Private", "net_total": 300}],
+        }])
+        requests = []
+
+        def opener(request, timeout):
+            requests.append(json.loads(request.data))
+            return io.BytesIO(json.dumps({"ok": True}).encode())
+
+        updated = studio_store.review_guide_quote(record, "GQ-1", "approve", "", "Juan", opener)
+        quote = json.loads(updated["guide_quotes_json"])[0]
+        final_plan = json.loads(updated["final_plan_json"])
+        handoff = json.loads(updated["handoff_json"])
+        self.assertEqual(quote["admin_status"], "approved")
+        self.assertEqual(final_plan["pricing_status"], "markup_required")
+        self.assertEqual(final_plan["net_options"][0]["net_total"], 300)
+        self.assertEqual(handoff["itinerary_status"], "awaiting_markup")
+
+    def test_revision_request_requires_instructions(self):
+        record = {"inquiry_studio_id": "IST-1", "inquiry_id": "INQ-1", "revision": 1, "guide_quotes_json": json.dumps([{"quote_id": "GQ-1", "status": "submitted"}])}
+        with self.assertRaisesRegex(ValueError, "Explain"):
+            studio_store.review_guide_quote(record, "GQ-1", "request_revision", "")
+
 
 if __name__ == "__main__":
     unittest.main()
