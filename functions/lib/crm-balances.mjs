@@ -38,7 +38,7 @@ export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date
   const dueDate=dueDates.length===1?dueDates[0]:'';
   const diff=dueDate?(Date.parse(dueDate)-Date.parse(today))/86400000:null;
   const status=issues.length?'review':balance===0?'paid':balance===null?'unknown':!dueDate?'undated':diff<0?'overdue':diff<=7?'due_soon':'upcoming';
-  return {inquiryId:id,name:text(r.full_name)||[r.first_name,r.last_name].filter(Boolean).join(' ')||id,rep:text(r.assigned_rep),tourDate:day(r.tour_date||r.requested_date||r.requested_date_start),completed:text(r.status)==='completed',total,paid,deposit,balance,dueDate,status,issues,sourceCount:dd.length+ps.length};
+  return {inquiryId:id,name:text(r.full_name)||[r.first_name,r.last_name].filter(Boolean).join(' ')||id,rep:text(r.assigned_to||r.assigned_rep),tourDate:day(r.tour_date||r.requested_date||r.requested_date_start),completed:text(r.status)==='completed',total,paid,deposit,balance,dueDate,status,issues,sourceCount:dd.length+ps.length};
  });
  return {records,unmatched,checkedAt:now.toISOString(),currency:'USD'};
 }

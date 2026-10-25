@@ -8,3 +8,7 @@ test('unknown booking total stays unknown',()=>{const r=run([{deposit_amount_pai
 test('missing date is not invented',()=>assert.equal(run([{total_booking_price:200,deposit_amount_paid:100}]).status,'undated'));
 test('overdue and same-day boundary',()=>{assert.equal(run([{total_booking_price:200,deposit_amount_paid:100,balance_due_date:'2026-10-23'}]).status,'overdue');assert.equal(run([{total_booking_price:200,deposit_amount_paid:100,balance_due_date:'2026-10-24'}]).status,'due_soon');});
 test('blank amount differs from zero',()=>{assert.equal(money(''),null);assert.equal(money('$0.00'),0);});
+test('legacy import without Stripe id matches invoice number',()=>{const r=run([],[{invoice_no:'MBW-123',total_booking_price:100,total_amount_paid:100},{invoice_id:'',invoice_no:'MBW123',total_booking_price:100,total_amount_paid:100}]);assert.equal(r.paid,100);});
+test('multiple independent deposits are flagged rather than called paid',()=>assert.equal(run([{deposit_id:'D1',total_booking_price:100,deposit_amount_paid:50},{deposit_id:'D2',total_booking_price:100,deposit_amount_paid:50}]).status,'review'));
+test('empty accounting row cannot imply a known paid amount',()=>assert.equal(run([{}]).paid,null));
+test('rep and requested tour date follow CRM schema',()=>{const r=run([],[],{assigned_to:'Susana',requested_date:'2026-11-12'});assert.equal(r.rep,'Susana');assert.equal(r.tourDate,'2026-11-12');});
