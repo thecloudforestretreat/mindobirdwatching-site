@@ -1641,7 +1641,7 @@
       }
       function paymentLedgerRowHtml(item,record){
         const id=paymentRowId(item);
-        if(invoiceIsNonPayable(item)) return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||id)}</strong><span>${esc(labelStatus(item.payment_status))} · Not payable</span><span>Historical invoice retained. Guest booking and deposits are unchanged.</span></div>`;
+        if(invoiceIsNonPayable(item)) return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||id)}</strong><span>${esc(labelStatus(item.payment_status))} · ${normalizePayment(item.payment_status)==="uncollectible"?"Review before collection":"Not payable"}</span><span>Historical invoice retained. Guest booking and deposits are unchanged.</span></div>`;
         if(state.editingPaymentId===id){
           const method=clean(item.payment_method),status=normalizePayment(item.payment_status||"unpaid");
           const methods=["Stripe","Zelle","Bank Transfer EC","Bank Transfer US","Cash","Venmo","PayPal","Marketing Collaboration","Other"];

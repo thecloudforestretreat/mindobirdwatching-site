@@ -2353,7 +2353,7 @@ async function syncNonPayableInvoice(env, invoice, payments) {
   const md = invoice.metadata || {};
   if ((md.inquiry_id && md.inquiry_id !== existing.inquiry_id) || (md.guest_id && md.guest_id !== existing.guest_id)) throw new Error("Invoice identity mismatch");
   if (existing.payment_status === status) return {updated:false};
-  const note = "Stripe invoice " + status + "; historical amounts retained. Not payable through this invoice.";
+  const note = "Stripe invoice " + status + "; historical amounts retained. " + (status === "void" ? "Not payable through this invoice." : "Written off; review before further collection.");
   const record = {...existing, payment_status:status, notes:[existing.notes || "",note].filter(Boolean).join("\n")};
   // Keep original amounts for audit. The terminal invoice status controls collectibility.
   const result = await postCrmLedgerAction(env,"upsert_payment","payment",record);
