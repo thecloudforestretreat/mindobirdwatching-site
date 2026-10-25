@@ -1365,6 +1365,7 @@
           referenceStatus("Reference matched: "+(referenceMatch.last_touch_source||referenceMatch.utm_source||"source unavailable"));return referenceMatch;
         }catch(error){if(generation===referenceGeneration){referenceMatch=null;referenceStatus("Could not match reference: "+error.message);}throw error;}
       }
+      function missingReferenceError(error){return /(?:contact_intent_not_found|reference_session_not_found|reference not found)/i.test(String(error&&error.message||error||""));}
       document.addEventListener("focusout",event=>{if(event.target.id==="referenceIdInput")resolveReference().catch(()=>{});});
       document.addEventListener("input",event=>{if(event.target.id==="referenceIdInput"){referenceGeneration++;referenceMatch=null;referenceStatus("Reference will be checked before saving.");}});
       document.addEventListener("change",event=>{if(event.target.id==="sourceInput")updateReferenceReminder();});
@@ -1401,11 +1402,21 @@
           let attribution=null,attributionWarning="";
           try{attribution=await resolveReference();}
           catch(error){
-            if(!canPreserveUnavailableReference(error))throw error;
-            const preservedReference=referenceId(els.referenceIdInput.value);
-            attributionWarning="Attribution reference preserved, but it is unavailable in the attribution database.";
-            referenceMatch=null;
-            referenceStatus(`Reference ${preservedReference} is preserved but could not be verified. Record changes can still be saved.`);
+            if(!missingReferenceError(error))throw error;
+            const enteredReference=referenceId(els.referenceIdInput&&els.referenceIdInput.value);
+            const savedReference=referenceId((getSelected()||{}).contact_intent_id);
+            const preserveHistorical=!isCreate&&enteredReference&&enteredReference===savedReference;
+            if(!preserveHistorical){
+              delete payload.record.contact_intent_id;
+              delete payload.inquiry_row.contact_intent_id;
+              if(els.referenceIdInput)els.referenceIdInput.value="";
+            }
+            attributionWarning=preserveHistorical
+              ?"Attribution reference preserved, but it is unavailable in the attribution database."
+              :"Saved without website attribution because the reference was not found.";
+            referenceStatus(preserveHistorical
+              ?"Saved historical reference is unavailable. It will be preserved without relinking."
+              :"Reference was not found. Saving this record without website attribution.");
           }
           if(attribution){Object.assign(payload.record,attribution);Object.assign(payload.inquiry_row,attribution);}
           const duplicate=findBookingDuplicate(payload.record);

@@ -16,7 +16,7 @@ function harness(record={}){
   const backend=payload=>new Function('$','$input',processor)(()=>({first:()=>({json:payload})}),{all:()=>rows.map(json=>({json}))})[0].json;
   const context={console,URL,URLSearchParams,Date,Intl,setTimeout,clearTimeout,location:{hostname:'localhost',search:''},localStorage:{getItem(){return null;},setItem(){}},document:{getElementById:node,addEventListener(){},querySelectorAll(){return[];}},window:{addEventListener(){},location:{search:''}},persist:async(action,payload)=>{assert.equal(action,'update_inquiry');calls.push(structuredClone(payload));const saved=backend(payload);assert.notEqual(saved.ok,false);Object.assign(rows[0],saved.record);return saved;}};
   vm.createContext(context);
-  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeTourItem,serializeTourItems,calendarEntriesForRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
+  vm.runInContext(script.replace('    })();',`globalThis.qa={cache,state,els,fillQuoteOptions,formRecord,saveRecord,normalizeTourItem,serializeTourItems,calendarEntriesForRecord,normalizeCrmRecord,primaryTourItemFromRecord,additionalTourItemsForForm,normalizeTourItems,setApi(fn){api=fn},setResolve(fn){resolveReference=fn},install(){api=persist;resolveReference=async()=>null;render=()=>{};saveLocalRecords=()=>{};showToast=()=>{};upsert=record=>{state.records=[normalizeCrmRecord(record)]}}};})();`),context);
   const q=context.qa;q.cache();q.install();Object.assign(base,q.normalizeCrmRecord(base));q.state.records=[base];q.state.selectedId=base.inquiry_id;
   for(const [id,value] of Object.entries({modeInput:'update',guestIdInput:base.guest_id,firstNameInput:'QA',fullNameInput:'QA Guest',emailInput:'qa@example.invalid',countryInput:'US',sourceInput:'site_book_tour',tourInput:'Birdwatching',guestCountInput:'2',dateInput:'2099-11-26',recordStatusInput:base.status,quoteStatusInput:base.quote_status,paymentStatusInput:'unpaid',serviceTypeInput:'Birdwatching',priorityInput:'normal',followupInput:'2099-11-01'}))node(id).value=value;
   function load(){
@@ -65,4 +65,15 @@ test('requested legacy add-ons remain New even under a booked inquiry',()=>{
 });
 test('missing inquiry stage also leaves inferred primary service New',()=>{
  const h=harness({status:''});assert.equal(h.q.primaryTourItemFromRecord({tour_type:'Birdwatching'}).status,'new');assert.equal(JSON.parse(h.q.formRecord().tour_items_json)[0].status,'new');
+});
+
+test('a missing historical contact intent no longer blocks an otherwise valid CRM save',async()=>{
+ const h=harness({contact_intent_id:'ci_missing1234'});h.load();h.node('referenceIdInput').value='ci_missing1234';h.q.setResolve(async()=>{throw new Error('Live CRM save failed: contact_intent_not_found')});
+ assert.equal(await h.q.saveRecord(),true);assert.equal(h.rows[0].contact_intent_id,'ci_missing1234');assert.match(h.node('referenceStatus').textContent,/preserved without relinking/i);
+});
+
+test('a missing contact intent is omitted from a new CRM record',async()=>{
+ const h=harness();h.q.state.records=[];h.q.state.selectedId='';h.node('modeInput').value='create';h.node('referenceIdInput').value='ci_missing5678';h.q.setResolve(async()=>{throw new Error('contact_intent_not_found')});let saved;
+ h.q.setApi(async(action,payload)=>{if(action==='list_inquiries')return {ok:true,records:[]};assert.equal(action,'create_guest_and_inquiry');saved=structuredClone(payload.record);return {ok:true,records:[payload.record]};});
+ assert.equal(await h.q.saveRecord(),true);assert.equal(saved.contact_intent_id,undefined);assert.equal(h.node('referenceIdInput').value,'');assert.match(h.node('referenceStatus').textContent,/without website attribution/i);
 });
