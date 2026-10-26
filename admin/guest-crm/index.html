@@ -1319,10 +1319,12 @@
       let referenceMatch=null,referenceGeneration=0;
       function referenceId(value){return String(value||"").trim().match(/^(?:Reference:\s*)?(ci_[A-Za-z0-9_-]{4,120})$/i)?.[1]||"";}
       function referenceStatus(text){const node=document.getElementById("referenceStatus");if(node)node.textContent=text;}
+      function missingManualWhatsappReference(){return clean(els.sourceInput?.value)==="manual_whatsapp"&&!clean(els.referenceIdInput?.value);}
+      function updateReferenceReminder(){if(missingManualWhatsappReference())referenceStatus("No Reference ID: this WhatsApp inquiry will be saved without attribution.");else if(!clean(els.referenceIdInput?.value))referenceStatus("Optional. Existing attribution is preserved.");}
       function preservedReferenceList(raw,saved){const value=clean(raw),parts=value.split("|").map(clean);return value===clean(saved)&&parts.length>1&&parts.every(part=>Boolean(referenceId(part)));}
       async function resolveReference(){
         const raw=clean(els.referenceIdInput.value);
-        if(!raw){referenceMatch=null;referenceStatus("Optional. Existing attribution is preserved.");return null;}
+        if(!raw){referenceMatch=null;updateReferenceReminder();return null;}
         if(preservedReferenceList(raw,getSelected()?.contact_intent_id)){referenceMatch=null;referenceStatus("Existing merged references preserved.");return null;}
         const id=referenceId(raw);
         if(!id){referenceStatus("Paste a ci_... ID or Reference: ci_...");throw new Error("Invalid Reference ID");}
@@ -1337,6 +1339,7 @@
       }
       document.addEventListener("focusout",event=>{if(event.target.id==="referenceIdInput")resolveReference().catch(()=>{});});
       document.addEventListener("input",event=>{if(event.target.id==="referenceIdInput"){referenceGeneration++;referenceMatch=null;referenceStatus("Reference will be checked before saving.");}});
+      document.addEventListener("change",event=>{if(event.target.id==="sourceInput")updateReferenceReminder();});
       function savedInquiryFromResponse(response,requested){
         const saved=extractRecords(response).find(row=>clean(row.inquiry_id)===clean(requested.inquiry_id));
         if(!saved) throw new Error("Save not verified. Your edits are kept; the CRM did not return the saved inquiry.");
@@ -1392,7 +1395,7 @@
               if(!linked.ok)throw new Error(linked.error||"Link failed");
               referenceStatus("Reference matched and linked to this inquiry.");showToast("Saved to live Google Sheet; reference linked.");
             }catch(error){referenceStatus("Inquiry saved. Reference link failed; save again to retry.");showToast("Inquiry saved; reference link needs retry.");}}
-            else showToast(attributionWarning?"Guest saved successfully. Tracking reference kept for later repair.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet"));
+            else showToast(attributionWarning?"Guest saved successfully. Tracking reference kept for later repair.":(missingManualWhatsappReference()?"Saved without a Reference ID; attribution is unavailable.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet")));
           } else {
             upsert(payload.record);
             showToast(reusedGuest?"Saved locally under the existing guest.":"Saved locally");
