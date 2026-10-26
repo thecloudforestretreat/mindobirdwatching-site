@@ -103,7 +103,11 @@ const selectable = selectApproved({ all: () => [
   { json: { ...row, queue_id: 'previous-v3', workflow_version: 'post_tour_sightings_v3', approval_status: 'APPROVED' } },
   { json: { ...row, queue_id: 'current', workflow_version: 'post_tour_sightings_v4', approval_status: 'APPROVED' } },
 ] });
-assert.deepEqual(selectable.map((item) => item.json.queue_id), ['current'], 'only v3 approvals can reach Gmail');
+assert.deepEqual(selectable.map((item) => item.json.queue_id), ['current'], 'only v4 approvals can reach Gmail');
+
+const gmailNode = workflow.nodes.find((node) => node.name === 'Gmail • Send Approved Sightings Email');
+assert.ok(gmailNode, 'Gmail sender exists');
+assert.equal(gmailNode.parameters.options.ccList, 'mindobirdwatching@gmail.com', 'every sightings recap email CCs the MBW inbox');
 
 fixtures['Google Sheets • Read Approval Queue'] = [{ ...row, workflow_version: 'post_tour_sightings_v2', approval_status: 'REJECTED', delivery_status: 'SKIPPED' }];
 const migrated = execute($items, { body: speciesCsv }, DateTime);
