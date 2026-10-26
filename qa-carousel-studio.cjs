@@ -127,6 +127,17 @@ function compileWorkflow(path) {
   assert.strictEqual(experienceCopy.quality_score, 92, "Minimal-input experience copy must use the validated safe fallback rather than inherit an inflated model score");
   assert(/After Dark in Mindo/.test(experienceCopy.carousel_title) && /recent evenings out/.test(experienceCopy.caption), "Night-walk fallback must sound like an experience, not a mechanical image inventory");
 
+  const recentHighlightsCopy = await runParser({
+    ...imageUrls,
+    featured_birds: "A couple of recent tour highlights.",
+    location: "Mindo, Ecuador",
+    images_json: JSON.stringify(Array.from({ length: 10 }, (_, index) => ({ order: index + 1, content_type: index < 2 ? "guest" : "photo" }))),
+    admin_mode: "review",
+  });
+  assert.strictEqual(recentHighlightsCopy.copy_review_status, "PASS", "A sentence-style recent-tour subject should produce validated copy");
+  assert(!/[.!?]\s+in Mindo/i.test(recentHighlightsCopy.caption), "Trailing subject punctuation must not create a broken sentence before the location");
+  assert(recentHighlightsCopy.caption.startsWith("A couple of recent tour highlights in Mindo, Ecuador"), "The normalized subject should flow naturally into the location");
+
   const quitoTripCopy = await runParser({
     ...imageUrls,
     featured_birds: "In Quito, enjoy a day trip to witness the magic of Mindo",
