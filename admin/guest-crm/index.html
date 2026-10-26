@@ -1359,6 +1359,11 @@
         saveButtons.forEach(button=>{ button.disabled=true; button.dataset.originalText=button.textContent; button.textContent="Saving…"; });
         try{
           const isCreate=els.modeInput.value==="create"||els.modeInput.value==="returning";
+          if(isCreate&&clean(payload.record.quote_sent_at)&&["","not_sent"].includes(clean(payload.record.quote_status).toLowerCase())){
+            if(els.quoteOptionsPanel)els.quoteOptionsPanel.open=true;
+            if(els.quoteSentAtInput)els.quoteSentAtInput.focus();
+            throw new Error("Not saved: this new inquiry is marked Not Sent but has a quote-sent date. Clear the date, or record the quote as Sent only if it was actually sent.");
+          }
           if(isCreate&&(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)){
             const latest=await api("list_inquiries",{filters:{}});
             const incoming=applyDuplicateFamilyArchives(extractRecords(latest).filter(hasMeaningfulCrmData).map(normalizeCrmRecord).filter(r=>r.inquiry_id));

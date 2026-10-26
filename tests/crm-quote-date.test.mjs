@@ -63,3 +63,15 @@ test('ordinary saves allow direct deposit and payment stages without requiring q
     assert.equal(h.rows[0].quote_status,'not_sent');assert.equal(h.rows[0].quote_sent_at,'');
   }
 });
+
+
+test('new and returning inquiries cannot silently carry a sent date while marked Not Sent',async()=>{
+  for(const mode of ['create','returning']){
+    const h=harness({quote_sent_at:'2026-09-08T12:48:00.000Z'});
+    h.q.fillQuoteOptions(h.base);h.node('modeInput').value=mode;
+    assert.equal(await h.q.saveRecord(),false);
+    assert.equal(h.calls.length,0);
+    assert.ok(h.node('quoteSentAtInput').value,'the entered value remains available for review');
+    assert.equal(h.node('quoteOptionsPanel').open,true);
+  }
+});
