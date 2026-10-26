@@ -337,8 +337,9 @@
         anchor.setAttribute("data-whatsapp-shift", activeContact.shift);
       }
 
-      if (window.MBWAttribution && typeof window.MBWAttribution.prepareContactUrl === "function") return;
-
+      // Gate every WhatsApp handoff here. Relying on a second click listener
+      // creates an ordering race that can open WhatsApp before the reference
+      // is appended.
       event.preventDefault();
       event.stopImmediatePropagation();
 
