@@ -169,7 +169,7 @@ const CRM_FIELD_VALUES = {
     status: { values: ["active", "inactive", "duplicate", "archived"], fallback: "active" }
   },
   crm_inquiries: {
-    status: { values: ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book"], fallback: "new" },
+    status: { values: ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "spam"], fallback: "new" },
     availability_status: { values: ["pending", "available", "unavailable", "needs_check"], fallback: "pending" },
     quote_status: { values: ["not_sent", "sent", "revised", "accepted", "declined"], fallback: "not_sent" },
     payment_status: { values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"], fallback: "unpaid" },
@@ -187,7 +187,7 @@ const CRM_FIELD_VALUES = {
     booking_status: { values: ["pending", "tentative", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled"], fallback: "pending" }
   },
   crm_payments: {
-    payment_status: { values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"], fallback: "unpaid" }
+    payment_status: { values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded", "void", "uncollectible"], fallback: "unpaid" }
   }
 };
 
@@ -2713,7 +2713,7 @@ function resetCrmDataValidations_() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const specs = [
     { sheet: CRM_TABS.guests, column: "status", values: ["active", "inactive", "duplicate", "archived"] },
-    { sheet: CRM_TABS.inquiries, column: "status", values: ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book"] },
+    { sheet: CRM_TABS.inquiries, column: "status", values: ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "spam"] },
     { sheet: CRM_TABS.inquiries, column: "availability_status", values: ["pending", "available", "unavailable", "needs_check"] },
     { sheet: CRM_TABS.inquiries, column: "quote_status", values: ["not_sent", "sent", "revised", "accepted", "declined"] },
     { sheet: CRM_TABS.inquiries, column: "payment_status", values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"] },
@@ -2725,7 +2725,7 @@ function resetCrmDataValidations_() {
     { sheet: CRM_TABS.followups, column: "channel", values: ["manual", "email", "telegram", "calendar"] },
     { sheet: CRM_TABS.followups, column: "send_status", values: ["pending", "sent", "skipped", "failed"] },
     { sheet: CRM_TABS.bookings, column: "booking_status", values: ["pending", "tentative", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled"] },
-    { sheet: CRM_TABS.payments, column: "payment_status", values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded"] }
+    { sheet: CRM_TABS.payments, column: "payment_status", values: ["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "refunded", "void", "uncollectible"] }
   ];
 
   Object.keys(CRM_TABS).forEach(function(key) {
@@ -3521,7 +3521,7 @@ function createCrmViewTabs() {
     {
       name: "crm_view_active_pipeline",
       sourceHeaders: CRM_HEADERS.crm_inquiries,
-      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\",crm_inquiries!A2:A<>\"\"),3,FALSE),\"\")"
+      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!J2:J<>\"spam\",crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\",crm_inquiries!A2:A<>\"\"),3,FALSE),\"\")"
     },
     {
       name: "crm_view_new_inquiries",
@@ -3536,12 +3536,12 @@ function createCrmViewTabs() {
     {
       name: "crm_view_group_opportunities",
       sourceHeaders: CRM_HEADERS.crm_inquiries,
-      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!AS2:AS=\"open_to_group\",crm_inquiries!Z2:Z=1,crm_inquiries!W2:W>=TODAY(),crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\",crm_inquiries!AU2:AU=\"\"),23,TRUE),\"\")"
+      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!J2:J<>\"spam\",crm_inquiries!AS2:AS=\"open_to_group\",crm_inquiries!Z2:Z=1,crm_inquiries!W2:W>=TODAY(),crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\",crm_inquiries!AU2:AU=\"\"),23,TRUE),\"\")"
     },
     {
       name: "crm_view_follow_up_today",
       sourceHeaders: CRM_HEADERS.crm_inquiries,
-      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!M2:M<>\"\",crm_inquiries!M2:M<=TODAY(),crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\"),13,TRUE),\"\")"
+      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!J2:J<>\"spam\",crm_inquiries!M2:M<>\"\",crm_inquiries!M2:M<=TODAY(),crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\"),13,TRUE),\"\")"
     },
     {
       name: "crm_view_quote_sent_awaiting_reply",
@@ -3566,7 +3566,7 @@ function createCrmViewTabs() {
     {
       name: "crm_view_confirm_logistics",
       sourceHeaders: CRM_HEADERS.crm_inquiries,
-      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",(crm_inquiries!J2:J=\"deposit_paid\")+(crm_inquiries!AL2:AL=\"deposit_paid\")+(crm_inquiries!AL2:AL=\"partial\"),crm_inquiries!J2:J<>\"booked\",crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\"),23,TRUE),\"\")"
+      formula: "=IFERROR(SORT(FILTER(crm_inquiries!A2:BU,crm_inquiries!BD2:BD<>\"Yes\",crm_inquiries!J2:J<>\"duplicate\",crm_inquiries!J2:J<>\"spam\",(crm_inquiries!J2:J=\"deposit_paid\")+(crm_inquiries!AL2:AL=\"deposit_paid\")+(crm_inquiries!AL2:AL=\"partial\"),crm_inquiries!J2:J<>\"booked\",crm_inquiries!J2:J<>\"completed\",crm_inquiries!J2:J<>\"cancelled\",crm_inquiries!J2:J<>\"did_not_book\"),23,TRUE),\"\")"
     },
     {
       name: "crm_view_upcoming_tours",
