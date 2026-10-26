@@ -1269,7 +1269,7 @@
           state.records=records;
           state.lastRefresh=new Date().toISOString();
           localStorage.setItem("mbwCrmLastRefresh",state.lastRefresh);
-          if(!state.selectedId&&state.records[0]) state.selectedId=state.records[0].inquiry_id;
+          if((!state.selectedId||!state.records.some(record=>record.inquiry_id===state.selectedId))&&state.records[0]) state.selectedId=state.records[0].inquiry_id;
           saveLocalRecords();
           fillForm(getSelected());
           render();
@@ -1339,6 +1339,9 @@
         if(fingerprint(saved)!==fingerprint(requested)) throw new Error("Activity save not verified. Your edits are kept; the CRM returned different services. Do not refresh before reviewing.");
         return {...requested,...saved};
       }
+      function canPreserveUnavailableReference(error){
+        return els.modeInput.value==="update"&&/contact_intent_not_found/i.test(clean(error&&error.message));
+      }
       async function saveRecord(){
         let payload=buildSavePayload();
         const saveButtons=[els.saveBtn,els.bottomSaveBtn,els.detailTopSaveBtn].filter(Boolean);
@@ -1354,7 +1357,15 @@
             state.records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
             payload=buildSavePayload();
           }
-          const attribution=await resolveReference();
+          let attribution=null,attributionWarning="";
+          try{attribution=await resolveReference();}
+          catch(error){
+            if(!canPreserveUnavailableReference(error))throw error;
+            const preservedReference=referenceId(els.referenceIdInput.value);
+            attributionWarning="Attribution reference preserved, but it is unavailable in the attribution database.";
+            referenceMatch=null;
+            referenceStatus(`Reference ${preservedReference} is preserved but could not be verified. Record changes can still be saved.`);
+          }
           if(attribution){Object.assign(payload.record,attribution);Object.assign(payload.inquiry_row,attribution);}
           const duplicate=findBookingDuplicate(payload.record);
           if(isCreate&&duplicate){
@@ -1376,7 +1387,7 @@
               if(!linked.ok)throw new Error(linked.error||"Link failed");
               referenceStatus("Reference matched and linked to this inquiry.");showToast("Saved to live Google Sheet; reference linked.");
             }catch(error){referenceStatus("Inquiry saved. Reference link failed; save again to retry.");showToast("Inquiry saved; reference link needs retry.");}}
-            else showToast(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet");
+            else showToast(attributionWarning?"Saved to live Google Sheet; attribution reference preserved but unavailable.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet"));
           } else {
             upsert(payload.record);
             showToast(reusedGuest?"Saved locally under the existing guest.":"Saved locally");
