@@ -8,7 +8,9 @@ import { onRequestPost as acceptGuideAssignment } from "../functions/api/guide/a
 import { onRequestPost as createGuideAvailability } from "../functions/api/guide/availability/index.js";
 import { onRequestDelete as deleteGuideAvailability } from "../functions/api/guide/availability/[assignmentId].js";
 import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
+import { onRequestPost as saveGuidePlan } from "../functions/api/guide/plans/[planId].js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
+import { robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
 
 test("Guide Nest exposes branded browser icons and an explicit read-only admin audit mode", () => {
   const index = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
@@ -95,7 +97,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2026-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2026-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
-          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-10-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
+          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-11-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
           { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
@@ -295,6 +297,50 @@ test("two guide identities receive only their own tours and cannot mutate each o
   } finally { globalThis.fetch = savedFetch; }
 });
 
+test("Robert's original Neicer estimate remains locked while separate costs are added", () => {
+  const original = robertPlan({ providerId: "PROV-007", name: "Neycer" });
+  const changed = sanitizePlan({
+    ...original,
+    days: original.days.map(day => ({ ...day, originalCost: 1 })),
+    originalTotal: 6,
+    adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
+  }, original);
+  assert.equal(changed.originalTotal, 1150);
+  assert.deepEqual(changed.days.map(day => day.originalCost), [250, 225, 325, 350, 0, 0]);
+  assert.equal(changed.adjustments[0].amount, 80);
+});
+
+test("Neicer can save Robert's plan but another guide cannot access it", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [];
+  const pilot = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({
+      "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"], contributorNumber: "002" },
+      "chicho@example.test": { role: "guide", name: "Chicho", providerName: "Chicho", providerIds: ["PROV-CHICHO"], contributorNumber: "001" },
+    }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (payload.action === "create_assignment") { rows = [{ ...payload.assignment, assignment_id: "PLAN-ROW-1", updated_at: "v1" }]; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
+    const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
+    assert.equal(neicer.status, 201);
+    const saved = await neicer.json();
+    assert.equal(saved.plan.originalTotal, 1150);
+    assert.equal(saved.plan.adjustments[0].description, "Intag lodge");
+    assert.equal(rows[0].provider_id, "PROV-NEICER");
+
+    const chicho = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "chicho@example.test" }, params: { planId: "robert-2027" } });
+    assert.equal(chicho.status, 404);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
 test("Guide Nest static shell includes the required restricted workflows", () => {
   const html = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
   const js = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
@@ -303,6 +349,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(html, /Calendario/);
   assert.match(html, /Avistamientos/);
   assert.match(html, /Share MBW/);
+  assert.match(html, /data-view="plans"/);
   assert.match(html, /data-language="es"/);
   assert.match(html, /Reportes anteriores/);
   assert.match(js, /Copy guest message/);
@@ -311,6 +358,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(js, /\["confirmed", "completed"\]\.includes\(tour\.status\) && \(!tour\.serviceDate \|\| tour\.serviceDate <= today\)/);
   assert.doesNotMatch(js, /data-accept=/);
   assert.match(js, /MBW Shop/);
+  assert.match(js, /Robert · Custom Ecuador Tour|additionalCosts/);
   assert.match(js, /assets\/images\/icons\/mbw_gr\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_icons_trip_advisor\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_(ig|fb|yt|shop)\.png/);

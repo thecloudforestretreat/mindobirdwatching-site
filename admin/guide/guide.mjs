@@ -5,7 +5,7 @@ const TIP_URL = "https://mindobirdwatching.com/tip-your-guide/";
 const COPY = {
   es: {
     private: "Privado", opening: "Abriendo el Nido", loadingTours: "Cargando tus tours asignados.", unavailable: "Guide Nest no está disponible", retry: "Intentar de nuevo",
-    bookedAssignments: "Tours reservados", myTours: "Mis tours", auditMode: "Modo de auditoría · Solo lectura", returnNest: "Volver a MBW Nest", previewGuide: "Guide View", previewNote: "Elige un guía para revisar exactamente los datos que recibe. Las acciones del guía permanecen desactivadas.",
+    bookedAssignments: "Tours reservados", myTours: "Mis tours", auditMode: "Modo de auditoría", returnNest: "Volver a MBW Nest", previewGuide: "Guide View", previewNote: "Elige un guía para revisar su vista. Los tours y ofertas son de solo lectura; los planes personalizados son colaborativos.",
     privacy: "Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.", assignedOnly: "Solo tours asignados", calendar: "Calendario", monthView: "Mes", listView: "Lista", currentFuture: "Actuales y futuros", includePast: "Incluir pasados", tourDays: "Tours", blockedDays: "No disponible", previousMonth: "Mes anterior", nextMonth: "Mes siguiente", viewingDate: "Mostrando", clearDate: "Ver todos",
     afterTour: "Después del tour", sightings: "Avistamientos", submitReport: "Enviar reporte de avistamientos", reportHelp: "Crea la lista de la ruta, registra las aves vistas o escuchadas y envía el reporte a MBW.",
     tourReference: "Tour de referencia", openReport: "Abrir reporte", historyEyebrow: "Tu historial", previousReports: "Reportes anteriores", historyLoading: "Cargando reportes anteriores…",
@@ -20,10 +20,11 @@ const COPY = {
     availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
     futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
     upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio, país o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", tip: "Propina", shareLinks: "Compartir enlaces",
+    collaborativePlanning: "Planificación colaborativa", tourPlans: "Planes", plansPrivacy: "Solo el guía asignado y el equipo administrador de MBW pueden ver y editar estos planes. Los costos originales quedan protegidos.", noPlans: "No tienes planes personalizados asignados.", guestBrief: "Información inicial", itinerary: "Itinerario", originalEstimate: "Estimación original", protected: "Protegida", additionalCosts: "Costos adicionales", noAdditionalCosts: "Todavía no hay costos adicionales.", addCost: "Agregar costo", category: "Categoría", description: "Descripción", amount: "Monto USD", day: "Día", verification: "Verificación", needsVerification: "Por verificar", estimated: "Estimado", confirmedCost: "Confirmado", transportation: "Transporte", guideCost: "Guía", food: "Alimentación", lodging: "Alojamiento", reserve: "Reserva", activity: "Actividad", other: "Otro", collaboration: "Conversación", commentPlaceholder: "Escribe una nota para el equipo MBW", addComment: "Agregar nota", saveDraft: "Guardar borrador", submitReview: "Enviar a revisión", guideDrafting: "En preparación", adminReview: "Revisión de admin", changesRequested: "Cambios solicitados", approved: "Aprobado", revisedTotal: "Total de trabajo", savedPlan: "Plan guardado", originalRequest: "Solicitud", travelerNeeds: "Viajero", pickupDropoff: "Recogida y regreso",
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
-    bookedAssignments: "Booked assignments", myTours: "My Tours", auditMode: "Audit mode · Read only", returnNest: "Return to MBW Nest", previewGuide: "Guide View", previewNote: "Choose a guide to review exactly the data they receive. Guide actions remain disabled.",
+    bookedAssignments: "Booked assignments", myTours: "My Tours", auditMode: "Audit mode", returnNest: "Return to MBW Nest", previewGuide: "Guide View", previewNote: "Choose a guide to review their view. Tours and offers are read-only; custom plans are collaborative.",
     privacy: "Guest contact appears only after the tour is booked. Internal CRM, pricing, payments, and notes are not shared.", assignedOnly: "Assigned tours only", calendar: "Calendar", monthView: "Month", listView: "List", currentFuture: "Current & future", includePast: "Include past", tourDays: "Tours", blockedDays: "Unavailable", previousMonth: "Previous month", nextMonth: "Next month", viewingDate: "Showing", clearDate: "Show all",
     afterTour: "After the tour", sightings: "Sightings", submitReport: "Submit a sighting report", reportHelp: "Build a route checklist, record birds seen or heard, and submit the report to MBW.",
     tourReference: "Tour reference", openReport: "Open sighting report", historyEyebrow: "Your history", previousReports: "Previous reports", historyLoading: "Loading previous reports…",
@@ -38,6 +39,7 @@ const COPY = {
     availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
     futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
     upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, country, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", tip: "Tip", shareLinks: "Share links",
+    collaborativePlanning: "Collaborative planning", tourPlans: "Tour Plans", plansPrivacy: "Only the assigned guide and MBW administrators can view or edit these plans. Original costs remain protected.", noPlans: "No custom plans are assigned to you.", guestBrief: "Guest brief", itinerary: "Itinerary", originalEstimate: "Original estimate", protected: "Protected", additionalCosts: "Additional costs", noAdditionalCosts: "No additional costs have been added yet.", addCost: "Add cost", category: "Category", description: "Description", amount: "Amount USD", day: "Day", verification: "Verification", needsVerification: "Needs verification", estimated: "Estimated", confirmedCost: "Confirmed", transportation: "Transportation", guideCost: "Guide", food: "Food", lodging: "Lodging", reserve: "Reserve", activity: "Activity", other: "Other", collaboration: "Collaboration", commentPlaceholder: "Add a note for the MBW team", addComment: "Add note", saveDraft: "Save draft", submitReview: "Submit for review", guideDrafting: "Guide drafting", adminReview: "Admin review", changesRequested: "Changes requested", approved: "Approved", revisedTotal: "Working total", savedPlan: "Plan saved", originalRequest: "Request", travelerNeeds: "Traveler", pickupDropoff: "Pickup & return",
   },
 };
 
@@ -56,6 +58,7 @@ let calendarScope = localStorage.getItem("mbw-guide-calendar-scope") === "all" ?
 let calendarMonth = todayInEcuador().slice(0, 7);
 let selectedCalendarDate = "";
 let selectedAssignmentId = "";
+let planDrafts = new Map();
 const t = key => COPY[language][key] || key;
 const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 const empty = message => `<div class="empty">${esc(message)}</div>`;
@@ -275,6 +278,48 @@ function renderOffers() {
   $("#offerList").innerHTML = offers.length ? offers.map(offer => `<article class="offerCard"><div class="offerHead"><div><h2>${esc(offer.service)}</h2><p>${esc(dateLabel(offer.serviceDate))}${offer.startTime ? ` · ${esc(offer.startTime)}` : ""}${offer.pickup ? ` · ${esc(offer.pickup)}` : ""}</p></div><span>${esc(offer.response ? t(offer.response === "pass" ? "pass" : "interested") : t("pendingResponse"))}</span></div>${canRespond ? `<label>${t("bidOptional")}<input type="number" min="1" step="0.01" inputmode="decimal" data-bid="${esc(offer.assignmentId)}" value="${esc(offer.bidAmount || "")}"></label><div class="offerActions"><button type="button" data-offer-response="interested" data-id="${esc(offer.assignmentId)}">${t("interested")}</button><button type="button" data-offer-response="pass" data-id="${esc(offer.assignmentId)}">${t("pass")}</button></div>` : `<p>${t("adminReadOnly")}</p>`}</article>`).join("") : empty(t("noOffers"));
 }
 
+const money = value => new Intl.NumberFormat(language === "es" ? "es-EC" : "en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
+const planStatusLabel = value => t({ guide_drafting: "guideDrafting", admin_review: "adminReview", changes_requested: "changesRequested", approved: "approved" }[value] || "guideDrafting");
+const costCategoryLabel = value => t({ transportation: "transportation", guide: "guideCost", food: "food", lodging: "lodging", reserve: "reserve", activity: "activity", other: "other" }[value] || "other");
+const verificationLabel = value => t({ needs_verification: "needsVerification", estimated: "estimated", confirmed: "confirmedCost" }[value] || "needsVerification");
+
+function planFor(id) {
+  const source = data?.plans?.find(item => item.planId === id);
+  if (!source) return null;
+  if (!planDrafts.has(id)) planDrafts.set(id, structuredClone(source));
+  return planDrafts.get(id);
+}
+
+function renderPlans() {
+  if (!data) return;
+  const plans = data.plans || [];
+  if (!plans.length) { $("#planList").innerHTML = empty(t("noPlans")); return; }
+  $("#planList").innerHTML = plans.map(source => {
+    const plan = planFor(source.planId);
+    const addedTotal = plan.adjustments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const brief = plan.brief || {};
+    const dayOptions = plan.days.map(day => `<option value="${esc(day.id)}">${esc(dateLabel(day.date))} · ${esc(day.title)}</option>`).join("");
+    const costs = plan.adjustments.length ? plan.adjustments.map(item => `<article class="planCost"><div><strong>${esc(costCategoryLabel(item.category))} · ${esc(item.description)}</strong><small>${esc(plan.days.find(day => day.id === item.dayId)?.title || t("itinerary"))} · ${esc(verificationLabel(item.verification))}</small></div><b>${esc(money(item.amount))}</b><button type="button" data-remove-plan-cost="${esc(item.id)}" data-plan-id="${esc(plan.planId)}" aria-label="${esc(t("remove"))}">×</button></article>`).join("") : empty(t("noAdditionalCosts"));
+    const comments = plan.comments.length ? plan.comments.map(item => `<article class="planComment"><div><strong>${esc(item.author)}</strong><span>${esc(item.role === "guide" ? (language === "es" ? "Guía" : "Guide") : "MBW")}</span></div><p>${esc(item.message)}</p><small>${esc(item.createdAt ? new Date(item.createdAt).toLocaleString(language === "es" ? "es-EC" : "en-US") : "")}</small></article>`).join("") : "";
+    return `<article class="planWorkspace" data-plan="${esc(plan.planId)}"><header class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(plan.title)}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></header>
+      <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${brief.traveler || ""}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${brief.pickup || ""} → ${brief.dropoff || ""}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(brief.lodging || "")}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(brief.request || "")}</strong></div><div class="wide"><small>${t("interests") === "interests" ? (language === "es" ? "Intereses" : "Interests") : t("interests")}</small><strong>${esc(brief.interests || "")}</strong></div></div></section>
+      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("originalEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span></div><div class="planDays">${plan.days.map((day, index) => `<article><time>${index + 1}<small>${esc(dateLabel(day.date))}</small></time><div><strong>${esc(day.title)}</strong><p>${esc(day.details)}</p></div><b>${day.originalCost ? esc(money(day.originalCost)) : "—"}</b></article>`).join("")}</div></section>
+      <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div><form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category"><option value="transportation">${t("transportation")}</option><option value="guide">${t("guideCost")}</option><option value="food">${t("food")}</option><option value="lodging">${t("lodging")}</option><option value="reserve">${t("reserve")}</option><option value="activity">${t("activity")}</option><option value="other">${t("other")}</option></select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form></section>
+      <section class="planSection"><h3>${t("collaboration")}</h3><div class="planComments">${comments}</div><form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form></section>
+      <div class="planActions"><button type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="guide_drafting">${t("saveDraft")}</button><button class="primary" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="admin_review">${t("submitReview")}</button></div></article>`;
+  }).join("");
+}
+
+async function savePlan(planId, status) {
+  const plan = planFor(planId);
+  if (!plan) return;
+  plan.status = status;
+  const result = await mutate(`/api/guide/plans/${encodeURIComponent(planId)}`, "POST", { providerId: data.providerId, providerName: data.providerName, status, adjustments: plan.adjustments, comments: plan.comments });
+  if (result.plan) planDrafts.set(planId, result.plan);
+  $("#toast").textContent = t("savedPlan"); $("#toast").hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("#toast").hidden = true; }, 1800);
+  await refreshCurrent();
+}
+
 function shareMessage(kind, url) {
   const messages = {
     google: `Thank you for joining Mindo Bird Watching! If you enjoyed your tour, would you share your experience on Google? ${url}`,
@@ -336,10 +381,10 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n-placeholder]").forEach(node => { node.placeholder = t(node.dataset.i18nPlaceholder); });
   document.querySelectorAll("[data-language]").forEach(button => button.classList.toggle("active", button.dataset.language === language));
   $("#refresh").setAttribute("aria-label", language === "es" ? "Actualizar" : "Refresh");
-  if (data) { renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderShare(); renderHistory(); }
+  if (data) { renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderPlans(); renderShare(); renderHistory(); }
 }
 
-function render() { applyLanguage(); renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderShare(); renderHistory(); }
+function render() { applyLanguage(); renderPreview(); renderTours(); renderAvailability(); renderOffers(); renderPlans(); renderShare(); renderHistory(); }
 
 async function mutate(url, method = "POST", body = {}) {
   const response = await fetch(url, { method, credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: method === "DELETE" ? undefined : JSON.stringify(body) });
@@ -356,7 +401,7 @@ async function load(provider = "") {
     const url = new URL("/api/guide/bootstrap", location.origin); if (provider) url.searchParams.set("provider", provider);
     const response = await fetch(url, { cache: "no-store", credentials: "same-origin" }); const body = await response.json();
     if (!response.ok) throw new Error(body.error || (language === "es" ? "No se pudieron cargar los tours." : "Guide data could not load."));
-    data = body; reports = []; reportsLoaded = false; reportsLoading = false; render(); $("#loading").hidden = true; $("#workspace").hidden = false; $("#nav").hidden = false;
+    data = body; reports = []; reportsLoaded = false; reportsLoading = false; planDrafts = new Map(); if (!localStorage.getItem(LANGUAGE_KEY)) language = data.identity?.role === "guide" ? "es" : "en"; render(); $("#loading").hidden = true; $("#workspace").hidden = false; $("#nav").hidden = false;
   } catch (error) { $("#loading").hidden = true; $("#errorText").textContent = error.message; $("#error").hidden = false; }
 }
 
@@ -399,6 +444,16 @@ document.addEventListener("click", event => {
   if (removeAvailability) { removeAvailability.disabled = true; mutate(`/api/guide/availability/${encodeURIComponent(removeAvailability.dataset.removeAvailability)}`, "DELETE").then(refreshCurrent).catch(error => { removeAvailability.disabled = false; alert(error.message); }); }
   const offerResponse = event.target.closest("[data-offer-response]");
   if (offerResponse) { const bid = document.querySelector(`[data-bid="${CSS.escape(offerResponse.dataset.id)}"]`)?.value || ""; offerResponse.disabled = true; mutate(`/api/guide/offers/${encodeURIComponent(offerResponse.dataset.id)}/respond`, "POST", { response: offerResponse.dataset.offerResponse, bidAmount: bid }).then(refreshCurrent).catch(error => { offerResponse.disabled = false; alert(error.message); }); }
+  const removePlanCost = event.target.closest("[data-remove-plan-cost]");
+  if (removePlanCost) { const plan = planFor(removePlanCost.dataset.planId); plan.adjustments = plan.adjustments.filter(item => item.id !== removePlanCost.dataset.removePlanCost); renderPlans(); }
+  const savePlanButton = event.target.closest("[data-save-plan]");
+  if (savePlanButton) { savePlanButton.disabled = true; savePlan(savePlanButton.dataset.savePlan, savePlanButton.dataset.planStatus).catch(error => { savePlanButton.disabled = false; alert(error.message); }); }
+});
+document.addEventListener("submit", event => {
+  const costForm = event.target.closest("[data-plan-cost-form]");
+  if (costForm) { event.preventDefault(); const plan = planFor(costForm.dataset.planCostForm), values = Object.fromEntries(new FormData(costForm)); plan.adjustments.push({ id: crypto.randomUUID(), dayId: values.dayId, category: values.category, description: values.description.trim(), amount: Number(values.amount), verification: values.verification, addedBy: data.identity?.name || data.providerName, addedAt: new Date().toISOString() }); renderPlans(); return; }
+  const commentForm = event.target.closest("[data-plan-comment-form]");
+  if (commentForm) { event.preventDefault(); const plan = planFor(commentForm.dataset.planCommentForm), values = Object.fromEntries(new FormData(commentForm)); plan.comments.push({ id: crypto.randomUUID(), message: values.message.trim(), author: data.identity?.name || data.providerName, role: data.identity?.role === "guide" ? "guide" : "admin", createdAt: new Date().toISOString() }); renderPlans(); }
 });
 $("#availabilityForm").addEventListener("submit", event => { event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button"), values = Object.fromEntries(new FormData(form)); button.disabled = true; mutate("/api/guide/availability", "POST", values).then(() => { form.reset(); return refreshCurrent(); }).catch(error => { button.disabled = false; alert(error.message); }); });
 $("#providerSelect").addEventListener("change", event => load(event.target.value));

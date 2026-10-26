@@ -10,7 +10,7 @@
   <title>MBW Guide Nest</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/images/app/mbw-app-gold-transparent-192.png?v=guide-favicon-20261023-v1">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=guide-icon-20261023-v1">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261024-v20">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261026-v19">
 </head>
 <body>
   <div class="shell">
@@ -22,9 +22,9 @@
       <section id="loading" class="state"><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""><h1 data-i18n="opening">Abriendo el Nido</h1><p data-i18n="loadingTours">Cargando tus tours asignados.</p></section>
       <section id="error" class="state" hidden><b>!</b><h1 data-i18n="unavailable">Guide Nest no está disponible</h1><p id="errorText"></p><button id="retry" type="button" data-i18n="retry">Intentar de nuevo</button></section>
       <div id="workspace" hidden>
+        <div id="adminPreview" class="preview" hidden><div class="previewHeader"><strong data-i18n="auditMode">Modo de auditoría</strong><a href="/app/?view=today" data-i18n="returnNest">Volver a MBW Nest</a></div><label for="providerSelect" data-i18n="previewGuide">Guide View</label><select id="providerSelect"></select><small data-i18n="previewNote">Elige un guía para revisar su vista. Los tours y ofertas son de solo lectura; los planes personalizados son colaborativos.</small></div>
         <section class="view" data-view="today">
           <div class="heading"><div><p data-i18n="bookedAssignments">Tours reservados</p><h1 data-i18n="myTours">Mis tours</h1></div><button id="refresh" class="icon" type="button" aria-label="Actualizar">↻</button></div>
-          <div id="adminPreview" class="preview" hidden><div class="previewHeader"><strong data-i18n="auditMode">Modo de auditoría · Solo lectura</strong><a href="/app/?view=today" data-i18n="returnNest">Volver a MBW Nest</a></div><label for="providerSelect" data-i18n="previewGuide">Guide View</label><select id="providerSelect"></select><small data-i18n="previewNote">Elige un guía para revisar exactamente los datos que recibe. Las acciones del guía permanecen desactivadas.</small></div>
           <div class="privacy" data-i18n="privacy">Los datos de contacto aparecen solo cuando el tour está reservado. No se comparten precios, pagos, notas internas ni el CRM.</div>
           <div class="tourControls" aria-label="Filtros de tours">
             <div class="tourViewSwitch" role="group" aria-label="Vista de tours"><button class="active" data-tour-view="upcoming" type="button" data-i18n="upcoming">Próximos</button><button data-tour-view="all" type="button" data-i18n="allTours">Todos los tours</button></div>
@@ -58,6 +58,11 @@
           <div class="privacy" data-i18n="offersPrivacy">Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.</div>
           <div id="offerList" class="offerList"></div>
         </section>
+        <section class="view" data-view="plans" hidden>
+          <div class="heading"><div><p data-i18n="collaborativePlanning">Planificación colaborativa</p><h1 data-i18n="tourPlans">Planes</h1></div></div>
+          <div class="privacy" data-i18n="plansPrivacy">Solo el guía asignado y el equipo administrador de MBW pueden ver y editar estos planes. Los costos originales quedan protegidos.</div>
+          <div id="planList" class="planList"></div>
+        </section>
       </div>
     </main>
     <nav id="nav" class="nav" hidden>
@@ -65,10 +70,11 @@
       <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span><span data-i18n="calendar">Calendario</span></button>
       <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span><span data-i18n="sightings">Avistamientos</span></button>
       <button data-route="offers" type="button"><span class="navIcon navIcon--offers" aria-hidden="true"></span><span data-i18n="offers">Ofertas</span></button>
+      <button data-route="plans" type="button"><span class="navIcon navIcon--plans" aria-hidden="true"></span><span data-i18n="tourPlans">Planes</span></button>
       <button data-route="share" type="button"><span class="navIcon navIcon--share" aria-hidden="true"></span>Share</button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261024-v20"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-20261026-v19"></script>
 </body>
 </html>

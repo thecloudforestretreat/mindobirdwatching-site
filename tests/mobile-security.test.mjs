@@ -17,6 +17,7 @@ test("role map authorizes only explicit owner and agent entries", async () => {
 test("restricted guide navigation includes only Guide Nest and its read endpoints", () => {
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guide/")), true);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/reports")), true);
+  assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/api/guide/plans/robert-2027", { method: "POST" })), true);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/")), false);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/birding/")), false);
   assert.equal(guideMayRequest(request("https://admin.mindobirdwatching.com/guest-crm/")), false);

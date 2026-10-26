@@ -55,7 +55,7 @@ export async function verifyIdentity(token) {
 export function guideMayRequest(request) {
   const path = new URL(request.url).pathname;
   if (["GET", "HEAD"].includes(request.method)) return NEST_GUIDE_PAGES.has(path) || NEST_GUIDE_ASSETS.has(path);
-  if (request.method === "POST" && (/^\/api\/guide\/assignments\/[A-Za-z0-9_.-]+\/accept$/.test(path) || path === "/api/guide/availability" || /^\/api\/guide\/offers\/[A-Za-z0-9_.-]+\/respond$/.test(path))) return true;
+  if (request.method === "POST" && (/^\/api\/guide\/assignments\/[A-Za-z0-9_.-]+\/accept$/.test(path) || path === "/api/guide/availability" || /^\/api\/guide\/offers\/[A-Za-z0-9_.-]+\/respond$/.test(path) || /^\/api\/guide\/plans\/[A-Za-z0-9_.-]+$/.test(path))) return true;
   if (request.method === "DELETE" && /^\/api\/guide\/availability\/[A-Za-z0-9_.-]+$/.test(path)) return true;
   return false;
 }
