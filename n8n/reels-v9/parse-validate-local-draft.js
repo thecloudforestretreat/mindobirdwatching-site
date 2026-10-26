@@ -45,7 +45,7 @@ const banned = /\b(this reel shows|the video shows|imagine|step into|hidden para
 const filler = /\b(can (?:bring several distinct moments together|unfold in unexpected ways)|three distinct moments|each offering something different to notice|which (?:one|moment) would have caught your eye(?: first)?|those (?:are|supplied) (?:the )?details that made this experience(?: in [^.]+)? worth sharing|every outing develops from the moments that are actually present|this was the clear focus here|supplied details are the focus|the account stays with the moment as described|the tour offers guided observation|experience the thrill of|unforgettable|book your adventure today|book your spot today|adding a splash of color|turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure)\b/i;
 const grammar = /\b(?:one|a|an|each)\s+(?:birdwatching|birding)\b/i;
 const genericTitle = /^(?:birdwatching|birding|tour|nature|reel|mindo)$/i;
-const unsupportedTerms = ['moonlit','moonlight','lantern','canopy','plumage','elusive','rare','mist','misty','rain','rainfall','weather','habitat','nest','feeding','river','rapids','current','trail','dawn','sunrise','glow','rainforest','cloud forest'];
+const unsupportedTerms = ['moonlit','moonlight','lantern','canopy','plumage','elusive','rare','mist','misty','rain','rainfall','weather','habitat','nest','feeding','river','rapids','current','trail','garden','feeder','bridge','road','lodge','breakfast','dawn','sunrise','glow','rainforest','cloud forest'];
 const unsupported = value => unsupportedTerms.filter(term => norm(value).includes(norm(term)) && !sourceAuthority.includes(norm(term)));
 const missingBirds = value => birds.filter(bird => !norm(value).includes(norm(bird)));
 
