@@ -25,11 +25,15 @@ assert(guard.includes('/\\bshowdown\\b/i'), 'Publishing guard must reject unsupp
 assert(guard.includes('qualityScore < 92'), 'Publishing guard must require a strong quality score');
 assert(guard.includes('fallback or draft copy requires review'), 'Publishing guard must block fallback copy');
 assert(guard.includes('existing publication data found'), 'Publishing guard must block an already-posted destination');
+assert(guard.includes('caption must contain 35–100 words'), 'Publishing guard must independently enforce Instagram caption length');
+assert(guard.includes('row.instagram_caption_final || row.instagram_caption_raw'), 'Publishing guard must validate the saved final caption before the original generated draft');
+assert(guard.includes('copy invents scene details that were not supplied'), 'Publishing guard must independently reject invented scene details');
 assert(prompt.includes('Never open with a broad claim about how birding "can unfold"'), 'Writer must lead with a concrete subject or action');
 assert(prompt.includes('locations are not automatically habitats'), 'Writer must preserve the factual distinction between locations and habitats');
 assert(prompt.includes('Mindo, Ecuador is in the Andean Chocó cloud forest'), 'Writer must retain the verified Mindo destination fact pack');
 assert(intake.includes('Number(row.quality_score || 0) >= 92'), 'Existing copy must meet the strong quality threshold');
 assert(parser.includes("'trail'"), 'Generated settings such as a trail must be grounded in the intake');
+assert(parser.includes("'garden','feeder','bridge','road','lodge','breakfast'"), 'Common invented scene details must be grounded in the intake');
 assert(parser.includes('mac_mini_writer_unavailable'), 'Ollama transport failures must be identified as Mac mini outages');
 assert(parser.includes('unsupported_current_weather'), 'Stable Mindo context must not become unsupported current-weather claims');
 assert(intake.includes("status === 'generating'"), 'Stale Mac mini generation locks must be recoverable');
@@ -61,12 +65,23 @@ const validRow = {
   input_status: 'READY', approval_status: 'APPROVED', quality_score: 95,
   final_copy_source: 'HUMAN_EDITED_VALIDATED_V3', location: 'Mindo, Ecuador',
   reel_description: 'A young visitor played by the river while two Yellow-throated Toucans perched in a tree.',
-  instagram_caption_raw: 'A young visitor played beside the river while two Yellow-throated Toucans perched above. The same outing also included a hummingbird pushing through the rain. Message us to plan a guided birding experience in Mindo.',
-  instagram_caption_final: 'A young visitor played beside the river while two Yellow-throated Toucans perched above. Message us to plan a guided birding experience in Mindo.\n\n#mindobirdwatching #mindo #ecuador #YellowThroatedToucan #MindoBirding',
+  instagram_caption_raw: 'A young visitor played beside the river while two Yellow-throated Toucans perched above. The same outing also included a hummingbird pushing through the rain nearby. Message us to plan a guided birding experience in Mindo.',
+  instagram_caption_final: 'A young visitor played beside the river while two Yellow-throated Toucans perched above. The same outing also included a hummingbird pushing through the rain nearby. Message us to plan a guided birding experience in Mindo.\n\n#mindobirdwatching #mindo #ecuador #YellowThroatedToucan #MindoBirding',
   instagram_hashtags: '#mindobirdwatching #mindo #ecuador #YellowThroatedToucan #MindoBirding',
   youtube_title: 'Yellow-throated Toucans by the River in Mindo, Ecuador',
   post_to_instagram: true, post_to_facebook: false, post_on_youtube: false, post_on_tiktok: false,
 };
+const tooShortCaption = 'A Yellow-throated Toucan perched in view during our birdwatching tour in Mindo, Ecuador.';
+assert.throws(
+  () => runGuard({ ...validRow, instagram_caption_raw: tooShortCaption, instagram_caption_final: `${tooShortCaption}\n\n${validRow.instagram_hashtags}` }),
+  /caption must contain 35–100 words/,
+  'A short caption must not publish merely because its stored score is 100',
+);
+assert.throws(
+  () => runGuard({ ...validRow, reel_description: 'A Yellow-throated Toucan during a recent tour.', instagram_caption_raw: validRow.instagram_caption_raw.replace('beside the river', 'beside a feeder'), instagram_caption_final: validRow.instagram_caption_final.replace('beside the river', 'beside a feeder') }),
+  /invents scene details that were not supplied: feeder/,
+  'Scene details must be grounded in the supplied description',
+);
 assert.throws(
   () => runGuard({ ...validRow, instagram_post_id: '18117680411048645' }),
   /existing publication data found for Instagram/,

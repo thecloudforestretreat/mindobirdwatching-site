@@ -82,8 +82,25 @@
     if (platformSelected(row, "tiktok") && (!has(row.tiktok_caption) || !has(row.tiktok_hashtags))) return false;
     return true;
   }
+  function copyValidationIssues(row) {
+    var issues = [];
+    var instagramSelected = platformSelected(row, "instagram") || platformSelected(row, "facebook");
+    var captionBody = clean(row.instagram_caption_final || row.instagram_caption_raw).split(/\n\s*\n(?=#)/)[0];
+    var wordCount = captionBody ? captionBody.split(/\s+/).filter(Boolean).length : 0;
+    if (instagramSelected && (wordCount < 35 || wordCount > 100)) issues.push("Instagram/Facebook caption must contain 35–100 words (currently " + wordCount + ").");
+    if (instagramSelected) {
+      var tags = clean(row.instagram_hashtags).split(/\s+/).filter(Boolean);
+      if (tags.length !== 5 || tags.some(function (tag) { return !/^#[A-Za-z0-9_]+$/.test(tag); })) issues.push("Instagram requires exactly five valid hashtags.");
+    }
+    var selectedCopy = [instagramSelected ? captionBody : "", platformSelected(row, "youtube") ? row.youtube_title : "", platformSelected(row, "tiktok") ? row.tiktok_caption : ""].join(" ");
+    var source = clean([row.reel_description, row.featured_birds, row.activity_name, row.location, row.verified_details].join(" ")).toLowerCase();
+    var sceneTerms = ["trail", "river", "rapids", "current", "garden", "feeder", "bridge", "road", "lodge", "breakfast", "dawn", "sunrise", "nest", "feeding", "habitat", "rainforest"];
+    var inventedTerms = sceneTerms.filter(function (term) { return selectedCopy.toLowerCase().includes(term) && !source.includes(term); });
+    if (inventedTerms.length) issues.push("The copy includes scene details not found in the supplied description: " + inventedTerms.join(", ") + ".");
+    return issues;
+  }
   function copyIsApproved(row) {
-    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 92 && copyIsGenerated(row);
+    return clean(row.approval_status).toUpperCase() === "APPROVED" && Number(row.quality_score || 0) >= 92 && copyIsGenerated(row) && copyValidationIssues(row).length === 0;
   }
   function copyIsGenerating(row) {
     return ["testing", "generating"].includes(clean(row.status).toLowerCase()) && !copyIsGenerated(row);
@@ -101,7 +118,7 @@
     var failed = failedPlatforms(row);
     if (status === "published" || (selected.length && posted.length === selected.length)) return "published";
     if (isStaleGeneration(row) || reconciliationPlatforms(row).length || ["failed", "partial", "error", "recovery_required", "needs attention"].includes(status) || failed.length || (posted.length && posted.length < selected.length)) return "failed";
-    if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED") return "upcoming";
+    if (["scheduled", "publishing", "ready"].includes(status) && approval === "APPROVED" && copyIsApproved(row)) return "upcoming";
     return "review";
   }
   function bucket(row) { return isOverdue(row) ? "failed" : bucketBase(row); }
@@ -381,9 +398,11 @@
     if (!row) return;
     state.selected = row;
     var youtube = youtubeUrl(row);
+    var validationIssues = copyValidationIssues(row);
     var reviewNotice = reconciliationPlatforms(row).length
       ? "Do not retry yet. The previous run may already have posted to " + reconciliationPlatforms(row).join(", ") + ". Verify the live platform first; automatic retry is disabled to prevent duplicates."
       : isOverdue(row) ? "This approved reel missed its scheduled publishing window. Its original schedule will be preserved in the record; use Publish now to start one protected recovery attempt."
+      : validationIssues.length ? validationIssues.join(" ")
       : copyIsApproved(row) ? ""
       : isStaleGeneration(row)
         ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
@@ -423,13 +442,28 @@
     edits.timezone = "America/New_York";
     return edits;
   }
-  function validateReviewEdits(edits) {
+  function validateReviewEdits(edits, action) {
     if (!confirmSchedule([{ scheduled_date: edits.scheduled_date, scheduled_time: edits.scheduled_time }], rowId(state.selected))) return false;
     if (platformSelected(state.selected, "instagram")) {
       var tags = clean(edits.instagram_hashtags).split(/\s+/).filter(Boolean);
       if (tags.length !== 5 || tags.some(function (tag) { return !/^#[A-Za-z0-9_]+$/.test(tag); })) {
         window.alert("Instagram requires exactly five hashtags. Replace hashtags as needed, but keep five valid #hashtags.");
         return false;
+      }
+      if (action === "approve") {
+        var captionBody = clean(edits.instagram_caption_final).split(/\n\s*\n(?=#)/)[0];
+        var wordCount = captionBody.split(/\s+/).filter(Boolean).length;
+        if (wordCount < 35 || wordCount > 100) {
+          window.alert("Instagram/Facebook caption must contain 35–100 words. It currently contains " + wordCount + ".");
+          return false;
+        }
+        var source = clean([edits.reel_description, state.selected.featured_birds, state.selected.activity_name, state.selected.location, state.selected.verified_details].join(" ")).toLowerCase();
+        var sceneTerms = ["trail", "river", "rapids", "current", "garden", "feeder", "bridge", "road", "lodge", "breakfast", "dawn", "sunrise", "nest", "feeding", "habitat", "rainforest"];
+        var inventedTerms = sceneTerms.filter(function (term) { return captionBody.toLowerCase().includes(term) && !source.includes(term); });
+        if (inventedTerms.length) {
+          window.alert("The caption includes scene details not found in the supplied description: " + inventedTerms.join(", ") + ". Remove them or add verified context before approval.");
+          return false;
+        }
       }
     }
     return true;
@@ -464,7 +498,7 @@
     }
     if (action === "publish-overdue" && !window.confirm("Publish this approved overdue reel now? The original scheduled time will remain in its record, and platforms already published will be skipped.")) return;
     var edits = reviewEdits();
-    if (["save", "approve"].includes(action) && !validateReviewEdits(edits)) return;
+    if (["save", "approve"].includes(action) && !validateReviewEdits(edits, action)) return;
     var buttons = Array.from($("reviewActions").querySelectorAll("button")); buttons.forEach(function (button) { button.disabled = true; });
     try {
       var payload = { reel_id: rowId(state.selected), post_id: state.selected.post_id };

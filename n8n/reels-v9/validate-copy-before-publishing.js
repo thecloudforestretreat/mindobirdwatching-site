@@ -5,6 +5,7 @@ function bool(value) {
 function has(value) { return value !== null && value !== undefined && String(value).trim() !== ''; }
 const norm = value => String(value ?? '').normalize('NFKD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, ' ').trim().toLowerCase();
 const countPhrase = (value, phrase) => norm(value).split(norm(phrase)).length - 1;
+const words = value => String(value ?? '').trim().split(/\s+/).filter(Boolean).length;
 
 const row = { ...$json };
 const inputStatus = String(row.input_status || '').trim().toUpperCase();
@@ -62,6 +63,12 @@ const unsupported = [
 if (unsupported.some(pattern => pattern.test(copyText))) throw new Error('PUBLISH BLOCKED — copy contains unsupported, generic, or unnatural template wording. No social post was sent.');
 const sourceAuthority = norm([row.reel_description, row.featured_birds, row.activity_name, row.location, row.verified_details].join(' '));
 if (/\btrail\b/i.test(copyText) && !sourceAuthority.includes('trail')) throw new Error('PUBLISH BLOCKED — copy invents a trail that was not supplied. No social post was sent.');
+const groundedSceneTerms = ['river','rapids','current','garden','feeder','bridge','road','lodge','breakfast','dawn','sunrise','nest','feeding','habitat','rainforest'];
+const inventedSceneTerms = groundedSceneTerms.filter(term => norm(copyText).includes(term) && !sourceAuthority.includes(term));
+if (inventedSceneTerms.length) throw new Error(`PUBLISH BLOCKED — copy invents scene details that were not supplied: ${inventedSceneTerms.join(', ')}. No social post was sent.`);
+const generatedSpecificWeather = /\b(?:it (?:was|is) raining|rain (?:fell|started|continued)|during (?:the )?rain|in (?:the )?rain|rainy (?:morning|afternoon|evening|day|tour|outing)|misty (?:morning|afternoon|evening|day|tour|outing))\b/i.test(copyText);
+const intakeHasSpecificWeather = /\b(?:rain|raining|rainy|rainfall|mist|misty|weather)\b/i.test(sourceAuthority);
+if (generatedSpecificWeather && !intakeHasSpecificWeather) throw new Error('PUBLISH BLOCKED — copy claims current rain or mist that was not supplied. No social post was sent.');
 if (youtubeSelected && /^(?:birdwatching|birding|tour|nature|reel|mindo)$/i.test(String(row.youtube_title || '').trim())) throw new Error('PUBLISH BLOCKED — the YouTube title is too generic. No social post was sent.');
 
 const location = String(row.location || 'Mindo, Ecuador').trim();
@@ -88,6 +95,9 @@ if (bool(row.post_on_tiktok) && (has(row.tiktok_post_id) || has(row.tiktok_publi
 if (alreadyPublished.length) throw new Error(`PUBLISH BLOCKED — existing publication data found for ${alreadyPublished.join(', ')}. Automatic reposting is disabled.`);
 
 if (instagramSelected) {
+  const instagramBody = String(row.instagram_caption_final || row.instagram_caption_raw || '').split(/\n\s*\n(?=#)/)[0].trim();
+  const instagramWordCount = words(instagramBody);
+  if (instagramWordCount < 35 || instagramWordCount > 100) throw new Error(`PUBLISH BLOCKED — Instagram/Facebook caption must contain 35–100 words; received ${instagramWordCount}. No social post was sent.`);
   const instagramTags = String(row.instagram_hashtags || '').split(/\s+/).filter(Boolean);
   if (instagramTags.length !== 5) throw new Error(`PUBLISH BLOCKED — Instagram requires exactly five hashtags; received ${instagramTags.length}.`);
 }
