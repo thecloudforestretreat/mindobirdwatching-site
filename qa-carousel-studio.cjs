@@ -31,7 +31,7 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=7") && html.includes("carousel-studio.js?v=12"), "Carousel asset cache keys must expose tomorrow-first scheduling");
+  assert(html.includes("carousel-studio.css?v=8") && html.includes("carousel-studio.js?v=13"), "Carousel asset cache keys must expose reliable schedule editing");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(html.includes('id="scheduledDate"') && html.includes('id="scheduledTime"'), "Carousel intake must expose editable date and time fields");
@@ -39,6 +39,11 @@ function compileWorkflow(path) {
   assert(ui.includes('$("scheduledDate").min=today()'), "Carousel intake must still allow a future time today");
   assert(!ui.includes("Date.now()+15*60000"), "Carousel intake must not default to the next 15-minute slot");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
+  assert(ui.includes("Save date &amp; time") && ui.includes('act("schedule")'), "Carousel review must expose a dedicated schedule save control");
+  const actionFlow = ui.match(/async function act[\s\S]*?function copyValue/)[0];
+  assert(actionFlow.indexOf("var captured=currentEdits()") < actionFlow.indexOf("renderReview(true)"), "Review edits must be captured before the busy-state render replaces form values");
+  assert(actionFlow.includes('action==="schedule"?{scheduled_date:captured.scheduled_date,scheduled_time:captured.scheduled_time}:captured'), "Schedule-only saves must not overwrite caption fields");
+  assert(actionFlow.includes("Saved for ") && css.includes("scheduleSaveRow"), "Successful schedule saves need visible confirmation");
   assert(ui.includes("x[-_ ]?ray") && ui.includes("sticky|graphic|infographic|notes"), "UI must identify educational graphics for fit/pad treatment");
   assert(/aspect-ratio\s*:\s*4\s*\/\s*5/.test(css), "Previews must use the Instagram 4:5 aspect ratio");
   assert(html.includes('id="showSafeGuide"') && html.includes('id="showProfileGuide"'), "Preview guide controls are missing");
