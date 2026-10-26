@@ -49,7 +49,7 @@ assert(html.includes('id="systemHealth"'), "Reels Studio must display publishing
 assert(ui.includes('function defaultStartDate() { return addDays(todayInEastern(), 1, false); }'), "New Reel batches must default to tomorrow in Eastern time");
 assert(ui.includes('start.min = todayInEastern()'), "Reel batches must still allow a future time today");
 assert(ui.includes('setDefaultBatchSchedule(true);') && ui.includes('setDefaultBatchSchedule(false);'), "Reel scheduling defaults must reset after submission without overwriting an active edit");
-assert(html.includes("Defaults to tomorrow; today remains available."), "Reel intake must explain the editable tomorrow default");
+assert(!html.includes("Defaults to tomorrow; today remains available."), "Reel intake must keep the batch-default row aligned without helper copy");
 
 console.log(JSON.stringify({
   ok: true,
