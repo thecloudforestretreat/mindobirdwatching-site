@@ -8,6 +8,7 @@ const {chromium}=require('playwright');
   const browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
   const page=await browser.newPage();
   const actions=[];
+  const updates=[];
   const errors=[];
   const requests=[];
   page.on('pageerror',error=>errors.push(error.message));
@@ -26,8 +27,8 @@ const {chromium}=require('playwright');
       }]}});
       if(payload.action==='lookup_reference')return route.fulfill({json:{ok:false,error:'contact_intent_not_found'}});
       if(payload.action==='update_inquiry'){
-        assert.equal(payload.record.status,'planning');
         assert.equal(payload.record.contact_intent_id,'ci_missing_reference_qa');
+        updates.push(payload.record);
         return route.fulfill({json:{ok:true,record:payload.record}});
       }
       return route.fulfill({json:{ok:true,records:[]}});
@@ -44,10 +45,18 @@ const {chromium}=require('playwright');
   await page.locator('[data-view="intake"]').click();
   await page.locator('#recordStatusInput').selectOption('planning');
   await page.locator('#saveBtn').click();
-  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('reference preserved but unavailable'));
+  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('Guest saved successfully'));
 
-  assert.equal(actions.filter(action=>action==='lookup_reference').length,1);
-  assert.equal(actions.filter(action=>action==='update_inquiry').length,1);
+  assert.equal(updates[0].status,'planning');
+  const spamSave=page.waitForResponse(response=>response.url().includes('/webhook/mbw-crm-admin-api')&&response.request().postData()?.includes('update_inquiry'));
+  await page.locator('#detailMarkSpamBtn').click();
+  await spamSave;
+  await page.waitForFunction(()=>document.querySelector('#recordStatusInput')?.value==='spam'&&document.querySelector('#toast')?.textContent.includes('Guest saved successfully'));
+
+  assert.equal(actions.filter(action=>action==='lookup_reference').length,2);
+  assert.equal(actions.filter(action=>action==='update_inquiry').length,2);
+  assert.equal(updates[1].status,'spam');
+  assert.equal(updates[1].followup_date,'');
   assert.equal(errors.length,0,errors.join('\n'));
   console.log('Existing CRM record saved with missing attribution reference preserved');
   await browser.close();

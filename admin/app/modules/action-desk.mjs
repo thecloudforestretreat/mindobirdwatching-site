@@ -1,4 +1,4 @@
-const CLOSED = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]);
+const CLOSED = new Set(["completed", "cancelled", "canceled", "did_not_book", "spam", "duplicate", "archived"]);
 const DAY = 86400000;
 
 export const STATUS_FILTERS = ["all", "new", "booked"];

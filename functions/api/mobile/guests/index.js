@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
     if (!/^\d{1,2}$/.test(partySize) || Number(partySize) < 1 || Number(partySize) > 99) return json(400, { ok: false, error: "Guests must be between 1 and 99." });
     const rows = await listRecords(env, "list_inquiries", { filters: {} });
     const identityMatches = rows.filter(row => (email && value(row.email, 254).toLowerCase() === email) || (phoneKey.length >= 6 && digits(row.phone_normalized || row.phone_number) === phoneKey));
-    const sameTrip = requestedDate && identityMatches.find(row => isoDate(row.requested_date || row.requested_date_start) === requestedDate && !["cancelled", "did_not_book", "duplicate", "archived"].includes(value(row.status, 40).toLowerCase()));
+    const sameTrip = requestedDate && identityMatches.find(row => isoDate(row.requested_date || row.requested_date_start) === requestedDate && !["cancelled", "did_not_book", "spam", "duplicate", "archived"].includes(value(row.status, 40).toLowerCase()));
     if (sameTrip) return json(409, { ok: false, error: `A matching inquiry already exists for ${requestedDate}. Open it instead of creating a duplicate.`, inquiryId: sameTrip.inquiry_id });
     const existing = identityMatches[0], now = new Date().toISOString(), names = name.split(/\s+/), inquiryId = identifier("INQ"), guestId = value(existing?.guest_id, 128) || identifier("G");
     const tour = value(guest.tour, 300), product = value(guest.product_selected, 240), serviceType = value(guest.service_type || "Birdwatching", 120);

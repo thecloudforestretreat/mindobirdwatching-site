@@ -8,7 +8,7 @@ const terminal=r=>/^(void|uncollectible|cancelled|refunded)$/i.test(text(r.payme
 export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date()}={}){
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
  const ids=new Set(inquiries.map(r=>text(r.inquiry_id)));let unmatched=deposits.filter(d=>!ids.has(text(d.inquiry_id))).length;
- const records=inquiries.filter(r=>!['duplicate','archived','cancelled','did_not_book'].includes(text(r.status))).map(r=>{
+ const records=inquiries.filter(r=>!['spam','duplicate','archived','cancelled','did_not_book'].includes(text(r.status))).map(r=>{
   const id=text(r.inquiry_id),ds=deposits.filter(d=>text(d.inquiry_id)===id),issues=[];
   const unique=new Map();
   for(const p of payments.filter(p=>text(p.inquiry_id)===id)){

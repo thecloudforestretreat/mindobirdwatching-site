@@ -2,8 +2,8 @@ import { country } from "./maps.mjs";
 
 export const MOBILE_DOMAIN_VERSION = "2026-10-24-invoice-status-v5";
 
-const CLOSED = new Set(["completed", "cancelled", "did_not_book", "duplicate", "archived"]);
-const INACTIVE = new Set(["cancelled", "did_not_book", "duplicate", "archived"]);
+const CLOSED = new Set(["completed", "cancelled", "did_not_book", "spam", "duplicate", "archived"]);
+const INACTIVE = new Set(["cancelled", "did_not_book", "spam", "duplicate", "archived"]);
 const BOOKED = new Set(["deposit_pending", "deposit_paid", "payment_pending", "booked", "completed"]);
 const BOOKING_PROGRESS = new Set(["deposit_pending", "deposit_paid", "booked", "completed", "cancelled"]);
 const PREBOOKING = new Set(["new", "contacted", "planning", "qualified", "quoted", "follow_up"]);

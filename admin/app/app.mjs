@@ -9,7 +9,7 @@ const money = (value, currency = "USD") => new Intl.NumberFormat("en-US", { styl
 const date = value => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "America/Guayaquil" }).format(new Date(`${String(value).slice(0, 10)}T12:00:00-05:00`)) : "Not set";
 const time = value => value ? String(value).slice(0, 5) : "Time not set";
 const phoneDigits = value => String(value || "").replace(/\D/g, "");
-const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "duplicate"];
+const STATUS_OPTIONS = ["new", "contacted", "planning", "qualified", "quoted", "follow_up", "deposit_pending", "deposit_paid", "payment_pending", "booked", "completed", "cancelled", "did_not_book", "spam", "duplicate"];
 const REP_OPTIONS = ["", "SS", "JPG"];
 const GUEST_MORE_FILTERS = ["contacted", "planning", "qualified", "follow_up", "quoted", "deposit_pending", "deposit_paid", "payment_pending", "completed", "cancelled", "did_not_book", "archived", "all"];
 const AUTO_SYNC_INTERVAL_MS = 10 * 60 * 1000;
@@ -177,7 +177,7 @@ function renderGuideView() {
   updateGuideViewLink();
 }
 function renderToday() {
-  const today = todayIso(), end = addIsoDays(today, 7), closed = new Set(["completed", "cancelled", "canceled", "did_not_book", "duplicate", "archived"]), records = (state.data?.upcoming || state.data?.today || []).filter(item => !closed.has(item.status)), todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today && item.date <= end);
+  const today = todayIso(), end = addIsoDays(today, 7), closed = new Set(["completed", "cancelled", "canceled", "did_not_book", "spam", "duplicate", "archived"]), records = (state.data?.upcoming || state.data?.today || []).filter(item => !closed.has(item.status)), todayRecords = records.filter(item => item.date === today), later = records.filter(item => item.date > today && item.date <= end);
   state.todayQueue = [...new Set(records.map(item => item.inquiryId).filter(Boolean))];
   renderGuideView();
   const cards = rows => rows.map(item => `<button class="todayCard ${statusClass(item.status)}" data-guest="${esc(item.inquiryId)}" data-task="operations" type="button"><div class="cardTop"><strong>${esc(item.startTime ? time(item.startTime) : "Time pending")} · ${esc(item.guest)}</strong><span class="operationsBadge ${item.risk ? "operationsBadge--attention" : "operationsBadge--ready"}">${item.risk ? "Attention" : "Ready"}</span></div><p>${esc(item.tour || "Tour")} · ${esc(item.partySize || "?")} ${Number(item.partySize) === 1 ? "guest" : "guests"}</p><div class="todayFacts"><span class="statusBadge ${statusClass(item.status)}">${esc(pretty(item.status))}</span><span class="serviceDate"><b>${esc(shortDate(item.date))}</b></span></div><div class="todayMeta"><span>${esc(item.pickup || "Pickup not set")}</span><span>${item.source === "assignment" ? "Assignment schedule" : "Itinerary"}</span></div>${item.risk ? `<p><strong>${esc(item.risk)}</strong></p>` : ""}</button>`).join("");

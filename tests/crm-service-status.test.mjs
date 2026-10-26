@@ -38,7 +38,7 @@ function harness(record={}){
 
 
 const service={id:'night',tour:'Night Walk',product_selected:'MBW016',date:'2099-11-26',guests:'3',price:'35',custom_ref:'keep'};
-const statuses=['new','contacted','planning','qualified','quoted','follow_up','deposit_pending','payment_pending','deposit_paid','booked','completed','cancelled','did_not_book','duplicate'];
+const statuses=['new','contacted','planning','qualified','quoted','follow_up','deposit_pending','payment_pending','deposit_paid','booked','completed','cancelled','did_not_book','spam','duplicate'];
 for(const stage of statuses) test('missing service status inherits explicit inquiry stage '+stage,async()=>{
   const h=harness({status:stage,tour_type:'Birdwatching',product_selected:'MBW004',requested_date:'2099-11-26',tour_items_json:JSON.stringify([service])});
   const {extras}=h.load();assert.equal(extras[0].status,stage);assert.equal(h.q.calendarEntriesForRecord(h.base)[0].status,stage);
