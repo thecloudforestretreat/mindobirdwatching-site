@@ -12,7 +12,7 @@ assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary pr
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio.css?v=18"), "Media Studio CSS cache key must be current");
-assert(page.includes("media-studio.js?v=16"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.js?v=17"), "Media Studio JS cache key must be current");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
 assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
 assert(script.includes('class="calendarEventEdit"'), "Calendar cards must expose a direct editor link");
@@ -21,5 +21,8 @@ assert(script.includes('item.href+"?id="+encodeURIComponent(item.id)'), "Editor 
 assert(script.includes('"&return="+encodeURIComponent(ret)'), "Editor links must preserve the Media Studio return location");
 assert(styles.includes(".calendarEventEdit"), "Calendar editor links must be visibly styled");
 assert(styles.includes(".agendaEdit"), "Upcoming schedule editor links must be visibly styled");
+assert(script.includes('if(["scheduled","publishing","ready"].includes(s)&&carouselPublishReady(row))return"upcoming"'), "Scheduled carousels must only appear ready when approval and copy validation are publishable");
+assert(script.includes('due within 2 days and not ready'), "Media Studio must warn about imminent posts that are not ready");
+assert(script.includes("typeLabel+' · '+esc(stateLabel)"), "Calendar cards must spell out their readiness state");
 
-console.log(JSON.stringify({ ok: true, checks: 16, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: 19, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true }, null, 2));

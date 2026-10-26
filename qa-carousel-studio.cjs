@@ -31,7 +31,8 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio.css?v=8") && html.includes("carousel-studio.js?v=13"), "Carousel asset cache keys must expose reliable schedule editing");
+  assert(html.includes("carousel-studio.css?v=8") && html.includes("carousel-studio.js?v=14"), "Carousel asset cache keys must expose reliable schedule editing");
+  assert(ui.includes('c==="HUMAN_EDITED"?"Human edited"'), "Approved human edits must not be presented as a failing legacy quality score");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(html.includes('id="scheduledDate"') && html.includes('id="scheduledTime"'), "Carousel intake must expose editable date and time fields");
