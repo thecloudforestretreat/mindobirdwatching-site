@@ -41,8 +41,8 @@ The live Head source was backed up before applying only this targeted patch. The
 
 QA: 33 regression tests pass; four behavior/integration tests also pass against the exact patched live source, including archived repeat versus a separate later trip. Live source readback exactly matches the prepared patch. No invoice, payment, quote, tour, WhatsApp or provider data is migrated.
 
-## Manual follow-up dates in digest — 27 October 2026
+## Saved follow-up dates in digest — 27 October 2026
 
-Queue reconciliation now reads the existing manual follow-up override note in a fourth bulk column read. A staff-selected date overrides the workflow-derived date; a cleared manual date suppresses that task. No inquiry values are rewritten by this change. Archived and closed/sent task protections remain intact.
+Active-inquiry tasks use the saved follow-up date, including CRM edits without a Sheet note. Explicit manual override notes still support a cleared date. Reviews and cancellations keep their separate scheduling rules. Four bulk note-column reads preserve performance. No inquiry values are rewritten.
 
-42 regression tests passed, including postponed/cleared manual dates. Six digest tests also passed against the exact narrowly patched live Head source. Live read-only preview completed in 6.878 seconds and changed due count from 72 to 71. This does not resolve all differences from the CRM's 22 due-inquiry cards: backend operations/review tasks and UI filters need separate reconciliation. No email was sent by QA and no guest records were auto-closed.
+43 regression tests passed; seven digest tests also passed against the exact patched live Head source. Live source was backed up and only the reconciliation change applied, preserving unrelated live/repository differences. No email sent by QA and no guest records auto-closed.

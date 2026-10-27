@@ -3220,8 +3220,11 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
       : alignInquiryStatusFromSubstatuses_(row, dateRange);
     const action = nextActionForInquiry_(aligned, dateRange);
     const manualFollowup = clean_((followupNotes[noteIndex] || [])[0]).indexOf(MANUAL_FOLLOWUP_OVERRIDE_NOTE) >= 0;
-    // Use the same staff override as the saved inquiry, including a cleared date.
-    if (manualFollowup) action.followupDate = normalizeDateForSheet_(row.followup_date);
+    // The saved date is authoritative for active inquiries, including CRM edits
+    // that do not carry a Sheet note. Reviews/cancellations keep their own rules.
+    const savedFollowup = normalizeDateForSheet_(row.followup_date);
+    const activeFollowup = ["completed", "cancelled"].indexOf(clean_(aligned.status)) < 0;
+    if (manualFollowup || (activeFollowup && savedFollowup)) action.followupDate = savedFollowup;
     if (!action.followupDate || !action.followupType) return;
     if (["did_not_book", "lost"].indexOf(clean_(aligned.status)) >= 0) return;
 

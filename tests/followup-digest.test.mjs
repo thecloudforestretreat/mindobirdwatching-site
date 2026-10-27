@@ -35,3 +35,12 @@ test('queue respects staff-postponed dates and cleared manual follow-ups',()=>{
  assert.equal(result.rows.find(r=>r.inquiry_id==='INQ-3').due_at,'old');
  assert.equal(JSON.stringify(h.items),before);assert.equal(h.writes(),0);assert.equal(h.mails(),0);
 });
+
+test('saved active inquiry dates do not need a Sheet note; post-tour review scheduling stays separate',()=>{
+ const h=harness(4);h.items[0].row.followup_date='2099-12-30';h.items[1].row.followup_date='2099-12-31';
+ h.c.alignInquiryStatusFromSubstatuses_=row=>row;h.items[1].row.status='completed';
+ const result=h.c.reconcileCrmFollowupQueue_(h.ss,true);
+ assert.equal(result.rows.find(r=>r.inquiry_id==='INQ-0').due_at,'2099-12-30');
+ assert.equal(result.rows.find(r=>r.inquiry_id==='INQ-1').due_at,'new');
+ assert.equal(h.writes(),0);assert.equal(h.mails(),0);
+});
