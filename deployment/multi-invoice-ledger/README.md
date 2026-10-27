@@ -32,3 +32,11 @@ Keep `invoices-logger-v8.gs` and `stripe-invoices-sync-v1.4.4.gs`; both already 
 ## Rollback
 
 Restore the website from the backup Git branch and import the previous n8n export. The new spreadsheet tabs are additive, so they can remain in place during rollback without affecting the legacy workflow.
+
+## Archived intake preservation — 27 October 2026
+
+Raw intake now uses mergeImportedInquiry_ to preserve an existing archive decision and clear follow-up work on repeated imports. Exact source-submission or same dated-trip matches still merge audit information. Archived records are excluded from broad email/phone fallback matching, so a different-date or undated request can create a separate inquiry. Staff restore and active-record merging retain their prior behavior.
+
+The live Head source was backed up before applying only this targeted patch. The live router differs from this repository in unrelated schema/attribution sections; those live differences were preserved. The five-minute routeAllNewRawRows trigger executes Head. The older versioned web-app deployment was not changed.
+
+QA: 33 regression tests pass; four behavior/integration tests also pass against the exact patched live source, including archived repeat versus a separate later trip. Live source readback exactly matches the prepared patch. No invoice, payment, quote, tour, WhatsApp or provider data is migrated.

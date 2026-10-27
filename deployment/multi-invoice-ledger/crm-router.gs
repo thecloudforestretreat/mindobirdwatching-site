@@ -1667,7 +1667,7 @@ function appendInquiry_(ss, guest, input, now) {
 
   const existing = findExistingInquiryForInput_(sh, guest, input, inquiry);
   if (existing) {
-    const merged = mergeInquiryRows_(existing.row, inquiry, now);
+    const merged = mergeImportedInquiry_(existing.row, inquiry, now);
     writeObjectToRow_(sh, existing.rowNumber, merged);
     merged._created_new = false;
     return merged;
@@ -1714,6 +1714,9 @@ function findExistingInquiryForInput_(sh, guest, input, candidate) {
     });
 
     if (sameDate) return item;
+    // Archived inquiries can match a known submission or the same dated trip,
+    // but must not absorb a new trip through the broad email-only fallback.
+    if (isArchivedInquiryForImport_(row)) continue;
     if (manualSource && sameEmail && !fallback) fallback = item;
     if (!candidateDate && sameEmail && !fallback) fallback = item;
     if (!candidateDate && samePhone && sameSource && !fallback) fallback = item;
@@ -1721,6 +1724,28 @@ function findExistingInquiryForInput_(sh, guest, input, candidate) {
   }
 
   return fallback;
+}
+
+function isArchivedInquiryForImport_(row) {
+  return ["yes", "true", "1"].indexOf(clean_(row.is_archived).toLowerCase()) >= 0 ||
+    clean_(row.status).toLowerCase() === "duplicate";
+}
+
+function mergeImportedInquiry_(existing, incoming, now) {
+  const merged = mergeInquiryRows_(existing, incoming, now);
+  if (!isArchivedInquiryForImport_(existing)) return merged;
+  // Raw intake enriches the audit trail; only an explicit staff restore reopens it.
+  return Object.assign(merged, {
+    status: "duplicate",
+    is_archived: "Yes",
+    archived_at: existing.archived_at || "",
+    archive_reason: existing.archive_reason || "duplicate",
+    superseded_by_inquiry_id: existing.superseded_by_inquiry_id || "",
+    followup_date: "",
+    next_action: "",
+    priority: "",
+    availability_status: "archived"
+  });
 }
 
 function mergeInquiryRows_(existing, incoming, now) {
