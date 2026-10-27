@@ -1984,19 +1984,27 @@
       async function renderAllConfirmationCanvases(){
         saveActiveDraft();
         const original = state.activeConfirmation;
-        const rendered = [];
-        for(let index = 0; index < state.confirmationDrafts.length; index++){
-          state.activeConfirmation = index;
+        const select=index=>{
+          state.activeConfirmation=index;
           loadActiveDraft();
+          renderConfirmationTabs();
           updatePreviewFromForm();
-          if(!validateCurrentConfirmation()) throw new Error("Confirmation " + (index + 1) + " is incomplete");
-          rendered.push({ canvas:await renderExportCanvas(), name:fileBaseName() });
+        };
+        // Validate the whole set before rendering any files; leave an incomplete service selected.
+        for(let index=0;index<state.confirmationDrafts.length;index++){
+          select(index);
+          if(!validateCurrentConfirmation())throw new Error("Confirmation "+(index+1)+" is incomplete");
         }
-        state.activeConfirmation = original;
-        loadActiveDraft();
-        renderConfirmationTabs();
-        updatePreviewFromForm();
-        return rendered;
+        const rendered=[];
+        try {
+          for(let index=0;index<state.confirmationDrafts.length;index++){
+            select(index);
+            rendered.push({canvas:await renderExportCanvas(),name:fileBaseName()});
+          }
+          return rendered;
+        } finally {
+          select(original);
+        }
       }
 
       async function exportAllJpgs(){
