@@ -348,8 +348,8 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
       if (payload.action === "create_assignment") { rows = [{ ...payload.assignment, assignment_id: "PLAN-ROW-1", updated_at: "v1" }]; return Response.json({ ok: true }); }
       throw new Error(`Unexpected ${payload.action}`);
     };
-    const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190 } : day);
-    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], originalCost: 60 });
+    const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day);
+    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], costNote: { es: "Total proporcionado; desglose pendiente.", en: "Total provided; breakdown pending." }, originalCost: 60 });
     const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
@@ -362,6 +362,55 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
 
     const chicho = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "chicho@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(chicho.status, 404);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("guide plan writes enforce status, authorship, and optimistic concurrency", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [];
+  let writes = 0;
+  const pilot = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({
+      "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"], contributorNumber: "002" },
+    }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (payload.action === "create_assignment") { writes += 1; rows = [{ ...payload.assignment, assignment_id: "PLAN-SECURE", updated_at: "v1" }]; return Response.json({ ok: true }); }
+      if (payload.action === "update_assignment") { writes += 1; rows = [{ ...payload.assignment, updated_at: "v2" }]; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const base = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+    const forged = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ status: "approved", days: base.days }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(forged.status, 403);
+    assert.equal(writes, 0);
+
+    const created = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ status: "guide_drafting", days: base.days, adjustments: [{ id: "cost-new", dayId: "day-1", category: "food", description: "Lunch", amount: 15, addedBy: "MBW Admin", addedAt: "2000-01-01" }], comments: [{ id: "comment-new", message: "Question", author: "MBW Admin", role: "admin", createdAt: "2000-01-01" }] }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(created.status, 201);
+    const createdBody = await created.json();
+    assert.equal(createdBody.plan.comments[0].author, "Neicer");
+    assert.equal(createdBody.plan.comments[0].role, "guide");
+    assert.notEqual(createdBody.plan.comments[0].createdAt, "2000-01-01");
+    assert.equal(createdBody.plan.adjustments[0].addedBy, "Neicer");
+    assert.notEqual(createdBody.plan.adjustments[0].addedAt, "2000-01-01");
+
+    const stale = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ updatedAt: "older-version", status: "guide_drafting", days: base.days }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(stale.status, 409);
+    assert.equal((await stale.json()).code, "PLAN_STALE");
+    assert.equal(writes, 1);
   } finally { globalThis.fetch = savedFetch; }
 });
 

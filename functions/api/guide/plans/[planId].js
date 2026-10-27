@@ -1,7 +1,7 @@
 import { guideIdentity, identityMatchesProvider } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
 import { errorResponse, json, methodNotAllowed, assertSameOrigin, readJson, validId, writesEnabled } from "../../../lib/mobile-http.mjs";
-import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, planAssignment, robertPlan, sanitizePlan } from "../../../lib/guide-plans.mjs";
+import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, planAssignment, robertPlan, sanitizePlan, validatePlanForReview } from "../../../lib/guide-plans.mjs";
 
 const providerName = row => String(row.provider_name === "Other" ? row.provider_name_other : row.provider_name || "").trim();
 
@@ -26,17 +26,51 @@ export async function onRequestPost({ request, env, params }) {
     }
     const current = currentRow ? parsePlanRow(currentRow) : robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName });
     if (!current) return json(409, { ok: false, error: "The saved plan could not be read safely." });
+    if (currentRow && String(body.updatedAt || "") !== String(currentRow.updated_at || "")) {
+      return json(409, { ok: false, code: "PLAN_STALE", error: "This plan changed after you opened it. Refresh before saving so no work is overwritten." });
+    }
+    const actor = { name: String(identity.name || identity.providerName || identity.email || "MBW Admin").slice(0, 120), role: identity.role === "guide" ? "guide" : "admin" };
+    const allowedStatuses = actor.role === "guide" ? new Set(["guide_drafting", "admin_review"]) : new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
+    const requestedStatus = String(body.status || current.status);
+    if (!allowedStatuses.has(requestedStatus)) return json(403, { ok: false, error: "You cannot move this plan to that status." });
+    if (actor.role === "guide" && current.status === "approved") return json(409, { ok: false, code: "PLAN_LOCKED", error: "This approved plan is locked. Ask MBW to reopen it before editing." });
+    if (actor.role === "admin" && requestedStatus === "approved" && current.status !== "admin_review") return json(409, { ok: false, code: "PLAN_TRANSITION", error: "The guide must submit the plan for review before it can be approved." });
+    const currentComments = new Map((current.comments || []).map(item => [item.id, item]));
+    const submittedComments = Array.isArray(body.comments) ? body.comments : current.comments;
+    const comments = [...(current.comments || [])];
+    for (const item of submittedComments) {
+      if (currentComments.has(item?.id) || !String(item?.message || "").trim()) continue;
+      comments.push({ ...item, author: actor.name, role: actor.role, createdAt: new Date().toISOString() });
+    }
+    const currentAdjustments = new Map((current.adjustments || []).map(item => [item.id, item]));
+    const adjustments = (Array.isArray(body.adjustments) ? body.adjustments : current.adjustments).map(item => {
+      const saved = currentAdjustments.get(item?.id);
+      return saved ? { ...item, addedBy: saved.addedBy, addedAt: saved.addedAt } : { ...item, addedBy: actor.name, addedAt: new Date().toISOString() };
+    });
     const incoming = {
       ...current,
-      adjustments: Array.isArray(body.adjustments) ? body.adjustments : current.adjustments,
-      comments: Array.isArray(body.comments) ? body.comments : current.comments,
+      adjustments,
+      comments,
       days: Array.isArray(body.days) ? body.days : current.days,
-      status: body.status || current.status,
+      status: requestedStatus,
       providerId: current.providerId || requestedProvider.providerId,
       providerName: current.providerName || requestedProvider.providerName,
     };
     const plan = sanitizePlan(incoming, current);
+    if (current.status === "approved" && requestedStatus === "approved" && actor.role === "admin") {
+      return json(409, { ok: false, code: "PLAN_LOCKED", error: "This approved plan is locked. Reopen it before making more changes." });
+    }
+    if (["admin_review", "approved"].includes(requestedStatus)) {
+      const validationErrors = validatePlanForReview(plan);
+      if (validationErrors.length) return json(400, { ok: false, code: "PLAN_VALIDATION", error: "Complete the highlighted itinerary details before submitting for review.", validationErrors });
+    }
     if (!plan.providerId && !plan.providerName) return json(400, { ok: false, error: "The plan needs an assigned guide." });
+    const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || comments.length !== (current.comments || []).length || current.status !== plan.status;
+    if (changed) {
+      const action = current.status !== plan.status ? "status_changed" : comments.length !== (current.comments || []).length ? "comment_added" : "plan_updated";
+      plan.history = [...(current.history || []), { id: crypto.randomUUID(), actor: actor.name, role: actor.role, action, fromStatus: current.status, toStatus: plan.status, changedAt: new Date().toISOString() }].slice(-100);
+      if (["es", "en"].includes(body.editLanguage)) plan.localeUpdatedAt = { ...(current.localeUpdatedAt || {}), [body.editLanguage]: new Date().toISOString() };
+    }
     const assignment = { ...(currentRow || {}), ...planAssignment(plan) };
     if (currentRow) await crmCall(env, "update_assignment", { assignment, expected_updated_at: currentRow.updated_at || "" });
     else await crmCall(env, "create_assignment", { guest_phone: "", assignment });

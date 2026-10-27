@@ -26,6 +26,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const browser = await chromium.launch({ headless: true, executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
+  const dialogs = [];
+  page.on("dialog", dialog => { dialogs.push(dialog.message()); dialog.accept(); });
   await page.addInitScript(() => {
     const NativeDate = Date;
     const fixedNow = new NativeDate("2026-10-23T17:00:00Z").valueOf();
@@ -200,8 +202,16 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await firstDayEditor.locator('input[name="originalCost"]').fill("190");
     await firstDayEditor.locator('[data-source-cost-row]').first().locator('input[name="sourceAmount"]').fill("90");
     assert.equal(await firstDayEditor.locator('select[name="sourceCategory"]').first().inputValue(), "transportation");
+    assert.match(await page.locator('[data-plan-save-state]').innerText(), /Cambios sin guardar/);
+    await firstDayEditor.getByRole("button", { name: "Duplicar día" }).click();
+    assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
+    const duplicatedDayId = await page.locator("[data-plan-day-editor]").evaluateAll(editors => editors.find(editor => !/^day-[1-6]$/.test(editor.dataset.dayId))?.dataset.dayId);
+    await page.locator(`[data-plan-day-editor][data-day-id="${duplicatedDayId}"] [data-delete-plan-day]`).evaluate(button => button.click());
+    assert.equal(await page.locator("[data-plan-day-editor]").count(), 6);
     await page.getByRole("button", { name: "Agregar fecha o día", exact: true }).click();
     assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
+    await page.getByText("Editar día", { exact: true }).last().click();
+    await page.locator("[data-plan-day-editor]").last().locator('textarea[name="details"]').fill("Día adicional por confirmar con MBW.");
     await page.locator('[data-plan-cost-form="robert-2027"] input[name="description"]').fill("Intag lodging");
     await page.locator('[data-plan-cost-form="robert-2027"] input[name="amount"]').fill("80");
     await page.locator('[data-plan-cost-form="robert-2027"] select[name="category"]').selectOption("lodging");
@@ -213,6 +223,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
     await page.getByText("¿Puede MBW confirmar el alojamiento?", { exact: true }).waitFor();
     await page.getByRole("button", { name: "Enviar a revisión" }).click();
+    await page.waitForTimeout(300);
+    const unexpectedDialogs = dialogs.filter(message => !message.includes("¿Eliminar"));
+    if (unexpectedDialogs.length) {
+      const invalid = await page.locator(".planFieldError").evaluateAll(nodes => nodes.map(node => ({ name: node.getAttribute("name"), className: node.className, dayId: node.closest("[data-plan-day-editor]")?.dataset.dayId })));
+      throw new Error(JSON.stringify({ unexpectedDialogs, invalid }));
+    }
     await page.getByText("Plan guardado", { exact: true }).waitFor();
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans/robert-2027") && write.body.days.length === 7 && write.body.days[0].date === "2027-02-08" && write.body.days[0].originalCost === 190 && write.body.adjustments[0].amount === 80), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-plans.png", fullPage: true });

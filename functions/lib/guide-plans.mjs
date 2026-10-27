@@ -5,7 +5,7 @@ const number = value => {
 };
 const date = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
 const PLAN_MARKER = "[GUIDE_PLAN robert-2027]";
-const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "reserve", "activity", "other"]);
+const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
 const ALLOWED_VERIFICATION = new Set(["needs_verification", "estimated", "confirmed"]);
 const ALLOWED_STATUS = new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
 const bilingual = (value, fallback = {}, max = 1200) => {
@@ -53,7 +53,7 @@ export function robertPlan(provider = {}) {
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 85 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
-          { category: "reserve", label: { es: "Ingresos", en: "Entrance fees" }, amount: 20 },
+          { category: "entrance", label: { es: "Ingresos", en: "Entrance fees" }, amount: 20 },
         ],
         originalCost: 185,
       },
@@ -72,7 +72,7 @@ export function robertPlan(provider = {}) {
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 130 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
-          { category: "reserve", label: { es: "Ingresos", en: "Entrance fees" }, amount: 15 },
+          { category: "entrance", label: { es: "Ingresos", en: "Entrance fees" }, amount: 15 },
         ],
         originalCost: 225,
       },
@@ -83,7 +83,7 @@ export function robertPlan(provider = {}) {
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 140 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
-          { category: "reserve", label: { es: "Ingreso", en: "Entrance fee" }, amount: 15 },
+          { category: "entrance", label: { es: "Ingreso", en: "Entrance fee" }, amount: 15 },
         ],
         originalCost: 235,
       },
@@ -92,6 +92,8 @@ export function robertPlan(provider = {}) {
     ],
     adjustments: [],
     comments: [],
+    history: [],
+    localeUpdatedAt: { es: "", en: "" },
     originalTotal: 795,
     synthetic: true,
   };
@@ -128,6 +130,15 @@ export function sanitizePlan(input, current = robertPlan()) {
     role: item.role === "guide" ? "guide" : "admin",
     createdAt: text(item.createdAt, 80),
   })).filter(item => item.message) : [];
+  const history = Array.isArray(input.history || current.history) ? (input.history || current.history).slice(-100).map((item, index) => ({
+    id: text(item.id || `history-${index + 1}`, 80),
+    actor: text(item.actor, 120),
+    role: item.role === "guide" ? "guide" : "admin",
+    action: text(item.action, 80),
+    fromStatus: ALLOWED_STATUS.has(item.fromStatus) ? item.fromStatus : "",
+    toStatus: ALLOWED_STATUS.has(item.toStatus) ? item.toStatus : "",
+    changedAt: text(item.changedAt, 80),
+  })).filter(item => item.actor && item.action && item.changedAt) : [];
   const currentDays = new Map((current.days || []).map(day => [day.id, day]));
   const submittedDays = Array.isArray(input.days) && input.days.length ? input.days.slice(0, 24) : current.days;
   const days = submittedDays.map((item, index) => {
@@ -153,6 +164,11 @@ export function sanitizePlan(input, current = robertPlan()) {
       originalCost: number(item?.originalCost),
     };
   }).filter(day => day.date && (day.title.es || day.title.en));
+  // Robert's first saved draft used "reserve" for entrance fees. Keep actual reserve
+  // fees distinct while migrating only those known legacy source lines.
+  for (const day of days) if (["day-1", "day-3", "day-4"].includes(day.id)) {
+    day.sourceCosts = day.sourceCosts.map(cost => cost.category === "reserve" ? { ...cost, category: "entrance" } : cost);
+  }
   const normalizedDays = days.length ? days.sort((a, b) => a.date.localeCompare(b.date)) : current.days;
   const originalTotal = normalizedDays.reduce((sum, day) => sum + number(day.originalCost), 0);
   return {
@@ -163,12 +179,31 @@ export function sanitizePlan(input, current = robertPlan()) {
     status: ALLOWED_STATUS.has(input.status) ? input.status : current.status,
     adjustments,
     comments,
+    history,
+    localeUpdatedAt: {
+      es: text(input.localeUpdatedAt?.es || current.localeUpdatedAt?.es, 80),
+      en: text(input.localeUpdatedAt?.en || current.localeUpdatedAt?.en, 80),
+    },
     // Only the guide-cost layer is editable. MBW pricing is never present in this record.
     days: normalizedDays,
     startDate: normalizedDays[0]?.date || current.startDate,
     endDate: normalizedDays.at(-1)?.date || current.endDate,
     originalTotal,
   };
+}
+
+export function validatePlanForReview(plan) {
+  const errors = [];
+  for (const [index, day] of (plan.days || []).entries()) {
+    if (!day.date) errors.push({ dayId: day.id, field: "date", index });
+    if (!day.title?.es && !day.title?.en) errors.push({ dayId: day.id, field: "title", index });
+    if (!day.details?.es && !day.details?.en) errors.push({ dayId: day.id, field: "details", index });
+    const costs = Array.isArray(day.sourceCosts) ? day.sourceCosts : [];
+    const breakdown = costs.reduce((sum, item) => sum + number(item.amount), 0);
+    if (costs.length && Math.abs(breakdown - number(day.originalCost)) > 0.009) errors.push({ dayId: day.id, field: "costs", index });
+    if (!costs.length && number(day.originalCost) > 0 && !day.costNote?.es && !day.costNote?.en) errors.push({ dayId: day.id, field: "costNote", index });
+  }
+  return errors;
 }
 
 export function planAssignment(plan) {
