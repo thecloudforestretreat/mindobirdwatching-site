@@ -85,6 +85,10 @@
   .referenceIdentityRow{display:grid;grid-template-columns:1.05fr 1.15fr 1.1fr 1fr;gap:12px;align-items:start}.referenceIdentityRow .field{min-width:0}.referenceIdentityRow input,.referenceIdentityRow select{width:100%;min-width:0;font-size:12px}#referenceStatus{display:block;font-size:11px;line-height:1.4;margin-top:5px;color:#52645a}@media(max-width:1000px){.referenceIdentityRow{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.referenceIdentityRow{grid-template-columns:1fr}}
     @media(max-width:760px){html,body{max-width:100%;overflow-x:hidden}.shell,.card,.grid,.panel,.view{width:100%;max-width:100%;min-width:0}.shell{margin:0;padding:8px}.card{overflow:hidden}.grid{display:grid;grid-template-columns:minmax(0,1fr)}.tourItemGrid,.additionalTourGrid,.compactGrid{grid-template-columns:minmax(0,1fr)!important}.top,.panelHeader{min-width:0}.adminGlobalNav__inner{max-width:100%;overflow-x:auto}}
 .balanceMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.balanceRow{border:1px solid #d3dfd0;border-radius:12px;padding:16px;margin:12px 0}.balanceHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}.balanceRow:has(.hint){overflow-wrap:anywhere}#bookingBalanceSummary{background:#f0f6ed;border-radius:10px;padding:14px;margin-bottom:16px}@media(max-width:600px){.balanceMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    .prepFilters{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.prepFilters label{display:grid;gap:5px;font-size:11px;font-weight:850;min-width:150px}.prepFilters select{min-height:38px;width:100%}
+    .prepCard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1.1fr);gap:16px;border:1px solid var(--line);background:#F8FBF5;border-radius:15px;padding:16px;margin:12px 0;overflow-wrap:anywhere}.prepCard>*{min-width:0}.prepCard h3{margin:0 0 9px;color:var(--green)}.prepCard p{font-size:12px;line-height:1.5}.prepServices{margin:0;padding-left:18px;font-size:12px;line-height:1.6}.prepCard details{margin:9px 0;font-size:12px}.prepCard summary{cursor:pointer;font-weight:850;color:var(--green)}.prepMissing{color:#991B1B;font-size:12px;line-height:1.5}.prepMissing ul{padding-left:18px}.prepState{display:inline-block;padding:5px 8px;border-radius:12px;font-size:11px;font-weight:850;background:#DCFCE7;color:#166534}.prepState.needs{background:#FEE2E2;color:#991B1B}.prepFollowup.overdue,.prepFollowup.missing{color:#991B1B;font-weight:850}.prepFollowup.today{color:#9A3412;font-weight:850}.prepCard textarea{display:block;width:100%;box-sizing:border-box;min-height:180px;font-size:12px;margin:8px 0}.prepCard button{max-width:100%;white-space:normal;min-height:36px}.prepDraftHint{font-size:11px;color:var(--muted)}
+    @media(max-width:1100px){.prepCard{grid-template-columns:minmax(0,1fr)}.prepFilters label{flex:1;min-width:125px}}
 </style>
 </head>
 <body>
@@ -127,6 +131,7 @@
       <nav class="tabs" aria-label="CRM views">
         <button class="tab" data-view="dashboard" type="button">Dashboard</button>
         <button class="tab" data-view="records" type="button">Records</button>
+        <button class="tab" data-view="preparation" type="button">Reminder preparation</button>
         <button class="tab active" data-view="calendar" type="button">Calendar</button>
         <button class="tab" data-view="balances" type="button">Upcoming balances</button>
         <button class="tab" data-view="reports" type="button">Reports</button>
@@ -172,6 +177,15 @@
           </div>
         </aside>
         <section class="panel">
+          <div class="view" id="preparationView">
+            <h2 class="panelTitle">Reminder preparation</h2>
+            <p class="hint">Confirmed / deposit-paid bookings · Payment shown separately · No sending.</p>
+            <p id="preparationWarning" class="prepMissing" role="status"></p>
+            <p id="preparationSummary"></p>
+            <div class="prepFilters"><label>Show<select id="preparationShow"><option value="all">All bookings</option><option value="needs_details">Needs details</option><option value="overdue">Follow-up overdue</option><option value="today">Follow-up today</option><option value="missing">Follow-up missing</option></select></label><label>Preparation rep<select id="preparationRep"><option value="all">All reps</option><option value="JPG">Juan</option><option value="SS">Susana</option><option value="unassigned">Unassigned</option></select></label></div>
+            <p id="preparationCount" aria-live="polite"></p>
+            <div id="preparationCards"></div>
+          </div>
           <div class="view" id="dashboardView">
             <div class="panelHeader"><h2 class="panelTitle">Dashboard</h2><p class="lastRefresh" id="lastRefreshText">Last refreshed: Not yet</p></div>
             <div class="stats">
@@ -528,6 +542,7 @@
     </section>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/assets/js/crm-preparation.js?v=20261027"></script>
   <script>
     (function(){
       "use strict";
@@ -550,6 +565,13 @@
       ["followupFilter","attributionPanel","attributionPanelBody","attributionSummary","followupFieldState","paymentLedger","paymentLedgerSummary","paymentLedgerList","paymentLedgerWarning"].forEach(id=>els[id]=document.getElementById(id));
       els.assignmentTourItem=document.getElementById("assignmentTourItem");
       function bind(){
+        document.getElementById("preparationShow").addEventListener("change",event=>{preparationShow=event.target.value;renderPreparationOverview();});
+        document.getElementById("preparationRep").addEventListener("change",event=>{preparationRep=event.target.value;renderPreparationOverview();});
+        document.getElementById("preparationCards").addEventListener("click",event=>{
+          const open=event.target.closest("[data-preparation-open]"),copy=event.target.closest("[data-preparation-copy]");
+          if(open){if(hasUnsavedTourChanges()){showToast("Save Record before reviewing another booking.");return;}selectRecord(open.dataset.preparationOpen);}
+          if(copy){const model=preparationRows.find(row=>row.id===copy.dataset.preparationCopy);if(!preparationCanCopy(model)){showToast("Refresh CRM and resolve missing details before copying the message.");return;}copyPlainText(MbwCrmPreparation.message(model)).then(()=>showToast("Message copied · Nothing sent")).catch(()=>showToast("Could not copy message"));}
+        });
         document.getElementById("conversationAssistant").addEventListener("click",event=>{if(event.target.closest("#summarizeConversationBtn"))summarizeConversation();});
         ["balanceFilter","balanceSearch","balanceCompleted"].forEach(id=>document.getElementById(id).addEventListener("input",renderBalances));
         document.getElementById("balanceRefresh").addEventListener("click",()=>loadBalances(true));
@@ -1262,7 +1284,7 @@
           else showToast("Activity edits kept. Save Record before refreshing CRM.");
           return;
         }
-        refreshInFlight=true;
+        refreshInFlight=true;renderPreparationOverview();
         try{
           saveSettings();
           const result=await api("list_inquiries",{filters:{}});
@@ -1298,7 +1320,7 @@
           refreshRetryAttempt+=1;
           scheduleRefreshRetry();
           if(!isBackground) showToast((state.records.length?"Live CRM unavailable. Showing this device's saved snapshot; automatic retry is active.":e.message));
-        }finally{ refreshInFlight=false; }
+        }finally{ refreshInFlight=false; renderPreparationOverview(); }
       }
       async function loadGlobalOperationsData(){
         if(operationsLoadPromise)return operationsLoadPromise;
@@ -1503,7 +1525,43 @@
       function parseDateRange(value){ const text=clean(value); const matches=[...text.matchAll(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/g)].map(m=>m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")); if(matches.length) return {start:matches[0],end:matches[1]||matches[0]}; const us=[...text.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g)].map(m=>m[3]+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0")); return {start:us[0]||"",end:us[1]||us[0]||""}; }
       function importCsvFile(event){ const file=event.target.files&&event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ const rows=parseCsv(String(reader.result||"")); state.records=applyDuplicateFamilyArchives(dedupeRecords(rows.filter(hasMeaningfulCrmData).map(normalizeCrmRecord))); state.selectedId=state.records[0]?state.records[0].inquiry_id:""; saveLocalRecords(); fillForm(getSelected()); render(); showToast("Imported "+state.records.length+" CRM records"); event.target.value=""; }; reader.readAsText(file); }
       function parseCsv(text){ const rows=[]; let row=[],cell="",quote=false; for(let i=0;i<text.length;i++){ const ch=text[i],next=text[i+1]; if(ch==='"'&&quote&&next==='"'){ cell+='"'; i++; } else if(ch==='"'){ quote=!quote; } else if(ch===","&&!quote){ row.push(cell); cell=""; } else if((ch==="\n"||ch==="\r")&&!quote){ if(ch==="\r"&&next==="\n") i++; row.push(cell); if(row.some(v=>v!=="")) rows.push(row); row=[]; cell=""; } else { cell+=ch; } } row.push(cell); if(row.some(v=>v!=="")) rows.push(row); const headers=(rows.shift()||[]).map(h=>h.trim().replace(/^\ufeff/,"")); return rows.map(values=>Object.fromEntries(headers.map((h,i)=>[h,values[i]||""]))); }
-      function render(){ renderBalances();const filtered=getFiltered(); renderGuestHistory(); renderConversationAssistant(); renderPaymentLedger(); renderAttribution(); renderFollowupFieldState(); renderStats(); renderFollowupSummary(); renderQueueState(); renderRecords(els.priorityRecords, getPriorityRecords(filtered).slice(0,6)); renderRecords(els.recordList, filtered); renderQueueNavigator(filtered); renderCalendar(); renderReports(); renderDetail(); renderWorkspaces(); updateItineraryActions(getSelected()); renderPayload(); }
+      function render(){ renderPreparationOverview(); renderBalances();const filtered=getFiltered(); renderGuestHistory(); renderConversationAssistant(); renderPaymentLedger(); renderAttribution(); renderFollowupFieldState(); renderStats(); renderFollowupSummary(); renderQueueState(); renderRecords(els.priorityRecords, getPriorityRecords(filtered).slice(0,6)); renderRecords(els.recordList, filtered); renderQueueNavigator(filtered); renderCalendar(); renderReports(); renderDetail(); renderWorkspaces(); updateItineraryActions(getSelected()); renderPayload(); }
+      let preparationShow="all",preparationRep="all",preparationRows=[];
+      function preparationCanCopy(model){return Boolean(model?.ready)&&state.operationsStatus==="ready"&&!refreshInFlight&&refreshRetryAttempt===0;}
+      function preparationDate(value){const date=toDateValue(value);return date?new Date(date+"T12:00:00Z").toLocaleDateString("en-US",{timeZone:"America/Guayaquil",month:"short",day:"numeric",year:"numeric"}):"Not set";}
+      function preparationServices(record){
+        const saved=normalizeTourItems(record);
+        return calendarEntriesForRecord(record).map(row=>{
+          const item=row._calendar_item||primaryTourItemFromRecord(record),assignment=row._calendar_assignment;
+          const match=assignment&&assignmentMatchedTourItem(assignment,record),linked=saved.find(service=>clean(service.id)===clean(match?.id))||item;
+          const product=clean(item.product_selected||row.product_selected),code=productCodeFromValue(product),type=clean(item.service_type||row.service_type);
+          const provider=assignment&&assignmentCalendarProvider(assignment);
+          const status=normalizeStatus(item.status||row.status);
+          const name=productTitle(product)||clean(item.tour||row.tour_type)||"Service";
+          return {id:item.id,label:name,date:toDateValue(item.date||row.requested_date),status,selected:isBookedCalendarService(row)||(["booked","deposit_paid"].includes(normalizeStatus(record.status))&&!!assignment&&!isClosedStatus(status)),guests:clean(item.guests||record.guest_count),start:clean(assignment?.start_time||linked.start_time),end:clean(assignment?.end_time||linked.end_time),pickup:clean(assignment?.pickup_location||item.pickup_location||record.pickup_location),dropoff:clean(assignment?.dropoff_location||linked.dropoff_location),transport:isTransportItem(item),flexible:!assignment&&(linked.schedule_mode||linked.schedule_type)==="flexible"&&!/^(MBW004|MBW005|MBW006|MBW016)$/.test(code),requiresProvider:!!assignment||/birdwatching|specialty wildlife|wildlife|night walk|transportation/i.test(type)||/^(MBW00[2-9]|MBW010|MBW016|MBW017|OSO|TRANS)/.test(code)||/bird|custom half|custom full/i.test(name),providerName:assignment?(assignment.provider_name==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name)):"",providerPhone:clean(provider?.phone_number||provider?.phone||provider?.whatsapp_number||assignment?.provider_phone),providerInformed:clean(assignment?.provider_informed).toLowerCase()==="yes",providerStatus:clean(assignment?.assignment_status).toLowerCase()};
+        });
+      }
+      function preparationCard(model){
+        const serviceList=items=>`<ul class="prepServices">${items.map(item=>`<li><b>${esc(preparationDate(item.date))} · ${esc(item.start|| (item.flexible?"Flexible":"Time needed"))}</b> — ${esc(item.label)} · ${esc(item.guests||"?")} ${clean(item.guests)==="1"?"guest":"guests"}</li>`).join("")}</ul>`;
+        const rep=normalizeRep(model.rep)==="JPG"?"Juan":normalizeRep(model.rep)==="SS"?"Susana":"Unassigned";
+        return `<article class="prepCard"><div><h3>${esc(model.guest)}</h3><p>${esc(rep)}</p><p>Last contact: ${esc(preparationDate(model.lastContact))}</p><details><summary>Quote & payment</summary><p>Quote: ${esc(labelStatus(model.quote))}<br>Payment: ${esc(labelStatus(model.payment))}<br>Invoice: ${esc(model.invoice||"Not recorded")}</p></details></div><div>${serviceList(model.remaining)}${model.earlier.length?`<details><summary>Earlier services · ${model.earlier.length}</summary>${serviceList(model.earlier)}</details>`:""}${model.missing.length?`<div class="prepMissing"><strong>Missing details · ${model.missing.length}</strong><ul>${model.missing.map(issue=>`<li>${esc(issue)}</li>`).join("")}</ul></div>`:""}<details><summary>WhatsApp draft</summary><textarea readonly aria-label="Confirmation preview for ${esc(model.guest)}">${esc(MbwCrmPreparation.message(model))}</textarea><button type="button" data-preparation-copy="${esc(model.id)}"${model.ready?"":" disabled"}>Copy message</button><p class="prepDraftHint">Review before use · Nothing sent.${model.ready?"":" Resolve missing details before copying."}</p></details></div><div><span class="prepState${model.ready?"":" needs"}">${model.ready?"Details complete":"Needs review"}</span><p class="prepFollowup ${esc(model.urgency)}">Follow-up: ${esc(preparationDate(model.followupDate))}${model.urgency==="overdue"?" · Overdue":model.urgency==="today"?" · Today":""}</p><p>Pre-tour check: ${esc(preparationDate(model.reminderDate))}</p><button type="button" data-preparation-open="${esc(model.id)}">Review booking</button></div></article>`;
+      }
+      function renderPreparationOverview(){
+        if(state.view!=="preparation")return;
+        const cards=document.getElementById("preparationCards");
+        try{
+          if(typeof MbwCrmPreparation==="undefined")throw Error("Preparation overview unavailable. Refresh CRM.");
+          const verified=state.operationsStatus==="ready"&&!refreshInFlight&&refreshRetryAttempt===0;
+          const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Guayaquil",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+          preparationRows=MbwCrmPreparation.queue(state.records.filter(record=>!isArchivedStatus(record)).map(record=>MbwCrmPreparation.build({record:Object.assign({},record,{assigned_to:normalizeRep(record.assigned_to),status:normalizeStatus(record.status)}),services:preparationServices(record),today,verified})));
+          const rows=MbwCrmPreparation.filter(preparationRows,preparationShow,preparationRep);
+          document.getElementById("preparationWarning").textContent=verified?"":"Provider data not verified. Refresh CRM before using a draft.";
+          document.getElementById("preparationSummary").textContent=`${preparationRows.length} bookings · ${preparationRows.filter(row=>row.ready).length} details complete · ${preparationRows.filter(row=>!row.ready).length} need review`;
+          document.getElementById("preparationCount").textContent=`Showing ${rows.length} of ${preparationRows.length} bookings`;
+          document.getElementById("preparationShow").value=preparationShow;document.getElementById("preparationRep").value=preparationRep;
+          cards.innerHTML=rows.map(preparationCard).join("")||`<p>${preparationRows.length?"No bookings match these filters.":"No upcoming confirmed bookings."}</p>`;
+        }catch(error){preparationRows=[];document.getElementById("preparationSummary").textContent="";document.getElementById("preparationCount").textContent="";document.getElementById("preparationWarning").textContent="Preparation data unavailable.";cards.textContent="Preparation overview unavailable. Refresh CRM; other CRM views remain available.";}
+      }
       const assistantState={key:"",request:0,controller:null,loading:false,result:null,error:""};
       function assistantRecordKey(){const record=getSelected();return record?clean(record.inquiry_id)+"|"+clean(record.updated_at):"";}
       function renderConversationAssistant(){
