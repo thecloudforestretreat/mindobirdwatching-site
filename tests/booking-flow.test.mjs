@@ -87,3 +87,7 @@ test('activity inquiries preserve canonical activity interest, selected name and
  }
  const invalid=await submit(booking.onRequestPost,{preferred_tour_type:'Activity',activity_choice:'<script>unsafe</script>'});assert.equal(invalid.forwarded,null);assert.match(invalid.html,/supported activity/);
 });
+test('activity plus another birding day is classified as a mixed inquiry without inventing a price',async()=>{
+ const r=await submit(booking.onRequestPost,{preferred_tour_type:'Activity',activity_choice:'Chocolate Tour',tour_add_ons:'Additional Birding Day',number_of_guests:'2'});
+ assert.equal(r.forwarded.get('interest_category'),'Tour + Activity');const items=JSON.parse(r.forwarded.get('tour_items'));assert.equal(items[0].tour,'Chocolate Tour');assert.equal(items[1].service_type,'Birdwatching');assert.ok(items.every(x=>x.price===''));
+});
