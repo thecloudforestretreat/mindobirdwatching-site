@@ -67,3 +67,67 @@ test("executed router preserves separate booked activities across repeated websi
   }
   const firstImport=context.mergeInquiryRows_({inquiry_id:"QA-NEW"},raw,"2099-01-01T00:00:00Z");assert.equal(firstImport.tour_items_json,raw.tour_items_json);assert.equal(firstImport.requested_date_start,raw.requested_date_start);
 });
+
+function importArchiveContext() {
+  const source=fs.readFileSync(process.env.MBW_ROUTER_QA_SOURCE || path.join(root,"deployment/multi-invoice-ledger/crm-router.gs"),"utf8");
+  const context={Utilities:{formatDate:date=>date.toISOString()}};
+  vm.createContext(context);vm.runInContext(source+'\nCACHED_SHEET_TIMEZONE="America/Guayaquil";',context);
+  return context;
+}
+
+test("repeat raw imports preserve archive decisions and never restore follow-up work",()=>{
+  const context=importArchiveContext();
+  for(const archive of [{status:"duplicate"},{status:"new",is_archived:"Yes"},{status:"new",is_archived:"true"}]){
+    let saved={inquiry_id:"QA-ARCHIVED",...archive,archived_at:"2098-01-01",archive_reason:"qa_cleanup",superseded_by_inquiry_id:"QA-KEEP",source_record_id:"book_tour:128",followup_date:"",next_action:"",priority:"",invoice_no:"QA-PAID",payment_status:"paid"};
+    const incoming={status:"new",is_archived:"No",source_record_id:"book_tour:129",followup_date:"2099-01-01",next_action:"Review inquiry and reply",priority:"urgent",availability_status:"pending",payment_status:"unpaid",internal_notes:"Imported from raw book_tour row 129."};
+    for(let cycle=0;cycle<3;cycle++){
+      saved=context.mergeImportedInquiry_(saved,incoming,"2099-01-01T00:00:00Z");
+      assert.equal(saved.status,"duplicate");assert.equal(saved.is_archived,"Yes");
+      for(const field of ["followup_date","next_action","priority"])assert.equal(saved[field],"");
+      assert.equal(saved.archived_at,"2098-01-01");assert.equal(saved.archive_reason,"qa_cleanup");assert.equal(saved.superseded_by_inquiry_id,"QA-KEEP");
+      assert.equal(saved.invoice_no,"QA-PAID");assert.equal(saved.payment_status,"paid");assert.match(saved.source_record_id,/129/);assert.match(saved.internal_notes,/row 129/);
+    }
+  }
+});
+
+test("archived trip matching allows exact/same-date repeats but keeps new dates and undated inquiries separate",()=>{
+  const context=importArchiveContext();
+  const archived={guest_id:"QA-GUEST",email:"qa@example.com",status:"duplicate",source_tab:"book_tour",source_record_id:"book_tour:128",requested_date_start:"2099-12-17"};
+  context.getObjectsWithRowNumbers_=()=>[{rowNumber:2,row:archived}];
+  const guest={guest_id:"QA-GUEST"},input={emailNormalized:"qa@example.com",sourceTab:"book_tour",sourceType:"site_book_tour",sourceRecordId:"book_tour:129"};
+  assert.ok(context.findExistingInquiryForInput_({},guest,input,{requested_date_start:"2099-12-17"}));
+  assert.equal(context.findExistingInquiryForInput_({},guest,input,{requested_date_start:"2100-01-05"}),null);
+  assert.equal(context.findExistingInquiryForInput_({},guest,input,{}),null);
+  assert.equal(context.findExistingInquiryForInput_({},guest,{...input,sourceType:"manual_pending_guest"},{requested_date_start:"2100-01-05"}),null);
+  assert.ok(context.findExistingInquiryForInput_({},guest,{...input,sourceRecordId:"book_tour:128"},{requested_date_start:"2100-01-05"}));
+  archived.status="contacted";
+  assert.ok(context.findExistingInquiryForInput_({},guest,input,{}));
+});
+
+test("active imports and explicit staff restore retain their existing behavior",()=>{
+  const context=importArchiveContext();
+  const existing={status:"quoted",is_archived:"No",followup_date:"2099-12-01",next_action:"Staff plan",priority:"high"};
+  const incoming={status:"new",priority:"normal",source_record_id:"book_tour:129"};
+  const saved=context.mergeImportedInquiry_(existing,incoming,"2099-01-01");
+  assert.equal(saved.status,"quoted");assert.equal(saved.followup_date,existing.followup_date);assert.equal(saved.next_action,"Staff plan");
+  const restored=context.mergeImportedInquiry_({...existing,status:"planning",archived_at:"",archive_reason:""},incoming,"2099-01-01");
+  assert.equal(restored.is_archived,"No");assert.equal(restored.status,"planning");
+});
+
+test("intake writes an archived repeat in place and creates a separate inquiry for a later trip",()=>{
+  const context=importArchiveContext();
+  const old={inquiry_id:"QA-OLD",guest_id:"QA-GUEST",email:"qa@example.com",status:"duplicate",is_archived:"Yes",archived_at:"2098-01-01",source_record_id:"book_tour:128",source_tab:"book_tour",requested_date_start:"2099-12-17",followup_date:""};
+  const writes=[],appends=[];
+  context.getObjectsWithRowNumbers_=()=>[{rowNumber:2,row:old}];
+  context.getObjects_=()=>[old];context.makeId_=()=>"QA-NEW";
+  context.todayIso_=()=>"2099-01-01";
+  context.writeObjectToRow_=(_,rowNumber,row)=>writes.push({rowNumber,row});
+  context.appendObject_=(_,row)=>appends.push(row);
+  context.buildStructuredSiteRequest_=()=>({interestCategory:"Activity",serviceType:"Activity",tourItems:[],tourItemsJson:"[]",groupingPreference:"unknown",transportationNeeded:"Unknown"});
+  const ss={getSheetByName:()=>({})},guest={guest_id:"QA-GUEST"};
+  const input={emailNormalized:"qa@example.com",sourceType:"site_book_tour",sourceTab:"book_tour",sourceRecordId:"book_tour:129",requestedDateText:"2099-12-17",guestCountText:"2"};
+  const repeat=context.appendInquiry_(ss,guest,input,"2099-01-01T00:00:00Z");
+  assert.equal(repeat._created_new,false);assert.equal(repeat.inquiry_id,"QA-OLD");assert.equal(repeat.status,"duplicate");assert.equal(repeat.followup_date,"");assert.equal(writes.length,1);assert.equal(appends.length,0);
+  const later=context.appendInquiry_(ss,guest,{...input,sourceRecordId:"book_tour:130",requestedDateText:"2100-01-05"},"2099-01-01T00:00:00Z");
+  assert.equal(later._created_new,true);assert.equal(later.inquiry_id,"QA-NEW");assert.equal(later.status,"new");assert.equal(later.is_archived,"No");assert.equal(appends.length,1);assert.equal(old.status,"duplicate");
+});
