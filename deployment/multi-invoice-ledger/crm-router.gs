@@ -3182,6 +3182,7 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
     return column && noteRowCount ? inquiries.getRange(2, column, noteRowCount, 1).getNotes() : [];
   }
   const statusNotes = columnNotes("status");
+  const followupNotes = columnNotes("followup_date");
   const startNotes = columnNotes("requested_date_start");
   const endNotes = columnNotes("requested_date_end");
   const existingRows = getObjects_(followups);
@@ -3218,6 +3219,9 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
       ? row
       : alignInquiryStatusFromSubstatuses_(row, dateRange);
     const action = nextActionForInquiry_(aligned, dateRange);
+    const manualFollowup = clean_((followupNotes[noteIndex] || [])[0]).indexOf(MANUAL_FOLLOWUP_OVERRIDE_NOTE) >= 0;
+    // Use the same staff override as the saved inquiry, including a cleared date.
+    if (manualFollowup) action.followupDate = normalizeDateForSheet_(row.followup_date);
     if (!action.followupDate || !action.followupType) return;
     if (["did_not_book", "lost"].indexOf(clean_(aligned.status)) >= 0) return;
 

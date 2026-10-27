@@ -40,3 +40,9 @@ Raw intake now uses mergeImportedInquiry_ to preserve an existing archive decisi
 The live Head source was backed up before applying only this targeted patch. The live router differs from this repository in unrelated schema/attribution sections; those live differences were preserved. The five-minute routeAllNewRawRows trigger executes Head. The older versioned web-app deployment was not changed.
 
 QA: 33 regression tests pass; four behavior/integration tests also pass against the exact patched live source, including archived repeat versus a separate later trip. Live source readback exactly matches the prepared patch. No invoice, payment, quote, tour, WhatsApp or provider data is migrated.
+
+## Manual follow-up dates in digest — 27 October 2026
+
+Queue reconciliation now reads the existing manual follow-up override note in a fourth bulk column read. A staff-selected date overrides the workflow-derived date; a cleared manual date suppresses that task. No inquiry values are rewritten by this change. Archived and closed/sent task protections remain intact.
+
+42 regression tests passed, including postponed/cleared manual dates. Six digest tests also passed against the exact narrowly patched live Head source. Live read-only preview completed in 6.878 seconds and changed due count from 72 to 71. This does not resolve all differences from the CRM's 22 due-inquiry cards: backend operations/review tasks and UI filters need separate reconciliation. No email was sent by QA and no guest records were auto-closed.
