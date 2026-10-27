@@ -28,3 +28,9 @@ test('selection analytics emit only known experience labels and ignore private f
  change({name:'email',value:'private@example.invalid'});change({name:'special_interests',value:'private note'});change({name:'preferred_tour_type',value:'unexpected user text'});assert.equal(events.length,0);
  change({name:'preferred_tour_type',value:'Full-Day Tour'});change({name:'activity_choice',value:'Chocolate Tour',disabled:false});change({name:'activity_choice',value:'private@example.invalid',disabled:false});assert.equal(events.length,2);assert.equal(events[0].name,'tour_selection');assert.equal(events[1].name,'activity_selection');assert.ok(!JSON.stringify(events).includes('private@'));
 });
+test('edited core pages keep valid JSON-LD, paired languages and canonical targets',()=>{
+ for(const p of ['index.html','es/index.html','tours/index.html','es/tours/index.html','activities/index.html','es/actividades/index.html','book-tour/index.html','es/reservar-tour/index.html']){
+ const s=read(p);assert.match(s,/rel="canonical"/);assert.match(s,/hreflang="en"/);assert.match(s,/hreflang="es"/);
+ for(const m of s.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g))assert.doesNotThrow(()=>JSON.parse(m[1]),p);
+ }
+});
