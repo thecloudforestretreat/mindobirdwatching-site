@@ -756,6 +756,22 @@
     return payload;
   }
 
+  function initExperienceSelectionTracking() {
+    document.addEventListener("change", function (event) {
+      var field = event.target;
+      if (!field || !field.closest || !field.closest("#bookTourForm")) return;
+      if (field.name === "preferred_tour_type" && (field.tagName === "SELECT" || field.checked)) {
+        var allowed = ["Half-Day Tour", "Full-Day Tour", "Photography-Focused Tour", "Night Walk", "Quito to Mindo Day Trip", "Custom / Private Tour", "Activity", "Not Sure Yet"];
+        if (allowed.indexOf(field.value) !== -1) sendEvent("tour_selection", {form_name:"bookTourForm", experience_type:field.value, label:field.value});
+      }
+      if (field.name === "activity_choice" && !field.disabled) {
+        var catalog = window.MBWExperienceCatalog || [];
+        var activity = catalog.find(function (item) { return item.en === field.value; });
+        if (activity) sendEvent("activity_selection", {form_name:"bookTourForm", experience_type:"Activity", label:activity.en});
+      }
+    });
+  }
+
   function initFormTracking() {
     document.addEventListener("focusin", function (e) {
       var field = e.target;
@@ -876,6 +892,7 @@
     initNativeDetailsFaqTracking();
     initCustomFaqClickTracking();
     initFormTracking();
+    initExperienceSelectionTracking();
     initVisibleFormStateObserver();
 
     if (!document.__mbwAnalyticsClickBound) {

@@ -27,3 +27,15 @@
 #siteFooter .footerExploreGrid a:hover{text-decoration:underline;}
 #siteFooter .footerExploreGrid a:focus-visible{outline:3px solid #2468a6;outline-offset:3px;border-radius:4px;}
 @media(max-width:640px){#siteFooter .footerExploreGrid{grid-template-columns:1fr;gap:18px;}}
+/* Allow narrow Spanish copy to wrap instead of forcing the grid wider. */
+body[data-page-type="home_page"] .hero>*{min-width:0;}
+body[data-page-type="home_page"] .hero :is(h2,p,.badge){overflow-wrap:anywhere;}
+body[data-page-type="home_page"] .heroFormatBadges .badge{white-space:normal;max-width:100%;}
+@media(max-width:640px){
+ #bookTourForm :is(input,select,textarea),#contactForm :is(input,select,textarea){font-size:16px;min-width:0;max-width:100%;}
+ #bookTourForm .tourPrimaryOption span,#bookTourForm .tourAddOnOption span{min-width:0;overflow-wrap:anywhere;}
+ #siteFooter .footer{padding-bottom:120px;}
+}
+body[data-page-type="tour_request_page"] .adHero>*{min-width:0;}
+body[data-page-type="tour_request_page"] .heroCopy :is(h1,p,.trustPill){overflow-wrap:anywhere;}
+body[data-page-type="tour_request_page"] .trustPill{white-space:normal;max-width:100%;}

@@ -18,3 +18,13 @@ test('condensed tour collections retain practical guides, FAQs and all main tour
 test('footer retains social and WhatsApp controls and exposes paired practical/policy links',()=>{
  const s=read('assets/includes/footer.html');assert.match(s,/footerExploreGrid/);assert.match(s,/mbwWaQuestions/);assert.match(s,/privacy-policy/);assert.match(s,/data-href-es="\/es\/politica-de-privacidad\//);assert.match(s,/data-booking-link/);
 });
+import vm from 'node:vm';
+test('selection analytics emit only known experience labels and ignore private form fields',()=>{
+ const source=read('assets/js/site.js'),start=source.indexOf('  function initExperienceSelectionTracking()'),end=source.indexOf('  function initFormTracking()',start);
+ const listeners={},events=[];const form={};
+ const context={document:{addEventListener:(name,fn)=>listeners[name]=fn},window:{MBWExperienceCatalog:[{en:'Chocolate Tour'}]},sendEvent:(name,data)=>events.push({name,data})};
+ vm.runInNewContext(source.slice(start,end)+'\ninitExperienceSelectionTracking();',context);
+ const change=field=>listeners.change({target:{closest:()=>form,tagName:'INPUT',checked:true,...field}});
+ change({name:'email',value:'private@example.invalid'});change({name:'special_interests',value:'private note'});change({name:'preferred_tour_type',value:'unexpected user text'});assert.equal(events.length,0);
+ change({name:'preferred_tour_type',value:'Full-Day Tour'});change({name:'activity_choice',value:'Chocolate Tour',disabled:false});change({name:'activity_choice',value:'private@example.invalid',disabled:false});assert.equal(events.length,2);assert.equal(events[0].name,'tour_selection');assert.equal(events[1].name,'activity_selection');assert.ok(!JSON.stringify(events).includes('private@'));
+});
