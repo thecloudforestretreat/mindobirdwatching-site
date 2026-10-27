@@ -321,8 +321,11 @@ test("Robert's original Neicer estimate remains locked while separate costs are 
     originalTotal: 6,
     adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
   }, original);
-  assert.equal(changed.originalTotal, 1150);
-  assert.deepEqual(changed.days.map(day => day.originalCost), [250, 225, 325, 350, 0, 0]);
+  assert.equal(changed.originalTotal, 795);
+  assert.deepEqual(changed.days.map(day => day.originalCost), [185, 150, 225, 235, 0, 0]);
+  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [85, 80, 20]);
+  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [130, 80, 15]);
+  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [140, 80, 15]);
   assert.equal(changed.adjustments[0].amount, 80);
 });
 
@@ -348,7 +351,7 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
     const saved = await neicer.json();
-    assert.equal(saved.plan.originalTotal, 1150);
+    assert.equal(saved.plan.originalTotal, 795);
     assert.equal(saved.plan.adjustments[0].description, "Intag lodge");
     assert.equal(rows[0].provider_id, "PROV-NEICER");
 
@@ -374,7 +377,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(js, /\["confirmed", "completed"\]\.includes\(tour\.status\) && \(!tour\.serviceDate \|\| tour\.serviceDate <= today\)/);
   assert.doesNotMatch(js, /data-accept=/);
   assert.match(js, /MBW Shop/);
-  assert.match(js, /Robert · Custom Ecuador Tour|additionalCosts/);
+  assert.match(js, /Custom Ecuador itinerary|additionalCosts/);
   assert.match(js, /assets\/images\/icons\/mbw_gr\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_icons_trip_advisor\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_(ig|fb|yt|shop)\.png/);
