@@ -40,3 +40,11 @@ Raw intake now uses mergeImportedInquiry_ to preserve an existing archive decisi
 The live Head source was backed up before applying only this targeted patch. The live router differs from this repository in unrelated schema/attribution sections; those live differences were preserved. The five-minute routeAllNewRawRows trigger executes Head. The older versioned web-app deployment was not changed.
 
 QA: 33 regression tests pass; four behavior/integration tests also pass against the exact patched live source, including archived repeat versus a separate later trip. Live source readback exactly matches the prepared patch. No invoice, payment, quote, tour, WhatsApp or provider data is migrated.
+
+## Saved follow-up dates in digest — 27 October 2026
+
+Active-inquiry tasks use the saved follow-up date, including CRM edits without a Sheet note. Explicit manual override notes still support a cleared date. Reviews and cancellations keep their separate scheduling rules. Four bulk note-column reads preserve performance. No inquiry values are rewritten.
+
+Spam inquiries produce no tasks and are excluded defensively from digest rendering.
+
+44 regression tests passed; eight digest tests also passed against the exact patched live Head source. Live source was backed up and only the reconciliation change applied, preserving unrelated live/repository differences. No email sent by QA and no guest records auto-closed.

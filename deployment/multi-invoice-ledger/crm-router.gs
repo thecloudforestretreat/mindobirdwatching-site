@@ -3182,6 +3182,7 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
     return column && noteRowCount ? inquiries.getRange(2, column, noteRowCount, 1).getNotes() : [];
   }
   const statusNotes = columnNotes("status");
+  const followupNotes = columnNotes("followup_date");
   const startNotes = columnNotes("requested_date_start");
   const endNotes = columnNotes("requested_date_end");
   const existingRows = getObjects_(followups);
@@ -3207,7 +3208,7 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
     const row = item.row;
     const inquiryId = clean_(row.inquiry_id);
     if (!inquiryId) return;
-    if (clean_(row.status) === "duplicate" || clean_(row.is_archived).toLowerCase() === "yes") return;
+    if (["duplicate", "spam"].indexOf(clean_(row.status)) >= 0 || clean_(row.is_archived).toLowerCase() === "yes") return;
 
     const noteIndex = item.rowNumber - 2;
     const manualDates = clean_((startNotes[noteIndex] || [])[0]).indexOf(MANUAL_REQUESTED_DATE_OVERRIDE_NOTE) >= 0 ||
@@ -3218,6 +3219,12 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
       ? row
       : alignInquiryStatusFromSubstatuses_(row, dateRange);
     const action = nextActionForInquiry_(aligned, dateRange);
+    const manualFollowup = clean_((followupNotes[noteIndex] || [])[0]).indexOf(MANUAL_FOLLOWUP_OVERRIDE_NOTE) >= 0;
+    // The saved date is authoritative for active inquiries, including CRM edits
+    // that do not carry a Sheet note. Reviews/cancellations keep their own rules.
+    const savedFollowup = normalizeDateForSheet_(row.followup_date);
+    const activeFollowup = ["completed", "cancelled"].indexOf(clean_(aligned.status)) < 0;
+    if (manualFollowup || (activeFollowup && savedFollowup)) action.followupDate = savedFollowup;
     if (!action.followupDate || !action.followupType) return;
     if (["did_not_book", "lost"].indexOf(clean_(aligned.status)) >= 0) return;
 
@@ -3323,6 +3330,7 @@ function nextActionForInquiry_(row, dateRange) {
     today;
 
   if (status === "duplicate" || clean_(row.is_archived).toLowerCase() === "yes") return blankAction_("No action - archived duplicate");
+  if (status === "spam") return blankAction_("No action - spam");
   if (status === "did_not_book" || status === "lost") return blankAction_("No action - did not book");
   if (status === "cancelled") {
     if (clean_(row.payment_status) === "refunded") return blankAction_("No action - cancelled and refunded");
@@ -4201,7 +4209,7 @@ function buildDailyFollowupDigest_(ss, followups) {
     const inquiryId = clean_(row.inquiry_id);
     if (!inquiryId || !inquiries[inquiryId]) return;
     const inquiry = inquiries[inquiryId];
-    if (clean_(inquiry.is_archived).toLowerCase() === "yes" || clean_(inquiry.status) === "duplicate") return;
+    if (clean_(inquiry.is_archived).toLowerCase() === "yes" || ["duplicate", "spam"].indexOf(clean_(inquiry.status)) >= 0) return;
     if (clean_(row.followup_type) === "schedule_conflict") return;
     if (clean_(row.status) !== "open") return;
     if (!row.due_at || normalizeDateForSheet_(row.due_at) > today) return;
