@@ -297,6 +297,9 @@
       letter-spacing:.04em;
       text-transform:uppercase;
     }
+    .snapshotNotice{margin:0 0 14px;padding:10px 12px;border:1px solid #bdd5c3;border-radius:10px;font-size:13px;line-height:1.5;overflow-wrap:anywhere;background:#f0f7f1;}
+    .snapshotNotice[data-warning="true"]{color:#8b1c16;background:#fff1ef;border-color:#e7aaa4;}
+    .snapshotNotice[hidden]{display:none;}
     .previewHint{ color:var(--muted); font-size:12.5px; font-weight:800; }
     .previewShell{
       width:100%;
@@ -758,6 +761,7 @@
         <section class="mainStack" id="previewPanelAnchor">
           <section class="controlPanel" aria-label="Confirmation details">
             <h2 class="panelTitle">Confirmation Details</h2>
+            <p id="snapshotNotice" class="snapshotNotice" role="status" hidden></p>
             <div class="controlGrid">
               <div class="field">
                 <label for="bookingSelect">Select Confirmation</label>
@@ -1028,6 +1032,8 @@
         bindEvents();
         setPreviewScale();
         loadData();
+        setInterval(renderSnapshotNotice,60000);
+        document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderSnapshotNotice();});
       }
 
       function cacheEls(){
@@ -1037,7 +1043,7 @@
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupTime", "outPickupLocation", "outNotes", "outGuideImage",
           "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "exportAllJpgBtn", "exportAllPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
-          "confirmationChooser", "confirmationTabs",
+          "confirmationChooser", "confirmationTabs", "snapshotNotice",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
         ];
         ids.forEach(id => els[id] = document.getElementById(id));
@@ -1375,6 +1381,8 @@
       }
 
       function selectRecord(index){
+        state.confirmationSnapshotCreatedAt=undefined;
+        renderSnapshotNotice();
         state.activeIndex = index;
         const r = state.records[index] || {};
         fillForm(r);
@@ -1384,6 +1392,8 @@
       }
 
       function startManualConfirmation(){
+        state.confirmationSnapshotCreatedAt=undefined;
+        renderSnapshotNotice();
         state.activeIndex = -1;
         els.bookingSelect.value = "manual";
         els.statusInput.value = "Pending";
@@ -1428,7 +1438,7 @@
             const snapshot=JSON.parse(localStorage.getItem("mbwTourConfirmationHandoff:"+token)||"null");
             const draft=snapshot?.draft;
             if(snapshot?.version!==1||!draft||!inquiry||!guest||String(draft.inquiry_id||"").trim()!==inquiry||String(draft.guest_id||"").trim()!==guest)throw new Error("Missing handoff");
-            return Object.assign({},draft,{source:"guest_crm",inquiry_id:inquiry,guest_id:guest});
+            return Object.assign({},draft,{source:"guest_crm",inquiry_id:inquiry,guest_id:guest,_confirmation_snapshot_created_at:snapshot.createdAt||""});
           } catch(_) { return {handoff_error:"This confirmation draft is unavailable in this browser. Reopen it from the guest's CRM record."}; }
         }
         if(!inquiry)return data;
@@ -1442,6 +1452,24 @@
           } catch(_) {}
         });
         return data;
+      }
+
+      function confirmationSnapshotNotice(createdAt,now=Date.now()){
+        const stamp=typeof createdAt==="string"&&createdAt.trim()?Date.parse(createdAt):NaN;
+        if(!Number.isFinite(stamp)||stamp>now+60000)return {warning:true,text:"Draft age unknown. Reopen from CRM to use current booking details."};
+        const label=new Intl.DateTimeFormat("en-US",{timeZone:"America/Guayaquil",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(stamp));
+        const warning=now-stamp>=24*60*60*1000;
+        return {warning,text:(warning?"Draft is over 24 hours old. ":"")+"Opened from CRM: "+label+" (Mindo time). "+(warning?"Reopen from CRM before using current booking details.":"Fixed snapshot; reopen from CRM after booking changes.")};
+      }
+
+      function renderSnapshotNotice(){
+        if(!els.snapshotNotice)return;
+        const active=state.confirmationSnapshotCreatedAt!==undefined;
+        els.snapshotNotice.hidden=!active;
+        if(!active){els.snapshotNotice.textContent="";return;}
+        const notice=confirmationSnapshotNotice(state.confirmationSnapshotCreatedAt);
+        els.snapshotNotice.textContent=notice.text;
+        els.snapshotNotice.dataset.warning=String(notice.warning);
       }
 
       function hasInboundCrmRecord(){
@@ -1545,6 +1573,8 @@
 
       function applyInboundCrmRecord(){
         const data = getInboundData();
+        state.confirmationSnapshotCreatedAt=data.handoff_error?undefined:(data._confirmation_snapshot_created_at||"");
+        renderSnapshotNotice();
         const fullName = getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName"], "");
         const phone = getInboundValue(data, ["guest_phone", "phone", "phone_number", "guestPhone", "phone_normalized"], "");
         const tourDate = getInboundValue(data, ["tour_date", "requested_date", "requested_date_start", "date"], "");
