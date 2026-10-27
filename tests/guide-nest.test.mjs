@@ -313,17 +313,18 @@ test("two guide identities receive only their own tours and cannot mutate each o
   } finally { globalThis.fetch = savedFetch; }
 });
 
-test("Robert's original Neicer estimate remains locked while separate costs are added", () => {
+test("Neicer can edit guide dates and prices while the submitted total is recalculated", () => {
   const original = robertPlan({ providerId: "PROV-007", name: "Neycer" });
   const changed = sanitizePlan({
     ...original,
-    days: original.days.map(day => ({ ...day, originalCost: 1 })),
-    originalTotal: 6,
+    days: original.days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day),
+    originalTotal: 99999,
     adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
   }, original);
-  assert.equal(changed.originalTotal, 795);
-  assert.deepEqual(changed.days.map(day => day.originalCost), [185, 150, 225, 235, 0, 0]);
-  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [85, 80, 20]);
+  assert.equal(changed.originalTotal, 800);
+  assert.equal(changed.startDate, "2027-02-08");
+  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 225, 235, 0, 0]);
+  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [90, 80, 20]);
   assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [130, 80, 15]);
   assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [140, 80, 15]);
   assert.equal(changed.adjustments[0].amount, 80);
@@ -347,11 +348,15 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
       if (payload.action === "create_assignment") { rows = [{ ...payload.assignment, assignment_id: "PLAN-ROW-1", updated_at: "v1" }]; return Response.json({ ok: true }); }
       throw new Error(`Unexpected ${payload.action}`);
     };
-    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
+    const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190 } : day);
+    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], originalCost: 60 });
+    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
     const saved = await neicer.json();
-    assert.equal(saved.plan.originalTotal, 795);
+    assert.equal(saved.plan.originalTotal, 860);
+    assert.equal(saved.plan.startDate, "2027-02-08");
+    assert.equal(saved.plan.endDate, "2027-02-15");
     assert.equal(saved.plan.adjustments[0].description, "Intag lodge");
     assert.equal(rows[0].provider_id, "PROV-NEICER");
 

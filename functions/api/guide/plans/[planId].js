@@ -30,6 +30,7 @@ export async function onRequestPost({ request, env, params }) {
       ...current,
       adjustments: Array.isArray(body.adjustments) ? body.adjustments : current.adjustments,
       comments: Array.isArray(body.comments) ? body.comments : current.comments,
+      days: Array.isArray(body.days) ? body.days : current.days,
       status: body.status || current.status,
       providerId: current.providerId || requestedProvider.providerId,
       providerName: current.providerName || requestedProvider.providerName,

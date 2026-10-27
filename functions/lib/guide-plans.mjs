@@ -1,13 +1,21 @@
 const text = (value, max = 500) => String(value ?? "").trim().slice(0, max);
 const number = value => {
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : 0;
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100000 ? Math.round(parsed * 100) / 100 : 0;
 };
 const date = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
 const PLAN_MARKER = "[GUIDE_PLAN robert-2027]";
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "reserve", "activity", "other"]);
 const ALLOWED_VERIFICATION = new Set(["needs_verification", "estimated", "confirmed"]);
 const ALLOWED_STATUS = new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
+const bilingual = (value, fallback = {}, max = 1200) => {
+  const source = value && typeof value === "object" ? value : {};
+  const prior = fallback && typeof fallback === "object" ? fallback : { es: fallback, en: fallback };
+  return {
+    es: text(source.es ?? prior.es ?? prior.en ?? "", max),
+    en: text(source.en ?? prior.en ?? prior.es ?? "", max),
+  };
+};
 
 export const ROBERT_PLAN_ID = "robert-2027";
 
@@ -120,6 +128,33 @@ export function sanitizePlan(input, current = robertPlan()) {
     role: item.role === "guide" ? "guide" : "admin",
     createdAt: text(item.createdAt, 80),
   })).filter(item => item.message) : [];
+  const currentDays = new Map((current.days || []).map(day => [day.id, day]));
+  const submittedDays = Array.isArray(input.days) && input.days.length ? input.days.slice(0, 24) : current.days;
+  const days = submittedDays.map((item, index) => {
+    const id = /^[A-Za-z0-9_.-]{1,80}$/.test(String(item?.id || "")) ? String(item.id) : `day-${index + 1}`;
+    const prior = currentDays.get(id) || {};
+    const sourceCosts = Array.isArray(item?.sourceCosts) ? item.sourceCosts.slice(0, 20).map((cost, costIndex) => ({
+      id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
+      category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
+      amount: number(cost.amount),
+    })).filter(cost => cost.amount > 0) : (prior.sourceCosts || []).map((cost, costIndex) => ({
+      id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
+      category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
+      amount: number(cost.amount),
+    })).filter(cost => cost.amount > 0);
+    return {
+      ...prior,
+      id,
+      date: date(item?.date || prior.date),
+      title: bilingual(item?.title, prior.title, 240),
+      details: bilingual(item?.details, prior.details, 1800),
+      sourceCosts,
+      costNote: bilingual(item?.costNote, prior.costNote, 500),
+      originalCost: number(item?.originalCost),
+    };
+  }).filter(day => day.date && (day.title.es || day.title.en));
+  const normalizedDays = days.length ? days.sort((a, b) => a.date.localeCompare(b.date)) : current.days;
+  const originalTotal = normalizedDays.reduce((sum, day) => sum + number(day.originalCost), 0);
   return {
     ...current,
     assignmentId: text(input.assignmentId || current.assignmentId, 128),
@@ -128,9 +163,11 @@ export function sanitizePlan(input, current = robertPlan()) {
     status: ALLOWED_STATUS.has(input.status) ? input.status : current.status,
     adjustments,
     comments,
-    // The source estimate is server-owned and can never be rewritten by the client.
-    days: current.days,
-    originalTotal: 795,
+    // Only the guide-cost layer is editable. MBW pricing is never present in this record.
+    days: normalizedDays,
+    startDate: normalizedDays[0]?.date || current.startDate,
+    endDate: normalizedDays.at(-1)?.date || current.endDate,
+    originalTotal,
   };
 }
 
