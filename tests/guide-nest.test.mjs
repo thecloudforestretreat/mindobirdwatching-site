@@ -273,6 +273,8 @@ test("two guide identities receive only their own tours and cannot mutate each o
       if (action === "list_assignments") return Response.json({ ok: true, records: [
         { assignment_id: "A-CHICHO", inquiry_id: "I-CHICHO", provider_id: "PROV-ACTIVITY-CHICHO", provider_name: "Chicho", service_date: "2026-11-01", assignment_status: "confirmed" },
         { assignment_id: "A-NEICER", inquiry_id: "I-NEICER", provider_id: "PROV-NEICER-NIGHT", provider_name: "Neicer", service_date: "2026-11-02", assignment_status: "pending" },
+        { assignment_id: "O-CHICHO", assignment_kind: "offer", provider_id: "PROV-CHICHO", provider_name: "Chicho", service_date: "2026-11-03", assignment_status: "pending" },
+        { assignment_id: "O-NEICER", assignment_kind: "offer", provider_id: "PROV-NEICER", provider_name: "Neicer", service_date: "2026-11-04", assignment_status: "pending" },
       ] });
       if (action === "list_inquiries") return Response.json({ ok: true, records: [
         { inquiry_id: "I-CHICHO", full_name: "Chicho Guest", status: "booked" },
@@ -284,8 +286,15 @@ test("two guide identities receive only their own tours and cannot mutate each o
     };
     const chichoResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neicer"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" } });
     const neicerResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Chicho"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "neicer@example.test" } });
-    assert.deepEqual((await chichoResponse.json()).tours.map(item => item.guestName), ["Chicho Guest"]);
-    assert.deepEqual((await neicerResponse.json()).tours.map(item => item.guestName), ["Neicer Guest"]);
+    const chichoBody = await chichoResponse.json(), neicerBody = await neicerResponse.json();
+    assert.deepEqual(chichoBody.tours.map(item => item.guestName), ["Chicho Guest"]);
+    assert.deepEqual(neicerBody.tours.map(item => item.guestName), ["Neicer Guest"]);
+    assert.deepEqual(chichoBody.features, { plans: false, opportunities: false });
+    assert.equal(chichoBody.plans.length, 0);
+    assert.equal(chichoBody.offers.length, 0);
+    assert.deepEqual(neicerBody.features, { plans: true, opportunities: true });
+    assert.equal(neicerBody.plans[0].planId, "robert-2027");
+    assert.equal(neicerBody.offers.length, 1);
 
     const denied = await acceptGuideAssignment({
       request: new Request("http://localhost/api/guide/assignments/A-NEICER/accept", { method: "POST", headers: { Origin: "http://localhost" } }),
@@ -293,6 +302,13 @@ test("two guide identities receive only their own tours and cannot mutate each o
       params: { assignmentId: "A-NEICER" },
     });
     assert.equal(denied.status, 404);
+    assert.equal(writeAttempted, false);
+    const deniedOffer = await respondToGuideOffer({
+      request: new Request("http://localhost/api/guide/offers/O-CHICHO/respond", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ response: "interested", bidAmount: "100" }) }),
+      env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" },
+      params: { assignmentId: "O-CHICHO" },
+    });
+    assert.equal(deniedOffer.status, 404);
     assert.equal(writeAttempted, false);
   } finally { globalThis.fetch = savedFetch; }
 });

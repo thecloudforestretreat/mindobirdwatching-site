@@ -1,6 +1,7 @@
 import { guideIdentity, identityMatchesProvider } from "../../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../../lib/mobile-crm.mjs";
 import { errorResponse, json, methodNotAllowed, assertSameOrigin, readJson, validId, writesEnabled } from "../../../../lib/mobile-http.mjs";
+import { isNeicer } from "../../../../lib/guide-plans.mjs";
 
 const lower = value => String(value || "").trim().toLowerCase();
 const belongsToGuide = (row, identity) => identityMatchesProvider(identity, row.provider_id, row.provider_name === "Other" ? row.provider_name_other : row.provider_name);
@@ -10,6 +11,7 @@ export async function onRequestPost({ request, env, params }) {
   try {
     const identity = await guideIdentity(request, env);
     if (identity.role !== "guide") throw Object.assign(new Error("Admin preview is read-only."), { status: 403 });
+    if (!isNeicer(identity.providerName || identity.name)) return json(404, { ok: false, error: "Tour offer not found." });
     if (!writesEnabled(env) || !env.N8N_CRM_ADMIN_TOKEN) throw Object.assign(new Error("Offer responses are temporarily unavailable."), { status: 503 });
     assertSameOrigin(request, env);
     const assignmentId = validId(params.assignmentId), body = await readJson(request, 3000);

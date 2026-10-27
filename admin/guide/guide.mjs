@@ -20,7 +20,7 @@ const COPY = {
     availability: "Disponibilidad", availabilityHelp: "Bloquea las horas en que no puedes recibir asignaciones.", date: "Fecha", start: "Inicio", end: "Fin", noteOptional: "Nota opcional", blockTime: "Bloquear horario", scheduleProtection: "Protección de agenda", unavailableTimes: "Horarios no disponibles", noAvailability: "No tienes horarios bloqueados.", remove: "Quitar", availabilitySaved: "Horario bloqueado", availabilityRemoved: "Bloqueo eliminado",
     futureWork: "Próximas oportunidades", offers: "Ofertas", offersPrivacy: "Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.", noOffers: "No hay ofertas disponibles en este momento.", interested: "Me interesa", pass: "No disponible", bidOptional: "Tarifa opcional (USD)", responseSaved: "Respuesta guardada", pendingResponse: "Sin respuesta", adminReadOnly: "La vista de administrador es de solo lectura.",
     upcoming: "Próximos", allTours: "Todos los tours", sevenDays: "7 días", thirtyDays: "30 días", allDates: "Todos", searchTours: "Buscar tours", searchPlaceholder: "Huésped, servicio, país o recogida", today: "Hoy", tomorrow: "Mañana", nextTour: "Próximo tour", needsAttention: "requieren atención", allSet: "Todo al día", showingTours: "tours visibles", noMatchingTours: "No hay tours que coincidan con estos filtros.", lastSynced: "Sincronizado", openMap: "Abrir mapa", tip: "Propina", shareLinks: "Compartir enlaces",
-    collaborativePlanning: "Planificación colaborativa", tourPlans: "Planes", plansPrivacy: "Solo el guía asignado y el equipo administrador de MBW pueden ver y editar estos planes. Los costos originales quedan protegidos.", noPlans: "No tienes planes personalizados asignados.", guestBrief: "Información inicial", itinerary: "Itinerario", originalEstimate: "Estimación original", protected: "Protegida", additionalCosts: "Costos adicionales", noAdditionalCosts: "Todavía no hay costos adicionales.", addCost: "Agregar costo", category: "Categoría", description: "Descripción", amount: "Monto USD", day: "Día", verification: "Verificación", needsVerification: "Por verificar", estimated: "Estimado", confirmedCost: "Confirmado", transportation: "Transporte", guideCost: "Guía", food: "Alimentación", lodging: "Alojamiento", reserve: "Reserva", activity: "Actividad", other: "Otro", collaboration: "Conversación", commentPlaceholder: "Escribe una nota para el equipo MBW", addComment: "Agregar nota", saveDraft: "Guardar borrador", submitReview: "Enviar a revisión", guideDrafting: "En preparación", adminReview: "Revisión de admin", changesRequested: "Cambios solicitados", approved: "Aprobado", revisedTotal: "Total de trabajo", savedPlan: "Plan guardado", originalRequest: "Solicitud", travelerNeeds: "Viajero", pickupDropoff: "Recogida y regreso",
+    collaborativePlanning: "Planificación colaborativa", tourPlans: "Planes", assignedPlans: "Planes asignados", opportunities: "Oportunidades", plansPrivacy: "Solo el guía asignado y el equipo administrador de MBW pueden ver y editar estos planes. Los costos originales quedan protegidos.", noPlans: "No tienes planes personalizados asignados.", guestBrief: "Información inicial", itinerary: "Itinerario", originalEstimate: "Estimación original", protected: "Protegida", additionalCosts: "Costos adicionales", noAdditionalCosts: "Todavía no hay costos adicionales.", addCost: "Agregar costo", category: "Categoría", description: "Descripción", amount: "Monto USD", day: "Día", verification: "Verificación", needsVerification: "Por verificar", estimated: "Estimado", confirmedCost: "Confirmado", transportation: "Transporte", guideCost: "Guía", food: "Alimentación", lodging: "Alojamiento", reserve: "Reserva", activity: "Actividad", other: "Otro", collaboration: "Conversación", commentPlaceholder: "Escribe una nota para el equipo MBW", addComment: "Agregar nota", saveDraft: "Guardar borrador", submitReview: "Enviar a revisión", guideDrafting: "En preparación", adminReview: "Revisión de admin", changesRequested: "Cambios solicitados", approved: "Aprobado", revisedTotal: "Total de trabajo", savedPlan: "Plan guardado", originalRequest: "Solicitud", travelerNeeds: "Viajero", pickupDropoff: "Recogida y regreso",
   },
   en: {
     private: "Private", opening: "Opening Guide Nest", loadingTours: "Loading your assigned tours.", unavailable: "Guide Nest unavailable", retry: "Try again",
@@ -39,7 +39,7 @@ const COPY = {
     availability: "Availability", availabilityHelp: "Block times when you cannot receive assignments.", date: "Date", start: "Start", end: "End", noteOptional: "Optional note", blockTime: "Block time", scheduleProtection: "Schedule protection", unavailableTimes: "Unavailable times", noAvailability: "You have no unavailable times.", remove: "Remove", availabilitySaved: "Time blocked", availabilityRemoved: "Block removed",
     futureWork: "Future opportunities", offers: "Offers", offersPrivacy: "Offers remain separate from confirmed tours. They enter your calendar only after MBW approval.", noOffers: "No tour offers are available right now.", interested: "Interested", pass: "Pass", bidOptional: "Optional bid (USD)", responseSaved: "Response saved", pendingResponse: "No response", adminReadOnly: "Admin preview is read-only.",
     upcoming: "Upcoming", allTours: "All tours", sevenDays: "7 days", thirtyDays: "30 days", allDates: "All", searchTours: "Search tours", searchPlaceholder: "Guest, service, country, or pickup", today: "Today", tomorrow: "Tomorrow", nextTour: "Next tour", needsAttention: "need attention", allSet: "All set", showingTours: "tours shown", noMatchingTours: "No tours match these filters.", lastSynced: "Last synced", openMap: "Open map", tip: "Tip", shareLinks: "Share links",
-    collaborativePlanning: "Collaborative planning", tourPlans: "Tour Plans", plansPrivacy: "Only the assigned guide and MBW administrators can view or edit these plans. Original costs remain protected.", noPlans: "No custom plans are assigned to you.", guestBrief: "Guest brief", itinerary: "Itinerary", originalEstimate: "Original estimate", protected: "Protected", additionalCosts: "Additional costs", noAdditionalCosts: "No additional costs have been added yet.", addCost: "Add cost", category: "Category", description: "Description", amount: "Amount USD", day: "Day", verification: "Verification", needsVerification: "Needs verification", estimated: "Estimated", confirmedCost: "Confirmed", transportation: "Transportation", guideCost: "Guide", food: "Food", lodging: "Lodging", reserve: "Reserve", activity: "Activity", other: "Other", collaboration: "Collaboration", commentPlaceholder: "Add a note for the MBW team", addComment: "Add note", saveDraft: "Save draft", submitReview: "Submit for review", guideDrafting: "Guide drafting", adminReview: "Admin review", changesRequested: "Changes requested", approved: "Approved", revisedTotal: "Working total", savedPlan: "Plan saved", originalRequest: "Request", travelerNeeds: "Traveler", pickupDropoff: "Pickup & return",
+    collaborativePlanning: "Collaborative planning", tourPlans: "Tour Plans", assignedPlans: "Assigned plans", opportunities: "Opportunities", plansPrivacy: "Only the assigned guide and MBW administrators can view or edit these plans. Original costs remain protected.", noPlans: "No custom plans are assigned to you.", guestBrief: "Guest brief", itinerary: "Itinerary", originalEstimate: "Original estimate", protected: "Protected", additionalCosts: "Additional costs", noAdditionalCosts: "No additional costs have been added yet.", addCost: "Add cost", category: "Category", description: "Description", amount: "Amount USD", day: "Day", verification: "Verification", needsVerification: "Needs verification", estimated: "Estimated", confirmedCost: "Confirmed", transportation: "Transportation", guideCost: "Guide", food: "Food", lodging: "Lodging", reserve: "Reserve", activity: "Activity", other: "Other", collaboration: "Collaboration", commentPlaceholder: "Add a note for the MBW team", addComment: "Add note", saveDraft: "Save draft", submitReview: "Submit for review", guideDrafting: "Guide drafting", adminReview: "Admin review", changesRequested: "Changes requested", approved: "Approved", revisedTotal: "Working total", savedPlan: "Plan saved", originalRequest: "Request", travelerNeeds: "Traveler", pickupDropoff: "Pickup & return",
   },
 };
 
@@ -59,6 +59,7 @@ let calendarMonth = todayInEcuador().slice(0, 7);
 let selectedCalendarDate = "";
 let selectedAssignmentId = "";
 let planDrafts = new Map();
+let planView = "assigned";
 const t = key => COPY[language][key] || key;
 const icon = name => `<span class="buttonIcon buttonIcon--${name}" aria-hidden="true"></span>`;
 const empty = message => `<div class="empty">${esc(message)}</div>`;
@@ -273,6 +274,13 @@ function renderAvailability() {
 }
 
 function renderOffers() {
+  const enabled = data?.features?.opportunities === true;
+  $("#planTabs").hidden = !enabled;
+  document.querySelector('[data-plan-view="opportunities"]').hidden = !enabled;
+  if (!enabled) planView = "assigned";
+  document.querySelectorAll("[data-plan-view]").forEach(button => button.classList.toggle("active", button.dataset.planView === planView));
+  $("#assignedPlansPanel").hidden = planView !== "assigned";
+  $("#opportunitiesPanel").hidden = planView !== "opportunities";
   const canRespond = data?.identity?.role === "guide";
   const offers = data?.offers || [];
   $("#offerList").innerHTML = offers.length ? offers.map(offer => `<article class="offerCard"><div class="offerHead"><div><h2>${esc(offer.service)}</h2><p>${esc(dateLabel(offer.serviceDate))}${offer.startTime ? ` · ${esc(offer.startTime)}` : ""}${offer.pickup ? ` · ${esc(offer.pickup)}` : ""}</p></div><span>${esc(offer.response ? t(offer.response === "pass" ? "pass" : "interested") : t("pendingResponse"))}</span></div>${canRespond ? `<label>${t("bidOptional")}<input type="number" min="1" step="0.01" inputmode="decimal" data-bid="${esc(offer.assignmentId)}" value="${esc(offer.bidAmount || "")}"></label><div class="offerActions"><button type="button" data-offer-response="interested" data-id="${esc(offer.assignmentId)}">${t("interested")}</button><button type="button" data-offer-response="pass" data-id="${esc(offer.assignmentId)}">${t("pass")}</button></div>` : `<p>${t("adminReadOnly")}</p>`}</article>`).join("") : empty(t("noOffers"));
@@ -292,6 +300,9 @@ function planFor(id) {
 
 function renderPlans() {
   if (!data) return;
+  const enabled = data?.features?.plans === true;
+  $("#plansNav").hidden = !enabled;
+  if (!enabled) { $("#planList").innerHTML = ""; return; }
   const plans = data.plans || [];
   if (!plans.length) { $("#planList").innerHTML = empty(t("noPlans")); return; }
   $("#planList").innerHTML = plans.map(source => {
@@ -406,6 +417,8 @@ async function load(provider = "") {
 }
 
 function route(name) {
+  if (name === "offers") { name = "plans"; planView = "opportunities"; }
+  if (name === "plans" && data?.features?.plans !== true) name = "today";
   document.querySelectorAll(".view").forEach(view => { view.hidden = view.dataset.view !== name; });
   document.querySelectorAll(".nav button").forEach(button => button.classList.toggle("active", button.dataset.route === name));
   const params = new URLSearchParams();
@@ -435,6 +448,8 @@ document.addEventListener("click", event => {
   if (calendarDate) { selectedCalendarDate = calendarDate.dataset.calendarDate; selectedAssignmentId = ""; route("today"); renderTours(); }
   const calendarTour = event.target.closest("[data-open-tour]");
   if (calendarTour) { selectedCalendarDate = calendarTour.dataset.tourDate; selectedAssignmentId = calendarTour.dataset.openTour; route("today"); renderTours(); }
+  const planViewButton = event.target.closest("[data-plan-view]");
+  if (planViewButton) { planView = planViewButton.dataset.planView; renderOffers(); }
   const clearCalendarSelection = event.target.closest("[data-clear-calendar-selection]");
   if (clearCalendarSelection) { selectedCalendarDate = ""; selectedAssignmentId = ""; renderTours(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));

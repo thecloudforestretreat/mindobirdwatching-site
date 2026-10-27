@@ -38,7 +38,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const writes = [];
   let requestedProvider = "";
   const bootstrap = {
-    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
+    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", features: { plans: true, opportunities: true }, checkedAt: "2026-10-21T15:00:00Z",
     availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-26", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
     plans: [robertPlan({ providerId: "PROV-007", name: "Neycer · Night Walk Guide" })],
@@ -176,13 +176,14 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "EN", exact: true }).click();
     assert.match(await page.locator('.view:not([hidden]) h1').innerText(), /Sightings/);
     await page.getByRole("button", { name: "ES", exact: true }).click();
-    await page.locator('[data-route="offers"]').click();
+    await page.locator('[data-route="plans"]').click();
+    await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.match(await page.locator("#offerList").innerText(), /Custom birding package/);
     await page.locator('[data-bid="O-1"]').fill("125");
     await page.getByRole("button", { name: "Me interesa" }).click();
     await page.getByText("Me interesa", { exact: true }).waitFor();
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/offers/O-1/respond") && write.body.bidAmount === "125"), true);
-    await page.locator('[data-route="plans"]').click();
+    await page.getByRole("button", { name: "Planes asignados", exact: true }).click();
     await page.getByText("Robert · Custom Ecuador Tour", { exact: true }).waitFor();
     assert.match(await page.locator("#planList").innerText(), /\$1[.,]150[.,]00/);
     await page.locator('[data-plan-cost-form="robert-2027"] input[name="description"]').fill("Intag lodging");
@@ -232,9 +233,21 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);
     assert.equal(await page.locator("[data-remove-availability]").count(), 0);
-    await page.locator('[data-route="offers"]').click();
+    await page.locator('[data-route="plans"]').click();
+    await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.equal(await page.locator("[data-offer-response]").count(), 0);
     assert.match(await page.locator("#offerList").innerText(), /solo lectura/i);
+    bootstrap.preview = false;
+    bootstrap.identity = { role: "guide", name: "Chicho", contributorNumber: "001" };
+    bootstrap.providerId = "PROV-CHICHO";
+    bootstrap.providerName = "Chicho";
+    bootstrap.features = { plans: false, opportunities: false };
+    bootstrap.plans = [];
+    bootstrap.offers = [];
+    await page.goto(`http://127.0.0.1:${port}/guide/?view=plans`);
+    await page.getByText("Daniel Kalmes", { exact: true }).waitFor();
+    assert.equal(await page.locator("#plansNav").isVisible(), false);
+    assert.equal(new URL(page.url()).searchParams.get("view"), null);
     const reportUrl = new URL(reportHref);
     await page.goto(`http://127.0.0.1:${port}${reportUrl.pathname}${reportUrl.search}`);
     assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-26");

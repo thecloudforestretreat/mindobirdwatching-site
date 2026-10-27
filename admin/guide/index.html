@@ -10,7 +10,7 @@
   <title>MBW Guide Nest</title>
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/images/app/mbw-app-gold-transparent-192.png?v=guide-favicon-20261023-v1">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/app/mbw-app-gold-transparent-180.png?v=guide-icon-20261023-v1">
-  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261026-v19">
+  <link rel="stylesheet" href="/guide/guide.css?v=guide-20261026-v22">
 </head>
 <body>
   <div class="shell">
@@ -53,15 +53,12 @@
           <p class="intro" data-i18n="shareIntro">Elige un mensaje después del tour. Cada botón copia una nota breve con el enlace oficial de MBW.</p>
           <div id="shareList" class="shareList"></div>
         </section>
-        <section class="view" data-view="offers" hidden>
-          <div class="heading"><div><p data-i18n="futureWork">Próximas oportunidades</p><h1 data-i18n="offers">Ofertas</h1></div></div>
-          <div class="privacy" data-i18n="offersPrivacy">Las ofertas están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.</div>
-          <div id="offerList" class="offerList"></div>
-        </section>
         <section class="view" data-view="plans" hidden>
           <div class="heading"><div><p data-i18n="collaborativePlanning">Planificación colaborativa</p><h1 data-i18n="tourPlans">Planes</h1></div></div>
           <div class="privacy" data-i18n="plansPrivacy">Solo el guía asignado y el equipo administrador de MBW pueden ver y editar estos planes. Los costos originales quedan protegidos.</div>
-          <div id="planList" class="planList"></div>
+          <div id="planTabs" class="planTabs" role="group" aria-label="Planes"><button class="active" data-plan-view="assigned" type="button" data-i18n="assignedPlans">Planes asignados</button><button data-plan-view="opportunities" type="button" data-i18n="opportunities">Oportunidades</button></div>
+          <div id="assignedPlansPanel"><div id="planList" class="planList"></div></div>
+          <div id="opportunitiesPanel" hidden><div class="privacy" data-i18n="offersPrivacy">Las oportunidades están separadas de tus tours confirmados. Solo aparecen en el calendario después de la aprobación de MBW.</div><div id="offerList" class="offerList"></div></div>
         </section>
       </div>
     </main>
@@ -69,12 +66,11 @@
       <button class="active" data-route="today" type="button"><span class="navIcon navIcon--tours" aria-hidden="true"></span><span data-i18n="tours">Tours</span></button>
       <button data-route="calendar" type="button"><span class="navIcon navIcon--calendar" aria-hidden="true"></span><span data-i18n="calendar">Calendario</span></button>
       <button data-route="sightings" type="button"><span class="navIcon navIcon--sightings" aria-hidden="true"></span><span data-i18n="sightings">Avistamientos</span></button>
-      <button data-route="offers" type="button"><span class="navIcon navIcon--offers" aria-hidden="true"></span><span data-i18n="offers">Ofertas</span></button>
-      <button data-route="plans" type="button"><span class="navIcon navIcon--plans" aria-hidden="true"></span><span data-i18n="tourPlans">Planes</span></button>
+      <button id="plansNav" data-route="plans" type="button"><span class="navIcon navIcon--plans" aria-hidden="true"></span><span data-i18n="tourPlans">Planes</span></button>
       <button data-route="share" type="button"><span class="navIcon navIcon--share" aria-hidden="true"></span>Share</button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </div>
-  <script type="module" src="/guide/guide.mjs?v=guide-20261026-v19"></script>
+  <script type="module" src="/guide/guide.mjs?v=guide-20261026-v22"></script>
 </body>
 </html>
