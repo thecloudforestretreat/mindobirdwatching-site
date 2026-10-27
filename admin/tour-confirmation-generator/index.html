@@ -1528,8 +1528,8 @@
         draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||"To be confirmed";
         draft.pickupTime=confirmationAssignmentTime(assignment.start_time)||"To be confirmed";
         draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
-        draft.pickupLocation=item.pickup_location||item.pickup||common.pickup||"";
-        draft.notes=[item.notes||"",assignment.start_time?"Service time (Mindo, Ecuador): "+assignment.start_time+(assignment.end_time?"–"+assignment.end_time:""):"Start time to be confirmed",assignment.trip_direction?"Transport leg: "+assignment.trip_direction:""].filter(Boolean).join(" · ");
+        draft.pickupLocation=assignment.pickup_location||item.pickup_location||item.pickup||common.pickup||"";
+        draft.notes=[item.notes||"",assignment.start_time?"Service time (Mindo, Ecuador): "+assignment.start_time+(assignment.end_time?"–"+assignment.end_time:""):"Start time to be confirmed",assignment.trip_direction?"Transport leg: "+assignment.trip_direction:"",(assignment.dropoff_location||item.dropoff_location)?"Drop-off: "+(assignment.dropoff_location||item.dropoff_location):""].filter(Boolean).join(" · ");
         return draft;
       }
 
