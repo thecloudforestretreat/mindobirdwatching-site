@@ -1174,12 +1174,12 @@
         jsonp(window.MBW_CONFIRMATION_CONFIG.appScriptUrl, { action:"data" })
           .then(data => {
             if(!data || !Array.isArray(data.confirmations)) throw new Error("Invalid data response");
-            hydrateData(data);
             setHint("Loaded from Google Sheet");
+            hydrateData(data);
           })
           .catch(() => {
-            hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
             setHint("Preview mode. Check Apps Script JSONP endpoint if Google Sheet data does not load.");
+            hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
           });
       }
 
@@ -1421,6 +1421,16 @@
         const data = {};
         params.forEach((value, key) => { data[key] = value; });
         const inquiry=String(data.inquiry_id||"").trim(),guest=String(data.guest_id||"").trim();
+        if(params.has("handoff")){
+          try {
+            const token=String(data.handoff||"");
+            if(!/^[a-zA-Z0-9-]{16,80}$/.test(token))throw new Error("Invalid handoff");
+            const snapshot=JSON.parse(localStorage.getItem("mbwTourConfirmationHandoff:"+token)||"null");
+            const draft=snapshot?.draft;
+            if(snapshot?.version!==1||!draft||!inquiry||!guest||String(draft.inquiry_id||"").trim()!==inquiry||String(draft.guest_id||"").trim()!==guest)throw new Error("Missing handoff");
+            return Object.assign({},draft,{source:"guest_crm",inquiry_id:inquiry,guest_id:guest});
+          } catch(_) { return {handoff_error:"This confirmation draft is unavailable in this browser. Reopen it from the guest's CRM record."}; }
+        }
         if(!inquiry)return data;
         ["mbwTourConfirmationDraft", "mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
           try {
@@ -1436,7 +1446,7 @@
 
       function hasInboundCrmRecord(){
         const data = getInboundData();
-        return Boolean(getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName", "email", "phone", "phone_number", "requested_date", "tour_date", "date"], ""));
+        return Boolean(data.handoff_error || getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName", "email", "phone", "phone_number", "requested_date", "tour_date", "date"], ""));
       }
 
       function normalizeInboundTourText(value){
@@ -1543,7 +1553,7 @@
         const pickup = getInboundValue(data, ["pickup_location", "pickup", "pickupLocation", "pickup_address_or_hotel"], "");
         const transportation = getInboundValue(data, ["transportation", "transportation_needed"], "");
         const displayTour = displayTourFromCrm(tourText);
-        const displayLength = lengthFromCrm(tourText, duration) || "Full Day";
+        const displayLength = data.handoff_error ? "To be confirmed" : lengthFromCrm(tourText, duration) || "Full Day";
         const items=inboundTourItems(data);
         if(!items.length&&displayTour)items.push({tour:displayTour,date:tourDate,duration,pickup_location:pickup});
 
@@ -1558,13 +1568,13 @@
         els.customGuideInput.value = "";
         els.contactInput.value = "";
         setSelectValue(els.lengthInput, displayLength);
-        setSelectValue(els.pickupTimeInput, pickupTimeFromCrm(tourText, duration));
+        setSelectValue(els.pickupTimeInput, data.handoff_error ? "To be confirmed" : pickupTimeFromCrm(tourText, duration));
         const itemTours=items.map(inboundItemTour);
         setSelectValue(els.tour1Input, itemTours[0]||displayTour);
         setSelectValue(els.tour2Input, itemTours[1]||"");
         setSelectValue(els.tour3Input, itemTours[2]||"");
         els.tourTypeInput.value = displayTour || tourText || "";
-        els.transportationInput.value = normalizeTransportation(transportation);
+        els.transportationInput.value = data.handoff_error ? "" : normalizeTransportation(transportation);
         els.pickupLocationInput.value = pickup;
         els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
         els.notesInput.value = "";
@@ -1578,7 +1588,7 @@
         }
         renderRecords();
         updatePreviewFromForm();
-        setHint(items.length?`Loaded ${items.length} scheduled service${items.length===1?"":"s"} from the CRM. Review guide and pickup details before exporting.`:"Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting.");
+        setHint(data.handoff_error || (items.length?`Loaded ${items.length} scheduled service${items.length===1?"":"s"} from the CRM. Review guide and pickup details before exporting.`:"Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting."));
       }
 
       function fillForm(r){

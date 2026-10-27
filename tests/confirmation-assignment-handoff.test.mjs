@@ -23,3 +23,29 @@ const entry=(id,date,status='booked')=>({_calendar_item:{id,date,status,tour:id}
 test('mixed booking confirmation uses upcoming service instead of completed primary and preserves source history',()=>{const entries=[entry('birding','2026-10-26','completed'),entry('bear','2026-10-29')],before=JSON.stringify(entries);const c=crmHandoffHarness(entries),items=c.confirmationHandoffItems({status:'booked'});assert.equal(items.length,1);assert.equal(items[0].tour,'bear');assert.equal(items[0].date,'2026-10-29');assert.equal(JSON.stringify(entries),before)});
 test('remaining services are chronological; historical-only bookings remain available for reprint',()=>{let c=crmHandoffHarness([entry('later','2026-10-30'),entry('first','2026-10-28'),entry('done','2026-10-26','completed')]);assert.equal(JSON.stringify(c.confirmationHandoffItems({}).map(i=>i.tour)),JSON.stringify(['first','later']));c=crmHandoffHarness([entry('old','2026-10-26','completed')]);assert.equal(c.confirmationHandoffItems({status:'completed'})[0].tour,'old')});
 test('handoff preserves assigned route locations, provider and explicit duration',()=>{const e=entry('bear','2026-10-29');e._calendar_assignment={service_item_id:'bear',provider_name:'Other',provider_name_other:'QA guide',pickup_location:'QA Lodge',dropoff_location:'Quito hotel',start_time:'05:00',end_time:'13:00',assignment_status:'confirmed',provider:{phone_number:'QA-PHONE'}};const c=crmHandoffHarness([e]),r={items:[{id:'bear',duration:'Full Day'}]},before=JSON.stringify(e),item=c.confirmationHandoffItems(r)[0];assert.equal(item.duration,'Full Day');assert.equal(item.confirmation_assignment.provider_name,'QA guide');assert.equal(item.confirmation_assignment.dropoff_location,'Quito hotel');assert.equal(item.confirmation_assignment.pickup_location,'QA Lodge');assert.equal(JSON.stringify(e),before)});
+
+function compactHarness(){
+ const c=harness(),storage=new Map(),opened=[],toasts=[];
+ c.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
+ let serial=0,record={inquiry_id:'QA-A',guest_id:'G-A',full_name:'Alpha',phone_number:'PRIVATE-PHONE',requested_date:'2026-10-29'};
+ Object.assign(c,{crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++serial).padStart(12,'0')}`},state:{operationsStatus:'ready'},showToast:v=>toasts.push(v),hasUnsavedTourChanges:()=>false,toolRecord:r=>r,getSelected:()=>record,confirmationHandoffItems:()=>[{tour:'PRIVATE-TOUR',date:'2026-10-29'}]});
+ c.window.open=url=>opened.push(url);
+ const crm=fs.readFileSync(new URL('../admin/guest-crm/index.html',import.meta.url),'utf8'),start=crm.indexOf('      function openConfirmationTool('),end=crm.indexOf('\n      function ',start+1);
+ vm.runInContext(crm.slice(start,end),c);
+ return {c,storage,opened,toasts,select:r=>record=r,read:url=>{c.window.location.search=new URL(url).search;return c.getInboundData()}};
+}
+test('compact handoffs keep PII and itinerary out of URLs and isolate multiple tabs and refreshes',()=>{
+ const h=compactHarness();h.c.openConfirmationTool();const first=h.opened[0];
+ assert.deepEqual([...new URL(first).searchParams.keys()],['source','inquiry_id','guest_id','handoff']);assert.ok(!first.includes('PRIVATE'));assert.ok(!first.includes('Alpha'));
+ h.select({inquiry_id:'QA-B',guest_id:'G-B',full_name:'Beta'});h.c.openConfirmationTool();
+ assert.equal(h.read(h.opened[1]).guest_name,'Beta');assert.equal(h.read(first).guest_name,'Alpha');
+ h.storage.set('mbwTourConfirmationDraft',JSON.stringify({inquiry_id:'QA-A',guest_id:'G-A',guest_name:'WRONG GLOBAL'}));
+ assert.equal(h.read(first).guest_name,'Alpha');assert.match(h.read(first).tour_items_json,/PRIVATE-TOUR/);
+});
+test('missing, invalid, mismatched and malformed snapshots cannot fall back to another guest',()=>{
+ const h=compactHarness();h.c.openConfirmationTool();const url=new URL(h.opened[0]),key='mbwTourConfirmationHandoff:'+url.searchParams.get('handoff'),saved=h.storage.get(key);
+ for(const [field,value]of [['guest_id','G-B'],['inquiry_id','QA-B'],['handoff',''],['handoff','../bad']]){const bad=new URL(url);bad.searchParams.set(field,value);const d=h.read(bad);assert.match(d.handoff_error,/Reopen/);assert.equal(d.guest_name,undefined)}
+ for(const value of [null,'{bad','null','{}',JSON.stringify({version:2,draft:JSON.parse(saved).draft})]){if(value===null)h.storage.delete(key);else h.storage.set(key,value);assert.match(h.read(url).handoff_error,/Reopen/)}
+});
+test('blocked storage does not open an incomplete confirmation',()=>{const h=compactHarness();h.c.localStorage.setItem=()=>{throw new Error('quota')};h.c.openConfirmationTool();assert.equal(h.opened.length,0);assert.match(h.toasts[0],/browser storage/)});
+test('legacy full-query links still load without browser storage',()=>{const c=harness('?inquiry_id=QA-OLD&guest_id=G-OLD&guest_name=Legacy&tour_items_json=LEGACY-ITEMS');assert.equal(c.getInboundData().guest_name,'Legacy');assert.equal(c.getInboundData().tour_items_json,'LEGACY-ITEMS')});
