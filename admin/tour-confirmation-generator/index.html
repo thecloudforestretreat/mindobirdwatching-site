@@ -300,6 +300,7 @@
     .snapshotNotice{margin:0 0 14px;padding:10px 12px;border:1px solid #bdd5c3;border-radius:10px;font-size:13px;line-height:1.5;overflow-wrap:anywhere;background:#f0f7f1;}
     .snapshotNotice[data-warning="true"]{color:#8b1c16;background:#fff1ef;border-color:#e7aaa4;}
     .snapshotNotice[hidden]{display:none;}
+    .controlGrid [aria-invalid="true"]{border-color:#c5372b;background:#fff5f3;box-shadow:0 0 0 1px #c5372b;}
     .previewHint{ color:var(--muted); font-size:12.5px; font-weight:800; }
     .previewShell{
       width:100%;
@@ -762,6 +763,7 @@
           <section class="controlPanel" aria-label="Confirmation details">
             <h2 class="panelTitle">Confirmation Details</h2>
             <p id="snapshotNotice" class="snapshotNotice" role="status" hidden></p>
+            <p id="confirmationErrors" class="snapshotNotice" data-warning="true" role="alert" hidden></p>
             <div class="controlGrid">
               <div class="field">
                 <label for="bookingSelect">Select Confirmation</label>
@@ -1043,7 +1045,7 @@
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupTime", "outPickupLocation", "outNotes", "outGuideImage",
           "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "exportAllJpgBtn", "exportAllPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
-          "confirmationChooser", "confirmationTabs", "snapshotNotice",
+          "confirmationChooser", "confirmationTabs", "snapshotNotice", "confirmationErrors",
           "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
         ];
         ids.forEach(id => els[id] = document.getElementById(id));
@@ -1826,6 +1828,7 @@
       }
 
       function updatePreviewFromForm(){
+        if(state.validationShown)renderConfirmationValidation();
         const selectedGuide = els.guideInput.value || "Chicho";
         const guide = selectedGuide === "Other" ? (els.customGuideInput.value.trim() || "Guide to be confirmed") : selectedGuide;
         const nightWalk = isNightWalkSelected();
@@ -1886,6 +1889,7 @@
       }
 
       function openImageForSaving(){
+        if(!validateCurrentConfirmation()) return;
         setHint("Preparing image...");
         renderExportCanvas()
           .then(canvas => new Promise(resolve => canvas.toBlob(blob => resolve({ canvas, blob }), "image/jpeg", 0.96)))
@@ -1939,19 +1943,39 @@
           .catch(err => setHint("PDF export failed: " + err.message));
       }
 
+      function confirmationMissingFields(){
+        const missing=[];
+        const require=(id,label)=>{if(!els[id].value.trim())missing.push({id,label});};
+        require("guestsInput","guest name");
+        require("tourDateInput","tour date");
+        require("tourTypeInput","tour");
+        require("guideInput","guide");
+        if(els.guideInput.value==="Other")require("customGuideInput","custom guide name");
+        require("contactInput","guide phone");
+        if(!els.lengthInput.value.trim()||els.lengthInput.value==="To be confirmed")missing.push({id:"lengthInput",label:"tour duration"});
+        if(!els.pickupTimeInput.value.trim()||els.pickupTimeInput.value==="To be confirmed")missing.push({id:"pickupTimeInput",label:"start / pickup time"});
+        require("pickupLocationInput","pickup / meeting location");
+        return missing;
+      }
+
+      function renderConfirmationValidation(){
+        const missing=confirmationMissingFields();
+        const ids=new Set(missing.map(field=>field.id));
+        ["guestsInput","tourDateInput","tourTypeInput","guideInput","customGuideInput","contactInput","lengthInput","pickupTimeInput","pickupLocationInput"].forEach(id=>{
+          if(ids.has(id))els[id].setAttribute("aria-invalid","true");
+          else els[id].removeAttribute("aria-invalid");
+        });
+        els.confirmationErrors.hidden=!missing.length;
+        els.confirmationErrors.textContent=missing.length?"Before exporting, add: "+missing.map(field=>field.label).join(", ")+".":"";
+        return missing;
+      }
+
       function validateCurrentConfirmation(){
-        const missing = [];
-        if(!els.guestsInput.value.trim()) missing.push("guest name");
-        if(!els.tourDateInput.value) missing.push("tour date");
-        if(!els.tourTypeInput.value.trim()) missing.push("tour");
-        if(!els.guideInput.value) missing.push("guide");
-        if(els.guideInput.value === "Other" && !els.customGuideInput.value.trim()) missing.push("custom guide name");
-        if(!els.contactInput.value.trim()) missing.push("guide phone");
-        if(els.lengthInput.value === "To be confirmed") missing.push("tour duration");
-        if(els.pickupTimeInput.value === "To be confirmed") missing.push("start / pickup time");
-        if(els.transportationInput.value.trim().toLowerCase() === "pick up" && !els.pickupLocationInput.value.trim()) missing.push("pickup location");
+        state.validationShown=true;
+        const missing=renderConfirmationValidation();
         if(missing.length){
-          setHint("Before exporting, add: " + missing.join(", "));
+          setHint(els.confirmationErrors.textContent);
+          els[missing[0].id].focus();
           return false;
         }
         return true;
