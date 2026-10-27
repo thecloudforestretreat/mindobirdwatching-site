@@ -54,3 +54,11 @@ Spam inquiries produce no tasks and are excluded defensively from digest renderi
 Completion inference considers the full saved date range and dates of confirmed/completed services, instead of only the initial tour date. Cancelled and unselected options are excluded. A review task is blocked while a confirmed service is in the future; after completion, its date is based on the later of the recorded completion and final service date. Legacy single-service requests still work. No inquiry statuses/dates are migrated by this patch.
 
 57 targeted checks passed, including six new behavior tests that reproduced four failures before the fix. Fourteen tests also passed against the exact patched live source. Live Head source was backed up and the correction applied narrowly, preserving unrelated differences from the repository. WhatsApp remains disabled.
+
+## Independent pre-tour preparation — 27 October 2026
+
+Booked inquiries get a separate manual_followup task for their saved rep date and a pretour_details task two Mindo calendar days before the next booked/confirmed service. Completed/cancelled/unselected services are excluded. Tomorrow/same-day services require attention today; missing or past-only dates do not fabricate a new pre-tour task. Booking-status changes and maintenance retain the saved rep follow-up field independently.
+
+Pre-tour task notes carry a service-date identity marker so a sent first-tour task cannot suppress a later tour. Sent/completed history, including legacy rows, is retained. Unknown legacy sends are retained but are not treated as proof a particular upcoming service was contacted. Pre-tour tasks use channel manual; this schedules staff preparation, not guest delivery. WhatsApp remains disabled. No columns or guest records migrated.
+
+84 targeted tests passed; 23 also passed against the exact narrow live Head patch. Full live backup retained before changes, preserving unrelated differences from repository.

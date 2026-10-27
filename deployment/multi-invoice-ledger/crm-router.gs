@@ -781,7 +781,7 @@ function recalcCrmInquiryRowFromEdit_(sh, rowNumber, preserveManualFollowup) {
   const aligned = statusManual ? row : alignInquiryStatusFromSubstatuses_(row, dateRange);
   const action = nextActionForInquiry_(aligned, dateRange);
   const followupManual = preserveManualFollowup && isManualFollowupOverride_(sh, rowNumber);
-  const followupDate = followupManual ? normalizeDateForSheet_(row.followup_date) : action.followupDate;
+  const followupDate = savedOrCalculatedFollowupDate_(aligned, action, followupManual);
 
   const updated = Object.assign({}, aligned, {
     updated_at: nowIso_(),
@@ -3119,7 +3119,7 @@ function normalizeCrmDateFieldsAndActions() {
       transportation_needed: normalizeValidatedField_(CRM_TABS.inquiries, "transportation_needed", aligned.transportation_needed || row.transportation_needed || "Unknown"),
       grouping_preference: normalizeValidatedField_(CRM_TABS.inquiries, "grouping_preference", row.grouping_preference || "unknown"),
       grouping_status: normalizeValidatedField_(CRM_TABS.inquiries, "grouping_status", row.grouping_status || "unmatched"),
-      followup_date: followupManual ? normalizeDateForSheet_(row.followup_date) : action.followupDate,
+      followup_date: savedOrCalculatedFollowupDate_(Object.assign({}, row, {status:aligned.status}), action, followupManual),
       next_action: action.action,
       priority: inferPriority_(dateRange.start),
       quoted_currency: "USD"
@@ -3203,7 +3203,6 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
   });
 
   const desiredRows = [];
-  let closedTasks = 0;
   inquiryItems.forEach(function(item) {
     const row = item.row;
     const inquiryId = clean_(row.inquiry_id);
@@ -3220,40 +3219,49 @@ function reconcileCrmFollowupQueue_(ss, dryRun) {
       : alignInquiryStatusFromSubstatuses_(row, dateRange);
     const action = nextActionForInquiry_(aligned, dateRange);
     const manualFollowup = clean_((followupNotes[noteIndex] || [])[0]).indexOf(MANUAL_FOLLOWUP_OVERRIDE_NOTE) >= 0;
-    // The saved date is authoritative for active inquiries, including CRM edits
-    // that do not carry a Sheet note. Reviews/cancellations keep their own rules.
     const savedFollowup = normalizeDateForSheet_(row.followup_date);
-    const activeFollowup = ["completed", "cancelled"].indexOf(clean_(aligned.status)) < 0;
-    if (manualFollowup || (activeFollowup && savedFollowup)) action.followupDate = savedFollowup;
-    if (!action.followupDate || !action.followupType) return;
-    if (["did_not_book", "lost"].indexOf(clean_(aligned.status)) >= 0) return;
-
-    const key = inquiryId + "||" + clean_(action.followupType);
-    const candidates = existingByKey[key] || [];
-    const closed = candidates.find(function(existing) {
-      return clean_(existing.status) === "completed" ||
-        clean_(existing.send_status) === "sent";
-    });
-
-    if (closed) {
-      desiredRows.push(closed);
-      closedTasks++;
-      return;
+    const booked = clean_(aligned.status) === "booked";
+    if (!booked) {
+      const activeFollowup = ["completed", "cancelled"].indexOf(clean_(aligned.status)) < 0;
+      if (manualFollowup || (activeFollowup && savedFollowup)) action.followupDate = savedFollowup;
     }
-
-    const existingOpen = candidates.find(function(existing) {
-      return clean_(existing.status) === "open";
+    const actions = [action];
+    if (booked && savedFollowup) actions.push({action:"Follow up with booked guest", followupDate:savedFollowup,
+      followupType:"manual_followup", emailTemplate:"", channel:"manual"});
+    // Keep sent/completed pre-tour tasks, including legacy rows, as delivery history.
+    (existingByKey[inquiryId + "||pretour_details"] || []).forEach(function(existing) {
+      if (clean_(existing.status) === "completed" || clean_(existing.send_status) === "sent") desiredRows.push(existing);
     });
-    desiredRows.push(buildFollowupRow_(aligned, action, existingOpen));
+    actions.forEach(function(taskAction) {
+      if (!taskAction.followupDate || !taskAction.followupType) return;
+      if (["did_not_book", "lost"].indexOf(clean_(aligned.status)) >= 0) return;
+      const key = inquiryId + "||" + clean_(taskAction.followupType);
+      const candidates = (existingByKey[key] || []).filter(function(existing) {
+        return !taskAction.pretourServiceDate || pretourServiceDateFromTask_(existing) === taskAction.pretourServiceDate;
+      });
+      const closed = candidates.find(function(existing) {
+        return clean_(existing.status) === "completed" || clean_(existing.send_status) === "sent";
+      });
+      if (closed) { desiredRows.push(closed); return; }
+      const existingOpen = candidates.find(function(existing) { return clean_(existing.status) === "open"; });
+      desiredRows.push(buildFollowupRow_(aligned, taskAction, existingOpen));
+    });
   });
 
-  const rebuiltRows = scheduleConflictRows.concat(desiredRows);
+  const seenTasks = {};
+  const uniqueDesiredRows = desiredRows.filter(function(task) {
+    const key = task.followup_id || [task.inquiry_id, task.followup_type, task.due_at, pretourServiceDateFromTask_(task)].join("||");
+    if (seenTasks[key]) return false;
+    seenTasks[key] = true;
+    return true;
+  });
+  const rebuiltRows = scheduleConflictRows.concat(uniqueDesiredRows);
   const removedTasks = Math.max(0, existingRows.length - rebuiltRows.length);
   if (!dryRun) replaceSheetBodyWithObjects_(followups, rebuiltRows);
 
   return {
-    openTasks: desiredRows.filter(function(row) { return clean_(row.status) === "open"; }).length,
-    closedTasks: closedTasks,
+    openTasks: uniqueDesiredRows.filter(function(row) { return clean_(row.status) === "open"; }).length,
+    closedTasks: uniqueDesiredRows.filter(function(row) { return clean_(row.status) === "completed" || clean_(row.send_status) === "sent"; }).length,
     removedTasks: removedTasks,
     rows: dryRun ? rebuiltRows : undefined
   };
@@ -3273,7 +3281,7 @@ function buildFollowupRow_(inquiry, action, existing) {
     email_template: action.emailTemplate,
     calendar_event_id: existing && existing.calendar_event_id ? existing.calendar_event_id : "",
     subject: action.action + ": " + inquiry.full_name,
-    notes: inquiry.next_action || action.action,
+    notes: (action.pretourServiceDate ? "[MBW_PRETOUR_SERVICE_DATE:" + action.pretourServiceDate + "]\n" : "") + (action.pretourServiceDate || action.followupType === "manual_followup" ? action.action : inquiry.next_action || action.action),
     last_error: "",
     channel: action.channel || (action.emailTemplate ? "email" : "telegram"),
     send_status: "pending",
@@ -3319,6 +3327,39 @@ function bestInquiryDateRange_(row, sh, rowNumber, knownManualOverride) {
     start: start,
     end: end || start
   };
+}
+
+function savedOrCalculatedFollowupDate_(row, action, manualOverride) {
+  return manualOverride || clean_(row.status) === "booked"
+    ? normalizeDateForSheet_(row.followup_date)
+    : action.followupDate;
+}
+
+function nextConfirmedServiceDate_(row, dateRange, today) {
+  let items = [];
+  try {
+    const raw = row.tour_items_json || row.tour_items || "[]";
+    items = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (error) { items = []; }
+  const dates = [];
+  if (Array.isArray(items)) items.forEach(function(item, index) {
+    if (!item || typeof item !== "object") return;
+    const status = clean_(item.status || item.calendar_status).toLowerCase();
+    const legacyPrimary = !status && (item.id === "primary" || index === 0) && clean_(row.status) === "booked";
+    if (!legacyPrimary && ["booked", "confirmed", "paid", "deposit_paid"].indexOf(status) < 0) return;
+    const date = normalizeDateForSheet_(item.date || item.tour_date || item.requested_date);
+    if (date && date >= today) dates.push(date);
+  });
+  const initialDate = normalizeDateForSheet_(dateRange && dateRange.start);
+  if (!Array.isArray(items) || !items.length) {
+    if (initialDate && initialDate >= today) dates.push(initialDate);
+  }
+  return dates.sort()[0] || "";
+}
+
+function pretourServiceDateFromTask_(task) {
+  const match = clean_(task.notes).match(/\[MBW_PRETOUR_SERVICE_DATE:(\d{4}-\d{2}-\d{2})\]/);
+  return match ? match[1] : "";
 }
 
 function finalConfirmedServiceDate_(row, dateRange) {
@@ -3378,8 +3419,10 @@ function nextActionForInquiry_(row, dateRange) {
     };
   }
   if (status === "booked") {
-    const pretourDate = dateRange.start ? addDaysIso_(dateRange.start, -7) : today;
-    return { action: "Send pre-tour details", followupDate: maxIsoDate_(today, pretourDate), followupType: "pretour_details", emailTemplate: "pretour", channel: "email" };
+    const serviceDate = nextConfirmedServiceDate_(row, dateRange, today);
+    if (!serviceDate) return blankAction_("Verify remaining service date");
+    return { action: "Review pre-tour details", followupDate: maxIsoDate_(today, addDaysIso_(serviceDate, -2)),
+      followupType: "pretour_details", emailTemplate: "pretour", channel: "manual", pretourServiceDate: serviceDate };
   }
   if (status === "deposit_paid") return { action: "Confirm logistics and calendar event", followupDate: today, followupType: "booking_ops", emailTemplate: "", channel: "telegram" };
   if (status === "deposit_pending") return { action: "Send deposit/payment reminder", followupDate: addDaysIso_(baseDate, 1), followupType: "payment_followup", emailTemplate: "deposit_reminder", channel: "email" };
@@ -4173,12 +4216,14 @@ function updateInquiryStatus(inquiryId, newStatus, notes) {
   const row = rows[idx];
   const oldStatus = row.status;
   const now = nowIso_();
-  const next = nextActionForStatus_(newStatus);
+  const next = newStatus === "booked"
+    ? nextActionForInquiry_(Object.assign({}, row, {status:newStatus}), bestInquiryDateRange_(row))
+    : nextActionForStatus_(newStatus);
   const updated = Object.assign({}, row, {
     status: newStatus,
     updated_at: now,
     stage_changed_at: now,
-    followup_date: next.followupDate,
+    followup_date: newStatus === "booked" ? row.followup_date || "" : next.followupDate,
     next_action: next.action,
     quote_status: newStatus === "quoted" ? "sent" : row.quote_status,
     payment_status: newStatus === "deposit_paid" ? "deposit_paid" : row.payment_status
@@ -5111,7 +5156,7 @@ function nextActionForStatus_(status) {
     deposit_pending: ["Send deposit/payment reminder", 1, "payment_followup", "deposit_reminder"],
     deposit_paid: ["Create/update booking and calendar event", 0, "booking_ops", ""],
     payment_pending: ["Send full-payment reminder", 1, "payment_followup", "payment_reminder"],
-    booked: ["Send pre-tour details", 7, "pretour_details", "pretour"],
+    booked: ["Review pre-tour details", 2, "pretour_details", "pretour"],
     completed: ["Send thank-you/review request", 1, "review_request", "review"],
     cancelled: ["Review cancellation and payment disposition", 0, "cancellation_review", ""],
     did_not_book: ["No action", "", "", ""],
