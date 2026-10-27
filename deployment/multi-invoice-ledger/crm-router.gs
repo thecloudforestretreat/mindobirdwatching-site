@@ -3321,6 +3321,24 @@ function bestInquiryDateRange_(row, sh, rowNumber, knownManualOverride) {
   };
 }
 
+function finalConfirmedServiceDate_(row, dateRange) {
+  const dates = [normalizeDateForSheet_(dateRange && dateRange.start),
+    normalizeDateForSheet_(dateRange && dateRange.end)].filter(Boolean);
+  let items = [];
+  try {
+    const raw = row.tour_items_json || row.tour_items || "[]";
+    items = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (error) { items = []; }
+  if (Array.isArray(items)) items.forEach(function(item) {
+    if (!item || typeof item !== "object") return;
+    const status = clean_(item.status || item.calendar_status).toLowerCase();
+    if (["booked", "confirmed", "completed", "paid", "deposit_paid"].indexOf(status) < 0) return;
+    const date = normalizeDateForSheet_(item.date || item.tour_date || item.requested_date);
+    if (date) dates.push(date);
+  });
+  return dates.sort().pop() || "";
+}
+
 function nextActionForInquiry_(row, dateRange) {
   const status = clean_(row.status) || "new";
   const today = todayIso_();
@@ -3343,9 +3361,11 @@ function nextActionForInquiry_(row, dateRange) {
     };
   }
   if (status === "completed") {
-    const completedDate = normalizeDateForSheet_(row.completed_date) ||
-      normalizeDateForSheet_(dateRange && dateRange.end) ||
+    const finalServiceDate = finalConfirmedServiceDate_(row, dateRange);
+    if (finalServiceDate && finalServiceDate > today) return blankAction_("Remaining confirmed services");
+    const recordedCompletion = normalizeDateForSheet_(row.completed_date) ||
       normalizeDateForSheet_(row.stage_changed_at);
+    const completedDate = [finalServiceDate, recordedCompletion].filter(Boolean).sort().pop() || "";
     if (!completedDate) return blankAction_("No review follow-up date");
     const ageDays = daysBetweenIso_(completedDate, today);
     if (ageDays < 0 || ageDays > 14) return blankAction_("Review window closed");
@@ -3378,7 +3398,7 @@ function alignInquiryStatusFromSubstatuses_(row, dateRange) {
   const status = clean_(row.status) || "new";
   const quoteStatus = clean_(row.quote_status);
   const paymentStatus = clean_(row.payment_status);
-  const tourDate = normalizeDateForSheet_(dateRange && dateRange.start);
+  const tourDate = finalConfirmedServiceDate_(row, dateRange);
   const today = todayIso_();
 
   if (status === "duplicate" || clean_(row.is_archived).toLowerCase() === "yes") return Object.assign({}, row, { status: "duplicate" });
