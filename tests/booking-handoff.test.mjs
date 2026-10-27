@@ -13,7 +13,7 @@ function harness({search='?experience=quito-day-trip&source_page=/quito-to-mindo
  const notes=['night-walk','quito-day-trip'].map(key=>({hidden:true,getAttribute:()=>key}));
  const paths=contact?['/contact/','/es/contacto/']:['/book-tour/','/es/reservar-tour/'];
  const links=['en','es'].map((lang,i)=>({attrs:{'data-lang':lang,href:absoluteLinks?'https://mindobirdwatching.com'+paths[i]:paths[i]},getAttribute(k){return this.attrs[k]||null;},setAttribute(k,v){this.attrs[k]=v;}}));
- const form={getAttribute:()=>contact?'/api/contact':'/api/book-tour',querySelectorAll(s){return s.includes('preferred')?fields:s==='[data-tour-format]'?formats:notes;},querySelector(s){return s.includes('source_page')?sourceField:s.includes('Transportation')?transport:addon;},addEventListener(t,f){listeners[t]=f;}};
+ const form={getAttribute:()=>contact?'/api/contact':'/api/book-tour',querySelectorAll(s){return s.includes('preferred')?fields:s==='[data-tour-format]'?formats:notes;},querySelector(s){return s.includes('source_page')?sourceField:s.includes('Transportation')?transport:s.includes('Night Walk')?addon:null;},addEventListener(t,f){listeners[t]=f;}};
  vm.runInNewContext(source,{URL,URLSearchParams,Event:class{},document:{querySelector:()=>form,querySelectorAll:()=>links},window:{location:{search,origin:'https://site.invalid'},setTimeout(f){f();},addEventListener(t,f){windowListeners[t]=f;}}});
  const select=value=>{if(contact)fields[0].value=value;else fields.forEach(f=>f.checked=f.value===value);listeners.change();};
  return {links,fields,formats,transport,label,sourceField,notes,select,windowListeners,reset(){fields.forEach(f=>{f.checked=false;f.value=contact?'':f.value;});formats.forEach(f=>f.checked=false);transport.checked=false;listeners.reset();}};
@@ -26,7 +26,7 @@ test('EN–ES–EN navigation maps source pair and keeps only supported nonperso
 test('included package transport is hidden, disabled, reversible and private default remains editable',()=>{
  const h=harness({transportChecked:true});assert(h.formats[0].checked);assert(h.label.hidden);assert(h.transport.disabled);assert(!h.transport.checked);
  h.formats.forEach(f=>f.checked=f.value==='Join a Small Group');h.select('Quito to Mindo Day Trip');assert(h.formats[1].checked);
- h.select('Half-Day Tour');assert(!h.label.hidden);assert(!h.transport.disabled);assert(h.transport.checked);assert.equal(h.links[1].attrs.href,'/es/reservar-tour/');
+ h.select('Half-Day Tour');assert(!h.label.hidden);assert(!h.transport.disabled);assert(h.transport.checked);assert.match(h.links[1].attrs.href,/experience=half-day/);
 });
 test('reset clears the package and does not resurrect an optional transport choice',()=>{
  const h=harness({transportChecked:true});h.reset();assert(!h.label.hidden);assert(!h.transport.disabled);assert(!h.transport.checked);assert(h.formats.every(f=>!f.checked));

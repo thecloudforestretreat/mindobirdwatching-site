@@ -439,6 +439,21 @@
     window.matchMedia("(min-width:1200px)").addEventListener("change", function () { dropdowns.forEach(function (dropdown) { close(dropdown); }); });
   }
 
+  function applyActivityBookingLinks() {
+    var routes = {"/activities/canyoning/": "canyoning", "/es/actividades/canyoning/": "canyoning", "/activities/waterfall-tour/": "waterfall-tour", "/es/actividades/tour-de-cascadas/": "waterfall-tour", "/activities/chocolate-tour/": "chocolate-tour", "/es/actividades/tour-de-chocolate/": "chocolate-tour", "/activities/coffee-tour/": "coffee-tour", "/es/actividades/tour-de-cafe/": "coffee-tour", "/activities/ziplining/": "ziplining", "/es/actividades/canopy/": "ziplining", "/activities/frog-concert/": "frog-concert", "/es/actividades/concierto-de-ranas/": "frog-concert", "/activities/private-insect-macro-wildlife-search/": "private-insect-macro-wildlife-search", "/es/actividades/busqueda-privada-insectos-macrofauna/": "private-insect-macro-wildlife-search", "/activities/butterfly-tour/": "butterfly-tour", "/es/actividades/tour-de-mariposas/": "butterfly-tour", "/activities/mountain-biking/": "mountain-biking", "/es/actividades/ciclismo-de-montana/": "mountain-biking", "/activities/nature-walk/": "nature-walk", "/es/actividades/caminata-naturalista/": "nature-walk", "/activities/trail-running-mindo/": "trail-running-mindo", "/es/actividades/running-senderos-mindo/": "trail-running-mindo", "/activities/tubing/": "tubing", "/es/actividades/tubing/": "tubing", "/activities/quad-tour/": "quad-tour", "/es/actividades/tour-en-quad/": "quad-tour", "/activities/orchid-garden-tour/": "orchid-garden-tour", "/es/actividades/jardin-de-orquideas/": "orchid-garden-tour", "/activities/horseback-riding/": "horseback-riding", "/es/actividades/cabalgata/": "horseback-riding", "/activities/double-extreme-swing/": "double-extreme-swing", "/es/actividades/columpio-doble-extremo/": "double-extreme-swing", "/activities/sky-bike-sky-ride/": "sky-bike-sky-ride", "/es/actividades/sky-bike-sky-ride/": "sky-bike-sky-ride", "/activities/paintball/": "paintball", "/es/actividades/paintball/": "paintball", "/activities/": "", "/es/actividades/": "", "/activities/night-walk/": "night-walk", "/es/actividades/caminata-nocturna/": "night-walk"};
+    var source = window.location.pathname;
+    if (!Object.prototype.hasOwnProperty.call(routes, source)) return;
+    var key = routes[source], isEs = getCurrentLang() === "es";
+    document.querySelectorAll('#siteHeader .navBook, #siteFooter [data-booking-link]').forEach(function (link) {
+      var target = new URL(isEs ? "/es/reservar-tour/" : "/book-tour/", window.location.origin);
+      target.searchParams.set("experience", key === "night-walk" ? "night-walk" : "activities");
+      if (key && key !== "night-walk") target.searchParams.set("activity", key);
+      target.searchParams.set("source_page", source);
+      target.hash = "request-form";
+      link.setAttribute("href", target.pathname + target.search + target.hash);
+    });
+  }
+
   function initHeader() {
     var header = document.querySelector("#siteHeader [data-mbw-header], [data-mbw-header]");
     if (!header) return;
@@ -448,6 +463,7 @@
     initMobileDrilldown(header);
     initDesktopNavigation(header);
     setActiveNav(header);
+    applyActivityBookingLinks();
   }
 
   ready(function () {

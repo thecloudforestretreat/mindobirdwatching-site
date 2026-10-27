@@ -1,0 +1,1 @@
+export const activityChoices = new Set(["Canyoning", "Waterfall Tour", "Chocolate Tour", "Coffee Tour", "Ziplining", "Frog Concert", "Private Insect & Macro Wildlife Search", "Butterfly Tour", "Mountain Biking", "Nature Walk", "Trail Running", "Tubing", "Quad Tour", "Orchid Garden Tour", "Horseback Riding", "Double Extreme Swing", "Sky Bike / Sky Ride", "Paintball"]);

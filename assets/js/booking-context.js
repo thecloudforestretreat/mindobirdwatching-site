@@ -7,6 +7,14 @@
     "night-walk": ["Night Walk", "Caminata nocturna"],
     "quito-day-trip": ["Quito to Mindo Day Trip", "Viaje de un día de Quito a Mindo"]
   };
+  var catalog = window.MBWExperienceCatalog || [];
+  experiences.activities = ["Activity", "Activities", "Actividades"];
+  experiences["half-day"] = ["Half-Day Tour"];
+  experiences["full-day"] = ["Full-Day Tour"];
+  experiences.photography = ["Photography-Focused Tour"];
+  experiences.custom = ["Custom / Private Tour"];
+  var activityChoice = form.querySelector('[name="activity_choice"]');
+  var activityWrap = form.querySelector('[data-activity-choice-wrap]');
   var primary = Array.prototype.slice.call(form.querySelectorAll('[name="preferred_tour_type"]'));
   var notes = Array.prototype.slice.call(form.querySelectorAll("[data-booking-context]"));
 
@@ -24,6 +32,7 @@
     ["/book-tour/", "/es/reservar-tour/"],
     ["/contact/", "/es/contacto/"]
   ];
+  catalog.forEach(function (item) { sourcePairs.push([item.path, item.espath]); });
   var source = params.get("source_page") || "";
   var validSource = /^\/(?:[a-z0-9-]+\/)*$/i.test(source) && source.length <= 512;
   var itineraryMode = params.get("itinerary") === "1";
@@ -47,6 +56,8 @@
       target.hash = "";
       if (selected) {
         target.searchParams.set("experience", selected);
+        var activity = activityChoice && catalog.find(function (item) { return item.en === activityChoice.value; });
+        if (selected === "activities" && activity) target.searchParams.set("activity", activity.key);
         if (validSource) {
           var pair = sourcePairs.find(function (paths) { return paths.indexOf(source) !== -1; });
           target.searchParams.set("source_page", pair ? pair[lang === "es" ? 1 : 0] : source);
@@ -87,6 +98,19 @@
 
   function updateNotes() {
     var selected = selectedExperience();
+    if (activityChoice) {
+      var isActivity = selected === "activities";
+      activityChoice.disabled = !isActivity;
+      activityChoice.required = isActivity;
+      if (activityWrap) activityWrap.hidden = !isActivity;
+      // Activity formats vary; do not require a birding group/private choice.
+      formatFields.forEach(function (field) {
+        field.required = !isActivity && field === formatFields[0];
+        field.disabled = isActivity;
+        var fieldset = field.closest("fieldset");
+        if (fieldset) fieldset.hidden = isActivity;
+      });
+    }
     updatePackage(selected);
     updateLanguageLinks();
     var nightAddOn = form.querySelector('[data-tour-add-on][value="Night Walk"]');
@@ -114,6 +138,10 @@
       var sourceField = form.querySelector('[name="source_page"]');
       if (sourceField) sourceField.value = window.location.origin + source;
     }
+  }
+  if (activityChoice && requestedKey === "activities") {
+    var requestedActivity = catalog.find(function (item) { return item.key === params.get("activity"); });
+    if (requestedActivity) activityChoice.value = requestedActivity.en;
   }
   form.addEventListener("change", updateNotes);
   form.addEventListener("reset", function () { window.setTimeout(function () {

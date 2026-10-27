@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1" name="viewport">
-<title>Book Private or Small Group Birding Tours in Mindo</title>
+<title>Request Birding Tours & Activities in Mindo</title>
 <meta content="Request a private Mindo birdwatching tour or ask to join a compatible small group of 2–8. Bilingual guides, conversational English, and manual planning." name="description">
 <meta content="index,follow,max-image-preview:large" name="robots">
 <link href="https://mindobirdwatching.com/book-tour/" rel="canonical">
@@ -13,7 +13,7 @@
 <meta content="website" property="og:type">
 <meta content="Mindo Bird Watching" property="og:site_name">
 <meta content="en_US" property="og:locale">
-<meta content="Book Private or Small Group Birding Tours in Mindo" property="og:title">
+<meta content="Request Birding Tours & Activities in Mindo" property="og:title">
 <meta content="Request a private Mindo birdwatching tour or ask to join a compatible small group of 2–8. Bilingual guides, conversational English, and manual planning." property="og:description">
 <meta content="https://mindobirdwatching.com/book-tour/" property="og:url">
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" property="og:image">
@@ -22,7 +22,7 @@
 <meta content="630" property="og:image:height">
 <meta content="Mindo Bird Watching - Cloud forest birding tours in Ecuador" property="og:image:alt">
 <meta content="summary_large_image" name="twitter:card">
-<meta content="Book Private or Small Group Birding Tours in Mindo" name="twitter:title">
+<meta content="Request Birding Tours & Activities in Mindo" name="twitter:title">
 <meta content="Request a private Mindo birdwatching tour or ask to join a compatible small group of 2–8. Bilingual guides, conversational English, and manual planning." name="twitter:description">
 <meta content="https://mindobirdwatching.com/MBW-Assets-OG-Image.jpg" name="twitter:image">
 <link href="/favicon.ico" rel="icon" sizes="any">
@@ -989,6 +989,7 @@ header.topbar a.pill *,
 </style>
 <!-- MBW inline fonts end -->
 <link rel="stylesheet" href="/assets/css/pages/booking-flow.css?v=20261021-2">
+<link rel="stylesheet" href="/assets/css/journey.css?v=20261027-1">
 </head>
 <body class="tourRequestPage" data-page-content-group="tour_request" data-page-language="en" data-page-location="mindo" data-page-region="mindo" data-page-type="tour_request_page" data-css-cluster="tour_collection">
 <div class="container">
@@ -1078,7 +1079,7 @@ header.topbar a.pill *,
 <section class="adHero" aria-label="Request a private or small-group Mindo birdwatching tour">
 <div class="heroCopy">
 <span class="eyebrow">Private or small-group birding</span>
-<h1>Request a Private Tour or Join a Small Group in Mindo</h1>
+<h1>Request a Birding Tour or Activity in Mindo</h1>
 <p class="heroLead">Share your dates, party size, birding goals, preferred pace, and tour format. Choose a private tour for your own party or request to join a compatible small group of 2–8 guests when space is available. No payment is required here; we confirm availability, pricing, logistics, and next steps personally.</p>
 <div class="trustLine" aria-label="Tour format and request highlights">
 <span class="trustPill">Local Mindo guides</span>
@@ -1165,9 +1166,11 @@ header.topbar a.pill *,
 <label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Night Walk"><span><strong>Night Walk</strong><small>A dedicated evening wildlife experience.</small></span></label>
 <label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Quito to Mindo Day Trip"><span><strong>Quito to Mindo Day Trip</strong><small>A complete private day planned from Quito.</small></span></label>
 <label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Custom / Private Tour"><span><strong>Custom / Private Tour</strong><small>A flexible route shaped around your priorities.</small></span></label>
+<label class="tourPrimaryOption"><input data-primary-tour name="preferred_tour_type" type="radio" value="Activity"><span><strong>Mindo Activity</strong><small>Chocolate, coffee, waterfalls, biking and other experiences.</small></span></label>
 <label class="tourPrimaryOption tourPrimaryOption--wide"><input data-primary-tour name="preferred_tour_type" type="radio" value="Not Sure Yet"><span><strong>Not Sure Yet</strong><small>Share your goals and let us recommend the best primary experience.</small></span></label>
 </div>
 </fieldset>
+<label class="field activityChoiceWrap" data-activity-choice-wrap hidden>Main activity*<select name="activity_choice" id="activityChoice" disabled><option value="">Choose an activity</option><option value="Canyoning">Canyoning</option><option value="Waterfall Tour">Waterfall Tour</option><option value="Chocolate Tour">Chocolate Tour</option><option value="Coffee Tour">Coffee Tour</option><option value="Ziplining">Ziplining</option><option value="Frog Concert">Frog Concert</option><option value="Private Insect &amp; Macro Wildlife Search">Private Insect &amp; Macro Wildlife Search</option><option value="Butterfly Tour">Butterfly Tour</option><option value="Mountain Biking">Mountain Biking</option><option value="Nature Walk">Nature Walk</option><option value="Trail Running">Trail Running</option><option value="Tubing">Tubing</option><option value="Quad Tour">Quad Tour</option><option value="Orchid Garden Tour">Orchid Garden Tour</option><option value="Horseback Riding">Horseback Riding</option><option value="Double Extreme Swing">Double Extreme Swing</option><option value="Sky Bike / Sky Ride">Sky Bike / Sky Ride</option><option value="Paintball">Paintball</option></select><span class="fieldHelp">We confirm timing, availability and private or shared options before booking.</span></label>
 <fieldset class="tourAddOns" aria-describedby="tourAddOnsHelp">
 <legend>Optional Additions</legend>
 <p class="fieldHelp" id="tourAddOnsHelp">Select all that apply. Leave these blank if you only want the primary experience.</p>
@@ -1573,7 +1576,7 @@ header.topbar a.pill *,
           return input.checked && input.value === "Night Walk";
         });
         var values = [];
-        var selectedFormat = tourFormatInputs.find(function(input){ return input.checked; });
+        var selectedFormat = tourFormatInputs.find(function(input){ return input.checked && !input.disabled; });
         if(selectedFormat) values.push("Tour Format: " + selectedFormat.value);
 
         addOnInputs.forEach(function(input){
@@ -1782,8 +1785,9 @@ header.topbar a.pill *,
     })();
   </script>
 <script defer src="/assets/js/site-config.js?v=1"></script>
-<script defer src="/assets/js/includes.js?v=20261027-nav4"></script>
+<script defer src="/assets/js/includes.js?v=20261027-journey"></script>
 <script defer src="/assets/js/site.js?v=20261027-nav4"></script>
-<script defer src="/assets/js/booking-context.js?v=20261021-2"></script>
+<script defer src="/assets/js/experience-catalog.js?v=20261027-1"></script>
+<script defer src="/assets/js/booking-context.js?v=20261027-journey"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import {activityChoices} from "../../_shared/activity-choices.js";
 // functions/api/book-tour/index.js
 // MBW Book Tour proxy: Turnstile verify -> forward to Google Apps Script web app
 // Required CF Pages env vars (Production):
@@ -90,6 +91,7 @@ export async function onRequestPost({ request, env }) {
       const pickup = String(data.get("pickup_location") || "").trim();
       const primaryKey = rawPrimary.toLowerCase();
       const primaryMap = {
+        "activity": { interest:"Activity", service:"Activity", tour:"Activity", product:"", duration:"Flexible" },
         "half-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Half-Day Birdwatching", product:"", duration:"Half Day" },
         "full-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Full-Day Birdwatching", product:"", duration:"Full Day" },
         "photography-focused tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Photography-Focused Birdwatching Tour", product:"", duration:"Flexible" },
@@ -102,6 +104,11 @@ export async function onRequestPost({ request, env }) {
         "not sure yet": { interest:"Other", service:"Custom", tour:"Not Sure Yet", product:"", duration:"Flexible" }
       };
       const primary = primaryMap[primaryKey] || { interest:"Other", service:"Custom", tour:rawPrimary || "Not Sure Yet", product:"", duration:"Flexible" };
+      if (primaryKey === "activity") {
+        const selectedActivity = String(data.get("activity_choice") || "").trim();
+        if (!activityChoices.has(selectedActivity)) throw new Error("Choose a supported activity before submitting.");
+        primary.tour = selectedActivity;
+      }
       const addOnMap = {
         "night walk": { tour:"Night Walk", service_type:"Activity", product_selected:"MBW016" },
         "additional birding day": { tour:"Additional Birding Day", service_type:"Birdwatching", product_selected:"" },
@@ -134,7 +141,7 @@ export async function onRequestPost({ request, env }) {
         }
         additions.push(addOnMap[lower] || { tour:value, service_type:"Custom", product_selected:"Other" });
       });
-      const hasActivity = additions.some(item => item.service_type === "Activity");
+      const hasActivity = primary.service === "Activity" || additions.some(item => item.service_type === "Activity");
       const hasBirding = primary.service === "Birdwatching" || additions.some(item => item.service_type === "Birdwatching");
       const interest = hasActivity && hasBirding ? "Tour + Activity" : primary.interest;
       const primaryItem = { id:"primary", tour:primary.tour, date:rawDates.split(/\s+(?:to|through|–|—)\s+/i)[0] || "", guests, product_selected:primary.product, service_type:primary.service, duration:primary.duration, status:"new", pickup_location:pickup, price:"", notes:"Primary request" };
@@ -143,6 +150,7 @@ export async function onRequestPost({ request, env }) {
         return { id:"addon-" + (index + 1), tour:item.tour, date:primaryItem.date, tour_date:primaryItem.date, guests:transport ? "1" : guests, product_selected:item.product_selected, service_type:item.service_type, duration:item.tour === "Night Walk" ? "Evening activity" : "", status:"new", pickup_location:pickup, price:"", notes:transport ? "Requested on website; vehicle count to be confirmed" : "Requested on website", inherit_date:true, inherit_guests:!transport, inherit_pickup:true };
       }));
       return {
+        preferred_tour_type:primaryKey === "activity" ? primary.tour : rawPrimary,
         tour_type:interest,
         tour_category:interest,
         interest_category:interest,
@@ -160,7 +168,9 @@ export async function onRequestPost({ request, env }) {
 
     // Build payload for Apps Script (must include cf_secret)
     const body = new URLSearchParams();
-    const canonical = canonicalRequestFields(formData);
+    let canonical;
+    try { canonical = canonicalRequestFields(formData); }
+    catch { return iframeReply("error", "Choose a supported activity before submitting."); }
     const canonicalKeys = new Set(Object.keys(canonical));
     for (const [k, v] of formData.entries()) {
       if (k === "cf-turnstile-response") continue;

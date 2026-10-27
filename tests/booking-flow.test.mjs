@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import test from 'node:test';
 const read = p => fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const load = async p => import('data:text/javascript;base64,'+Buffer.from(read(p)).toString('base64'));
-const booking = await load('functions/api/book-tour/index.js');
+const booking = await import('../functions/api/book-tour/index.js');
 const contact = await load('functions/api/contact/index.js');
 async function submit(handler, fields, verify=true, json=false) {
   const original=globalThis.fetch;let forwarded=null,calls=0;
@@ -59,7 +59,7 @@ for(const path of ['book-tour/index.html','es/reservar-tour/index.html','contact
  });
 }
 function contextHarness({lang='en',experience='night-walk',source='/activities/night-walk/',contact=false,itinerary=false}={}){
- let labels=lang==='es'?['Caminata nocturna','Viaje de un día de Quito a Mindo']:['Night Walk','Quito to Mindo Day Trip'];let fields=contact?[{tagName:'SELECT',value:'',options:labels.map(value=>({value})),dispatchEvent(){}}]:['Night Walk','Quito to Mindo Day Trip'].map(value=>({tagName:'INPUT',value,checked:false,dispatchEvent(){}}));let sourceField={value:'original'},notes=['night-walk','quito-day-trip'].map(key=>({hidden:true,getAttribute(){return key;}}));let listeners={};let addon={checked:false,disabled:false};let form={querySelectorAll(s){return s.includes('preferred')?fields:s==='[data-tour-format]'?[]:notes;},querySelector(s){return s.includes('source_page')?sourceField:s.includes('Transportation')?null:addon;},addEventListener(t,f){listeners[t]=f;}};
+ let labels=lang==='es'?['Caminata nocturna','Viaje de un día de Quito a Mindo']:['Night Walk','Quito to Mindo Day Trip'];let fields=contact?[{tagName:'SELECT',value:'',options:labels.map(value=>({value})),dispatchEvent(){}}]:['Night Walk','Quito to Mindo Day Trip'].map(value=>({tagName:'INPUT',value,checked:false,dispatchEvent(){}}));let sourceField={value:'original'},notes=['night-walk','quito-day-trip'].map(key=>({hidden:true,getAttribute(){return key;}}));let listeners={};let addon={checked:false,disabled:false};let form={querySelectorAll(s){return s.includes('preferred')?fields:s==='[data-tour-format]'?[]:notes;},querySelector(s){return s.includes('source_page')?sourceField:s.includes('Transportation')?null:s.includes('Night Walk')?addon:null;},addEventListener(t,f){listeners[t]=f;}};
  let params=new URLSearchParams({experience,source_page:source,...(itinerary?{itinerary:'1'}:{})});vm.runInNewContext(read('assets/js/booking-context.js'),{document:{querySelector:()=>form,querySelectorAll:()=>[]},window:{location:{search:'?'+params,origin:'https://test.invalid'},setTimeout(f){f();},addEventListener(){}},URLSearchParams,Event:class{}});return {fields,notes,sourceField,listeners,addon};
 }
 test('allowlisted context preselects editable EN/ES booking/contact choices and rejects unsafe sources',()=>{
@@ -78,4 +78,12 @@ test('fetch acknowledgements report definitive delivery and security rejection a
 for(const path of ['book-tour/index.html','es/reservar-tour/index.html','contact/index.html','es/contacto/index.html'])test(path+': direct acknowledgement completes once without an iframe message',async()=>{
  let h=stateHarness(path,{status:'ok'}),prevented=0;h.events.submit({preventDefault(){prevented++;}});await new Promise(resolve=>setImmediate(resolve));assert.equal(prevented,1);assert.equal(h.successEl.style.display,'block');assert.equal(h.submitBtn.disabled,undefined);assert.equal(h.notice.hidden,true);
  h=stateHarness(path,{status:'error',message:'Test rejection'});h.events.submit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));assert.equal(h.errorEl.textContent.includes('Test rejection'),true);assert.equal(h.submitBtn.disabled,undefined);
+});
+test('activity inquiries preserve canonical activity interest, selected name and guest data',async()=>{
+ for(const activity of ['Chocolate Tour','Mountain Biking','Sky Bike / Sky Ride']){
+ const r=await submit(booking.onRequestPost,{preferred_tour_type:'Activity',activity_choice:activity,number_of_guests:'3',pickup_location:'Test lodging'});
+ assert.match(r.html,/status:"ok"/);assert.equal(r.forwarded.get('tour_type'),'Activity');assert.equal(r.forwarded.get('preferred_tour_type'),activity);
+ const item=JSON.parse(r.forwarded.get('tour_items'))[0];assert.equal(item.tour,activity);assert.equal(item.service_type,'Activity');assert.equal(item.guests,'3');assert.equal(item.pickup_location,'Test lodging');assert.equal(item.price,'');
+ }
+ const invalid=await submit(booking.onRequestPost,{preferred_tour_type:'Activity',activity_choice:'<script>unsafe</script>'});assert.equal(invalid.forwarded,null);assert.match(invalid.html,/supported activity/);
 });
