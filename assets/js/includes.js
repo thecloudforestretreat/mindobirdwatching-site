@@ -152,7 +152,7 @@
       var navigationStyles = document.createElement("link");
       navigationStyles.id = "mbwNavigationStyles";
       navigationStyles.rel = "stylesheet";
-      navigationStyles.href = "/assets/css/header.css?v=20261027-nav4";
+      navigationStyles.href = "/assets/css/header.css?v=20261027-journey";
       document.head.appendChild(navigationStyles);
     }
     if (footerHost && !document.getElementById("mbwJourneyStyles")) {
