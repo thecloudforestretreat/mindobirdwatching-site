@@ -24,3 +24,6 @@ Prepare exact 293-column TSV rows from live sitemap_seo_enriched source rows; re
 
 ## Backup
 Baseline e001ac8a plus parent-workspace archive outputs/mbw-journey-20261027/before-e001ac8a.tar.gz. CRM, accounting, WhatsApp sending, approved price data and availability remain unchanged.
+
+## Review correction: Activities carousel
+The Add Mindo Activities module now fills its media column rather than retaining a fixed 280px image inside a taller carousel. Empty label padding is hidden; dots stay over the image. Mobile uses a 3:2 frame. Scoped to this module, preserving the separate bird comparison carousel. All five image bounds meet the media bottom with zero gap in EN/ES at 320, 390, 768 and 1280px; no horizontal overflow. Next control advances the track. Existing 38 automated checks pass. Review branch only; production publication still pending approval.

@@ -159,7 +159,7 @@
       var journeyStyles = document.createElement("link");
       journeyStyles.id = "mbwJourneyStyles";
       journeyStyles.rel = "stylesheet";
-      journeyStyles.href = "/assets/css/journey.css?v=20261027-1";
+      journeyStyles.href = "/assets/css/journey.css?v=20261027-2";
       document.head.appendChild(journeyStyles);
     }
     var alreadyHasHeader = headerHost && headerHost.querySelector("[data-mbw-header]");
