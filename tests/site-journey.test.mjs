@@ -15,3 +15,6 @@ test('paired activity hubs expose progressive category filtering and keep unavai
 test('condensed tour collections retain practical guides, FAQs and all main tour formats',()=>{
  for(const p of ['tours/index.html','es/tours/index.html']){const s=read(p);assert.match(s,/journeyFormats/);assert.match(s,/FAQPage/);assert.match(s,/birdwatching-itineraries|itinerarios/);assert.match(s,/night-walk|caminata-nocturna/);assert.match(s,/target-bird|constructor-tour|birds-you-can|aves-que-puedes/);assert.equal((s.match(/class="journeyCompareCard"/g)||[]).length,3);}
 });
+test('footer retains social and WhatsApp controls and exposes paired practical/policy links',()=>{
+ const s=read('assets/includes/footer.html');assert.match(s,/footerExploreGrid/);assert.match(s,/mbwWaQuestions/);assert.match(s,/privacy-policy/);assert.match(s,/data-href-es="\/es\/politica-de-privacidad\//);assert.match(s,/data-booking-link/);
+});
