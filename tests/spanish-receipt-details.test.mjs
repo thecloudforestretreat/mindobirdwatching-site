@@ -23,3 +23,19 @@ for (const kind of ['book','contact']) {
   for(const value of ['Private Tour','Join a Small Group','Either Private or Small Group','Half-Day Tour','Full-Day Tour','Night Walk','Photography-Focused Tour','Custom / Private Tour','Not Sure Yet','Multi-Day','Activities','Combination','Additional Birding Day','Transportation','Accommodation Assistance','Other Activity or Tour']) assert.notEqual(scope.spanishSelectionLabel_(value),value);
  });
 }
+
+const activities=JSON.parse(readFileSync(new URL('../assets/data/experiences.json',import.meta.url),'utf8'));
+for(const kind of ['book-tour','contact']) {
+ test(`${kind}: all public activity labels localize without changing saved data`,()=>{
+  const source=readFileSync(new URL(`../deployment/form-receipts/${kind}.gs`,import.meta.url),'utf8');
+  const scope={buildBrandSignatureHtml_:()=>'',buildSignatureHtmlEs_:()=>'',buildSignatureHtml_:()=>''}; vm.createContext(scope);
+  vm.runInContext(['sanitize_','escapeHtml_','htmlWithBreaks_','spanishSelectionLabel_','spanishAddOnsLabel_','buildConfirmationEmailHtmlEn_','buildConfirmationEmailHtmlEs_'].map(n=>extract(source,n)).join('\n'),scope);
+  for(const activity of activities){
+   const data={first_name:'QA',email:'qa@example.com',preferred_tour_type:activity.en};
+   const original=JSON.stringify(data);
+   assert.equal(scope.spanishSelectionLabel_(activity.en),activity.es);
+   assert.ok(scope.buildConfirmationEmailHtmlEs_(data).includes(scope.escapeHtml_(activity.es)));
+   assert.equal(JSON.stringify(data),original);
+  }
+ });
+}
