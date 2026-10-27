@@ -1084,6 +1084,7 @@
   }
 
   function initHeaderDropdowns(topbar) {
+    if (topbar && topbar.hasAttribute("data-mbw-header")) return; // Shared header is owned by includes.js.
     if (!topbar || topbar.__mbwDesktopDropdownsBound) return;
 
     var dropdowns = qsa(topbar, ".dropdown");

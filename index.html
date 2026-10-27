@@ -547,387 +547,67 @@
 </style>
 <!-- MBW inline fonts end -->
 <!-- Global / shared CSS --><!-- MBW inline header start -->
-<style id="mbwHeaderCSS">/* /assets/css/header.css
-   MBW Header (Dropdown v2) - STABLE (works even if markup is div.topbar and/or missing data-mbw-header)
-
-   Fixes:
-   1) ES desktop: EN/ES never overlaps first nav pill (hard spacing)
-   2) Desktop: hamburger + mobile panel never appear
-   3) Mobile: header-row language pills are hidden (language switch lives inside menu panel footer only)
-   4) Mobile: submenus are hidden by default via [hidden] + JS; Safari-safe
-   5) Dropdown font matches pill font (Open Sans)
-
-   IMPORTANT:
-   - Scoped to #siteHeader so it does not affect other .topbar elements
-   - Does NOT require <header> tag or data-mbw-header attribute
-   - ASCII only
-*/
-
-:root{
-  --mbw-header-bg: rgba(243, 247, 241, 0.85);
-  --mbw-pill-bg: rgba(255,255,255,0.65);
-  --mbw-pill-bg-hover: rgba(13,89,37,0.14);
-  --mbw-line: rgba(0,0,0,0.10);
-  --mbw-shadow: 0 14px 40px rgba(0,0,0,.10);
-  --mbw-r: 18px;
-  --mbw-font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+<style id="mbwHeaderCSS">/* Shared EN/ES navigation. Keep snapshots synchronized with sync-homepage-headers.py. */
+#siteHeader .topbar[data-mbw-header]{font-family:"Open Sans",system-ui,sans-serif;position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:18px;padding:12px 16px;border:1px solid rgba(13,89,37,.16);border-radius:20px;background:rgba(247,250,243,.97);box-shadow:0 10px 30px rgba(0,0,0,.08);color:#102b20;box-sizing:border-box;}
+#siteHeader .topbar[data-mbw-header] *,#siteHeader .topbar[data-mbw-header] *::before,#siteHeader .topbar[data-mbw-header] *::after{box-sizing:border-box;}
+#siteHeader .topbar[data-mbw-header] [hidden]{display:none!important;}
+#siteHeader .topbar[data-mbw-header] .brand{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:0;color:#102b20;text-decoration:none;white-space:nowrap;}
+#siteHeader .topbar[data-mbw-header] .brand img{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+#siteHeader .topbar[data-mbw-header] .brand span{font-size:15px;font-weight:800;letter-spacing:-.03em;}
+#siteHeader .topbar[data-mbw-header] .right{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;min-width:0;}
+#siteHeader .topbar[data-mbw-header] .nav{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;padding:0!important;}
+#siteHeader .topbar[data-mbw-header] .pill{display:inline-flex;align-items:center;justify-content:center;min-height:44px;height:auto;padding:8px 10px;border:0;border-radius:10px;box-shadow:none;background:transparent;color:#102b20;font:700 14px/1.3 "Open Sans",system-ui,sans-serif;text-decoration:none;cursor:pointer;margin:0!important;letter-spacing:0;}
+#siteHeader .topbar[data-mbw-header] .pill:hover,#siteHeader .topbar[data-mbw-header] .pill.is-active,#siteHeader .topbar[data-mbw-header] .pill[aria-expanded="true"]{background:#e4eddf;color:#0d5925;}
+#siteHeader .topbar[data-mbw-header] .navTrigger{gap:7px;}
+#siteHeader .topbar[data-mbw-header] .navTrigger::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin-top:-3px;}
+#siteHeader .topbar[data-mbw-header] .navBook{background:#0d5925!important;color:#fff!important;padding-inline:15px;white-space:nowrap;}
+#siteHeader .topbar[data-mbw-header] .navBook:hover{background:#083d19!important;}
+#siteHeader .topbar[data-mbw-header] :is(a,button,summary):focus-visible{outline:3px solid #2468a6;outline-offset:3px;}
+#siteHeader .topbar[data-mbw-header] .lang{display:flex;align-items:center;gap:2px;padding:2px;border:1px solid #b8cbb7;border-radius:10px;background:transparent;box-shadow:none;margin:0!important;flex-shrink:0;}
+#siteHeader .topbar[data-mbw-header] .lang a{display:flex;align-items:center;justify-content:center;min-width:38px;min-height:40px;padding:4px;color:#102b20;font-size:12px;font-weight:800;text-decoration:none;border-radius:7px;}
+#siteHeader .topbar[data-mbw-header] .lang a.is-active{background:#e0ebdb;color:#0d5925;}
+#siteHeader .topbar[data-mbw-header] .dropdown{position:relative;display:flex;}
+#siteHeader .topbar[data-mbw-header] .dropdownMenu{display:grid;grid-template-columns:1fr;position:absolute;top:calc(100% + 8px);left:0;width:320px;max-height:calc(100dvh - 140px);overflow-y:auto;overscroll-behavior:contain;padding:12px;border:1px solid #c8d6c4;border-radius:14px;background:#fff;box-shadow:0 16px 35px rgba(0,0,0,.15);z-index:6000;white-space:normal;}
+#siteHeader .topbar[data-mbw-header] .dropdownMenu::before{content:"";position:absolute;top:-10px;left:0;right:0;height:10px;}
+#siteHeader .topbar[data-mbw-header] .dropdown[data-dd="tours"] .dropdownMenu{width:620px;grid-template-columns:1fr 1fr;gap:14px;}
+#siteHeader .topbar[data-mbw-header] .dropdown[data-dd="about"] .dropdownMenu,#siteHeader .topbar[data-mbw-header] .dropdown[data-dd="plan"] .dropdownMenu{left:auto;right:0;}
+#siteHeader .topbar[data-mbw-header] .navSectionTitle{margin:4px 10px 7px;color:#53704f;font-size:12px;font-weight:800;line-height:1.5;letter-spacing:.03em;}
+#siteHeader .topbar[data-mbw-header] .navSection a{display:flex;align-items:center;min-height:44px;height:auto;padding:10px;border:0;border-radius:8px;background:none;box-shadow:none;color:#102b20;font:600 14px/1.4 "Open Sans",system-ui,sans-serif;text-decoration:none;white-space:normal;}
+#siteHeader .topbar[data-mbw-header] .navSection a:hover,#siteHeader .topbar[data-mbw-header] .navSection a[aria-current="page"]{background:#edf3e8;color:#0d5925;}
+#siteHeader .topbar[data-mbw-header] .menuBtn{display:none;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid #b8cbb7;border-radius:10px;background:transparent;box-shadow:none;color:#102b20;cursor:pointer;}
+#siteHeader .topbar[data-mbw-header] .menuBtn svg{width:24px;height:24px;}
+#siteHeader .topbar[data-mbw-header] .mobileBook,#siteHeader .topbar[data-mbw-header] .menuPanel{display:none;}
+@media(max-width:1199px){
+ #siteHeader .topbar[data-mbw-header]{gap:8px;padding:10px 12px;margin-top:10px;border-radius:16px;}
+ #siteHeader .topbar[data-mbw-header] .nav,#siteHeader .topbar[data-mbw-header] .langDesktop{display:none!important;}
+ #siteHeader .topbar[data-mbw-header] .right{gap:8px;}
+ #siteHeader .topbar[data-mbw-header] .menuBtn,#siteHeader .topbar[data-mbw-header] .mobileBook{display:inline-flex;}
+ #siteHeader .topbar[data-mbw-header] .menuPanel:not([hidden]){display:block;position:absolute;top:calc(100% + 8px);right:0;width:min(420px,calc(100vw - 32px));padding:12px;border:1px solid #c8d6c4;border-radius:14px;background:#fff;box-shadow:0 16px 35px rgba(0,0,0,.16);max-height:calc(100dvh - 115px);overflow-y:auto;overscroll-behavior:contain;}
+ #siteHeader .topbar[data-mbw-header] .menuList{display:grid;gap:0;margin:0;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroup{border:0;border-bottom:1px solid #e0e8db;border-radius:0;background:none;margin:0;padding:0;box-shadow:none;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroup summary{display:flex;align-items:center;justify-content:space-between;list-style:none;min-height:48px;padding:12px 8px;color:#102b20;font-size:15px;font-weight:700;cursor:pointer;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroup summary::-webkit-details-marker{display:none;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroup summary::after{content:"+";font-size:22px;font-weight:400;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroup[open] summary::after{content:"−";}
+ #siteHeader .topbar[data-mbw-header] .mobileGroupLinks{padding:4px 0 12px 8px;}
+ #siteHeader .topbar[data-mbw-header] .mobileGroupLinks .navSection+.navSection{margin-top:12px;}
+ #siteHeader .topbar[data-mbw-header] .mobileContact{display:flex;align-items:center;min-height:48px;padding:12px 8px;color:#102b20;font-size:15px;font-weight:700;text-decoration:none;}
+ #siteHeader .topbar[data-mbw-header] .menuLangFooter{margin-top:8px;padding-top:12px;border-top:1px solid #e0e8db;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+ #siteHeader .topbar[data-mbw-header] .menuLangCurrent{font-size:13px;color:#53704f;}
+ #siteHeader .topbar[data-mbw-header] .menuLangSwitch{min-height:44px;padding:10px 14px;background:#edf3e8;}
 }
-
-/* Scope */
-#siteHeader .topbar{
-  font-family: var(--mbw-font);
+@media(max-width:540px){
+ #siteHeader .topbar[data-mbw-header] .brand{gap:5px;}
+ #siteHeader .topbar[data-mbw-header] .brand span{font-size:13px;max-width:100px;white-space:normal;line-height:1.2;letter-spacing:-.02em;}
+ #siteHeader .topbar[data-mbw-header] .brand img{width:26px;height:26px;}
+ #siteHeader .topbar[data-mbw-header] .mobileBook{font-size:12px;padding-inline:9px;}
 }
-
-/* Hard guarantee: any [hidden] inside header is hidden */
-#siteHeader .topbar [hidden]{
-  display: none !important;
-}
-
-/* Header shell */
-#siteHeader .topbar{
-  position: sticky;
-  top: 0;
-  z-index: 5000;
-  margin-top: 18px;
-  border-radius: 22px;
-  border: 1px solid var(--mbw-line);
-  background: var(--mbw-header-bg);
-  box-shadow: var(--mbw-shadow);
-  padding: 14px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  backdrop-filter: blur(10px);
-}
-
-/* Brand */
-#siteHeader .topbar .brand{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
-  min-width: 220px;
-}
-#siteHeader .topbar .brand img{
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  object-fit: cover;
-}
-#siteHeader .topbar .brand span{
-  font-weight: 900;
-  letter-spacing: -0.01em;
-}
-
-/* Right cluster */
-#siteHeader .topbar .right{
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
-/* Language switch (header-row, desktop) */
-#siteHeader .topbar .lang{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 999px;
-  border: 1px solid var(--mbw-line);
-  background: rgba(255,255,255,0.70);
-  box-shadow: 0 10px 25px rgba(0,0,0,.07);
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 3;
-}
-#siteHeader .topbar .lang a{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 999px;
-  text-decoration: none;
-  color: inherit;
-  font-weight: 900;
-  font-size: 13px;
-  border: 1px solid transparent;
-  font-family: var(--mbw-font);
-}
-#siteHeader .topbar .lang a.is-active,
-#siteHeader .topbar .lang a[aria-current="page"],
-#siteHeader .topbar .lang a.active{
-  border-color: rgba(13,89,37,.25);
-  background: rgba(13,89,37,.12);
-}
-
-/* Desktop nav */
-#siteHeader .topbar nav.nav,
-#siteHeader .topbar .nav{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  min-width: 0;
-  position: relative;
-  z-index: 2;
-  font-family: var(--mbw-font);
-}
-
-/* Pills */
-#siteHeader .topbar .pill{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--mbw-line);
-  background: var(--mbw-pill-bg);
-  box-shadow: 0 10px 25px rgba(0,0,0,.07);
-  text-decoration: none;
-  color: inherit;
-  font-weight: 900;
-  font-size: 13.5px;
-  letter-spacing: -0.01em;
-  font-family: var(--mbw-font);
-}
-#siteHeader .topbar .pill:hover{
-  background: var(--mbw-pill-bg-hover);
-  border-color: rgba(13,89,37,.28);
-}
-
-/* Dropdown */
-#siteHeader .topbar .dropdown{
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-#siteHeader .topbar .dropdown > .pill{
-  gap: 8px;
-}
-#siteHeader .topbar .dropdownMenu{
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  min-width: 240px;
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  border-radius: 16px;
-  border: 1px solid var(--mbw-line);
-  background: rgba(255,255,255,0.94);
-  box-shadow: 0 22px 60px rgba(0,0,0,.18);
-  backdrop-filter: blur(10px);
-  z-index: 6000;
-  font-family: var(--mbw-font);
-}
-#siteHeader .topbar .dropdownMenu::before{
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -12px;
-  height: 12px;
-  background: transparent;
-}
-#siteHeader .topbar .dropdownMenu a{
-  display: flex;
-  align-items: center;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: inherit;
-  font-weight: 900;
-  font-size: 13.5px;
-  letter-spacing: -0.01em;
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.70);
-  font-family: var(--mbw-font);
-}
-#siteHeader .topbar .dropdownMenu a:hover{
-  background: rgba(13,89,37,0.12);
-  border-color: rgba(13,89,37,.22);
-}
-
-/* Desktop rules */
-@media (min-width: 901px){
-  #siteHeader .topbar .dropdown:hover .dropdownMenu,
-  #siteHeader .topbar .dropdown:focus-within .dropdownMenu,
-  #siteHeader .topbar .dropdown.is-open .dropdownMenu{
-    display: flex;
-  }
-
-  #siteHeader .topbar .dropdown.is-open > .pill{
-    background: var(--mbw-pill-bg-hover);
-    border-color: rgba(13,89,37,.32);
-  }
-
-  /* Never show hamburger/panel on desktop */
-  #siteHeader .topbar .menuBtn,
-  #siteHeader .topbar .menuPanel,
-  #siteHeader .topbar #menuBtn,
-  #siteHeader .topbar #menuPanel{
-    display: none !important;
-  }
-
-  #siteHeader .topbar .right{
-    flex-wrap: nowrap;
-    min-width: 0;
-    gap: 16px;
-  }
-
-  #siteHeader .topbar nav.nav,
-  #siteHeader .topbar .nav{
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: visible;
-    padding-left: 22px;
-  }
-
-  /* ES desktop: hard extra gap so EN/ES never touches Inicio */
-  html[lang="es"] #siteHeader .topbar .right{
-    gap: 18px;
-  }
-  html[lang="es"] #siteHeader .topbar .lang{
-    margin-right: 26px !important;
-  }
-  html[lang="es"] #siteHeader .topbar nav.nav,
-  html[lang="es"] #siteHeader .topbar .nav{
-    padding-left: 34px !important;
-  }
-  html[lang="es"] #siteHeader .topbar nav.nav > a.pill:first-child,
-  html[lang="es"] #siteHeader .topbar .nav > a.pill:first-child{
-    margin-left: 14px !important;
-  }
-}
-
-/* Mobile hamburger UI (base) */
-#siteHeader .topbar .menuBtn,
-#siteHeader .topbar #menuBtn{
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--mbw-line);
-  background: rgba(255,255,255,0.75);
-  box-shadow: 0 10px 25px rgba(0,0,0,.07);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-#siteHeader .topbar .menuBtn svg,
-#siteHeader .topbar #menuBtn svg{
-  width: 22px;
-  height: 22px;
-}
-
-#siteHeader .topbar .menuPanel,
-#siteHeader .topbar #menuPanel{
-  display: none;
-  position: absolute;
-  right: 14px;
-  top: calc(100% + 10px);
-  width: min(360px, calc(100vw - 28px));
-  padding: 12px;
-  border-radius: 18px;
-  border: 1px solid var(--mbw-line);
-  background: rgba(255,255,255,0.94);
-  box-shadow: 0 24px 70px rgba(0,0,0,.22);
-}
-
-#siteHeader .topbar .menuPanel.is-open,
-#siteHeader .topbar #menuPanel.is-open{
-  display: block;
-}
-
-#siteHeader .topbar .menuList{
-  display: grid;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* Mobile behavior */
-@media (max-width: 900px){
-  /* Hide desktop nav */
-  #siteHeader .topbar nav.nav,
-  #siteHeader .topbar .nav{
-    display: none !important;
-  }
-
-  /* Hide header-row language switch on mobile (but KEEP menu footer language switch visible) */
-  #siteHeader .topbar .lang{
-    display: none !important;
-  }
-  #siteHeader .topbar .menuPanel .lang{
-    display: inline-flex !important;
-  }
-
-  /* Left-align rows */
-  #siteHeader .topbar .menuPanel .pill{
-    width: 100%;
-    justify-content: flex-start !important;
-    text-align: left !important;
-  }
-
-  #siteHeader .topbar .menuPanel a.pill,
-  #siteHeader .topbar .menuPanel button.pill{
-    justify-content: flex-start !important;
-    text-align: left !important;
-  }
-
-  #siteHeader .topbar .menuPanel .m-next{
-    justify-content: space-between !important;
-    padding-right: 14px;
-  }
-
-  #siteHeader .topbar .menuPanel .m-back{
-    justify-content: flex-start !important;
-  }
-}
-
-#siteHeader .topbar .m-arrow{
-  font-size: 18px;
-  opacity: .65;
-}
-
-#siteHeader .topbar .menuLangFooter{
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0,0,0,0.08);
-  display: grid;
-  gap: 10px;
-}
-
-#siteHeader .topbar .menuLangCurrent{
-  color: rgba(0,0,0,0.55);
-  font-weight: 900;
-  font-size: 12px;
-  letter-spacing: -0.01em;
-}
-
-/* MBW header update 2026-07-03: longer Tours menu without changing top-level nav length */
-#siteHeader .topbar .dropdown[data-dd="tours"] .dropdownMenu{
-  min-width: 310px;
-}
-#siteHeader .topbar .dropdownMenu{
-  max-height: min(70vh, 560px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-#siteHeader .topbar .dropdownMenu a{
-  min-height: 40px;
-  height: auto;
-  line-height: 1.15;
-  white-space: normal;
+@media(max-width:380px){
+ #siteHeader .topbar[data-mbw-header]{padding-inline:8px;gap:6px;}
+ #siteHeader .topbar[data-mbw-header] .brand span{font-size:12px;max-width:72px;}
+ #siteHeader .topbar[data-mbw-header] .brand img{width:22px;height:22px;}
+ #siteHeader .topbar[data-mbw-header] .mobileBook{font-size:11.5px;padding-inline:7px;}
+ #siteHeader .topbar[data-mbw-header] .right{gap:6px;}
 }
 </style>
 <!-- MBW inline header end -->
@@ -1192,119 +872,81 @@ header.topbar a.pill *{text-decoration:none !important;text-decoration-line:none
 <body data-page-content-group="home" data-page-language="en" data-page-location="mindo" data-page-region="mindo_cloud_forest" data-page-type="home_page">
 <div class="container">
 <div data-current-lang="en" id="siteHeader"><!-- MBW static header start -->
-<header class="topbar" data-current-lang="en" data-header-version="v3-single-header" data-mbw-header="">
-<a aria-label="Mindo Bird Watching home" class="brand" href="/">
-<img alt="Mindo Bird Watching logo mark" decoding="async" height="256" loading="eager" src="/assets/images/logo/mbw-logo-mark-256.webp" width="256"/>
-<span>Mindo Bird Watching</span>
-</a>
+<header class="topbar" data-mbw-header data-header-version="v4-navigation" data-current-lang="en">
+<a class="brand" href="/" aria-label="Mindo Bird Watching home"><img src="/assets/images/logo/mbw-logo-mark-256.webp" alt="" width="256" height="256" decoding="async"><span>Mindo Bird Watching</span></a>
 <div class="right">
-<div aria-label="Language switch" class="lang langDesktop">
-<a data-lang="en" href="/">EN</a>
-<a data-lang="es" href="/es/">ES</a>
-</div>
-<nav aria-label="Primary" class="nav" data-i18n-aria="primaryNav">
-<a class="pill" data-href-en="/" data-href-es="/es/" data-label-en="Home" data-label-es="Inicio" href="/">Home</a>
-<div class="dropdown" data-dd="plan">
-<a aria-expanded="false" aria-haspopup="true" class="pill" data-href-en="/plan-your-trip/" data-href-es="/es/planifica-tu-viaje/" data-label-en="Plan Your Trip" data-label-es="Planifica Tu Viaje" href="/plan-your-trip/">Plan Your Trip</a>
-<div aria-label="Plan Your Trip" class="dropdownMenu" role="menu">
-<a data-href-en="/plan-your-trip/" data-href-es="/es/planifica-tu-viaje/" data-label-en="Plan Your Trip" data-label-es="Planifica Tu Viaje" href="/plan-your-trip/" role="menuitem">Plan Your Trip</a>
-<a data-href-en="/plan-your-trip/mindo/" data-href-es="/es/planifica-tu-viaje/mindo/" data-label-en="Plan Your Trip to Mindo" data-label-es="Planifica Tu Viaje a Mindo" href="/plan-your-trip/mindo/" role="menuitem">Plan Your Trip to Mindo</a>
-<a data-href-en="/plan-your-trip/ecuador/" data-href-es="/es/planifica-tu-viaje/ecuador/" data-label-en="Plan Your Trip to Ecuador" data-label-es="Planifica Tu Viaje a Ecuador" href="/plan-your-trip/ecuador/" role="menuitem">Plan Your Trip to Ecuador</a>
-</div>
-</div>
-<div class="dropdown" data-dd="tours">
-<a aria-expanded="false" aria-haspopup="true" class="pill" data-href-en="/tours/" data-href-es="/es/tours/" data-label-en="Tours" data-label-es="Tours" href="/tours/">Tours</a>
-<div aria-label="Tours" class="dropdownMenu" role="menu">
-<a data-href-en="/tours/" data-href-es="/es/tours/" data-label-en="Tours Overview" data-label-es="Resumen de Tours" href="/tours/" role="menuitem">Tours Overview</a>
-<a data-href-en="/tours/half-day/" data-href-es="/es/tours/medio-dia/" data-label-en="Half-Day Tours" data-label-es="Tours Medio Día" href="/tours/half-day/" role="menuitem">Half-Day Tours</a>
-<a data-href-en="/tours/full-day/" data-href-es="/es/tours/dia-entero/" data-label-en="Full-Day Tours" data-label-es="Tours Día Entero" href="/tours/full-day/" role="menuitem">Full-Day Tours</a>
-<a data-href-en="/tours/custom-private-tour/" data-href-es="/es/tours/tour-personalizado-privado/" data-label-en="Custom / Private Tour" data-label-es="Tour Personalizado / Privado" href="/tours/custom-private-tour/" role="menuitem">Custom / Private Tour</a>
-<a data-href-en="/tours/target-bird-tour-builder/" data-href-es="/es/tours/constructor-tour-aves-objetivo/" data-label-en="Target Bird Tour Builder" data-label-es="Constructor de Tour de Aves Objetivo" href="/tours/target-bird-tour-builder/" role="menuitem">Target Bird Tour Builder</a>
-<a data-href-en="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-es="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/" data-label-en="Half-Day vs Full-Day Birds" data-label-es="Aves en Medio Día vs Día Completo" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" role="menuitem">Half-Day vs Full-Day Birds</a>
-<a data-href-en="/tours/jewels-morning-forest-birding/" data-href-es="/es/tours/joyas-del-bosque-matutino/" data-label-en="Jewels of the Morning Forest" data-label-es="Joyas del Bosque Matutino" href="/tours/jewels-morning-forest-birding/" role="menuitem">Jewels of the Morning Forest</a>
-<a data-href-en="/tours/mindo-hummingbird-tour/" data-href-es="/es/tours/tour-de-colibries-mindo/" data-label-en="Mindo Hummingbird Tour" data-label-es="Tour de Colibríes en Mindo" href="/tours/mindo-hummingbird-tour/" role="menuitem">Mindo Hummingbird Tour</a>
-<a data-href-en="/tours/andean-cock-of-the-rock-dawn/" data-href-es="/es/tours/gallo-de-la-pena-andino-al-amanecer/" data-label-en="Cock-of-the-Rock Dawn Tour" data-label-es="Gallo de la Peña al Amanecer" href="/tours/andean-cock-of-the-rock-dawn/" role="menuitem">Cock-of-the-Rock Dawn Tour</a>
-<a data-href-en="/tours/quest-five-toucans-guide/" data-href-es="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" data-label-en="Quest for Five Toucans" data-label-es="Búsqueda de Cinco Tucanes" href="/tours/quest-five-toucans-guide/" role="menuitem">Quest for Five Toucans</a>
-<a data-href-en="/tours/mindo-bird-photography-tour/" data-href-es="/es/tours/fotografia-aves-mindo/" data-label-en="Mindo Bird Photography Tour" data-label-es="Fotografía de Aves en Mindo" href="/tours/mindo-bird-photography-tour/" role="menuitem">Mindo Bird Photography Tour</a>
-<a data-href-en="/activities/" data-href-es="/es/actividades/" data-label-en="Activities" data-label-es="Actividades" href="/activities/" role="menuitem">Activities</a>
-</div>
-</div>
-<div class="dropdown" data-dd="birds">
-<a aria-expanded="false" aria-haspopup="true" class="pill" data-href-en="/bird-gallery/" data-href-es="/es/galeria/" data-label-en="Birds" data-label-es="Aves" href="/bird-gallery/">Birds</a>
-<div aria-label="Birds" class="dropdownMenu" role="menu">
-<a data-href-en="/bird-gallery/" data-href-es="/es/galeria/" data-label-en="Bird Gallery" data-label-es="Galería de Aves" href="/bird-gallery/" role="menuitem">Bird Gallery</a>
-<a data-href-en="/bird-of-the-week/" data-href-es="/es/ave-de-la-semana/" data-label-en="Bird of the Week" data-label-es="Ave de la Semana" href="/bird-of-the-week/" role="menuitem">Bird of the Week</a>
-<a data-href-en="/birding/recent-bird-sightings-mindo/" data-href-es="/es/birding/avistamientos-recientes-mindo/" data-label-en="Recent Bird Sightings in Mindo" data-label-es="Avistamientos Recientes en Mindo" href="/birding/recent-bird-sightings-mindo/" role="menuitem">Recent Bird Sightings in Mindo</a>
-<a data-href-en="/birding-calendar/" data-href-es="/es/calendario-de-avistamiento/" data-label-en="Birding Calendar" data-label-es="Calendario de Avistamiento" href="/birding-calendar/" role="menuitem">Birding Calendar</a>
-</div>
-</div>
-<div class="dropdown" data-dd="about">
-<a aria-expanded="false" aria-haspopup="true" class="pill" data-href-en="/about-us/" data-href-es="/es/sobre-nosotros/" data-label-en="About Us" data-label-es="Acerca de" href="/about-us/">About Us</a>
-<div aria-label="About Us" class="dropdownMenu" role="menu">
-<a data-href-en="/about-us/" data-href-es="/es/sobre-nosotros/" data-label-en="About Us" data-label-es="Sobre Nosotros" href="/about-us/" role="menuitem">About Us</a>
-<a data-href-en="/our-guide/" data-href-es="/es/nuestro-guia/" data-label-en="Our Guide" data-label-es="Nuestro Guía" href="/our-guide/" role="menuitem">Our Guide</a>
-<a data-href-en="/reviews/" data-href-es="/es/resenas/" data-label-en="Reviews" data-label-es="Reseñas" href="/reviews/" role="menuitem">Reviews</a>
-</div>
-</div>
-<a class="pill" data-href-en="/contact/" data-href-es="/es/contacto/" data-label-en="Contact" data-label-es="Contacto" href="/contact/">Contact</a>
-<a class="pill" data-href-en="/book-tour/" data-href-es="/es/reservar-tour/" data-label-en="Book A Tour" data-label-es="Reservar Tour" href="/book-tour/">Book A Tour</a>
-</nav>
-<button aria-expanded="false" aria-label="Open menu" class="menuBtn" type="button">
-<svg aria-hidden="true" viewbox="0 0 24 24">
-<path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
-</svg>
-</button>
-</div>
-<div aria-label="Mobile menu" class="menuPanel" id="menuPanel">
-<nav aria-label="Primary mobile" class="menuList m-main" data-i18n-aria="primaryNavMobile">
-<a class="pill" data-href-en="/" data-href-es="/es/" data-label-en="Home" data-label-es="Inicio" href="/">Home</a>
-<button class="pill m-next" data-label-en="Plan Your Trip" data-label-es="Planifica Tu Viaje" data-target="#m-plan" type="button">Plan Your Trip <span aria-hidden="true" class="m-arrow">›</span></button>
-<button class="pill m-next" data-label-en="Tours" data-label-es="Tours" data-target="#m-tours" type="button">Tours <span aria-hidden="true" class="m-arrow">›</span></button>
-<button class="pill m-next" data-label-en="Birds" data-label-es="Aves" data-target="#m-birds" type="button">Birds <span aria-hidden="true" class="m-arrow">›</span></button>
-<button class="pill m-next" data-label-en="About Us" data-label-es="Acerca de" data-target="#m-about" type="button">About Us <span aria-hidden="true" class="m-arrow">›</span></button>
-<a class="pill" data-href-en="/contact/" data-href-es="/es/contacto/" data-label-en="Contact" data-label-es="Contacto" href="/contact/">Contact</a>
-<a class="pill" data-href-en="/book-tour/" data-href-es="/es/reservar-tour/" data-label-en="Book A Tour" data-label-es="Reservar Tour" href="/book-tour/">Book A Tour</a>
-</nav>
-<nav aria-label="Plan Your Trip mobile" class="menuList m-submenu" data-aria-en="Plan Your Trip mobile" data-aria-es="Planifica Tu Viaje móvil" hidden="" id="m-plan">
-<button class="pill m-back" data-back="" data-label-en="Back" data-label-es="Volver" type="button">Back</button>
-<a class="pill" data-href-en="/plan-your-trip/" data-href-es="/es/planifica-tu-viaje/" data-label-en="Plan Your Trip" data-label-es="Planifica Tu Viaje" href="/plan-your-trip/">Plan Your Trip</a>
-<a class="pill" data-href-en="/plan-your-trip/mindo/" data-href-es="/es/planifica-tu-viaje/mindo/" data-label-en="Plan Your Trip to Mindo" data-label-es="Planifica Tu Viaje a Mindo" href="/plan-your-trip/mindo/">Plan Your Trip to Mindo</a>
-<a class="pill" data-href-en="/plan-your-trip/ecuador/" data-href-es="/es/planifica-tu-viaje/ecuador/" data-label-en="Plan Your Trip to Ecuador" data-label-es="Planifica Tu Viaje a Ecuador" href="/plan-your-trip/ecuador/">Plan Your Trip to Ecuador</a>
-</nav>
-<nav aria-label="Tours mobile" class="menuList m-submenu" data-aria-en="Tours mobile" data-aria-es="Tours móvil" hidden="" id="m-tours">
-<button class="pill m-back" data-back="" data-label-en="Back" data-label-es="Volver" type="button">Back</button>
-<a class="pill" data-href-en="/tours/" data-href-es="/es/tours/" data-label-en="Tours Overview" data-label-es="Resumen de Tours" href="/tours/">Tours Overview</a>
-<a class="pill" data-href-en="/tours/half-day/" data-href-es="/es/tours/medio-dia/" data-label-en="Half-Day Tours" data-label-es="Tours Medio Día" href="/tours/half-day/">Half-Day Tours</a>
-<a class="pill" data-href-en="/tours/full-day/" data-href-es="/es/tours/dia-entero/" data-label-en="Full-Day Tours" data-label-es="Tours Día Entero" href="/tours/full-day/">Full-Day Tours</a>
-<a class="pill" data-href-en="/tours/custom-private-tour/" data-href-es="/es/tours/tour-personalizado-privado/" data-label-en="Custom / Private Tour" data-label-es="Tour Personalizado / Privado" href="/tours/custom-private-tour/">Custom / Private Tour</a>
-<a class="pill" data-href-en="/tours/target-bird-tour-builder/" data-href-es="/es/tours/constructor-tour-aves-objetivo/" data-label-en="Target Bird Tour Builder" data-label-es="Constructor de Tour de Aves Objetivo" href="/tours/target-bird-tour-builder/">Target Bird Tour Builder</a>
-<a class="pill" data-href-en="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-es="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/" data-label-en="Half-Day vs Full-Day Birds" data-label-es="Aves en Medio Día vs Día Completo" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/">Half-Day vs Full-Day Birds</a>
-<a class="pill" data-href-en="/tours/jewels-morning-forest-birding/" data-href-es="/es/tours/joyas-del-bosque-matutino/" data-label-en="Jewels of the Morning Forest" data-label-es="Joyas del Bosque Matutino" href="/tours/jewels-morning-forest-birding/">Jewels of the Morning Forest</a>
-<a class="pill" data-href-en="/tours/mindo-hummingbird-tour/" data-href-es="/es/tours/tour-de-colibries-mindo/" data-label-en="Mindo Hummingbird Tour" data-label-es="Tour de Colibríes en Mindo" href="/tours/mindo-hummingbird-tour/">Mindo Hummingbird Tour</a>
-<a class="pill" data-href-en="/tours/andean-cock-of-the-rock-dawn/" data-href-es="/es/tours/gallo-de-la-pena-andino-al-amanecer/" data-label-en="Cock-of-the-Rock Dawn Tour" data-label-es="Gallo de la Peña al Amanecer" href="/tours/andean-cock-of-the-rock-dawn/">Cock-of-the-Rock Dawn Tour</a>
-<a class="pill" data-href-en="/tours/quest-five-toucans-guide/" data-href-es="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" data-label-en="Quest for Five Toucans" data-label-es="Búsqueda de Cinco Tucanes" href="/tours/quest-five-toucans-guide/">Quest for Five Toucans</a>
-<a class="pill" data-href-en="/tours/mindo-bird-photography-tour/" data-href-es="/es/tours/fotografia-aves-mindo/" data-label-en="Mindo Bird Photography Tour" data-label-es="Fotografía de Aves en Mindo" href="/tours/mindo-bird-photography-tour/">Mindo Bird Photography Tour</a>
-<a class="pill" data-href-en="/activities/" data-href-es="/es/actividades/" data-label-en="Activities" data-label-es="Actividades" href="/activities/">Activities</a>
-</nav>
-<nav aria-label="Birds mobile" class="menuList m-submenu" data-aria-en="Birds mobile" data-aria-es="Aves móvil" hidden="" id="m-birds">
-<button class="pill m-back" data-back="" data-label-en="Back" data-label-es="Volver" type="button">Back</button>
-<a class="pill" data-href-en="/bird-gallery/" data-href-es="/es/galeria/" data-label-en="Bird Gallery" data-label-es="Galería de Aves" href="/bird-gallery/">Bird Gallery</a>
-<a class="pill" data-href-en="/bird-of-the-week/" data-href-es="/es/ave-de-la-semana/" data-label-en="Bird of the Week" data-label-es="Ave de la Semana" href="/bird-of-the-week/">Bird of the Week</a>
-<a class="pill" data-href-en="/birding/recent-bird-sightings-mindo/" data-href-es="/es/birding/avistamientos-recientes-mindo/" data-label-en="Recent Bird Sightings in Mindo" data-label-es="Avistamientos Recientes en Mindo" href="/birding/recent-bird-sightings-mindo/">Recent Bird Sightings in Mindo</a>
-<a class="pill" data-href-en="/birding-calendar/" data-href-es="/es/calendario-de-avistamiento/" data-label-en="Birding Calendar" data-label-es="Calendario de Avistamiento" href="/birding-calendar/">Birding Calendar</a>
-</nav>
-<nav aria-label="About Us mobile" class="menuList m-submenu" data-aria-en="About Us mobile" data-aria-es="Acerca de móvil" hidden="" id="m-about">
-<button class="pill m-back" data-back="" data-label-en="Back" data-label-es="Volver" type="button">Back</button>
-<a class="pill" data-href-en="/about-us/" data-href-es="/es/sobre-nosotros/" data-label-en="About Us" data-label-es="Sobre Nosotros" href="/about-us/">About Us</a>
-<a class="pill" data-href-en="/our-guide/" data-href-es="/es/nuestro-guia/" data-label-en="Our Guide" data-label-es="Nuestro Guía" href="/our-guide/">Our Guide</a>
-<a class="pill" data-href-en="/reviews/" data-href-es="/es/resenas/" data-label-en="Reviews" data-label-es="Reseñas" href="/reviews/">Reviews</a>
-</nav>
-<div aria-label="Language mobile" class="menuLangFooter" data-lang-footer="">
-<div class="menuLangCurrent">Current: <strong>EN</strong></div>
-<a class="pill menuLangSwitch" data-lang="es" data-lang-switch="1" href="/es/">Español</a>
-</div>
-</div>
-</header>
+<nav class="nav" aria-label="Primary" data-i18n-aria="primaryNav"><div class="dropdown" data-dd="tours"><button class="pill navTrigger" type="button" aria-expanded="false" aria-controls="nav-tours" data-label-en="Tours" data-label-es="Tours">Tours</button><div class="dropdownMenu" id="nav-tours" hidden><div class="navSection"><p class="navSectionTitle" data-label-en="Explore tours" data-label-es="Explora los tours">Explore tours</p><a class="" href="/tours/" data-href-en="/tours/" data-href-es="/es/tours/" data-label-en="All Tours" data-label-es="Todos los tours">All Tours</a>
+<a class="" href="/tours/half-day/" data-href-en="/tours/half-day/" data-href-es="/es/tours/medio-dia/" data-label-en="Half-Day Tours" data-label-es="Tours de medio día">Half-Day Tours</a>
+<a class="" href="/tours/full-day/" data-href-en="/tours/full-day/" data-href-es="/es/tours/dia-entero/" data-label-en="Full-Day Tours" data-label-es="Tours de día completo">Full-Day Tours</a>
+<a class="" href="/tours/custom-private-tour/" data-href-en="/tours/custom-private-tour/" data-href-es="/es/tours/tour-personalizado-privado/" data-label-en="Private &amp; Custom Tours" data-label-es="Tours privados y personalizados">Private &amp; Custom Tours</a>
+<a class="" href="/mindo-birdwatching-itineraries/" data-href-en="/mindo-birdwatching-itineraries/" data-href-es="/es/itinerarios-avistamiento-aves-mindo/" data-label-en="Multi-Day Itineraries" data-label-es="Itinerarios de varios días">Multi-Day Itineraries</a>
+<a class="" href="/tours/mindo-bird-photography-tour/" data-href-en="/tours/mindo-bird-photography-tour/" data-href-es="/es/tours/fotografia-aves-mindo/" data-label-en="Bird Photography Tour" data-label-es="Tour de fotografía de aves">Bird Photography Tour</a>
+<a class="" href="/tours/spectacled-bear-tour-ecuador/" data-href-en="/tours/spectacled-bear-tour-ecuador/" data-href-es="/es/tours/tour-oso-de-anteojos-ecuador/" data-label-en="Spectacled Bear Tour" data-label-es="Tour del oso de anteojos">Spectacled Bear Tour</a></div>
+<div class="navSection"><p class="navSectionTitle" data-label-en="Popular tours &amp; planning" data-label-es="Tours destacados y planificación">Popular tours & planning</p><a class="" href="/tours/jewels-morning-forest-birding/" data-href-en="/tours/jewels-morning-forest-birding/" data-href-es="/es/tours/joyas-del-bosque-matutino/" data-label-en="Jewels of the Morning Forest" data-label-es="Joyas del bosque matutino">Jewels of the Morning Forest</a>
+<a class="" href="/tours/mindo-hummingbird-tour/" data-href-en="/tours/mindo-hummingbird-tour/" data-href-es="/es/tours/tour-de-colibries-mindo/" data-label-en="Mindo Hummingbird Tour" data-label-es="Tour de colibríes en Mindo">Mindo Hummingbird Tour</a>
+<a class="" href="/tours/andean-cock-of-the-rock-dawn/" data-href-en="/tours/andean-cock-of-the-rock-dawn/" data-href-es="/es/tours/gallo-de-la-pena-andino-al-amanecer/" data-label-en="Cock-of-the-Rock Dawn Tour" data-label-es="Gallo de la peña al amanecer">Cock-of-the-Rock Dawn Tour</a>
+<a class="" href="/tours/quest-five-toucans-guide/" data-href-en="/tours/quest-five-toucans-guide/" data-href-es="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" data-label-en="Quest for Five Toucans" data-label-es="Búsqueda de cinco tucanes">Quest for Five Toucans</a>
+<a class="" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-en="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-es="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/" data-label-en="Compare Half-Day &amp; Full-Day Birds" data-label-es="Compara las aves: medio día o día completo">Compare Half-Day &amp; Full-Day Birds</a>
+<a class="" href="/tours/target-bird-tour-builder/" data-href-en="/tours/target-bird-tour-builder/" data-href-es="/es/tours/constructor-tour-aves-objetivo/" data-label-en="Target Bird Tour Builder" data-label-es="Planifica un tour por especies">Target Bird Tour Builder</a></div></div></div><div class="dropdown" data-dd="activities"><button class="pill navTrigger" type="button" aria-expanded="false" aria-controls="nav-activities" data-label-en="Activities" data-label-es="Actividades">Activities</button><div class="dropdownMenu" id="nav-activities" hidden><div class="navSection"><p class="navSectionTitle" data-label-en="Explore activities" data-label-es="Explora las actividades">Explore activities</p><a class="" href="/activities/" data-href-en="/activities/" data-href-es="/es/actividades/" data-label-en="All Activities" data-label-es="Todas las actividades">All Activities</a>
+<a class="" href="/activities/night-walk/" data-href-en="/activities/night-walk/" data-href-es="/es/actividades/caminata-nocturna/" data-label-en="Night Walk" data-label-es="Caminata nocturna">Night Walk</a>
+<a class="" href="/activities/private-insect-macro-wildlife-search/" data-href-en="/activities/private-insect-macro-wildlife-search/" data-href-es="/es/actividades/busqueda-privada-insectos-macrofauna/" data-label-en="Insect &amp; Macro Wildlife Search" data-label-es="Búsqueda de insectos y macrofauna">Insect &amp; Macro Wildlife Search</a>
+<a class="" href="/activities/chocolate-tour/" data-href-en="/activities/chocolate-tour/" data-href-es="/es/actividades/tour-de-chocolate/" data-label-en="Chocolate Tour" data-label-es="Tour de chocolate">Chocolate Tour</a>
+<a class="" href="/activities/coffee-tour/" data-href-en="/activities/coffee-tour/" data-href-es="/es/actividades/tour-de-cafe/" data-label-en="Coffee Tour" data-label-es="Tour de café">Coffee Tour</a>
+<a class="" href="/activities/butterfly-tour/" data-href-en="/activities/butterfly-tour/" data-href-es="/es/actividades/tour-de-mariposas/" data-label-en="Butterfly Tour" data-label-es="Tour de mariposas">Butterfly Tour</a>
+<a class="" href="/activities/nature-walk/" data-href-en="/activities/nature-walk/" data-href-es="/es/actividades/caminata-naturalista/" data-label-en="Nature Walk" data-label-es="Caminata naturalista">Nature Walk</a>
+<a class="" href="/active-adventures-mindo/" data-href-en="/active-adventures-mindo/" data-href-es="/es/aventuras-activas-mindo/" data-label-en="Adventure Activities" data-label-es="Actividades de aventura">Adventure Activities</a></div></div></div><div class="dropdown" data-dd="birds"><button class="pill navTrigger" type="button" aria-expanded="false" aria-controls="nav-birds" data-label-en="Birds" data-label-es="Aves">Birds</button><div class="dropdownMenu" id="nav-birds" hidden><div class="navSection"><p class="navSectionTitle" data-label-en="Explore the birds" data-label-es="Explora las aves">Explore the birds</p><a class="" href="/mindo-bird-species/" data-href-en="/mindo-bird-species/" data-href-es="/es/especies-de-aves-de-mindo/" data-label-en="Bird Species of Mindo" data-label-es="Especies de aves de Mindo">Bird Species of Mindo</a>
+<a class="" href="/bird-gallery/" data-href-en="/bird-gallery/" data-href-es="/es/galeria/" data-label-en="Bird Gallery" data-label-es="Galería de aves">Bird Gallery</a>
+<a class="" href="/birding/recent-bird-sightings-mindo/" data-href-en="/birding/recent-bird-sightings-mindo/" data-href-es="/es/birding/avistamientos-recientes-mindo/" data-label-en="Recent Bird Sightings" data-label-es="Avistamientos recientes">Recent Bird Sightings</a>
+<a class="" href="/birding-calendar/" data-href-en="/birding-calendar/" data-href-es="/es/calendario-de-avistamiento/" data-label-en="Birding Calendar" data-label-es="Calendario de avistamiento">Birding Calendar</a>
+<a class="" href="/birding-reserves-near-mindo/" data-href-en="/birding-reserves-near-mindo/" data-href-es="/es/reservas-de-avistamiento-de-aves-cerca-de-mindo/" data-label-en="Birding Reserves" data-label-es="Reservas de avistamiento">Birding Reserves</a>
+<a class="" href="/bird-of-the-week/" data-href-en="/bird-of-the-week/" data-href-es="/es/ave-de-la-semana/" data-label-en="Bird of the Week" data-label-es="Ave de la semana">Bird of the Week</a>
+<a class="" href="/bird-quest/" data-href-en="/bird-quest/" data-href-es="/es/reto-de-aves/" data-label-en="Bird Quest" data-label-es="Reto de aves">Bird Quest</a></div></div></div><div class="dropdown" data-dd="plan"><button class="pill navTrigger" type="button" aria-expanded="false" aria-controls="nav-plan" data-label-en="Plan Your Trip" data-label-es="Planifica tu viaje">Plan Your Trip</button><div class="dropdownMenu" id="nav-plan" hidden><div class="navSection"><p class="navSectionTitle" data-label-en="Plan your visit" data-label-es="Prepara tu visita">Plan your visit</p><a class="" href="/plan-your-trip/" data-href-en="/plan-your-trip/" data-href-es="/es/planifica-tu-viaje/" data-label-en="Planning Overview" data-label-es="Guía para planificar tu viaje">Planning Overview</a>
+<a class="" href="/plan-your-trip/mindo/" data-href-en="/plan-your-trip/mindo/" data-href-es="/es/planifica-tu-viaje/mindo/" data-label-en="Plan Your Trip to Mindo" data-label-es="Planifica tu viaje a Mindo">Plan Your Trip to Mindo</a>
+<a class="" href="/plan-your-trip/ecuador/" data-href-en="/plan-your-trip/ecuador/" data-href-es="/es/planifica-tu-viaje/ecuador/" data-label-en="Plan Your Trip to Ecuador" data-label-es="Planifica tu viaje a Ecuador">Plan Your Trip to Ecuador</a>
+<a class="" href="/quito-to-mindo-day-trip/" data-href-en="/quito-to-mindo-day-trip/" data-href-es="/es/viaje-de-un-dia-quito-mindo/" data-label-en="Quito–Mindo Day Trip" data-label-es="Excursión de un día Quito–Mindo">Quito–Mindo Day Trip</a>
+<a class="" href="/transportation/" data-href-en="/transportation/" data-href-es="/es/transporte/" data-label-en="Private Transportation" data-label-es="Transporte privado">Private Transportation</a>
+<a class="" href="/how-to-get-to-mindo/" data-href-en="/how-to-get-to-mindo/" data-href-es="/es/como-llegar-a-mindo/" data-label-en="How to Get to Mindo" data-label-es="Cómo llegar a Mindo">How to Get to Mindo</a>
+<a class="" href="/recommendations/" data-href-en="/recommendations/" data-href-es="/es/recomendaciones/" data-label-en="Where to Stay &amp; Local Recommendations" data-label-es="Dónde alojarte y recomendaciones locales">Where to Stay &amp; Local Recommendations</a>
+<a class="" href="/best-time-birdwatching-mindo/" data-href-en="/best-time-birdwatching-mindo/" data-href-es="/es/mejor-epoca-avistamiento-aves-mindo/" data-label-en="Best Time for Birdwatching" data-label-es="Mejor época para observar aves">Best Time for Birdwatching</a>
+<a class="" href="/faqs/" data-href-en="/faqs/" data-href-es="/es/preguntas-frecuentes-faq/" data-label-en="FAQs" data-label-es="Preguntas frecuentes">FAQs</a></div></div></div><div class="dropdown" data-dd="about"><button class="pill navTrigger" type="button" aria-expanded="false" aria-controls="nav-about" data-label-en="About Us" data-label-es="Nosotros">About Us</button><div class="dropdownMenu" id="nav-about" hidden><div class="navSection"><p class="navSectionTitle" data-label-en="Meet Mindo Bird Watching" data-label-es="Conoce Mindo Bird Watching">Meet Mindo Bird Watching</p><a class="" href="/about-us/" data-href-en="/about-us/" data-href-es="/es/sobre-nosotros/" data-label-en="About Us" data-label-es="Sobre nosotros">About Us</a>
+<a class="" href="/our-guide/" data-href-en="/our-guide/" data-href-es="/es/nuestro-guia/" data-label-en="Our Guide" data-label-es="Nuestro guía">Our Guide</a>
+<a class="" href="/reviews/" data-href-en="/reviews/" data-href-es="/es/resenas/" data-label-en="Guest Reviews" data-label-es="Reseñas de viajeros">Guest Reviews</a></div></div></div><a class="pill" href="/contact/" data-href-en="/contact/" data-href-es="/es/contacto/" data-label-en="Contact" data-label-es="Contacto">Contact</a><a class="pill navBook" href="/book-tour/" data-href-en="/book-tour/" data-href-es="/es/reservar-tour/" data-label-en="Book a Tour" data-label-es="Reservar tour">Book a Tour</a></nav><div class="lang langDesktop" aria-label="Language switch"><a href="/" data-lang="en">EN</a><a href="/es/" data-lang="es">ES</a></div><a class="pill mobileBook navBook" href="/book-tour/" data-href-en="/book-tour/" data-href-es="/es/reservar-tour/" data-label-en="Book a Tour" data-label-es="Reservar tour">Book a Tour</a><button class="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menuPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+<div class="menuPanel" id="menuPanel" aria-label="Mobile menu" hidden><nav class="menuList m-main" aria-label="Primary mobile" data-i18n-aria="primaryNavMobile"><details class="mobileGroup" name="mobile-navigation"><summary data-label-en="Tours" data-label-es="Tours">Tours</summary><div class="mobileGroupLinks"><div class="navSection"><p class="navSectionTitle" data-label-en="Explore tours" data-label-es="Explora los tours">Explore tours</p><a class="" href="/tours/" data-href-en="/tours/" data-href-es="/es/tours/" data-label-en="All Tours" data-label-es="Todos los tours">All Tours</a>
+<a class="" href="/tours/half-day/" data-href-en="/tours/half-day/" data-href-es="/es/tours/medio-dia/" data-label-en="Half-Day Tours" data-label-es="Tours de medio día">Half-Day Tours</a>
+<a class="" href="/tours/full-day/" data-href-en="/tours/full-day/" data-href-es="/es/tours/dia-entero/" data-label-en="Full-Day Tours" data-label-es="Tours de día completo">Full-Day Tours</a>
+<a class="" href="/tours/custom-private-tour/" data-href-en="/tours/custom-private-tour/" data-href-es="/es/tours/tour-personalizado-privado/" data-label-en="Private &amp; Custom Tours" data-label-es="Tours privados y personalizados">Private &amp; Custom Tours</a>
+<a class="" href="/mindo-birdwatching-itineraries/" data-href-en="/mindo-birdwatching-itineraries/" data-href-es="/es/itinerarios-avistamiento-aves-mindo/" data-label-en="Multi-Day Itineraries" data-label-es="Itinerarios de varios días">Multi-Day Itineraries</a>
+<a class="" href="/tours/mindo-bird-photography-tour/" data-href-en="/tours/mindo-bird-photography-tour/" data-href-es="/es/tours/fotografia-aves-mindo/" data-label-en="Bird Photography Tour" data-label-es="Tour de fotografía de aves">Bird Photography Tour</a>
+<a class="" href="/tours/spectacled-bear-tour-ecuador/" data-href-en="/tours/spectacled-bear-tour-ecuador/" data-href-es="/es/tours/tour-oso-de-anteojos-ecuador/" data-label-en="Spectacled Bear Tour" data-label-es="Tour del oso de anteojos">Spectacled Bear Tour</a></div>
+<div class="navSection"><p class="navSectionTitle" data-label-en="Popular tours &amp; planning" data-label-es="Tours destacados y planificación">Popular tours & planning</p><a class="" href="/tours/jewels-morning-forest-birding/" data-href-en="/tours/jewels-morning-forest-birding/" data-href-es="/es/tours/joyas-del-bosque-matutino/" data-label-en="Jewels of the Morning Forest" data-label-es="Joyas del bosque matutino">Jewels of the Morning Forest</a>
+<a class="" href="/tours/mindo-hummingbird-tour/" data-href-en="/tours/mindo-hummingbird-tour/" data-href-es="/es/tours/tour-de-colibries-mindo/" data-label-en="Mindo Hummingbird Tour" data-label-es="Tour de colibríes en Mindo">Mindo Hummingbird Tour</a>
+<a class="" href="/tours/andean-cock-of-the-rock-dawn/" data-href-en="/tours/andean-cock-of-the-rock-dawn/" data-href-es="/es/tours/gallo-de-la-pena-andino-al-amanecer/" data-label-en="Cock-of-the-Rock Dawn Tour" data-label-es="Gallo de la peña al amanecer">Cock-of-the-Rock Dawn Tour</a>
+<a class="" href="/tours/quest-five-toucans-guide/" data-href-en="/tours/quest-five-toucans-guide/" data-href-es="/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/" data-label-en="Quest for Five Toucans" data-label-es="Búsqueda de cinco tucanes">Quest for Five Toucans</a>
+<a class="" href="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-en="/tours/birds-you-can-see-in-mindo-half-day-vs-full-day/" data-href-es="/es/tours/aves-que-puedes-ver-en-mindo-tour-medio-dia-vs-dia-completo/" data-label-en="Compare Half-Day &amp; Full-Day Birds" data-label-es="Compara las aves: medio día o día completo">Compare Half-Day &amp; Full-Day Birds</a>
+<a class="" href="/tours/target-bird-tour-builder/" data-href-en="/tours/target-bird-tour-builder/" data-href-es="/es/tours/constructor-tour-aves-objetivo/" data-label-en="Target Bird Tour Builder" data-label-es="Planifica un tour por especies">Target Bird Tour Builder</a></div></div></details><details class="mobileGroup" name="mobile-navigation"><summary data-label-en="Activities" data-label-es="Actividades">Activities</summary><div class="mobileGroupLinks"><div class="navSection"><p class="navSectionTitle" data-label-en="Explore activities" data-label-es="Explora las actividades">Explore activities</p><a class="" href="/activities/" data-href-en="/activities/" data-href-es="/es/actividades/" data-label-en="All Activities" data-label-es="Todas las actividades">All Activities</a>
+<a class="" href="/activities/night-walk/" data-href-en="/activities/night-walk/" data-href-es="/es/actividades/caminata-nocturna/" data-label-en="Night Walk" data-label-es="Caminata nocturna">Night Walk</a>
+<a class="" href="/activities/private-insect-macro-wildlife-search/" data-href-en="/activities/private-insect-macro-wildlife-search/" data-href-es="/es/actividades/busqueda-privada-insectos-macrofauna/" data-label-en="Insect &amp; Macro Wildlife Search" data-label-es="Búsqueda de insectos y macrofauna">Insect &amp; Macro Wildlife Search</a>
+<a class="" href="/activities/chocolate-tour/" data-href-en="/activities/chocolate-tour/" data-href-es="/es/actividades/tour-de-chocolate/" data-label-en="Chocolate Tour" data-label-es="Tour de chocolate">Chocolate Tour</a>
+<a class="" href="/activities/coffee-tour/" data-href-en="/activities/coffee-tour/" data-href-es="/es/actividades/tour-de-cafe/" data-label-en="Coffee Tour" data-label-es="Tour de café">Coffee Tour</a>
+<a class="" href="/activities/butterfly-tour/" data-href-en="/activities/butterfly-tour/" data-href-es="/es/actividades/tour-de-mariposas/" data-label-en="Butterfly Tour" data-label-es="Tour de mariposas">Butterfly Tour</a>
+<a class="" href="/activities/nature-walk/" data-href-en="/activities/nature-walk/" data-href-es="/es/actividades/caminata-naturalista/" data-label-en="Nature Walk" data-label-es="Caminata naturalista">Nature Walk</a>
+<a class="" href="/active-adventures-mindo/" data-href-en="/active-adventures-mindo/" data-href-es="/es/aventuras-activas-mindo/" data-label-en="Adventure Activities" data-label-es="Actividades de aventura">Adventure Activities</a></div></div></details><details class="mobileGroup" name="mobile-navigation"><summary data-label-en="Birds" data-label-es="Aves">Birds</summary><div class="mobileGroupLinks"><div class="navSection"><p class="navSectionTitle" data-label-en="Explore the birds" data-label-es="Explora las aves">Explore the birds</p><a class="" href="/mindo-bird-species/" data-href-en="/mindo-bird-species/" data-href-es="/es/especies-de-aves-de-mindo/" data-label-en="Bird Species of Mindo" data-label-es="Especies de aves de Mindo">Bird Species of Mindo</a>
+<a class="" href="/bird-gallery/" data-href-en="/bird-gallery/" data-href-es="/es/galeria/" data-label-en="Bird Gallery" data-label-es="Galería de aves">Bird Gallery</a>
+<a class="" href="/birding/recent-bird-sightings-mindo/" data-href-en="/birding/recent-bird-sightings-mindo/" data-href-es="/es/birding/avistamientos-recientes-mindo/" data-label-en="Recent Bird Sightings" data-label-es="Avistamientos recientes">Recent Bird Sightings</a>
+<a class="" href="/birding-calendar/" data-href-en="/birding-calendar/" data-href-es="/es/calendario-de-avistamiento/" data-label-en="Birding Calendar" data-label-es="Calendario de avistamiento">Birding Calendar</a>
+<a class="" href="/birding-reserves-near-mindo/" data-href-en="/birding-reserves-near-mindo/" data-href-es="/es/reservas-de-avistamiento-de-aves-cerca-de-mindo/" data-label-en="Birding Reserves" data-label-es="Reservas de avistamiento">Birding Reserves</a>
+<a class="" href="/bird-of-the-week/" data-href-en="/bird-of-the-week/" data-href-es="/es/ave-de-la-semana/" data-label-en="Bird of the Week" data-label-es="Ave de la semana">Bird of the Week</a>
+<a class="" href="/bird-quest/" data-href-en="/bird-quest/" data-href-es="/es/reto-de-aves/" data-label-en="Bird Quest" data-label-es="Reto de aves">Bird Quest</a></div></div></details><details class="mobileGroup" name="mobile-navigation"><summary data-label-en="Plan Your Trip" data-label-es="Planifica tu viaje">Plan Your Trip</summary><div class="mobileGroupLinks"><div class="navSection"><p class="navSectionTitle" data-label-en="Plan your visit" data-label-es="Prepara tu visita">Plan your visit</p><a class="" href="/plan-your-trip/" data-href-en="/plan-your-trip/" data-href-es="/es/planifica-tu-viaje/" data-label-en="Planning Overview" data-label-es="Guía para planificar tu viaje">Planning Overview</a>
+<a class="" href="/plan-your-trip/mindo/" data-href-en="/plan-your-trip/mindo/" data-href-es="/es/planifica-tu-viaje/mindo/" data-label-en="Plan Your Trip to Mindo" data-label-es="Planifica tu viaje a Mindo">Plan Your Trip to Mindo</a>
+<a class="" href="/plan-your-trip/ecuador/" data-href-en="/plan-your-trip/ecuador/" data-href-es="/es/planifica-tu-viaje/ecuador/" data-label-en="Plan Your Trip to Ecuador" data-label-es="Planifica tu viaje a Ecuador">Plan Your Trip to Ecuador</a>
+<a class="" href="/quito-to-mindo-day-trip/" data-href-en="/quito-to-mindo-day-trip/" data-href-es="/es/viaje-de-un-dia-quito-mindo/" data-label-en="Quito–Mindo Day Trip" data-label-es="Excursión de un día Quito–Mindo">Quito–Mindo Day Trip</a>
+<a class="" href="/transportation/" data-href-en="/transportation/" data-href-es="/es/transporte/" data-label-en="Private Transportation" data-label-es="Transporte privado">Private Transportation</a>
+<a class="" href="/how-to-get-to-mindo/" data-href-en="/how-to-get-to-mindo/" data-href-es="/es/como-llegar-a-mindo/" data-label-en="How to Get to Mindo" data-label-es="Cómo llegar a Mindo">How to Get to Mindo</a>
+<a class="" href="/recommendations/" data-href-en="/recommendations/" data-href-es="/es/recomendaciones/" data-label-en="Where to Stay &amp; Local Recommendations" data-label-es="Dónde alojarte y recomendaciones locales">Where to Stay &amp; Local Recommendations</a>
+<a class="" href="/best-time-birdwatching-mindo/" data-href-en="/best-time-birdwatching-mindo/" data-href-es="/es/mejor-epoca-avistamiento-aves-mindo/" data-label-en="Best Time for Birdwatching" data-label-es="Mejor época para observar aves">Best Time for Birdwatching</a>
+<a class="" href="/faqs/" data-href-en="/faqs/" data-href-es="/es/preguntas-frecuentes-faq/" data-label-en="FAQs" data-label-es="Preguntas frecuentes">FAQs</a></div></div></details><details class="mobileGroup" name="mobile-navigation"><summary data-label-en="About Us" data-label-es="Nosotros">About Us</summary><div class="mobileGroupLinks"><div class="navSection"><p class="navSectionTitle" data-label-en="Meet Mindo Bird Watching" data-label-es="Conoce Mindo Bird Watching">Meet Mindo Bird Watching</p><a class="" href="/about-us/" data-href-en="/about-us/" data-href-es="/es/sobre-nosotros/" data-label-en="About Us" data-label-es="Sobre nosotros">About Us</a>
+<a class="" href="/our-guide/" data-href-en="/our-guide/" data-href-es="/es/nuestro-guia/" data-label-en="Our Guide" data-label-es="Nuestro guía">Our Guide</a>
+<a class="" href="/reviews/" data-href-en="/reviews/" data-href-es="/es/resenas/" data-label-en="Guest Reviews" data-label-es="Reseñas de viajeros">Guest Reviews</a></div></div></details><a class="mobileContact" href="/contact/" data-href-en="/contact/" data-href-es="/es/contacto/" data-label-en="Contact" data-label-es="Contacto">Contact</a></nav><div class="menuLangFooter" data-lang-footer aria-label="Language mobile"></div></div></header>
 <!-- MBW static header end -->
 </div><nav aria-label="Language switch" class="rawLangLinks"><a aria-current="page" data-analytics-event="language_switch_click" data-analytics-label="English" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="home_page" data-analytics-target-language="en" href="https://mindobirdwatching.com/" hreflang="en" lang="en">English</a>
 <a data-analytics-event="language_switch_click" data-analytics-label="Español" data-analytics-location="language_switch" data-analytics-page-language="en" data-analytics-page-type="home_page" data-analytics-target-language="es" href="https://mindobirdwatching.com/es/" hreflang="es" lang="es">Español</a></nav>
@@ -1754,9 +1396,9 @@ header.topbar a.pill *{text-decoration:none !important;text-decoration-line:none
 </main>
 <div id="siteFooter"></div>
 </div><!-- Shared header/footer injector and centralized site behavior -->
-<script defer="" src="/assets/js/includes.js"></script>
+<script defer="" src="/assets/js/includes.js?v=20261027-nav4"></script>
 <script defer="" src="/assets/js/video-facade.js"></script>
-<script defer="" src="/assets/js/site.js"></script>
+<script defer="" src="/assets/js/site.js?v=20261027-nav4"></script>
 <script>
     (function(){
       "use strict";
