@@ -48,3 +48,9 @@ Active-inquiry tasks use the saved follow-up date, including CRM edits without a
 Spam inquiries produce no tasks and are excluded defensively from digest rendering.
 
 44 regression tests passed; eight digest tests also passed against the exact patched live Head source. Live source was backed up and only the reconciliation change applied, preserving unrelated live/repository differences. No email sent by QA and no guest records auto-closed.
+
+## Multi-tour completion and review guard — 27 October 2026
+
+Completion inference considers the full saved date range and dates of confirmed/completed services, instead of only the initial tour date. Cancelled and unselected options are excluded. A review task is blocked while a confirmed service is in the future; after completion, its date is based on the later of the recorded completion and final service date. Legacy single-service requests still work. No inquiry statuses/dates are migrated by this patch.
+
+57 targeted checks passed, including six new behavior tests that reproduced four failures before the fix. Fourteen tests also passed against the exact patched live source. Live Head source was backed up and the correction applied narrowly, preserving unrelated differences from the repository. WhatsApp remains disabled.
