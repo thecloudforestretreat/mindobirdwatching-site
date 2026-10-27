@@ -45,4 +45,6 @@ QA: 33 regression tests pass; four behavior/integration tests also pass against 
 
 Active-inquiry tasks use the saved follow-up date, including CRM edits without a Sheet note. Explicit manual override notes still support a cleared date. Reviews and cancellations keep their separate scheduling rules. Four bulk note-column reads preserve performance. No inquiry values are rewritten.
 
-43 regression tests passed; seven digest tests also passed against the exact patched live Head source. Live source was backed up and only the reconciliation change applied, preserving unrelated live/repository differences. No email sent by QA and no guest records auto-closed.
+Spam inquiries produce no tasks and are excluded defensively from digest rendering.
+
+44 regression tests passed; eight digest tests also passed against the exact patched live Head source. Live source was backed up and only the reconciliation change applied, preserving unrelated live/repository differences. No email sent by QA and no guest records auto-closed.
