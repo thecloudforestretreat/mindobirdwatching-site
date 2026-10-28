@@ -63,3 +63,16 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.doesNotMatch(report,/v\.reach\|\|v\.engaged_users\|\|engagement/);
   for(const node of workflow.nodes.filter(node=>node.type==="n8n-nodes-base.code"))assert.doesNotThrow(()=>new Function(node.parameters.jsCode),node.name);
 });
+
+test("analytics workflow recovers YouTube records from canonical saved URLs and audits gaps",()=>{
+  const workflow=buildWorkflow();
+  const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
+  const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.match(prepare,/youtubeIdFromUrl/);
+  assert.match(prepare,/records\.flatMap\(r => \[r\.youtube_post_id,r\.youtube_url_id\]\)/);
+  assert.match(report,/youtubeMatches=\{exact_id:0,url_fallback:0,unmatched:0,unresolved:\[\]\}/);
+  assert.match(report,/youtube_url_id&&ytById\[r\.youtube_url_id\]/);
+  assert.match(report,/youtube_match_method/);
+  assert.match(report,/not_returned_by_api/);
+  assert.match(report,/matched_with_visibility:status\.visible/);
+});

@@ -99,6 +99,11 @@ const tagsFor = row => {
   return [...new Map(tags.map(tag=>[tag.key,tag])).values()].slice(0,24);
 };
 const rows = $input.all().map(i => i.json);
+const youtubeIdFromUrl = value => {
+  const raw=clean(value); if(!raw)return '';
+  const match=raw.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?[^#]*v=|shorts\/|embed\/))([A-Za-z0-9_-]{11})/i);
+  return match?match[1]:'';
+};
 const records = rows.map((row,index) => {
   const type = clean(row.carousel_id) ? 'carousel' : 'reel';
   const id = clean(row.carousel_id || row.reel_id || row.post_id || row.row_number || index + 1);
@@ -117,6 +122,7 @@ const records = rows.map((row,index) => {
     facebook_caption: clean(row.facebook_caption || row.instagram_caption_final || row.caption || row.reel_description),
     facebook_published_at: clean(row.facebook_published_date || row.published_date),
     youtube_url: clean(row.youtube_url),
+    youtube_url_id: youtubeIdFromUrl(row.youtube_url),
     thumbnail: clean(row.cover_image_url || row.thumbnail_url || row.instagram_thumbnail_url),
     tags: tagsFor(row),
     is_published: clean(row.status).toLowerCase() === 'published' || Boolean(clean(row.instagram_post_id || row.facebook_post_id || row.youtube_post_id)),
@@ -125,7 +131,7 @@ const records = rows.map((row,index) => {
   .map(r => ({...r,cohort:r.published_date >= ctx.start_date ? 'current' : 'previous'}));
 const unique = values => [...new Set(values.filter(Boolean))];
 const ig = unique(records.map(r => r.instagram_post_id));
-const yt = unique(records.map(r => r.youtube_post_id));
+const yt = unique(records.flatMap(r => [r.youtube_post_id,r.youtube_url_id]));
 const facebookPageId = '753092067877601';
 const facebookPostCandidates = values => unique(values.map(value => {
   const raw=clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop();
@@ -241,6 +247,7 @@ const dailyTotals = series.reduce((a,v)=>({views:a.views+v.views,watch_time_minu
 const postResults = [];
 const samples = [];
 const facebookMatches={exact_id:0,permalink:0,caption_date:0,unmatched:0};
+const youtubeMatches={exact_id:0,url_fallback:0,unmatched:0,unresolved:[]};
 const dayName = d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d+'T12:00:00Z').getUTCDay()];
 const timeHour = value => {
   const s=String(value||'').trim(); let m=s.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i); if(!m)return 7;
@@ -271,10 +278,17 @@ for (const r of base.records) {
     if(r.cohort==='current'&&denominator)samples.push({platform:'Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
     }else if(r.cohort==='current')facebookMatches.unmatched++;
   }
-  if (r.youtube_post_id && ytById[r.youtube_post_id]) {
-    const v=ytById[r.youtube_post_id], engagement=v.likes+v.comments;
-    postResults.push({...common,title:r.title||v.title,thumbnail:v.thumbnail||common.thumbnail,platform:'YouTube',reach:0,views:v.views,result:v.views,result_metric:'Views',engagements:engagement,denominator:v.views,engagement_rate:v.views?engagement/v.views*100:0,href:r.youtube_url||('https://youtu.be/'+r.youtube_post_id)});
+  if (r.youtube_post_id) {
+    const matchedId=ytById[r.youtube_post_id]?r.youtube_post_id:(r.youtube_url_id&&ytById[r.youtube_url_id]?r.youtube_url_id:'');
+    if(matchedId){
+    const matchMethod=matchedId===r.youtube_post_id?'exact_id':'url_fallback',v=ytById[matchedId],engagement=v.likes+v.comments;
+    if(r.cohort==='current')youtubeMatches[matchMethod]++;
+    postResults.push({...common,title:r.title||v.title,thumbnail:v.thumbnail||common.thumbnail,platform:'YouTube',reach:0,views:v.views,result:v.views,result_metric:'Views',engagements:engagement,denominator:v.views,engagement_rate:v.views?engagement/v.views*100:0,href:r.youtube_url||('https://youtu.be/'+matchedId),youtube_match_method:matchMethod,youtube_canonical_video_id:matchedId});
     if(r.cohort==='current')samples.push({platform:'YouTube',day:common.publish_day,hour:common.publish_hour,value:v.views});
+    }else if(r.cohort==='current'){
+      youtubeMatches.unmatched++;
+      youtubeMatches.unresolved.push({content_id:r.id,title:r.title,youtube_post_id:r.youtube_post_id,youtube_url_id:r.youtube_url_id||''});
+    }
   }
 }
 const current=postResults.filter(p=>p.cohort==='current');
@@ -285,7 +299,7 @@ const igTotals=totalsFor('Instagram'), fbTotals=totalsFor('Facebook'), ytTotals=
 const countExpected=(platform)=>base.records.filter(r=>r.cohort==='current'&&Boolean(r[platform+'_post_id'])).length;
 const countMatched=(platform)=>current.filter(p=>p.platform.toLowerCase()===platform).length;
 const countVisible=(platform)=>current.filter(p=>p.platform.toLowerCase()===platform&&num(p.denominator||p.reach||p.views)>0).length;
-const platformStatus=(platform)=>{const expected=countExpected(platform),matched=countMatched(platform),visible=countVisible(platform),coverage=expected?matched/expected:0;return{expected,matched,visible,coverage_percent:expected?Math.round(coverage*100):null,data_status:expected&&coverage>=.95&&visible===matched?'ready':'incomplete'}};
+const platformStatus=(platform)=>{const expected=countExpected(platform),matched=countMatched(platform),visible=countVisible(platform),coverage=expected?matched/expected:0,visibilityCoverage=matched?visible/matched:0;return{expected,matched,visible,coverage_percent:expected?Math.round(coverage*100):null,visibility_coverage_percent:matched?Math.round(visibilityCoverage*100):null,data_status:matched&&visible?'available':matched?'identity_only':'no_data'}};
 const facebookPageAuthorized=Array.isArray(pageAccessRaw.data)&&pageAccessRaw.data.some(account=>String(account.id)==='753092067877601'&&clean(account.access_token));
 const facebookApiErrors=[fbRaw,fbDirectRaw,fbReelRaw].map(apiError).filter(Boolean);
 const facebookConnectionReason=!facebookPageAuthorized?'Facebook Page access token was not returned. Reconnect the Facebook credential with Page access and read-insights permissions.':facebookApiErrors.length?facebookApiErrors[0]:'';
@@ -317,7 +331,7 @@ const response={
   summary:{published_posts:uniqueCurrent.length,instagram_reach:igTotals.reach,facebook_unique_viewers:fbTotals.reach,facebook_media_views:fbTotals.views,youtube_views:dailyTotals.views||ytTotals.views,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,visibility_totals_are_comparable:false},
   series,top_posts:top.slice(0,12),post_results:postResults,
   youtube_retention:{available:dailyTotals.views>0,views:dailyTotals.views,average_view_duration_seconds:dailyTotals.views?dailyTotals.duration_weighted/dailyTotals.views:0,average_view_percentage:dailyTotals.views?dailyTotals.percentage_weighted/dailyTotals.views:0,completed_through:base.end_date},
-  data_health:{stale:false,note:'Post IDs are matched to current platform totals. Facebook uses direct post and reel IDs, permalink, and high-confidence caption/date reconciliation. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Visibility-based rates exclude records where Facebook returned reactions but no media-view data. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),details=platform==='facebook'?{match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible),connection_reason:facebookConnectionReason}:{};return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
+  data_health:{stale:false,note:'Identity matching and metric visibility are reported separately. Facebook uses direct post and reel IDs, permalink, and high-confidence caption/date reconciliation. YouTube uses the saved video ID and falls back to the canonical ID in the saved YouTube URL when they disagree. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),baseDetails={matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible)};const details=platform==='facebook'?{...baseDetails,match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},connection_reason:facebookConnectionReason}:platform==='youtube'?{...baseDetails,match_methods:{exact_id:youtubeMatches.exact_id,url_fallback:youtubeMatches.url_fallback},unmatched_reasons:{not_returned_by_api:youtubeMatches.unmatched},unresolved:youtubeMatches.unresolved}:baseDetails;return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
   sources:[
     {platform:'instagram',status:Object.keys(igById).length?'connected':'no matched data',mode:'current lifetime post insights'},
     {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic media views and unique viewers with reactions, comments, and shares'},
