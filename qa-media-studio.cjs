@@ -11,9 +11,9 @@ assert(script.includes('"https://www.youtube.com/watch?v="+encodeURIComponent(id
 assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary previews must fall back to the published YouTube video");
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
-assert(page.includes("media-studio.css?v=20"), "Media Studio CSS cache key must be current");
+assert(page.includes("media-studio.css?v=21"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=25"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.js?v=26"), "Media Studio JS cache key must be current");
 assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
 assert(script.includes("reason?'Reconnect required':'Connection required'"), "Platform cards must distinguish an expired credential from a missing connection");
 assert(script.includes("async function fetchInsights(period)")&&script.includes("50000"), "Analytics requests must allow the reporting workflow to finish");
@@ -34,6 +34,10 @@ assert(script.includes('function comparisonPlatforms(){return[{key:"instagram",l
 assert(script.includes('renderPlatformComparison("Performance by publish date"'), "Default visibility analytics must render platform comparisons instead of empty notices");
 assert(script.includes('renderPlatformComparison("Publishing heatmap"'), "All-platform timing analytics must remain visible without choosing a platform");
 assert(script.includes('renderPlatformComparison("Observed patterns"'), "All-platform guidance must remain visible without choosing a platform");
+assert(script.includes('renderPlatformComparison("Response versus visibility","Compare reach or views with engagement inside each platform.",current,previous,"stacked"'), "Dense response maps must receive a full-width platform row");
+assert(script.includes('function renderCrossPlatformTags(posts,metric)'), "Topics and species must use one cross-platform comparison matrix");
+assert(script.includes('renderCrossPlatformTags(current,metric)'), "The default analytics view must render the comparison matrix");
+assert(script.includes("instagramUnresolved"), "Data health must name unresolved Instagram records");
 assert(script.includes('textSummaryCard("Platform visibility","3 separate metrics"'), "Mixed visibility summary must explain the three measures without prompting for a platform choice");
 assert(styles.includes('.platformComparisonGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'), "Platform comparisons must use a responsive three-column layout");
 assert(script.includes('key==="facebook"?"Media views"'), "Facebook visibility must be labeled as media views");
@@ -44,4 +48,4 @@ assert(!script.includes("Connected · incomplete data"), "Connection status must
 assert(script.includes("Historical coverage varies by platform"), "Analytics notice must explain coverage without calling healthy connections incomplete");
 assert(script.includes("URL recovery"), "YouTube URL fallback must be visible in data-health evidence");
 
-console.log(JSON.stringify({ ok: true, checks: 38, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true, nonComparableVisibilityGuard: true, allPlatformComparisons: true, visibilityCoverage: true, hourlyFreshness: true }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: 42, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true, nonComparableVisibilityGuard: true, allPlatformComparisons: true, crossPlatformTopicMatrix: true, unresolvedInstagramEvidence: true, visibilityCoverage: true, hourlyFreshness: true }, null, 2));
