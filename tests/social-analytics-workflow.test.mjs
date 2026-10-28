@@ -39,6 +39,7 @@ test("analytics workflow queries Facebook posts and reels with the correct objec
 
 test("analytics workflow keeps Facebook recovery deterministic and auditable",()=>{
   const workflow=buildWorkflow();
+  const nodeMap=Object.fromEntries(workflow.nodes.map(node=>[node.name,node]));
   const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
   assert.match(report,/score>=\.72/);
   assert.match(report,/score-candidates\[1\]\.score>=\.15/);
@@ -50,6 +51,14 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.match(report,/const visibilityRows=current\.filter/);
   assert.match(report,/const platformCounts=visibilityRows\.reduce/);
   assert.match(report,/facebookPageAuthorized/);
+  assert.match(report,/String\(pageAccessRaw\.id\|\|'\'\)==='753092067877601'/);
+  assert.equal(nodeMap['[META] Load Page Access'].parameters.url,'https://graph.facebook.com/v23.0/753092067877601?fields=id,name');
+  for (const name of ['[META] Facebook Batch Insights','[META] Facebook Stored Posts','[META] Facebook Stored Reels']) {
+    assert.equal(nodeMap[name].parameters.authentication,'predefinedCredentialType');
+    assert.equal(nodeMap[name].parameters.nodeCredentialType,'facebookGraphApi');
+    assert.equal(nodeMap[name].credentials.facebookGraphApi.id,'herDuII5ILdZK9vI');
+    assert.equal(nodeMap[name].parameters.queryParameters,undefined);
+  }
   assert.match(report,/connection_reason/);
   assert.match(report,/metaCredentialReason=apiError\(pageAccessRaw\)\|\|apiError\(igRaw\)/);
   assert.match(report,/instagramConnectionReason/);
