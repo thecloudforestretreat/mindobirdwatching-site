@@ -86,3 +86,25 @@ test("facebook reconciliation evidence remains available to data health",()=>{
   assert.equal(facebook.match_methods.caption_date,1);
   assert.equal(facebook.unmatched_reasons.not_returned_or_ambiguous,2);
 });
+
+test("cross-platform visibility is never totaled as one comparable metric",()=>{
+  const result=analytics.summary(posts,"all");
+  assert.equal(result.comparable,false);
+  assert.equal(result.visibility_label,"Platform visibility");
+  assert.equal(result.posts,3);
+  assert.equal(result.engagements,45);
+});
+
+test("engagement rate excludes engagement-only rows without visibility",()=>{
+  const facebook=[
+    {content_id:"fb-1",platform:"Facebook",result:0,denominator:0,engagements:40},
+    {content_id:"fb-2",platform:"Facebook",result:100,denominator:100,engagements:10},
+  ];
+  const result=analytics.summary(facebook,"facebook");
+  assert.equal(result.comparable,true);
+  assert.equal(result.visibility_label,"Unique viewers");
+  assert.equal(result.visible_records,1);
+  assert.equal(result.visibility_coverage,50);
+  assert.equal(result.engagements,50);
+  assert.equal(result.engagement_rate,10);
+});
