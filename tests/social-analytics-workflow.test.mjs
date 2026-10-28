@@ -88,3 +88,15 @@ test("analytics workflow recovers YouTube records from canonical saved URLs and 
   assert.match(report,/not_returned_by_api/);
   assert.match(report,/matched_with_visibility:status\.visible/);
 });
+
+test("analytics workflow names unresolved Instagram source records",()=>{
+  const workflow=buildWorkflow();
+  const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
+  const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.match(prepare,/instagram_caption/);
+  assert.match(report,/instagramMatches=\{exact_id:0,caption_date:0,unmatched:0,unresolved:\[\]\}/);
+  assert.match(report,/instagram_post_id:r\.instagram_post_id/);
+  assert.match(report,/Stored media ID was not returned by Meta/);
+  assert.match(report,/unmatched_reasons:\{not_returned_by_api:instagramMatches\.unmatched\}/);
+  assert.match(report,/unresolved:instagramMatches\.unresolved/);
+});

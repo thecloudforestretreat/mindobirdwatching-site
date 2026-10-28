@@ -115,6 +115,7 @@ const records = rows.map((row,index) => {
     scheduled_date: dateOnly(row.scheduled_date) || published,
     scheduled_time: clean(row.scheduled_time || '07:00 AM'),
     instagram_post_id: clean(row.instagram_post_id),
+    instagram_caption: clean(row.instagram_caption_final || row.caption || row.reel_description),
     facebook_post_id: clean(row.facebook_post_id),
     youtube_post_id: clean(row.youtube_post_id),
     instagram_permalink: clean(row.instagram_permalink),
@@ -240,6 +241,7 @@ const series = daily.filter(r=>r.date>=base.start_date);
 const dailyTotals = series.reduce((a,v)=>({views:a.views+v.views,watch_time_minutes:a.watch_time_minutes+v.watch_time_minutes,duration_weighted:a.duration_weighted+v.average_view_duration_seconds*v.views,percentage_weighted:a.percentage_weighted+v.average_view_percentage*v.views}),{views:0,watch_time_minutes:0,duration_weighted:0,percentage_weighted:0});
 const postResults = [];
 const samples = [];
+const instagramMatches={exact_id:0,caption_date:0,unmatched:0,unresolved:[]};
 const facebookMatches={exact_id:0,permalink:0,caption_date:0,unmatched:0};
 const youtubeMatches={exact_id:0,url_fallback:0,unmatched:0,unresolved:[]};
 const dayName = d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d+'T12:00:00Z').getUTCDay()];
@@ -252,9 +254,14 @@ for (const r of base.records) {
   const common={cohort:r.cohort,content_id:r.id,title:r.title,type:r.type,published_date:r.published_date,scheduled_date:r.scheduled_date,publish_day:dayName(r.scheduled_date),publish_hour:timeHour(r.scheduled_time),thumbnail:r.thumbnail,tags:r.tags||[]};
   if (r.instagram_post_id && igById[r.instagram_post_id]) {
     const v=igById[r.instagram_post_id], engagement=v.likes+v.comments+v.shares+v.saves;
+    if(r.cohort==='current')instagramMatches.exact_id++;
     const denominator=v.reach||v.views, result=denominator||engagement;
     postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
     if(r.cohort==='current'&&denominator)samples.push({platform:'Instagram',day:common.publish_day,hour:common.publish_hour,value:result});
+  } else if(r.instagram_post_id&&r.cohort==='current') {
+    const raw=igRaw[r.instagram_post_id]||{},error=apiError(raw);
+    instagramMatches.unmatched++;
+    instagramMatches.unresolved.push({content_id:r.id,title:r.title,published_date:r.published_date,instagram_post_id:r.instagram_post_id,reason:error||'Stored media ID was not returned by Meta'});
   }
   if (r.facebook_post_id) {
     const rawId=String(r.facebook_post_id).trim(),idCandidates=[rawId,rawId.split('_').pop()],permalinkKey=normalizeUrl(r.facebook_permalink);
@@ -327,7 +334,7 @@ const response={
   summary:{published_posts:uniqueCurrent.length,instagram_reach:igTotals.reach,facebook_unique_viewers:fbTotals.reach,facebook_media_views:fbTotals.views,youtube_views:dailyTotals.views||ytTotals.views,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,visibility_totals_are_comparable:false},
   series,top_posts:top.slice(0,12),post_results:postResults,
   youtube_retention:{available:dailyTotals.views>0,views:dailyTotals.views,average_view_duration_seconds:dailyTotals.views?dailyTotals.duration_weighted/dailyTotals.views:0,average_view_percentage:dailyTotals.views?dailyTotals.percentage_weighted/dailyTotals.views:0,completed_through:base.end_date},
-  data_health:{stale:false,note:'Identity matching and metric visibility are reported separately. Facebook uses direct post and reel IDs, permalink, and high-confidence caption/date reconciliation. YouTube uses the saved video ID and falls back to the canonical ID in the saved YouTube URL when they disagree. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),baseDetails={matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible)};const details=platform==='instagram'?{...baseDetails,connection_reason:instagramConnectionReason}:platform==='facebook'?{...baseDetails,match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},connection_reason:facebookConnectionReason}:platform==='youtube'?{...baseDetails,match_methods:{exact_id:youtubeMatches.exact_id,url_fallback:youtubeMatches.url_fallback},unmatched_reasons:{not_returned_by_api:youtubeMatches.unmatched},unresolved:youtubeMatches.unresolved}:baseDetails;return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
+  data_health:{stale:false,note:'Identity matching and metric visibility are reported separately. Instagram and Facebook use stored platform IDs; unresolved Instagram rows name the exact source record and saved media ID for reconciliation. Facebook also uses permalink and high-confidence caption/date reconciliation. YouTube uses the saved video ID and falls back to the canonical ID in the saved YouTube URL when they disagree. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),baseDetails={matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible)};const details=platform==='instagram'?{...baseDetails,match_methods:{exact_id:instagramMatches.exact_id,caption_date:instagramMatches.caption_date},unmatched_reasons:{not_returned_by_api:instagramMatches.unmatched},unresolved:instagramMatches.unresolved,connection_reason:instagramConnectionReason}:platform==='facebook'?{...baseDetails,match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},connection_reason:facebookConnectionReason}:platform==='youtube'?{...baseDetails,match_methods:{exact_id:youtubeMatches.exact_id,url_fallback:youtubeMatches.url_fallback},unmatched_reasons:{not_returned_by_api:youtubeMatches.unmatched},unresolved:youtubeMatches.unresolved}:baseDetails;return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
   sources:[
     {platform:'instagram',status:Object.keys(igById).length?'connected':'no matched data',mode:'current lifetime post insights'},
     {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic media views and unique viewers with reactions, comments, and shares'},
