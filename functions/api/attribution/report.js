@@ -43,6 +43,7 @@ export async function onRequestGet({ request, env }) {
       WHERE lower(COALESCE(utm_campaign, last_touch_campaign, first_touch_campaign, '')) = lower(?)
         AND date(session_started_at) >= date(?)
         AND date(session_started_at) <= date(?)
+        AND lower(COALESCE(utm_content, last_touch_content, first_touch_content, '')) NOT LIKE 'qa_%'
       GROUP BY 1, 2, 3
       ORDER BY 1, 2, 3
     `).bind(campaign, start, end).all();
@@ -54,6 +55,7 @@ export async function onRequestGet({ request, env }) {
       WHERE lower(COALESCE(s.utm_campaign, s.last_touch_campaign, s.first_touch_campaign, '')) = lower(?)
         AND date(ci.occurred_at) >= date(?)
         AND date(ci.occurred_at) <= date(?)
+        AND lower(COALESCE(s.utm_content, s.last_touch_content, s.first_touch_content, '')) NOT LIKE 'qa_%'
     `).bind(campaign, start, end).first();
 
     const resultRows = Array.isArray(rows.results) ? rows.results : [];
