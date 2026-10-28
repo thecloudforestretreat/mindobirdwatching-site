@@ -91,12 +91,39 @@ test("analytics workflow recovers YouTube records from canonical saved URLs and 
 
 test("analytics workflow names unresolved Instagram source records",()=>{
   const workflow=buildWorkflow();
+  const names=new Set(workflow.nodes.map(node=>node.name));
   const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
   const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.ok(names.has("[META] Instagram Media Library"));
+  assert.ok(names.has("[JOIN] Instagram Sources"));
+  assert.match(prepare,/ig_library_url/);
+  assert.match(prepare,/17841471335674238\/media/);
   assert.match(prepare,/instagram_caption/);
-  assert.match(report,/instagramMatches=\{exact_id:0,caption_date:0,unmatched:0,unresolved:\[\]\}/);
+  assert.match(report,/instagramMatches=\{exact_id:0,permalink:0,caption_date:0,unmatched:0,unresolved:\[\]\}/);
+  assert.match(report,/instagram_match_method/);
+  assert.match(report,/instagram_canonical_media_id/);
+  assert.match(report,/score>=\.72/);
   assert.match(report,/instagram_post_id:r\.instagram_post_id/);
   assert.match(report,/Stored media ID was not returned by Meta/);
   assert.match(report,/unmatched_reasons:\{not_returned_by_api:instagramMatches\.unmatched\}/);
   assert.match(report,/unresolved:instagramMatches\.unresolved/);
+});
+
+test("analytics recommendations use comparable snapshots and evidence gates",()=>{
+  const workflow=buildWorkflow();
+  const nodeMap=Object.fromEntries(workflow.nodes.map(node=>[node.name,node]));
+  const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
+  const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.match(prepare,/const generic=new Set/);
+  assert.match(prepare,/splitSubjects/);
+  assert.match(report,/performance_snapshots/);
+  assert.match(report,/normalized_7d_total/);
+  assert.match(report,/nearestAge\(7,\.3\)/);
+  assert.match(report,/g\.count>=5/);
+  assert.match(report,/visibilityCoverageFor\(post\.platform\)>=\.75/);
+  assert.match(report,/lifetime totals are not used to choose posting times/);
+  assert.match(report,/last_successful_sync_at/);
+  assert.match(report,/last_good_payload/);
+  assert.match(report,/showing the last successful analytics snapshot/);
+  assert.equal(nodeMap["[API] Respond"].onError,"continueRegularOutput");
 });

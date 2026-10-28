@@ -8,6 +8,7 @@ const output = process.env.MBW_ANALYTICS_OUTPUT || path.join("/tmp", "MBW_Social
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1TCwGEscdKFVBH1C-2tnozoFrNS-rQiTgHA4M7iPX3-8/edit?usp=sharing";
 const GOOGLE_SHEETS = { id: "sJdVMmql2IyZ94ti", name: "Google Sheets - MBW" };
 const INSTAGRAM_GRAPH = { id: "herDuII5ILdZK9vI", name: "Facebook Graph - MBW3" };
+const INSTAGRAM_BUSINESS_ID = "17841471335674238";
 const FACEBOOK_GRAPH = { id: "hKtqKmiLtyPbhYMw", name: "Facebook Graph - MBW" };
 const YOUTUBE = { id: "ynlMnjwMW7XwMATF", name: "YouTube - MBW" };
 
@@ -87,15 +88,20 @@ const values = v => {
 const slug = v => clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^#+/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const tagsFor = row => {
   const tags=[];
-  const add=(category,label)=>{label=clean(label).replace(/^#+/,'').replace(/_/g,' ');const value=slug(label);if(value)tags.push({key:category+':'+value,label,category});};
+  const generic=new Set(['mindo','ecuador','mindobirdwatching','birdwatching','birding','mindobirds','ecuadorbirds','birdwatching-tour','birdwatching-tours','nature-travel']);
+  const aliases=new Map([['bird-watching','birdwatching'],['bird-watching-tour','birdwatching-tour'],['yellow-throated-toucans','yellow-throated-toucan'],['hummingbirds','hummingbird']]);
+  const add=(category,label)=>{label=clean(label).replace(/^#+/,'').replace(/_/g,' ');let value=slug(label);value=aliases.get(value)||value;if(!value||((category==='hashtag'||category==='topic')&&generic.has(value)))return;tags.push({key:category+':'+value,label,category});};
+  const splitSubjects=value=>values(value).flatMap(item=>item.split(/\s+(?:and|with|plus|&|\+)\s+|\s*\/\s*/i).map(clean).filter(Boolean));
   values(row.tags).concat(values(row.internal_tags),values(row.search_tags),values(row.species_tags),values(row.content_tags)).forEach(v=>add('topic',v));
   const hashtags=[row.instagram_hashtags,row.facebook_hashtags,row.youtube_hashtags,row.tiktok_hashtags,row.tiktok_additional_hashtags,row.reddit_hashtags].flatMap(v=>clean(v).match(/#[\p{L}\p{N}_-]+/gu)||[]);
   hashtags.forEach(v=>add('hashtag',v));
   if(clean(row.bird_name))add('species',row.bird_name);
   if(clean(row.scientific_name))add('scientific',row.scientific_name);
-  if(clean(row.featured_birds))add('subject',row.featured_birds);
+  splitSubjects(row.featured_birds).forEach(v=>add('species',v));
   if(clean(row.activity_name))add('activity',row.activity_name);
   if(clean(row.location))add('location',row.location);
+  values(row.weather_tags).concat(values(row.weather)).forEach(v=>add('weather',v));
+  values(row.campaign_tags).concat(values(row.campaign)).forEach(v=>add('campaign',v));
   return [...new Map(tags.map(tag=>[tag.key,tag])).values()].slice(0,24);
 };
 const rows = $input.all().map(i => i.json);
@@ -145,6 +151,7 @@ const fbReelCandidates = facebookReelCandidates(records.filter(r=>r.type==='reel
 const enc = encodeURIComponent;
 return [{json:{...ctx,records,
   ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
+  ig_library_url: 'https://graph.facebook.com/v23.0/${INSTAGRAM_BUSINESS_ID}/media?limit=100&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)'),
   fb_url: 'https://graph.facebook.com/v23.0/'+facebookPageId+'/published_posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)'),
   fb_ids_url: fbPostCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbPostCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
   fb_reels_url: fbReelCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbReelCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,description,picture,thumbnails,likes.limit(0).summary(true),comments.limit(0).summary(true)') : 'https://graph.facebook.com/v23.0/me?fields=id',
@@ -156,6 +163,9 @@ return [{json:{...ctx,records,
 const httpDefaults = { options: { timeout: 25000 } };
 add("[META] Instagram Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [120, -180], {
   url: "={{ $json.ig_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+}, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
+add("[META] Instagram Media Library", "n8n-nodes-base.httpRequest", 4.2, [120, -280], {
+  url: "={{ $json.ig_library_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Load Page Access", "n8n-nodes-base.httpRequest", 4.2, [120, -70], {
   url: "https://graph.facebook.com/v23.0/753092067877601?fields=id,name", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
@@ -179,7 +189,8 @@ add("[YT] Daily Analytics", "n8n-nodes-base.httpRequest", 4.2, [120, 240], {
   url: "={{ $json.yt_daily_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
 }, { credentials: { youTubeOAuth2Api: YOUTUBE }, onError: "continueRegularOutput", alwaysOutputData: true });
 
-add("[JOIN] Meta", "n8n-nodes-base.merge", 3.2, [380, -100], {});
+add("[JOIN] Instagram Sources", "n8n-nodes-base.merge", 3.2, [360, -220], {});
+add("[JOIN] Meta", "n8n-nodes-base.merge", 3.2, [520, -100], {});
 add("[JOIN] Facebook Stored Objects", "n8n-nodes-base.merge", 3.2, [520, 40], {});
 add("[JOIN] Facebook Sources", "n8n-nodes-base.merge", 3.2, [700, -60], {});
 add("[JOIN] Add YouTube Videos", "n8n-nodes-base.merge", 3.2, [760, 0], {});
@@ -189,6 +200,7 @@ add("[REPORT] Build Dashboard Payload", "n8n-nodes-base.code", 2, [1180, 100], {
   jsCode: String.raw`const base = $('\u005bCORE\u005d Prepare Batch Queries').first().json;
 const get = name => { try { return $(name).first().json || {}; } catch { return {}; } };
 const igRaw = get('\u005bMETA\u005d Instagram Batch Insights');
+const igLibraryRaw = get('\u005bMETA\u005d Instagram Media Library');
 const pageAccessRaw = get('\u005bMETA\u005d Load Page Access');
 const fbRaw = get('\u005bMETA\u005d Facebook Batch Insights');
 const fbDirectRaw = get('\u005bMETA\u005d Facebook Stored Posts');
@@ -203,11 +215,19 @@ const insightMap = node => Object.fromEntries(((node && node.data) || []).map(me
   return [metric.name, typeof raw === 'object' ? Object.values(raw).reduce((a,b)=>a+num(b),0) : num(raw)];
 }));
 const igById = {};
-for (const [key,value] of Object.entries(igRaw || {})) {
-  if (!value || typeof value !== 'object' || key === 'error') continue;
+const igLibrary=[];
+const registerInstagram = value => {
+  if (!value || typeof value !== 'object' || !value.id || value.error) return;
   const m = insightMap(value.insights);
-  igById[key] = {reach:num(m.reach),views:num(m.views),saves:num(m.saved),shares:num(m.shares),interactions:num(m.total_interactions),likes:num(value.like_count),comments:num(value.comments_count),permalink:value.permalink||'',thumbnail:value.thumbnail_url||value.media_url||''};
+  const parsed={id:String(value.id),caption:value.caption||'',timestamp:value.timestamp||'',reach:num(m.reach),views:num(m.views),saves:num(m.saved),shares:num(m.shares),interactions:num(m.total_interactions),likes:num(value.like_count),comments:num(value.comments_count),permalink:value.permalink||'',thumbnail:value.thumbnail_url||value.media_url||''};
+  igById[parsed.id]=parsed;
+  if(!igLibrary.some(item=>item.id===parsed.id))igLibrary.push(parsed);
+};
+for (const [key,value] of Object.entries(igRaw || {})) {
+  if (key === 'error') continue;
+  registerInstagram(value);
 }
+for (const value of (igLibraryRaw.data || [])) registerInstagram(value);
 const fbById = {};
 const fbByPermalink = {};
 const fbUniqueRows = [];
@@ -240,8 +260,7 @@ const daily = (ydRaw.rows || []).map(row=>Object.fromEntries(headers.map((h,i)=>
 const series = daily.filter(r=>r.date>=base.start_date);
 const dailyTotals = series.reduce((a,v)=>({views:a.views+v.views,watch_time_minutes:a.watch_time_minutes+v.watch_time_minutes,duration_weighted:a.duration_weighted+v.average_view_duration_seconds*v.views,percentage_weighted:a.percentage_weighted+v.average_view_percentage*v.views}),{views:0,watch_time_minutes:0,duration_weighted:0,percentage_weighted:0});
 const postResults = [];
-const samples = [];
-const instagramMatches={exact_id:0,caption_date:0,unmatched:0,unresolved:[]};
+const instagramMatches={exact_id:0,permalink:0,caption_date:0,unmatched:0,unresolved:[]};
 const facebookMatches={exact_id:0,permalink:0,caption_date:0,unmatched:0};
 const youtubeMatches={exact_id:0,url_fallback:0,unmatched:0,unresolved:[]};
 const dayName = d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d+'T12:00:00Z').getUTCDay()];
@@ -251,17 +270,26 @@ const timeHour = value => {
 };
 const displayTime = h => String(h%12||12)+':00 '+(h>=12?'PM':'AM');
 for (const r of base.records) {
-  const common={cohort:r.cohort,content_id:r.id,title:r.title,type:r.type,published_date:r.published_date,scheduled_date:r.scheduled_date,publish_day:dayName(r.scheduled_date),publish_hour:timeHour(r.scheduled_time),thumbnail:r.thumbnail,tags:r.tags||[]};
-  if (r.instagram_post_id && igById[r.instagram_post_id]) {
-    const v=igById[r.instagram_post_id], engagement=v.likes+v.comments+v.shares+v.saves;
-    if(r.cohort==='current')instagramMatches.exact_id++;
+  const publishedAt=new Date(r.published_date+'T12:00:00Z'),measurementAgeDays=Math.max(0,(Date.now()-publishedAt.getTime())/86400000);
+  const common={cohort:r.cohort,content_id:r.id,title:r.title,type:r.type,published_date:r.published_date,scheduled_date:r.scheduled_date,publish_day:dayName(r.scheduled_date),publish_hour:timeHour(r.scheduled_time),thumbnail:r.thumbnail,tags:r.tags||[],measurement_age_days:Math.round(measurementAgeDays*10)/10,measurement_basis:'current lifetime total'};
+  if (r.instagram_post_id) {
+    let v=igById[r.instagram_post_id],matchMethod=v?'exact_id':'';
+    const permalinkKey=normalizeUrl(r.instagram_permalink);
+    if(!v&&permalinkKey){v=igLibrary.find(item=>normalizeUrl(item.permalink)===permalinkKey);if(v)matchMethod='permalink'}
+    if(!v&&r.instagram_caption){
+      const candidates=igLibrary.filter(item=>String(item.timestamp||'').slice(0,10)===r.published_date).map(item=>({item,score:similarity(r.instagram_caption,item.caption)})).filter(candidate=>candidate.score>=.72).sort((a,b)=>b.score-a.score);
+      if(candidates.length&&(!candidates[1]||candidates[0].score-candidates[1].score>=.15)){v=candidates[0].item;matchMethod='caption_date'}
+    }
+    if(v){
+    const engagement=v.likes+v.comments+v.shares+v.saves;
+    if(r.cohort==='current')instagramMatches[matchMethod]++;
     const denominator=v.reach||v.views, result=denominator||engagement;
-    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
-    if(r.cohort==='current'&&denominator)samples.push({platform:'Instagram',day:common.publish_day,hour:common.publish_hour,value:result});
-  } else if(r.instagram_post_id&&r.cohort==='current') {
+    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink,instagram_match_method:matchMethod,instagram_canonical_media_id:v.id});
+    }else if(r.cohort==='current'){
     const raw=igRaw[r.instagram_post_id]||{},error=apiError(raw);
     instagramMatches.unmatched++;
     instagramMatches.unresolved.push({content_id:r.id,title:r.title,published_date:r.published_date,instagram_post_id:r.instagram_post_id,reason:error||'Stored media ID was not returned by Meta'});
+    }
   }
   if (r.facebook_post_id) {
     const rawId=String(r.facebook_post_id).trim(),idCandidates=[rawId,rawId.split('_').pop()],permalinkKey=normalizeUrl(r.facebook_permalink);
@@ -276,7 +304,6 @@ for (const r of base.records) {
     const engagement=v.reactions+v.comments+v.shares;
     const denominator=v.reach||v.views, result=denominator;
     postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:v.views,result,result_metric:v.reach?'Unique viewers':v.views?'Media views':'Unavailable',visibility_available:Boolean(denominator),engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:null,href:v.permalink||r.facebook_permalink,facebook_match_method:matchMethod,facebook_canonical_post_id:v.id});
-    if(r.cohort==='current'&&denominator)samples.push({platform:'Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
     }else if(r.cohort==='current')facebookMatches.unmatched++;
   }
   if (r.youtube_post_id) {
@@ -285,7 +312,6 @@ for (const r of base.records) {
     const matchMethod=matchedId===r.youtube_post_id?'exact_id':'url_fallback',v=ytById[matchedId],engagement=v.likes+v.comments;
     if(r.cohort==='current')youtubeMatches[matchMethod]++;
     postResults.push({...common,title:r.title||v.title,thumbnail:v.thumbnail||common.thumbnail,platform:'YouTube',reach:0,views:v.views,result:v.views,result_metric:'Views',engagements:engagement,denominator:v.views,engagement_rate:v.views?engagement/v.views*100:0,href:r.youtube_url||('https://youtu.be/'+matchedId),youtube_match_method:matchMethod,youtube_canonical_video_id:matchedId});
-    if(r.cohort==='current')samples.push({platform:'YouTube',day:common.publish_day,hour:common.publish_hour,value:v.views});
     }else if(r.cohort==='current'){
       youtubeMatches.unmatched++;
       youtubeMatches.unresolved.push({content_id:r.id,title:r.title,youtube_post_id:r.youtube_post_id,youtube_url_id:r.youtube_url_id||''});
@@ -293,6 +319,25 @@ for (const r of base.records) {
   }
 }
 const current=postResults.filter(p=>p.cohort==='current');
+const snapshotState=$getWorkflowStaticData('global');
+snapshotState.performance_snapshots=snapshotState.performance_snapshots&&typeof snapshotState.performance_snapshots==='object'?snapshotState.performance_snapshots:{};
+const snapshotNow=Date.now(),snapshotCutoff=snapshotNow-10*86400000;
+snapshotState.performance_snapshots_started_at=snapshotState.performance_snapshots_started_at||new Date(snapshotNow).toISOString();
+for(const key of Object.keys(snapshotState.performance_snapshots)){
+  const retained=Array.isArray(snapshotState.performance_snapshots[key])?snapshotState.performance_snapshots[key].filter(item=>Number(item.at)>=snapshotCutoff):[];
+  if(retained.length)snapshotState.performance_snapshots[key]=retained;else delete snapshotState.performance_snapshots[key];
+}
+for(const post of postResults){
+  const key=[post.platform,post.content_id].join('|'),history=Array.isArray(snapshotState.performance_snapshots[key])?snapshotState.performance_snapshots[key].filter(item=>Number(item.at)>=snapshotCutoff):[];
+  const latest=history[history.length-1];
+  if(!latest||snapshotNow-Number(latest.at)>=50*60000)history.push({at:snapshotNow,post_age_days:num(post.measurement_age_days),result:num(post.result),engagements:num(post.engagements)});
+  const nearestAge=(target,tolerance)=>history.filter(item=>Math.abs(num(item.post_age_days)-target)<=tolerance).sort((a,b)=>Math.abs(num(a.post_age_days)-target)-Math.abs(num(b.post_age_days)-target))[0];
+  const day=nearestAge(1,.3),week=nearestAge(7,.3);
+  post.normalized_24h_total=day?num(day.result):null;
+  post.normalized_7d_total=week?num(week.result):null;
+  post.snapshot_history_points=history.length;
+  snapshotState.performance_snapshots[key]=history;
+}
 const top=current.slice().sort((a,b)=>b.result-a.result).map(p=>({title:p.title,platform:p.platform,published_date:p.published_date,value:p.result,metric:p.result_metric,thumbnail:p.thumbnail,href:p.href,type:p.type}));
 const uniqueCurrent=[...new Set(current.map(p=>p.content_id))];
 const totalsFor=platform=>current.filter(p=>p.platform===platform).reduce((a,p)=>({reach:a.reach+p.reach,views:a.views+p.views,engagements:a.engagements+p.engagements}),{reach:0,views:0,engagements:0});
@@ -305,18 +350,25 @@ const facebookPageAuthorized=String(pageAccessRaw.id||'')==='753092067877601'&&!
 const facebookApiErrors=[fbRaw,fbDirectRaw,fbReelRaw].map(apiError).filter(Boolean);
 const metaCredentialReason=apiError(pageAccessRaw)||apiError(igRaw);
 const facebookConnectionReason=metaCredentialReason||(!facebookPageAuthorized?'The permanent Mindo Bird Watching Page token could not verify Page access. Reconnect the Facebook credential with Page access and read-insights permissions.':facebookApiErrors.length?facebookApiErrors[0]:'');
-const instagramConnectionReason=apiError(igRaw)||metaCredentialReason;
+const instagramConnectionReason=apiError(igRaw)||apiError(igLibraryRaw)||metaCredentialReason;
+const refreshErrors=[instagramConnectionReason,facebookConnectionReason,apiError(ytRaw),apiError(ydRaw)].filter(Boolean);
+const syncAttemptAt=new Date().toISOString(),syncSuccessful=refreshErrors.length===0;
+if(syncSuccessful)snapshotState.last_successful_sync_at=syncAttemptAt;
+const lastSuccessfulSyncAt=snapshotState.last_successful_sync_at||'',lastSuccessfulMillis=Date.parse(lastSuccessfulSyncAt),syncStale=!lastSuccessfulMillis||snapshotNow-lastSuccessfulMillis>2*3600000;
+const visibilityCoverageFor=platform=>{const status=platformStatus(platform.toLowerCase());return status.matched?status.visible/status.matched:0};
+const recommendationSamples=current.filter(post=>post.normalized_7d_total!=null&&visibilityCoverageFor(post.platform)>=.75).map(post=>({platform:post.platform,day:post.publish_day,hour:post.publish_hour,value:post.normalized_7d_total}));
 const groups = new Map();
-for (const s of samples) { const k=[s.platform,s.day,s.hour].join('|'); const g=groups.get(k)||{...s,count:0,total:0}; g.count++; g.total+=s.value; groups.set(k,g); }
-const eligible=[...groups.values()].filter(g=>g.count>=3).map(g=>({...g,avg:g.total/g.count}));
+for (const s of recommendationSamples) { const k=[s.platform,s.day,s.hour].join('|'); const g=groups.get(k)||{...s,count:0,total:0}; g.count++; g.total+=s.value; groups.set(k,g); }
+const eligible=[...groups.values()].filter(g=>g.count>=5).map(g=>({...g,avg:g.total/g.count}));
 const maxAvg=Math.max(1,...eligible.map(g=>g.avg));
-const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=>({days:[g.day],time:displayTime(g.hour),platform:g.platform,score:Math.min(95,Math.round(55+30*(g.avg/maxAvg)+Math.min(10,g.count))),basis:String(g.count)+' matched posts'}));
+const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=>({days:[g.day],time:displayTime(g.hour),platform:g.platform,score:Math.min(95,Math.round(55+30*(g.avg/maxAvg)+Math.min(10,g.count))),basis:String(g.count)+' posts with comparable first-7-day totals'}));
 const median = values => { const a=values.map(num).sort((x,y)=>x-y); if(!a.length)return 0; const i=Math.floor(a.length/2); return a.length%2?a[i]:(a[i-1]+a[i])/2; };
 const confidence = count => count>=10?'reliable':count>=5?'developing':'early';
 const visibilityRows=current.filter(post=>num(post.denominator||post.reach||post.views)>0);
 const platformCounts=visibilityRows.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
 const primaryPlatform=Object.entries(platformCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
-const analysisRows=visibilityRows.filter(post=>post.platform===primaryPlatform);
+const primaryCoverage=primaryPlatform?visibilityCoverageFor(primaryPlatform):0;
+const analysisRows=visibilityRows.filter(post=>post.platform===primaryPlatform&&post.normalized_7d_total!=null&&primaryCoverage>=.75).map(post=>({...post,result:post.normalized_7d_total,result_metric:'Comparable first-7-day total'}));
 const patternGroups=(field,kind)=>{
   const grouped=new Map(); for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const a=grouped.get(label)||[];a.push(post);grouped.set(label,a)}
   const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(p=>p.result)),sample_size:rows.length,confidence:confidence(rows.length)})).sort((a,b)=>b.value-a.value);
@@ -330,25 +382,26 @@ const comparableSlots=[...timingGroups.values()].filter(g=>g.count>=3).map(g=>({
 const bestSlot=comparableSlots.length>=2?comparableSlots.sort((a,b)=>b.avg-a.avg||b.count-a.count)[0]:null;
 if(bestSlot)observedPatterns.push({id:'timing:'+bestSlot.day+'|'+bestSlot.hour,kind:'timing',label:primaryPlatform+' · '+bestSlot.day+' · '+displayTime(bestSlot.hour),platform:primaryPlatform,value:bestSlot.avg,baseline:overallMedian,delta_percent:overallMedian?(bestSlot.avg-overallMedian)/overallMedian*100:null,sample_size:bestSlot.count,confidence:confidence(bestSlot.count),statistic:'average',metric:'views_or_reach',evidence:bestSlot.count+' matched '+primaryPlatform+' results'});
 const response={
-  ok:true,configured:true,period:base.period,updated_at:new Date().toISOString(),
+  ok:true,configured:true,period:base.period,updated_at:syncAttemptAt,last_successful_sync_at:lastSuccessfulSyncAt,
   summary:{published_posts:uniqueCurrent.length,instagram_reach:igTotals.reach,facebook_unique_viewers:fbTotals.reach,facebook_media_views:fbTotals.views,youtube_views:dailyTotals.views||ytTotals.views,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,visibility_totals_are_comparable:false},
   series,top_posts:top.slice(0,12),post_results:postResults,
   youtube_retention:{available:dailyTotals.views>0,views:dailyTotals.views,average_view_duration_seconds:dailyTotals.views?dailyTotals.duration_weighted/dailyTotals.views:0,average_view_percentage:dailyTotals.views?dailyTotals.percentage_weighted/dailyTotals.views:0,completed_through:base.end_date},
-  data_health:{stale:false,note:'Identity matching and metric visibility are reported separately. Instagram and Facebook use stored platform IDs; unresolved Instagram rows name the exact source record and saved media ID for reconciliation. Facebook also uses permalink and high-confidence caption/date reconciliation. YouTube uses the saved video ID and falls back to the canonical ID in the saved YouTube URL when they disagree. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),baseDetails={matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible)};const details=platform==='instagram'?{...baseDetails,match_methods:{exact_id:instagramMatches.exact_id,caption_date:instagramMatches.caption_date},unmatched_reasons:{not_returned_by_api:instagramMatches.unmatched},unresolved:instagramMatches.unresolved,connection_reason:instagramConnectionReason}:platform==='facebook'?{...baseDetails,match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},connection_reason:facebookConnectionReason}:platform==='youtube'?{...baseDetails,match_methods:{exact_id:youtubeMatches.exact_id,url_fallback:youtubeMatches.url_fallback},unmatched_reasons:{not_returned_by_api:youtubeMatches.unmatched},unresolved:youtubeMatches.unresolved}:baseDetails;return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
+  data_health:{stale:syncStale,last_successful_sync_at:lastSuccessfulSyncAt,last_sync_attempt_at:syncAttemptAt,refresh_errors:refreshErrors,measurement:{post_totals:'current lifetime totals',fair_comparison_window:'first-7-day totals',snapshot_history_started_at:snapshotState.performance_snapshots_started_at,recommendation_minimum_posts:5,recommendation_minimum_visibility_coverage_percent:75,qualified_recommendation_samples:recommendationSamples.length},note:'Identity matching and metric visibility are reported separately. Instagram and Facebook use stored platform IDs, permalinks, and high-confidence caption/date reconciliation. Timing recommendations and observed guidance require comparable first-7-day totals, at least five posts per slot, and at least 75% visibility coverage. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),baseDetails={matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible),visibility_coverage_percent:status.visibility_coverage_percent};const details=platform==='instagram'?{...baseDetails,match_methods:{exact_id:instagramMatches.exact_id,permalink:instagramMatches.permalink,caption_date:instagramMatches.caption_date},unmatched_reasons:{not_returned_by_api:instagramMatches.unmatched},unresolved:instagramMatches.unresolved,connection_reason:instagramConnectionReason}:platform==='facebook'?{...baseDetails,match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},connection_reason:facebookConnectionReason}:platform==='youtube'?{...baseDetails,match_methods:{exact_id:youtubeMatches.exact_id,url_fallback:youtubeMatches.url_fallback},unmatched_reasons:{not_returned_by_api:youtubeMatches.unmatched},unresolved:youtubeMatches.unresolved}:baseDetails;return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
   sources:[
     {platform:'instagram',status:Object.keys(igById).length?'connected':'no matched data',mode:'current lifetime post insights'},
     {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic media views and unique viewers with reactions, comments, and shares'},
     {platform:'youtube',status:(ytRaw.items||[]).length?'connected':'no matched data',mode:'daily finalized through '+base.end_date}
   ],
   observed_patterns:observedPatterns,
-  recommendations:{configured:slots.length>0,timezone:'America/New_York',sample_size:samples.length,source:'Matched MBW organic post performance; minimum 3 posts per time slot',slots},
+  recommendations:{configured:slots.length>0,timezone:'America/New_York',sample_size:recommendationSamples.length,source:slots.length?'Comparable first-7-day organic totals; minimum 5 posts per slot and 75% visibility coverage':'Waiting for enough first-7-day snapshots; lifetime totals are not used to choose posting times',minimum_posts_per_slot:5,minimum_visibility_coverage_percent:75,slots},
   platforms:{
     instagram:{connected:!igRaw.error,...platformStatus('instagram'),connection_reason:instagramConnectionReason,metrics:{reach:igTotals.reach,views:igTotals.views,engagements:igTotals.engagements,matched_posts:countMatched('instagram')}},
     facebook:{connected:facebookPageAuthorized&&!facebookApiErrors.length,...platformStatus('facebook'),connection_reason:facebookConnectionReason,metrics:{unique_viewers:fbTotals.reach,media_views:fbTotals.views,engagements:fbTotals.engagements,matched_posts:countMatched('facebook'),visibility_matched:countVisible('facebook')}},
     youtube:{connected:!ytRaw.error&&!ydRaw.error,...platformStatus('youtube'),metrics:{views:dailyTotals.views||ytTotals.views,watch_time_minutes:dailyTotals.watch_time_minutes,engagements:ytTotals.engagements,matched_videos:countMatched('youtube')}}
   }
 };
-const state=$getWorkflowStaticData('global'); state.last_success=response.updated_at; state.last_period=base.period; state.last_summary=response.summary;
+if(syncSuccessful){snapshotState.last_success=response.updated_at;snapshotState.last_period=base.period;snapshotState.last_summary=response.summary;snapshotState.last_good_payload=JSON.parse(JSON.stringify(response));return [{json:response}]}
+if(snapshotState.last_good_payload){const fallback=JSON.parse(JSON.stringify(snapshotState.last_good_payload));fallback.updated_at=syncAttemptAt;fallback.last_successful_sync_at=lastSuccessfulSyncAt;fallback.data_health={...(fallback.data_health||{}),stale:true,last_successful_sync_at:lastSuccessfulSyncAt,last_sync_attempt_at:syncAttemptAt,refresh_errors:refreshErrors,note:'Latest refresh failed; showing the last successful analytics snapshot. '+refreshErrors.join(' · ')};return [{json:fallback}]}
 return [{json:response}];`,
 });
 
@@ -390,7 +443,7 @@ add("[API] Respond", "n8n-nodes-base.respondToWebhook", 1.1, [1660, 100], {
     { name: "Access-Control-Allow-Origin", value: "https://admin.mindobirdwatching.com" },
     { name: "Cache-Control", value: "no-store" },
   ] } },
-});
+}, { onError: "continueRegularOutput" });
 
 const connections = {
   "[API] Media Insights": { main: [[{ node: "[CORE] Reporting Context", type: "main", index: 0 }]] },
@@ -405,6 +458,7 @@ const connections = {
   "[DATA] Combine Published Records": { main: [[{ node: "[CORE] Prepare Batch Queries", type: "main", index: 0 }]] },
   "[CORE] Prepare Batch Queries": { main: [[
     { node: "[META] Instagram Batch Insights", type: "main", index: 0 },
+    { node: "[META] Instagram Media Library", type: "main", index: 0 },
     { node: "[META] Load Page Access", type: "main", index: 0 },
     { node: "[YT] Video Statistics", type: "main", index: 0 },
     { node: "[YT] Daily Analytics", type: "main", index: 0 },
@@ -414,7 +468,9 @@ const connections = {
     { node: "[META] Facebook Stored Posts", type: "main", index: 0 },
     { node: "[META] Facebook Stored Reels", type: "main", index: 0 },
   ]] },
-  "[META] Instagram Batch Insights": { main: [[{ node: "[JOIN] Meta", type: "main", index: 0 }]] },
+  "[META] Instagram Batch Insights": { main: [[{ node: "[JOIN] Instagram Sources", type: "main", index: 0 }]] },
+  "[META] Instagram Media Library": { main: [[{ node: "[JOIN] Instagram Sources", type: "main", index: 1 }]] },
+  "[JOIN] Instagram Sources": { main: [[{ node: "[JOIN] Meta", type: "main", index: 0 }]] },
   "[META] Facebook Batch Insights": { main: [[{ node: "[JOIN] Facebook Sources", type: "main", index: 0 }]] },
   "[META] Facebook Stored Posts": { main: [[{ node: "[JOIN] Facebook Stored Objects", type: "main", index: 0 }]] },
   "[META] Facebook Stored Reels": { main: [[{ node: "[JOIN] Facebook Stored Objects", type: "main", index: 1 }]] },

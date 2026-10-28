@@ -118,3 +118,12 @@ test("engagement rate excludes engagement-only rows without visibility",()=>{
   assert.equal(result.engagements,50);
   assert.equal(result.engagement_rate,10);
 });
+
+test("data health preserves measurement provenance and successful-sync time",()=>{
+  const measurement={fair_comparison_window:"7-day growth snapshots",qualified_recommendation_samples:4};
+  const health=analytics.health({updated_at:"2026-10-28T12:00:00Z",last_successful_sync_at:"2026-10-28T11:00:00Z",data_health:{stale:true,measurement,last_sync_attempt_at:"2026-10-28T12:00:00Z",platforms:{}}},posts);
+  assert.equal(health.stale,true);
+  assert.deepEqual(health.measurement,measurement);
+  assert.equal(health.updated_at,"2026-10-28T11:00:00Z");
+  assert.equal(health.last_sync_attempt_at,"2026-10-28T12:00:00Z");
+});
