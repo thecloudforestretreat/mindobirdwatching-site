@@ -29,6 +29,12 @@ test("analytics workflow queries Facebook posts and reels with the correct objec
   assert.match(prepare,/fb_reels_url/);
   assert.match(prepare,/description,picture,thumbnails,likes/);
   assert.match(prepare,/facebook_caption/);
+  assert.match(prepare,/post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views/);
+  assert.match(prepare,/const facebookPostCandidates = values => unique\(values\.map/);
+  assert.match(prepare,/const facebookReelCandidates = values => unique\(values\.map/);
+  assert.doesNotMatch(prepare,/facebookCandidates = values => unique\(values\.flatMap/);
+  assert.doesNotMatch(prepare,/post_impressions_unique/);
+  assert.doesNotMatch(prepare,/post_engaged_users/);
 });
 
 test("analytics workflow keeps Facebook recovery deterministic and auditable",()=>{
@@ -41,8 +47,19 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.match(report,/denominator=v\.reach\|\|v\.views/);
   assert.match(report,/visibility_available/);
   assert.match(report,/visibility_missing/);
+  assert.match(report,/const visibilityRows=current\.filter/);
+  assert.match(report,/const platformCounts=visibilityRows\.reduce/);
   assert.match(report,/facebookPageAuthorized/);
   assert.match(report,/connection_reason/);
+  assert.match(report,/post_total_media_view_unique/);
+  assert.match(report,/post_media_view/);
+  assert.match(report,/Unique viewers/);
+  assert.match(report,/facebook_unique_viewers/);
+  assert.match(report,/visibility_totals_are_comparable:false/);
+  assert.match(report,/unique_viewers:fbTotals\.reach/);
+  assert.match(report,/platform:'Instagram'/);
+  assert.match(report,/platform:'Facebook'/);
+  assert.doesNotMatch(report,/platform:'Instagram \+ Facebook'/);
   assert.doesNotMatch(report,/v\.reach\|\|v\.engaged_users\|\|engagement/);
   for(const node of workflow.nodes.filter(node=>node.type==="n8n-nodes-base.code"))assert.doesNotThrow(()=>new Function(node.parameters.jsCode),node.name);
 });

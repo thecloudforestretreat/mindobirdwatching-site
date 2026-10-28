@@ -127,18 +127,19 @@ const unique = values => [...new Set(values.filter(Boolean))];
 const ig = unique(records.map(r => r.instagram_post_id));
 const yt = unique(records.map(r => r.youtube_post_id));
 const facebookPageId = '753092067877601';
-const facebookCandidates = values => unique(values.flatMap(value => {
+const facebookPostCandidates = values => unique(values.map(value => {
   const raw=clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop();
   const bare=raw.split('_').pop();
-  return [raw,bare && !raw.includes('_') ? facebookPageId+'_'+bare : ''];
+  return raw.includes('_') ? raw : (bare ? facebookPageId+'_'+bare : '');
 }));
-const fbPostCandidates = facebookCandidates(records.filter(r=>r.type!=='reel').map(r=>r.facebook_post_id));
-const fbReelCandidates = facebookCandidates(records.filter(r=>r.type==='reel').map(r=>r.facebook_post_id));
+const facebookReelCandidates = values => unique(values.map(value => clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop().split('_').pop()));
+const fbPostCandidates = facebookPostCandidates(records.filter(r=>r.type!=='reel').map(r=>r.facebook_post_id));
+const fbReelCandidates = facebookReelCandidates(records.filter(r=>r.type==='reel').map(r=>r.facebook_post_id));
 const enc = encodeURIComponent;
 return [{json:{...ctx,records,
   ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  fb_url: 'https://graph.facebook.com/v23.0/'+facebookPageId+'/published_posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_impressions_unique,post_engaged_users,post_clicks)'),
-  fb_ids_url: fbPostCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbPostCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_impressions_unique,post_engaged_users,post_clicks)') : 'https://graph.facebook.com/v23.0/me?fields=id',
+  fb_url: 'https://graph.facebook.com/v23.0/'+facebookPageId+'/published_posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)'),
+  fb_ids_url: fbPostCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbPostCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
   fb_reels_url: fbReelCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbReelCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,description,picture,thumbnails,likes.limit(0).summary(true),comments.limit(0).summary(true)') : 'https://graph.facebook.com/v23.0/me?fields=id',
   yt_url: 'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id='+enc(yt.join(',')),
   yt_daily_url: 'https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&startDate='+ctx.previous_start_date+'&endDate='+ctx.end_date+'&metrics=views%2CestimatedMinutesWatched%2CaverageViewDuration%2CaverageViewPercentage%2Clikes%2Ccomments%2Cshares%2CsubscribersGained&dimensions=day&sort=day'
@@ -217,7 +218,7 @@ const registerFacebook = value => {
   if (!value || typeof value !== 'object' || !value.id) return;
   const m = insightMap(value.insights);
   const thumbs=value.thumbnails&&value.thumbnails.data||[],likes=num(value.likes&&value.likes.summary&&value.likes.summary.total_count);
-  const parsed = {id:String(value.id),created_time:value.created_time||'',message:value.message||value.description||'',reach:num(m.post_impressions_unique),views:num(value.views||m.post_video_views||m.post_video_views_unique),engaged_users:num(m.post_engaged_users),clicks:num(m.post_clicks),shares:num(value.shares&&value.shares.count),reactions:num(value.reactions&&value.reactions.summary&&value.reactions.summary.total_count)||likes,comments:num(value.comments&&value.comments.summary&&value.comments.summary.total_count),permalink:value.permalink_url||'',thumbnail:value.full_picture||value.picture||(thumbs[0]&&thumbs[0].uri)||''};
+  const parsed = {id:String(value.id),created_time:value.created_time||'',message:value.message||value.description||'',reach:num(m.post_total_media_view_unique),views:num(value.views||m.post_media_view||m.post_video_views),clicks:num(m.post_clicks),shares:num(value.shares&&value.shares.count),reactions:num(value.reactions&&value.reactions.summary&&value.reactions.summary.total_count)||likes,comments:num(value.comments&&value.comments.summary&&value.comments.summary.total_count),permalink:value.permalink_url||'',thumbnail:value.full_picture||value.picture||(thumbs[0]&&thumbs[0].uri)||''};
   fbById[String(value.id)] = parsed;
   fbById[String(value.id).split('_').pop()] = parsed;
   if(parsed.permalink)fbByPermalink[normalizeUrl(parsed.permalink)]=parsed;
@@ -252,7 +253,7 @@ for (const r of base.records) {
     const v=igById[r.instagram_post_id], engagement=v.likes+v.comments+v.shares+v.saves;
     const denominator=v.reach||v.views, result=denominator||engagement;
     postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Instagram',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Engagements',engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:0,href:v.permalink||r.instagram_permalink});
-    if(r.cohort==='current')samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
+    if(r.cohort==='current'&&denominator)samples.push({platform:'Instagram',day:common.publish_day,hour:common.publish_hour,value:result});
   }
   if (r.facebook_post_id) {
     const rawId=String(r.facebook_post_id).trim(),idCandidates=[rawId,rawId.split('_').pop()],permalinkKey=normalizeUrl(r.facebook_permalink);
@@ -266,8 +267,8 @@ for (const r of base.records) {
     if(r.cohort==='current')facebookMatches[matchMethod]++;
     const engagement=v.reactions+v.comments+v.shares;
     const denominator=v.reach||v.views, result=denominator;
-    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:v.views,result,result_metric:v.reach?'Reach':v.views?'Views':'Unavailable',visibility_available:Boolean(denominator),engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:null,href:v.permalink||r.facebook_permalink,facebook_match_method:matchMethod,facebook_canonical_post_id:v.id});
-    if(r.cohort==='current'&&denominator)samples.push({platform:'Instagram + Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
+    postResults.push({...common,thumbnail:v.thumbnail||common.thumbnail,platform:'Facebook',reach:v.reach,views:v.views,result,result_metric:v.reach?'Unique viewers':v.views?'Media views':'Unavailable',visibility_available:Boolean(denominator),engagements:engagement,denominator,engagement_rate:denominator?engagement/denominator*100:null,href:v.permalink||r.facebook_permalink,facebook_match_method:matchMethod,facebook_canonical_post_id:v.id});
+    if(r.cohort==='current'&&denominator)samples.push({platform:'Facebook',day:common.publish_day,hour:common.publish_hour,value:result});
     }else if(r.cohort==='current')facebookMatches.unmatched++;
   }
   if (r.youtube_post_id && ytById[r.youtube_post_id]) {
@@ -295,9 +296,10 @@ const maxAvg=Math.max(1,...eligible.map(g=>g.avg));
 const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=>({days:[g.day],time:displayTime(g.hour),platform:g.platform,score:Math.min(95,Math.round(55+30*(g.avg/maxAvg)+Math.min(10,g.count))),basis:String(g.count)+' matched posts'}));
 const median = values => { const a=values.map(num).sort((x,y)=>x-y); if(!a.length)return 0; const i=Math.floor(a.length/2); return a.length%2?a[i]:(a[i-1]+a[i])/2; };
 const confidence = count => count>=10?'reliable':count>=5?'developing':'early';
-const platformCounts=current.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
+const visibilityRows=current.filter(post=>num(post.denominator||post.reach||post.views)>0);
+const platformCounts=visibilityRows.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
 const primaryPlatform=Object.entries(platformCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
-const analysisRows=current.filter(post=>post.platform===primaryPlatform);
+const analysisRows=visibilityRows.filter(post=>post.platform===primaryPlatform);
 const patternGroups=(field,kind)=>{
   const grouped=new Map(); for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const a=grouped.get(label)||[];a.push(post);grouped.set(label,a)}
   const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(p=>p.result)),sample_size:rows.length,confidence:confidence(rows.length)})).sort((a,b)=>b.value-a.value);
@@ -312,20 +314,20 @@ const bestSlot=comparableSlots.length>=2?comparableSlots.sort((a,b)=>b.avg-a.avg
 if(bestSlot)observedPatterns.push({id:'timing:'+bestSlot.day+'|'+bestSlot.hour,kind:'timing',label:primaryPlatform+' · '+bestSlot.day+' · '+displayTime(bestSlot.hour),platform:primaryPlatform,value:bestSlot.avg,baseline:overallMedian,delta_percent:overallMedian?(bestSlot.avg-overallMedian)/overallMedian*100:null,sample_size:bestSlot.count,confidence:confidence(bestSlot.count),statistic:'average',metric:'views_or_reach',evidence:bestSlot.count+' matched '+primaryPlatform+' results'});
 const response={
   ok:true,configured:true,period:base.period,updated_at:new Date().toISOString(),
-  summary:{published_posts:uniqueCurrent.length,total_reach:igTotals.reach+fbTotals.reach,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,youtube_views_period:dailyTotals.views},
+  summary:{published_posts:uniqueCurrent.length,instagram_reach:igTotals.reach,facebook_unique_viewers:fbTotals.reach,facebook_media_views:fbTotals.views,youtube_views:dailyTotals.views||ytTotals.views,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,visibility_totals_are_comparable:false},
   series,top_posts:top.slice(0,12),post_results:postResults,
   youtube_retention:{available:dailyTotals.views>0,views:dailyTotals.views,average_view_duration_seconds:dailyTotals.views?dailyTotals.duration_weighted/dailyTotals.views:0,average_view_percentage:dailyTotals.views?dailyTotals.percentage_weighted/dailyTotals.views:0,completed_through:base.end_date},
-  data_health:{stale:false,note:'Post IDs are matched to current platform totals. Facebook uses direct post and reel IDs, permalink, and high-confidence caption/date reconciliation. Visibility-based rates exclude records where Facebook returned reactions but no reach or views. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),details=platform==='facebook'?{match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible),connection_reason:facebookConnectionReason}:{};return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
+  data_health:{stale:false,note:'Post IDs are matched to current platform totals. Facebook uses direct post and reel IDs, permalink, and high-confidence caption/date reconciliation. Facebook visibility uses current media views and unique media viewers because Meta retired legacy Page post reach metrics in June 2026. Visibility-based rates exclude records where Facebook returned reactions but no media-view data. Cohort comparisons group posts by publish date; YouTube daily reporting is finalized through '+base.end_date+'.',platforms:Object.fromEntries(['instagram','facebook','youtube'].map(platform=>{const status=platformStatus(platform),details=platform==='facebook'?{match_methods:facebookMatches,unmatched_reasons:{not_returned_or_ambiguous:Math.max(0,status.expected-status.matched)},matched_with_visibility:status.visible,visibility_missing:Math.max(0,status.matched-status.visible),connection_reason:facebookConnectionReason}:{};return[platform,{expected:status.expected,matched:status.matched,unmatched:Math.max(0,status.expected-status.matched),...details}]}))},
   sources:[
     {platform:'instagram',status:Object.keys(igById).length?'connected':'no matched data',mode:'current lifetime post insights'},
-    {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic post reach and reel views with reactions and comments'},
+    {platform:'facebook',status:fbUnique.length?'connected':'no matched data',mode:'current organic media views and unique viewers with reactions, comments, and shares'},
     {platform:'youtube',status:(ytRaw.items||[]).length?'connected':'no matched data',mode:'daily finalized through '+base.end_date}
   ],
   observed_patterns:observedPatterns,
   recommendations:{configured:slots.length>0,timezone:'America/New_York',sample_size:samples.length,source:'Matched MBW organic post performance; minimum 3 posts per time slot',slots},
   platforms:{
     instagram:{connected:!igRaw.error,...platformStatus('instagram'),metrics:{reach:igTotals.reach,views:igTotals.views,engagements:igTotals.engagements,matched_posts:countMatched('instagram')}},
-    facebook:{connected:facebookPageAuthorized&&!facebookApiErrors.length,...platformStatus('facebook'),connection_reason:facebookConnectionReason,metrics:{reach:fbTotals.reach,views:fbTotals.views,engagements:fbTotals.engagements,matched_posts:countMatched('facebook'),visibility_matched:countVisible('facebook')}},
+    facebook:{connected:facebookPageAuthorized&&!facebookApiErrors.length,...platformStatus('facebook'),connection_reason:facebookConnectionReason,metrics:{unique_viewers:fbTotals.reach,media_views:fbTotals.views,engagements:fbTotals.engagements,matched_posts:countMatched('facebook'),visibility_matched:countVisible('facebook')}},
     youtube:{connected:!ytRaw.error&&!ydRaw.error,...platformStatus('youtube'),metrics:{views:dailyTotals.views||ytTotals.views,watch_time_minutes:dailyTotals.watch_time_minutes,engagements:ytTotals.engagements,matched_videos:countMatched('youtube')}}
   }
 };
@@ -340,7 +342,7 @@ add("[AI] Interpret Measured Patterns", "n8n-nodes-base.httpRequest", 4.2, [1220
   headerParameters: { parameters: [{ name: "Content-Type", value: "application/json" }] },
   sendBody: true,
   specifyBody: "json",
-  jsonBody: "={{ { model: 'gpt-oss:20b', messages: [{ role: 'system', content: 'You interpret already-calculated organic social media evidence for Mindo Bird Watching. Never invent or recalculate numbers. The value and baseline fields are performance measures, never post counts; sample_size is the only count. Use only the supplied patterns. Treat associations as hypotheses, not causes. Return one cautious interpretation and one practical single-variable experiment per evidence ID. Return valid JSON only.' }, { role: 'user', content: `Evidence: ${JSON.stringify($json.observed_patterns || [])}\\nFilters cover ${$json.period || 'the selected period'}. Every pattern is already limited to the platform field supplied with it. For Instagram and Facebook, views_or_reach means reach; for YouTube it means views. The statistic field says whether value is a median or average. sample_size is the number of matched platform results supporting the pattern. For every supplied evidence item, return: {\"items\":[{\"evidence_id\":\"exact supplied id\",\"interpretation\":\"plain-language explanation that correctly names the platform, metric, statistic, and sample size\",\"experiment\":\"one specific next test that changes only one variable and compares the same metric within the same platform\"}]}. For a format pattern, compare the named format against another actual format while holding subject, day, and time as similar as possible; a carousel is a multi-image post and must never be called a single image. For a timing pattern, keep platform, format, and subject similar and compare the named slot with one other slot. Do not describe value as a number of posts. Do not mention any platform not named in that evidence item. Do not call an early or developing signal proven. Do not recommend a posting time unless it appears in the supplied evidence.` }], stream: false, think: 'low', format: 'json', keep_alive: '30m', options: { temperature: 0.1, num_predict: 900 } } }}",
+  jsonBody: "={{ { model: 'gpt-oss:20b', messages: [{ role: 'system', content: 'You interpret already-calculated organic social media evidence for Mindo Bird Watching. Never invent or recalculate numbers. The value and baseline fields are performance measures, never post counts; sample_size is the only count. Use only the supplied patterns. Treat associations as hypotheses, not causes. Return one cautious interpretation and one practical single-variable experiment per evidence ID. Return valid JSON only.' }, { role: 'user', content: `Evidence: ${JSON.stringify($json.observed_patterns || [])}\\nFilters cover ${$json.period || 'the selected period'}. Every pattern is already limited to the platform field supplied with it. For Instagram, views_or_reach means reach; for Facebook it means unique viewers or media views; for YouTube it means views. The statistic field says whether value is a median or average. sample_size is the number of matched platform results supporting the pattern. For every supplied evidence item, return: {\"items\":[{\"evidence_id\":\"exact supplied id\",\"interpretation\":\"plain-language explanation that correctly names the platform, metric, statistic, and sample size\",\"experiment\":\"one specific next test that changes only one variable and compares the same metric within the same platform\"}]}. For a format pattern, compare the named format against another actual format while holding subject, day, and time as similar as possible; a carousel is a multi-image post and must never be called a single image. For a timing pattern, keep platform, format, and subject similar and compare the named slot with one other slot. Do not describe value as a number of posts. Do not mention any platform not named in that evidence item. Do not call an early or developing signal proven. Do not recommend a posting time unless it appears in the supplied evidence.` }], stream: false, think: 'low', format: 'json', keep_alive: '30m', options: { temperature: 0.1, num_predict: 900 } } }}",
   options: { response: { response: { responseFormat: "json" } } },
 }, { retryOnFail: true, maxTries: 2, waitBetweenTries: 3000, onError: "continueRegularOutput", alwaysOutputData: true });
 
@@ -355,12 +357,12 @@ const items=(Array.isArray(parsed.items)?parsed.items:[]).map(item=>({
   interpretation:String(item.interpretation||'').trim().slice(0,600),
   experiment:String(item.experiment||'').trim().slice(0,600),
 })).filter(item=>allowed.has(item.evidence_id)&&item.interpretation).map(item=>{
-  const pattern=evidenceById.get(item.evidence_id)||{},platform=String(pattern.platform||'the same platform'),measure=platform==='YouTube'?'views':'reach';
+  const pattern=evidenceById.get(item.evidence_id)||{},platform=String(pattern.platform||'the same platform'),measure=platform==='YouTube'?'views':platform==='Facebook'?'unique viewers or media views':'reach';
   if(pattern.kind==='format')item.experiment='On '+platform+', publish comparable posts about the same subject in the leading format and one other available format at similar times. Compare '+measure+' after the same measurement window.';
   if(pattern.kind==='timing')item.experiment='Repeat a comparable post in this '+platform+' time slot and in one other established '+platform+' slot shown in the dashboard. Keep the subject and format similar, then compare '+measure+' after the same measurement window.';
   return item;
 });
-report.ai_guidance={available:items.length>0,metric:'result',generated_at:items.length?new Date().toISOString():'',model:items.length?'gpt-oss:20b':'',items,note:items.length?'Local AI interpreted measured views / reach evidence; calculations were not AI-generated.':'Local AI guidance was unavailable; measured patterns are still shown.'};
+report.ai_guidance={available:items.length>0,metric:'result',generated_at:items.length?new Date().toISOString():'',model:items.length?'gpt-oss:20b':'',items,note:items.length?'Local AI interpreted platform-specific visibility evidence; calculations were not AI-generated.':'Local AI guidance was unavailable; measured patterns are still shown.'};
 return [{json:report}];`,
 });
 
