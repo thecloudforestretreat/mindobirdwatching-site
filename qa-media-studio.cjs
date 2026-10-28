@@ -13,7 +13,9 @@ assert(script.includes('matches(".detailPreview video")'), "Video load failures 
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio.css?v=21"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=26"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.js?v=27"), "Media Studio JS cache key must be current");
+assert(script.includes("data.observed_patterns||[]"), "Observed guidance must come from the evidence-gated workflow payload");
+assert(!script.match(/function renderObservedPatterns\([^)]*\)\{[^\n]*analyticsEngine\(\)\.observedPatterns/), "Observed guidance must not be recomputed from lifetime totals in the browser");
 assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
 assert(script.includes("reason?'Reconnect required':'Connection required'"), "Platform cards must distinguish an expired credential from a missing connection");
 assert(script.includes("async function fetchInsights(period)")&&script.includes("50000"), "Analytics requests must allow the reporting workflow to finish");

@@ -365,22 +365,26 @@ const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=
 const median = values => { const a=values.map(num).sort((x,y)=>x-y); if(!a.length)return 0; const i=Math.floor(a.length/2); return a.length%2?a[i]:(a[i-1]+a[i])/2; };
 const confidence = count => count>=10?'reliable':count>=5?'developing':'early';
 const visibilityRows=current.filter(post=>num(post.denominator||post.reach||post.views)>0);
-const platformCounts=visibilityRows.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
-const primaryPlatform=Object.entries(platformCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
-const primaryCoverage=primaryPlatform?visibilityCoverageFor(primaryPlatform):0;
-const analysisRows=visibilityRows.filter(post=>post.platform===primaryPlatform&&post.normalized_7d_total!=null&&primaryCoverage>=.75).map(post=>({...post,result:post.normalized_7d_total,result_metric:'Comparable first-7-day total'}));
-const patternGroups=(field,kind)=>{
-  const grouped=new Map(); for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const a=grouped.get(label)||[];a.push(post);grouped.set(label,a)}
-  const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(p=>p.result)),sample_size:rows.length,confidence:confidence(rows.length)})).sort((a,b)=>b.value-a.value);
-  return eligible.length>=2?{...eligible[0],statistic:'median',metric:'views_or_reach'}:null;
-};
-const overallMedian=median(analysisRows.map(p=>p.result));
-const observedPatterns=[patternGroups('type','format')].filter(Boolean).map(p=>({...p,label:primaryPlatform+' · '+p.label,platform:primaryPlatform,baseline:overallMedian,delta_percent:overallMedian?(p.value-overallMedian)/overallMedian*100:null,evidence:p.sample_size+' matched '+primaryPlatform+' results'}));
-const timingGroups=new Map();
-for(const post of analysisRows){const key=post.publish_day+'|'+post.publish_hour,g=timingGroups.get(key)||{day:post.publish_day,hour:post.publish_hour,count:0,total:0};g.count++;g.total+=post.result;timingGroups.set(key,g)}
-const comparableSlots=[...timingGroups.values()].filter(g=>g.count>=3).map(g=>({...g,avg:g.total/g.count}));
-const bestSlot=comparableSlots.length>=2?comparableSlots.sort((a,b)=>b.avg-a.avg||b.count-a.count)[0]:null;
-if(bestSlot)observedPatterns.push({id:'timing:'+bestSlot.day+'|'+bestSlot.hour,kind:'timing',label:primaryPlatform+' · '+bestSlot.day+' · '+displayTime(bestSlot.hour),platform:primaryPlatform,value:bestSlot.avg,baseline:overallMedian,delta_percent:overallMedian?(bestSlot.avg-overallMedian)/overallMedian*100:null,sample_size:bestSlot.count,confidence:confidence(bestSlot.count),statistic:'average',metric:'views_or_reach',evidence:bestSlot.count+' matched '+primaryPlatform+' results'});
+const observedPatterns=[];
+for(const platform of [...new Set(visibilityRows.map(post=>post.platform))]){
+  const platformCoverage=visibilityCoverageFor(platform);
+  const analysisRows=visibilityRows.filter(post=>post.platform===platform&&post.normalized_7d_total!=null&&platformCoverage>=.75).map(post=>({...post,result:post.normalized_7d_total,result_metric:'Comparable first-7-day total'}));
+  if(!analysisRows.length)continue;
+  const overallMedian=median(analysisRows.map(post=>post.result));
+  const patternGroups=(field,kind)=>{
+    const grouped=new Map();
+    for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const rows=grouped.get(label)||[];rows.push(post);grouped.set(label,rows)}
+    const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:platform.toLowerCase()+':'+kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(post=>post.result)),sample_size:rows.length,confidence:confidence(rows.length),supporting_post_ids:[...new Set(rows.map(post=>post.content_id))]})).sort((a,b)=>b.value-a.value);
+    return eligible.length>=2?{...eligible[0],statistic:'median',metric:'views_or_reach'}:null;
+  };
+  const formatPattern=patternGroups('type','format');
+  if(formatPattern)observedPatterns.push({...formatPattern,label:platform+' · '+formatPattern.label,platform,baseline:overallMedian,delta_percent:overallMedian?(formatPattern.value-overallMedian)/overallMedian*100:null,evidence:formatPattern.sample_size+' matched '+platform+' results'});
+  const timingGroups=new Map();
+  for(const post of analysisRows){const key=post.publish_day+'|'+post.publish_hour,g=timingGroups.get(key)||{day:post.publish_day,hour:post.publish_hour,count:0,total:0,post_ids:[]};g.count++;g.total+=post.result;g.post_ids.push(post.content_id);timingGroups.set(key,g)}
+  const comparableSlots=[...timingGroups.values()].filter(group=>group.count>=3).map(group=>({...group,avg:group.total/group.count}));
+  const bestSlot=comparableSlots.length>=2?comparableSlots.sort((a,b)=>b.avg-a.avg||b.count-a.count)[0]:null;
+  if(bestSlot)observedPatterns.push({id:platform.toLowerCase()+':timing:'+bestSlot.day+'|'+bestSlot.hour,kind:'timing',label:platform+' · '+bestSlot.day+' · '+displayTime(bestSlot.hour),platform,value:bestSlot.avg,baseline:overallMedian,delta_percent:overallMedian?(bestSlot.avg-overallMedian)/overallMedian*100:null,sample_size:bestSlot.count,confidence:confidence(bestSlot.count),statistic:'average',metric:'views_or_reach',evidence:bestSlot.count+' matched '+platform+' results',supporting_post_ids:[...new Set(bestSlot.post_ids)]});
+}
 const response={
   ok:true,configured:true,period:base.period,updated_at:syncAttemptAt,last_successful_sync_at:lastSuccessfulSyncAt,
   summary:{published_posts:uniqueCurrent.length,instagram_reach:igTotals.reach,facebook_unique_viewers:fbTotals.reach,facebook_media_views:fbTotals.views,youtube_views:dailyTotals.views||ytTotals.views,total_engagements:igTotals.engagements+fbTotals.engagements+ytTotals.engagements,visibility_totals_are_comparable:false},

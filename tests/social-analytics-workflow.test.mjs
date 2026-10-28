@@ -49,7 +49,7 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.match(report,/visibility_available/);
   assert.match(report,/visibility_missing/);
   assert.match(report,/const visibilityRows=current\.filter/);
-  assert.match(report,/const platformCounts=visibilityRows\.reduce/);
+  assert.match(report,/for\(const platform of \[\.\.\.new Set\(visibilityRows\.map/);
   assert.match(report,/facebookPageAuthorized/);
   assert.match(report,/String\(pageAccessRaw\.id\|\|'\'\)==='753092067877601'/);
   assert.equal(nodeMap['[META] Load Page Access'].parameters.url,'https://graph.facebook.com/v23.0/753092067877601?fields=id,name');
@@ -121,6 +121,9 @@ test("analytics recommendations use comparable snapshots and evidence gates",()=
   assert.match(report,/nearestAge\(7,\.3\)/);
   assert.match(report,/g\.count>=5/);
   assert.match(report,/visibilityCoverageFor\(post\.platform\)>=\.75/);
+  assert.match(report,/supporting_post_ids/);
+  assert.match(report,/for\(const platform of \[\.\.\.new Set\(visibilityRows\.map/);
+  assert.match(report,/platform\.toLowerCase\(\)\+':timing:'/);
   assert.match(report,/lifetime totals are not used to choose posting times/);
   assert.match(report,/last_successful_sync_at/);
   assert.match(report,/last_good_payload/);
