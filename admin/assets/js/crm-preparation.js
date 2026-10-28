@@ -13,9 +13,10 @@
       return {...s,label:route?'Transportation · '+pickup+' → '+dropoff:s.label,date:day(s.date),start:time(s.start),end:time(s.end)};
     });
     const order=(a,b)=>(day(a.date)||'9999').localeCompare(day(b.date)||'9999')||(a.start||'99:99').localeCompare(b.start||'99:99');
-    const remaining=chosen.filter(s=>s.status!=='completed'&&!closed.has(s.status)&&(!day(s.date)||s.date>=today)).slice().sort(order);
+    const intendedDay=s=>day(s.itineraryDate)||day(s.date);
+    const remaining=chosen.filter(s=>s.status!=='completed'&&!closed.has(s.status)&&(!intendedDay(s)||intendedDay(s)>=today)).slice().sort(order);
     if(!remaining.length||!['booked','deposit_paid','completed'].includes(record.status))return null;
-    const earlier=chosen.filter(s=>s.status==='completed'||(day(s.date)&&s.date<today)).slice().sort(order);
+    const earlier=chosen.filter(s=>s.status==='completed'||(intendedDay(s)&&intendedDay(s)<today)).slice().sort(order);
     const missing=[];
     if(!verified)missing.push('Refresh CRM to verify provider data');
     if(record.status==='completed')missing.push('Review booking status: a confirmed service is still ahead');
@@ -24,6 +25,7 @@
     for(const s of remaining){
       const add=text=>missing.push((s.date||'Date needed')+' · '+s.label+': '+text);
       if(!day(s.date))add('Confirm tour date');
+      if(day(s.itineraryDate)&&day(s.date)&&s.date!==s.itineraryDate)add('Confirm assignment date: scheduled '+s.date+'; itinerary '+s.itineraryDate);
       if(!/^[1-9]\d*$/.test(clean(s.guests)))add('Confirm guest count');
       if(!s.label||/^(birding|birdwatching|activity|custom|other|service|specialty wildlife|transportation)$/i.test(s.label)||/needs review/i.test(s.label))add('Confirm service name');
       if(!knownLocation(s.pickup))add('Add pickup / meeting location');
@@ -38,7 +40,7 @@
         }
       }
     }
-    const dates=remaining.map(s=>day(s.date)).filter(Boolean).sort();
+    const dates=remaining.map(intendedDay).filter(Boolean).sort();
     const first=dates[0]||'';
     const reminder=first?new Date(Date.parse(first+'T12:00:00Z')-2*86400000).toISOString().slice(0,10):'';
     const followup=day(record.followup_date);

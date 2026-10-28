@@ -9,3 +9,15 @@ test('read-only overview hooks, guarded copying and preparation filters survive 
 test('copying a previously ready draft is blocked during refresh and after a refresh failure',()=>{const c={state:{operationsStatus:'ready'},refreshInFlight:false,refreshRetryAttempt:0};vm.createContext(c);vm.runInContext(source('preparationCanCopy'),c);assert.equal(c.preparationCanCopy({ready:true}),true);c.refreshInFlight=true;assert.equal(c.preparationCanCopy({ready:true}),false);c.refreshInFlight=false;c.refreshRetryAttempt=1;assert.equal(c.preparationCanCopy({ready:true}),false);c.refreshRetryAttempt=0;c.state.operationsStatus='error';assert.equal(c.preparationCanCopy({ready:true}),false);assert.equal(c.preparationCanCopy(null),false)});
 
 test('preparation card styles and mobile stacking are included in the CRM stylesheet',()=>{const style=html.match(/<style[^>]*>([\s\S]*?)<\/style>/)[1];assert.match(style,/\.prepCard\{display:grid/);assert.match(style,/@media\(max-width:1100px\).*\.prepCard\{grid-template-columns:minmax\(0,1fr\)/)});
+
+test('adapter carries the linked saved itinerary date separately from the assignment date',()=>{
+ const assignment={service_item_id:'primary',service_date:'2026-11-20'},item={id:'assignment',date:'2026-11-20',product_selected:'MBW006 - Tour',status:'booked'};
+ const s=adapter([{status:'booked',_calendar_item:item,_calendar_assignment:assignment}],[{id:'primary',date:'2026-11-22'}]).preparationServices({status:'booked'})[0];
+ assert.equal(s.date,'2026-11-20');assert.equal(s.itineraryDate,'2026-11-22');
+ const unlinked=adapter([{status:'booked',_calendar_item:item,_calendar_assignment:{service_date:'2026-11-20'}}]).preparationServices({status:'booked'})[0];assert.equal(unlinked.itineraryDate,'');
+});
+
+test('confirmation handoff stops before creating a snapshot when an active linked date conflicts',()=>{
+ const c={state:{operationsStatus:'ready'},hasUnsavedTourChanges:()=>false,getSelected:()=>({}),preparationServices:()=>[{date:'2026-11-20',itineraryDate:'2026-11-22',status:'booked'}],showToast:message=>c.message=message};
+ vm.createContext(c);vm.runInContext(source('openConfirmationTool'),c);c.openConfirmationTool();assert.match(c.message,/Review assignment dates/);
+});
