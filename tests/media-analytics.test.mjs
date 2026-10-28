@@ -87,6 +87,16 @@ test("facebook reconciliation evidence remains available to data health",()=>{
   assert.equal(facebook.unmatched_reasons.not_returned_or_ambiguous,2);
 });
 
+test("youtube reconciliation evidence preserves URL recoveries and unresolved records",()=>{
+  const unresolved=[{content_id:"10",title:"Birdwatching",youtube_post_id:"stale-id",youtube_url_id:"054zC8gpmvI"}];
+  const health=analytics.health({data_health:{platforms:{youtube:{expected:28,matched:25,unmatched:3,matched_with_visibility:25,visibility_missing:0,match_methods:{exact_id:24,url_fallback:1},unmatched_reasons:{not_returned_by_api:3},unresolved}}}},posts);
+  const youtube=health.platforms.find(row=>row.key==="youtube");
+  assert.equal(youtube.rate,89);
+  assert.equal(youtube.matched_with_visibility,25);
+  assert.equal(youtube.match_methods.url_fallback,1);
+  assert.deepEqual(youtube.unresolved,unresolved);
+});
+
 test("cross-platform visibility is never totaled as one comparable metric",()=>{
   const result=analytics.summary(posts,"all");
   assert.equal(result.comparable,false);

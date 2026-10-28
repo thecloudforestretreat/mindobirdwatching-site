@@ -12,8 +12,8 @@ assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary pr
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio.css?v=19"), "Media Studio CSS cache key must be current");
-assert(page.includes("media-analytics.js?v=5"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=22"), "Media Studio JS cache key must be current");
+assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
+assert(page.includes("media-studio.js?v=23"), "Media Studio JS cache key must be current");
 assert(script.includes("async function fetchInsights(period)")&&script.includes("50000"), "Analytics requests must allow the reporting workflow to finish");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
 assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
@@ -32,5 +32,8 @@ assert(script.includes('key==="facebook"?"Media views"'), "Facebook visibility m
 assert(script.includes('visibility coverage'), "Analytics data health must report visibility coverage");
 assert(script.includes('hours<=2?\'ready\''), "Hourly analytics freshness must be checked against a two-hour window");
 assert(script.includes('Last successful sync'), "Analytics must identify the last successful sync");
+assert(!script.includes("Connected · incomplete data"), "Connection status must not be conflated with historical coverage");
+assert(script.includes("Historical coverage varies by platform"), "Analytics notice must explain coverage without calling healthy connections incomplete");
+assert(script.includes("URL recovery"), "YouTube URL fallback must be visible in data-health evidence");
 
 console.log(JSON.stringify({ ok: true, checks: 25, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true, nonComparableVisibilityGuard: true, visibilityCoverage: true, hourlyFreshness: true }, null, 2));
