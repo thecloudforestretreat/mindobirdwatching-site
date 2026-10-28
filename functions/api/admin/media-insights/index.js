@@ -9,7 +9,7 @@ export async function onRequestGet({request,env}){
   if(!webhook)return unavailable(request,"Existing n8n reporting covers Meta ads and website/SEO. Connect an organic Meta Insights and YouTube Analytics collector to add post-level reach, engagement, saves, shares, and watch-time trends here.");
   const requested=new URL(request.url).searchParams.get("period")||"28d",period=PERIODS.has(requested)?requested:"28d";
   try{
-    const response=await fetch(webhook,{method:"POST",headers:{"content-type":"application/json","x-mbw-request-id":"media_insights_"+crypto.randomUUID()},body:JSON.stringify({action:"media_insights",period,timezone:"America/New_York"}),signal:AbortSignal.timeout(30000)});
+    const response=await fetch(webhook,{method:"POST",headers:{"content-type":"application/json","x-mbw-request-id":"media_insights_"+crypto.randomUUID()},body:JSON.stringify({action:"media_insights",period,timezone:"America/New_York"}),signal:AbortSignal.timeout(45000)});
     const text=await response.text();
     if(!response.ok)throw new Error("Insights workflow returned "+response.status);
     const data=JSON.parse(text||"{}");

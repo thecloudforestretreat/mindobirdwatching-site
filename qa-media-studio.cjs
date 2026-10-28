@@ -13,7 +13,8 @@ assert(script.includes('matches(".detailPreview video")'), "Video load failures 
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio.css?v=19"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=3"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=18"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.js?v=19"), "Media Studio JS cache key must be current");
+assert(script.includes("async function fetchInsights(period)")&&script.includes("50000"), "Analytics requests must allow the reporting workflow to finish");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
 assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
 assert(script.includes('class="calendarEventEdit"'), "Calendar cards must expose a direct editor link");

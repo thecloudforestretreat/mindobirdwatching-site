@@ -42,7 +42,7 @@ test("Media Studio loads the watermark helper before the download controller",()
   assert.match(html,/media-studio\.css\?v=19/);
   const helper=html.indexOf("media-watermark.js?v=1");
   const analytics=html.indexOf("media-analytics.js?v=3");
-  const controller=html.indexOf("media-studio.js?v=18");
+  const controller=html.indexOf("media-studio.js?v=19");
   assert.ok(helper>=0&&analytics>helper&&controller>analytics);
 });
 
