@@ -21,3 +21,15 @@ test("media insights proxy preserves measured patterns and validated AI guidance
     assert.equal(body.post_results[0].tags[0].label,"Toucan");
   }finally{globalThis.fetch=original}
 });
+
+test("media insights proxy allows the analytics workflow to complete",async()=>{
+  const original=globalThis.fetch;
+  let timeout;
+  globalThis.fetch=async(_url,options)=>{timeout=options.signal;return new Response("{}",{status:200})};
+  try{
+    const request=new Request("https://mindobirdwatching.com/api/admin/media-insights?period=28d");
+    await onRequestGet({request,env:{N8N_ADMIN_MEDIA_INSIGHTS_WEBHOOK_URL:"https://example.test/insights"}});
+    assert.ok(timeout instanceof AbortSignal);
+    assert.equal(timeout.aborted,false);
+  }finally{globalThis.fetch=original}
+});
