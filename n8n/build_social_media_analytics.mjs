@@ -296,9 +296,10 @@ const maxAvg=Math.max(1,...eligible.map(g=>g.avg));
 const slots=eligible.sort((a,b)=>b.avg-a.avg||b.count-a.count).slice(0,3).map(g=>({days:[g.day],time:displayTime(g.hour),platform:g.platform,score:Math.min(95,Math.round(55+30*(g.avg/maxAvg)+Math.min(10,g.count))),basis:String(g.count)+' matched posts'}));
 const median = values => { const a=values.map(num).sort((x,y)=>x-y); if(!a.length)return 0; const i=Math.floor(a.length/2); return a.length%2?a[i]:(a[i-1]+a[i])/2; };
 const confidence = count => count>=10?'reliable':count>=5?'developing':'early';
-const platformCounts=current.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
+const visibilityRows=current.filter(post=>num(post.denominator||post.reach||post.views)>0);
+const platformCounts=visibilityRows.reduce((map,post)=>(map[post.platform]=(map[post.platform]||0)+1,map),{});
 const primaryPlatform=Object.entries(platformCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
-const analysisRows=current.filter(post=>post.platform===primaryPlatform);
+const analysisRows=visibilityRows.filter(post=>post.platform===primaryPlatform);
 const patternGroups=(field,kind)=>{
   const grouped=new Map(); for(const post of analysisRows){const label=String(post[field]||'').trim();if(!label)continue;const a=grouped.get(label)||[];a.push(post);grouped.set(label,a)}
   const eligible=[...grouped.entries()].filter(([,rows])=>rows.length>=2).map(([label,rows])=>({id:kind+':'+label.toLowerCase(),kind,label,value:median(rows.map(p=>p.result)),sample_size:rows.length,confidence:confidence(rows.length)})).sort((a,b)=>b.value-a.value);

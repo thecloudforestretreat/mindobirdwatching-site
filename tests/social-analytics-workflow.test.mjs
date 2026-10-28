@@ -47,6 +47,8 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.match(report,/denominator=v\.reach\|\|v\.views/);
   assert.match(report,/visibility_available/);
   assert.match(report,/visibility_missing/);
+  assert.match(report,/const visibilityRows=current\.filter/);
+  assert.match(report,/const platformCounts=visibilityRows\.reduce/);
   assert.match(report,/facebookPageAuthorized/);
   assert.match(report,/connection_reason/);
   assert.match(report,/post_total_media_view_unique/);
