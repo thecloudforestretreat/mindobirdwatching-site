@@ -158,16 +158,16 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/availability") && write.method === "POST"), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-calendar.png", fullPage: true });
     await page.locator('[data-route="sightings"]').click();
-    assert.equal(await page.locator("#reportTour option").count(), 2);
+    assert.equal(await page.locator("#reportTour option").count(), 1);
     assert.equal(await page.locator('#reportTour option', { hasText: "November Guest" }).count(), 0);
     assert.equal(await page.locator('#reportTour option', { hasText: "December Guest" }).count(), 0);
-    await page.locator("#reportTour").selectOption("B-1");
+    await page.locator("#reportTour").selectOption("B-PAST");
     const reportHref = await page.locator("#openReport").getAttribute("href");
     assert.match(reportHref, /^https:\/\/mindobirdwatching\.com\/es\/reporte-de-avistamientos\//);
-    assert.match(reportHref, /booking=A-1/);
-    assert.match(reportHref, /booking_id=B-1/);
-    assert.match(reportHref, /date=2026-10-26/);
-    assert.match(reportHref, /tour_type=full_day/);
+    assert.match(reportHref, /booking=A-PAST/);
+    assert.match(reportHref, /booking_id=B-PAST/);
+    assert.match(reportHref, /date=2026-10-15/);
+    assert.match(reportHref, /tour_type=half_day/);
     await page.getByText("San Lorenzo", { exact: true }).waitFor();
     assert.match(await page.locator("#reportHistory").innerText(), /San Lorenzo/);
     assert.match(await page.locator("#reportHistory").innerText(), /42 especies/);
@@ -286,9 +286,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(new URL(page.url()).searchParams.get("view"), null);
     const reportUrl = new URL(reportHref);
     await page.goto(`http://127.0.0.1:${port}${reportUrl.pathname}${reportUrl.search}`);
-    assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-26");
-    assert.equal(await page.locator("#tourType").inputValue(), "full_day");
-    assert.equal(await page.locator("#bookingReference").inputValue(), "A-1");
+    assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-15");
+    assert.equal(await page.locator("#tourType").inputValue(), "half_day");
+    assert.equal(await page.locator("#bookingReference").inputValue(), "A-PAST");
     assert.equal(await page.locator("#contributorNumber").inputValue(), "007");
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 });
