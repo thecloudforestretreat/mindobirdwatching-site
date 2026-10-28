@@ -77,9 +77,12 @@ test("response map positions posts only after one platform is selected",()=>{
 });
 
 test("facebook reconciliation evidence remains available to data health",()=>{
-  const health=analytics.health({data_health:{platforms:{facebook:{expected:10,matched:8,unmatched:2,match_methods:{exact_id:5,permalink:2,caption_date:1},unmatched_reasons:{not_returned_or_ambiguous:2}}}}},posts);
+  const health=analytics.health({data_health:{platforms:{facebook:{expected:10,matched:8,unmatched:2,matched_with_visibility:6,visibility_missing:2,connection_reason:"Reconnect Page access.",match_methods:{exact_id:5,permalink:2,caption_date:1},unmatched_reasons:{not_returned_or_ambiguous:2}}}}},posts);
   const facebook=health.platforms.find(row=>row.key==="facebook");
   assert.equal(facebook.rate,80);
+  assert.equal(facebook.matched_with_visibility,6);
+  assert.equal(facebook.visibility_missing,2);
+  assert.equal(facebook.connection_reason,"Reconnect Page access.");
   assert.equal(facebook.match_methods.caption_date,1);
   assert.equal(facebook.unmatched_reasons.not_returned_or_ambiguous,2);
 });
