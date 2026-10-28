@@ -157,26 +157,20 @@ add("[META] Instagram Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [120, 
   url: "={{ $json.ig_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Load Page Access", "n8n-nodes-base.httpRequest", 4.2, [120, -70], {
-  url: "https://graph.facebook.com/v23.0/me/accounts?fields=id,access_token&limit=100", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+  url: "https://graph.facebook.com/v23.0/753092067877601?fields=id,name", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Facebook Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [340, -70], {
   url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_url }}",
-  sendQuery: true,
-  queryParameters: { parameters: [{ name: "access_token", value: "={{ (($json.data || []).find(account => String(account.id) === '753092067877601') || {}).access_token || '' }}" }] },
-  ...httpDefaults,
-}, { onError: "continueRegularOutput", alwaysOutputData: true });
+  authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+}, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Facebook Stored Posts", "n8n-nodes-base.httpRequest", 4.2, [340, 10], {
   url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_ids_url }}",
-  sendQuery: true,
-  queryParameters: { parameters: [{ name: "access_token", value: "={{ (($json.data || []).find(account => String(account.id) === '753092067877601') || {}).access_token || '' }}" }] },
-  ...httpDefaults,
-}, { onError: "continueRegularOutput", alwaysOutputData: true });
+  authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+}, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Facebook Stored Reels", "n8n-nodes-base.httpRequest", 4.2, [340, 90], {
   url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_reels_url }}",
-  sendQuery: true,
-  queryParameters: { parameters: [{ name: "access_token", value: "={{ (($json.data || []).find(account => String(account.id) === '753092067877601') || {}).access_token || '' }}" }] },
-  ...httpDefaults,
-}, { onError: "continueRegularOutput", alwaysOutputData: true });
+  authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+}, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[YT] Video Statistics", "n8n-nodes-base.httpRequest", 4.2, [120, 100], {
   url: "={{ $json.yt_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
 }, { credentials: { youTubeOAuth2Api: YOUTUBE }, onError: "continueRegularOutput", alwaysOutputData: true });
@@ -300,10 +294,10 @@ const countExpected=(platform)=>base.records.filter(r=>r.cohort==='current'&&Boo
 const countMatched=(platform)=>current.filter(p=>p.platform.toLowerCase()===platform).length;
 const countVisible=(platform)=>current.filter(p=>p.platform.toLowerCase()===platform&&num(p.denominator||p.reach||p.views)>0).length;
 const platformStatus=(platform)=>{const expected=countExpected(platform),matched=countMatched(platform),visible=countVisible(platform),coverage=expected?matched/expected:0,visibilityCoverage=matched?visible/matched:0;return{expected,matched,visible,coverage_percent:expected?Math.round(coverage*100):null,visibility_coverage_percent:matched?Math.round(visibilityCoverage*100):null,data_status:matched&&visible?'available':matched?'identity_only':'no_data'}};
-const facebookPageAuthorized=Array.isArray(pageAccessRaw.data)&&pageAccessRaw.data.some(account=>String(account.id)==='753092067877601'&&clean(account.access_token));
+const facebookPageAuthorized=String(pageAccessRaw.id||'')==='753092067877601'&&!apiError(pageAccessRaw);
 const facebookApiErrors=[fbRaw,fbDirectRaw,fbReelRaw].map(apiError).filter(Boolean);
 const metaCredentialReason=apiError(pageAccessRaw)||apiError(igRaw);
-const facebookConnectionReason=metaCredentialReason||(!facebookPageAuthorized?'Facebook Page access token was not returned. Reconnect the Facebook credential with Page access and read-insights permissions.':facebookApiErrors.length?facebookApiErrors[0]:'');
+const facebookConnectionReason=metaCredentialReason||(!facebookPageAuthorized?'The permanent Mindo Bird Watching Page token could not verify Page access. Reconnect the Facebook credential with Page access and read-insights permissions.':facebookApiErrors.length?facebookApiErrors[0]:'');
 const instagramConnectionReason=apiError(igRaw)||metaCredentialReason;
 const groups = new Map();
 for (const s of samples) { const k=[s.platform,s.day,s.hour].join('|'); const g=groups.get(k)||{...s,count:0,total:0}; g.count++; g.total+=s.value; groups.set(k,g); }
