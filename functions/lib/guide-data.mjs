@@ -1,6 +1,7 @@
 import { listRecords } from "./mobile-crm.mjs";
 import { normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeProvider } from "./mobile-domain.mjs";
 import { identityMatchesProvider } from "./mobile-auth.mjs";
+import { isNeicer, isPlanRow, parsePlanRow, robertPlan } from "./guide-plans.mjs";
 
 const BOOKED = new Set(["booked", "deposit_pending", "deposit_paid", "payment_pending", "completed"]);
 const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
@@ -16,6 +17,7 @@ function assignmentKind(row, assignment) {
   if (explicit && explicit !== "assignment") return explicit;
   if (String(row.assignment_group_id || assignment.assignmentGroupId).startsWith("AVAIL-")) return "availability";
   if (String(row.assignment_group_id || assignment.assignmentGroupId).startsWith("OFFER-")) return "offer";
+  if (isPlanRow(row)) return "tour_plan";
   if (lower(assignment.serviceType) === "guide unavailable") return "availability";
   if (lower(assignment.serviceType) === "guide offer") return "offer";
   return "assignment";
@@ -144,14 +146,17 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
       || { providerId: "", name: "" };
   const providerName = selectedProvider.name || "";
   const providerId = selectedProvider.providerId || "";
+  const pilotEnabled = isNeicer(providerName || identity.providerName || identity.name);
   const cutoff = recentCutoff();
   const providerAssignments = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
     assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status)
   );
+  const plans = pilotEnabled ? providerAssignments.filter(({ row }) => isPlanRow(row)).map(({ row }) => parsePlanRow(row)).filter(Boolean) : [];
+  if (!plans.length && pilotEnabled) plans.push(robertPlan(selectedProvider));
   const availability = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "availability")
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff)
     .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, note: assignment.note }));
-  const offers = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "offer")
+  const offers = (pilotEnabled ? providerAssignments : []).filter(({ row, assignment }) => assignmentKind(row, assignment) === "offer")
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= todayInEcuador())
     .map(({ assignment }) => ({ assignmentId: assignment.assignmentId, serviceDate: assignment.serviceDate, startTime: assignment.startTime, endTime: assignment.endTime, service: assignment.product || assignment.serviceType || "Tour opportunity", pickup: assignment.pickup, response: assignment.guideResponse, bidAmount: assignment.guideBidAmount }));
   const scheduled = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "assignment");
@@ -193,5 +198,5 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
     return tour;
   }).filter(Boolean).sort((a, b) => `${a.serviceDate} ${a.startTime}`.localeCompare(`${b.serviceDate} ${b.startTime}`));
   const providerOptions = providerRecords.map(item => ({ providerId: item.providerId, name: item.name })).sort((a, b) => a.name.localeCompare(b.name));
-  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, availability, offers, tours };
+  return { providerId, providerName, providers: providerOptions.map(item => item.name), providerOptions, features: { plans: pilotEnabled, opportunities: pilotEnabled }, availability, offers, plans, tours };
 }

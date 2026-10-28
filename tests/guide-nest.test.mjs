@@ -8,7 +8,9 @@ import { onRequestPost as acceptGuideAssignment } from "../functions/api/guide/a
 import { onRequestPost as createGuideAvailability } from "../functions/api/guide/availability/index.js";
 import { onRequestDelete as deleteGuideAvailability } from "../functions/api/guide/availability/[assignmentId].js";
 import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
+import { onRequestPost as saveGuidePlan } from "../functions/api/guide/plans/[planId].js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
+import { robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
 
 test("Guide Nest exposes branded browser icons and an explicit read-only admin audit mode", () => {
   const index = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
@@ -95,7 +97,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
           { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2026-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
           { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2026-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
-          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-10-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
+          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-11-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
           { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
@@ -271,6 +273,8 @@ test("two guide identities receive only their own tours and cannot mutate each o
       if (action === "list_assignments") return Response.json({ ok: true, records: [
         { assignment_id: "A-CHICHO", inquiry_id: "I-CHICHO", provider_id: "PROV-ACTIVITY-CHICHO", provider_name: "Chicho", service_date: "2026-11-01", assignment_status: "confirmed" },
         { assignment_id: "A-NEICER", inquiry_id: "I-NEICER", provider_id: "PROV-NEICER-NIGHT", provider_name: "Neicer", service_date: "2026-11-02", assignment_status: "pending" },
+        { assignment_id: "O-CHICHO", assignment_kind: "offer", provider_id: "PROV-CHICHO", provider_name: "Chicho", service_date: "2026-11-03", assignment_status: "pending" },
+        { assignment_id: "O-NEICER", assignment_kind: "offer", provider_id: "PROV-NEICER", provider_name: "Neicer", service_date: "2026-11-04", assignment_status: "pending" },
       ] });
       if (action === "list_inquiries") return Response.json({ ok: true, records: [
         { inquiry_id: "I-CHICHO", full_name: "Chicho Guest", status: "booked" },
@@ -282,8 +286,15 @@ test("two guide identities receive only their own tours and cannot mutate each o
     };
     const chichoResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Neicer"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" } });
     const neicerResponse = await onRequestGet({ request: new Request("http://localhost/api/guide/bootstrap?provider=Chicho"), env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "neicer@example.test" } });
-    assert.deepEqual((await chichoResponse.json()).tours.map(item => item.guestName), ["Chicho Guest"]);
-    assert.deepEqual((await neicerResponse.json()).tours.map(item => item.guestName), ["Neicer Guest"]);
+    const chichoBody = await chichoResponse.json(), neicerBody = await neicerResponse.json();
+    assert.deepEqual(chichoBody.tours.map(item => item.guestName), ["Chicho Guest"]);
+    assert.deepEqual(neicerBody.tours.map(item => item.guestName), ["Neicer Guest"]);
+    assert.deepEqual(chichoBody.features, { plans: false, opportunities: false });
+    assert.equal(chichoBody.plans.length, 0);
+    assert.equal(chichoBody.offers.length, 0);
+    assert.deepEqual(neicerBody.features, { plans: true, opportunities: true });
+    assert.equal(neicerBody.plans[0].planId, "robert-2027");
+    assert.equal(neicerBody.offers.length, 1);
 
     const denied = await acceptGuideAssignment({
       request: new Request("http://localhost/api/guide/assignments/A-NEICER/accept", { method: "POST", headers: { Origin: "http://localhost" } }),
@@ -292,6 +303,114 @@ test("two guide identities receive only their own tours and cannot mutate each o
     });
     assert.equal(denied.status, 404);
     assert.equal(writeAttempted, false);
+    const deniedOffer = await respondToGuideOffer({
+      request: new Request("http://localhost/api/guide/offers/O-CHICHO/respond", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ response: "interested", bidAmount: "100" }) }),
+      env: { ...pilotEnv, LOCAL_TEST_IDENTITY: "chicho@example.test" },
+      params: { assignmentId: "O-CHICHO" },
+    });
+    assert.equal(deniedOffer.status, 404);
+    assert.equal(writeAttempted, false);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("Neicer can edit guide dates and prices while the submitted total is recalculated", () => {
+  const original = robertPlan({ providerId: "PROV-007", name: "Neycer" });
+  const changed = sanitizePlan({
+    ...original,
+    days: original.days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day),
+    originalTotal: 99999,
+    adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
+  }, original);
+  assert.equal(changed.originalTotal, 800);
+  assert.equal(changed.startDate, "2027-02-08");
+  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 225, 235, 0, 0]);
+  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [90, 80, 20]);
+  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [130, 80, 15]);
+  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [140, 80, 15]);
+  assert.equal(changed.adjustments[0].amount, 80);
+});
+
+test("Neicer can save Robert's plan but another guide cannot access it", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [];
+  const pilot = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({
+      "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"], contributorNumber: "002" },
+      "chicho@example.test": { role: "guide", name: "Chicho", providerName: "Chicho", providerIds: ["PROV-CHICHO"], contributorNumber: "001" },
+    }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (payload.action === "create_assignment") { rows = [{ ...payload.assignment, assignment_id: "PLAN-ROW-1", updated_at: "v1" }]; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day);
+    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], costNote: { es: "Total proporcionado; desglose pendiente.", en: "Total provided; breakdown pending." }, originalCost: 60 });
+    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
+    const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
+    assert.equal(neicer.status, 201);
+    const saved = await neicer.json();
+    assert.equal(saved.plan.originalTotal, 860);
+    assert.equal(saved.plan.startDate, "2027-02-08");
+    assert.equal(saved.plan.endDate, "2027-02-15");
+    assert.equal(saved.plan.adjustments[0].description, "Intag lodge");
+    assert.equal(rows[0].provider_id, "PROV-NEICER");
+
+    const chicho = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "chicho@example.test" }, params: { planId: "robert-2027" } });
+    assert.equal(chicho.status, 404);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("guide plan writes enforce status, authorship, and optimistic concurrency", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [];
+  let writes = 0;
+  const pilot = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({
+      "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"], contributorNumber: "002" },
+    }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (payload.action === "create_assignment") { writes += 1; rows = [{ ...payload.assignment, assignment_id: "PLAN-SECURE", updated_at: "v1" }]; return Response.json({ ok: true }); }
+      if (payload.action === "update_assignment") { writes += 1; rows = [{ ...payload.assignment, updated_at: "v2" }]; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const base = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+    const forged = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ status: "approved", days: base.days }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(forged.status, 403);
+    assert.equal(writes, 0);
+
+    const created = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ status: "guide_drafting", days: base.days, adjustments: [{ id: "cost-new", dayId: "day-1", category: "food", description: "Lunch", amount: 15, addedBy: "MBW Admin", addedAt: "2000-01-01" }], comments: [{ id: "comment-new", message: "Question", author: "MBW Admin", role: "admin", createdAt: "2000-01-01" }] }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(created.status, 201);
+    const createdBody = await created.json();
+    assert.equal(createdBody.plan.comments[0].author, "Neicer");
+    assert.equal(createdBody.plan.comments[0].role, "guide");
+    assert.notEqual(createdBody.plan.comments[0].createdAt, "2000-01-01");
+    assert.equal(createdBody.plan.adjustments[0].addedBy, "Neicer");
+    assert.notEqual(createdBody.plan.adjustments[0].addedAt, "2000-01-01");
+
+    const stale = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ updatedAt: "older-version", status: "guide_drafting", days: base.days }) }),
+      env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" },
+    });
+    assert.equal(stale.status, 409);
+    assert.equal((await stale.json()).code, "PLAN_STALE");
+    assert.equal(writes, 1);
   } finally { globalThis.fetch = savedFetch; }
 });
 
@@ -303,6 +422,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(html, /Calendario/);
   assert.match(html, /Avistamientos/);
   assert.match(html, /Share MBW/);
+  assert.match(html, /data-view="plans"/);
   assert.match(html, /data-language="es"/);
   assert.match(html, /Reportes anteriores/);
   assert.match(js, /Copy guest message/);
@@ -311,6 +431,7 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(js, /\["confirmed", "completed"\]\.includes\(tour\.status\) && \(!tour\.serviceDate \|\| tour\.serviceDate <= today\)/);
   assert.doesNotMatch(js, /data-accept=/);
   assert.match(js, /MBW Shop/);
+  assert.match(js, /Custom Ecuador itinerary|additionalCosts/);
   assert.match(js, /assets\/images\/icons\/mbw_gr\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_icons_trip_advisor\.png/);
   assert.match(js, /assets\/images\/icons\/mbw_(ig|fb|yt|shop)\.png/);

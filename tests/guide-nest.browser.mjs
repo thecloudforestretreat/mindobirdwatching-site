@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "playwright";
+import { robertPlan } from "../functions/lib/guide-plans.mjs";
 
 const projectRoot = process.cwd();
 const root = join(projectRoot, "admin");
@@ -25,6 +26,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const browser = await chromium.launch({ headless: true, executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
+  const dialogs = [];
+  page.on("dialog", dialog => { dialogs.push(dialog.message()); dialog.accept(); });
   await page.addInitScript(() => {
     const NativeDate = Date;
     const fixedNow = new NativeDate("2026-10-23T17:00:00Z").valueOf();
@@ -37,11 +40,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
   const writes = [];
   let requestedProvider = "";
   const bootstrap = {
-    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", checkedAt: "2026-10-21T15:00:00Z",
-    availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-23", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
+    ok: true, preview: false, identity: { role: "guide", name: "Neycer", contributorNumber: "007" }, providerId: "PROV-007", providerName: "Neycer · Night Walk Guide", features: { plans: true, opportunities: true }, checkedAt: "2026-10-21T15:00:00Z",
+    availability: [{ assignmentId: "AV-1", serviceDate: "2026-10-26", startTime: "4:00 AM", endTime: "7:00 AM", note: "Personal" }],
     offers: [{ assignmentId: "O-1", serviceDate: "2026-10-30", startTime: "6:00 AM", service: "Custom birding package", pickup: "Mindo", response: "", bidAmount: "" }],
+    plans: [robertPlan({ providerId: "PROV-007", name: "Neycer · Night Walk Guide" })],
     tours: [
-      { assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-23", dateLabel: "Oct 23, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "MBW006 - Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", country: "Luxembourg", countryCode: "LU", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", providerName: "Neycer · Night Walk Guide", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hello Daniel, I’m Neycer from Mindo Bird Watching. I’ll be your guide for the Quest for Five Toucans on October 23, 2026 at 5:00 AM. The pickup location is Mindo Lodge.\n\nPlease message me here if you have any questions before the tour.\n\nThank you." },
+      { assignmentId: "A-1", bookingId: "B-1", serviceDate: "2026-10-26", dateLabel: "Oct 26, 2026", startTime: "5:00 AM", endTime: "3:00 PM", service: "MBW006 - Quest for Five Toucans", guestName: "Daniel Kalmes", guestCount: "2", country: "Luxembourg", countryCode: "LU", pickup: "Mindo Lodge", status: "confirmed", accepted: false, acceptanceRequired: true, contactAvailable: true, hasConflict: true, conflictReason: "availability", providerName: "Neycer · Night Walk Guide", phone: "+352 621 492 066", whatsappUrl: "https://wa.me/352621492066", guestMessage: "Hello Daniel, I’m Neycer from Mindo Bird Watching. I’ll be your guide for the Quest for Five Toucans on October 26, 2026 at 5:00 AM. The pickup location is Mindo Lodge.\n\nPlease message me here if you have any questions before the tour.\n\nThank you." },
       { assignmentId: "A-2", bookingId: "B-2", serviceDate: "2026-11-10", startTime: "6:00 AM", service: "Night Walk", guestName: "November Guest", guestCount: "1", pickup: "Casa Mindo", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 111", whatsappUrl: "https://wa.me/593999000111" },
       { assignmentId: "A-3", bookingId: "B-3", serviceDate: "2026-12-15", startTime: "7:00 AM", service: "Birdwatching", guestName: "December Guest", guestCount: "3", pickup: "Quito", status: "confirmed", accepted: true, acceptanceRequired: false, contactAvailable: true, hasConflict: false, phone: "+593 999 000 222", whatsappUrl: "https://wa.me/593999000222" },
       { assignmentId: "A-PAST", bookingId: "B-PAST", serviceDate: "2026-10-15", startTime: "6:00 AM", service: "Past Birding", guestName: "Past Guest", guestCount: "2", pickup: "Mindo", status: "completed", accepted: true, acceptanceRequired: false, contactAvailable: false, hasConflict: false, phone: "", whatsappUrl: "" },
@@ -69,6 +73,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     writes.push({ url: route.request().url(), method: route.request().method(), body: route.request().postDataJSON() });
     bootstrap.offers[0].response = route.request().postDataJSON().response;
     await route.fulfill({ json: { ok: true, verified: true } });
+  });
+  await page.route(`http://127.0.0.1:${port}/api/guide/plans/**`, async route => {
+    const body = route.request().postDataJSON();
+    writes.push({ url: route.request().url(), method: route.request().method(), body });
+    bootstrap.plans[0] = { ...bootstrap.plans[0], status: body.status, days: body.days, originalTotal: body.days.reduce((sum, day) => sum + Number(day.originalCost || 0), 0), adjustments: body.adjustments, comments: body.comments, synthetic: false, assignmentId: "PLAN-1" };
+    await route.fulfill({ json: { ok: true, verified: true, plan: bootstrap.plans[0] }, status: 201 });
   });
   await page.route(`http://127.0.0.1:${port}/api/guide/reports**`, route => route.fulfill({ json: {
     ok: true, linked: true, reports: [{ recapId: "recap-1", observedAt: "2026-10-22", location: "San Lorenzo", bookingReference: "B-1", speciesCount: 42, totalObservations: 57 }],
@@ -115,14 +125,14 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#calendarMonthPanel").isVisible(), true);
     assert.match(await page.locator("#calendarMonthLabel").innerText(), /octubre (?:de )?2026/i);
-    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"]').count(), 1);
-    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"] .tourDot').count(), 1);
-    assert.equal(await page.locator('.calendarDay[aria-label*="23 oct 2026"] .blockedDot').count(), 1);
+    assert.equal(await page.locator('.calendarDay[aria-label*="26 oct 2026"]').count(), 1);
+    assert.equal(await page.locator('.calendarDay[aria-label*="26 oct 2026"] .tourDot').count(), 1);
+    assert.equal(await page.locator('.calendarDay[aria-label*="26 oct 2026"] .blockedDot').count(), 1);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-calendar-month.png", fullPage: true });
-    await page.locator('[data-calendar-date="2026-10-23"]').click();
+    await page.locator('[data-calendar-date="2026-10-26"]').click();
     await page.getByText("Daniel Kalmes", { exact: true }).waitFor();
     assert.equal(await page.locator(".tourCard").count(), 1);
-    assert.match(await page.locator("#tourSummary").innerText(), /Mostrando 23 oct 2026/i);
+    assert.match(await page.locator("#tourSummary").innerText(), /Mostrando 26 oct 2026/i);
     await page.locator('[data-route="calendar"]').click();
     await page.getByRole("button", { name: "Mes siguiente" }).click();
     assert.match(await page.locator("#calendarMonthLabel").innerText(), /noviembre (?:de )?2026/i);
@@ -131,7 +141,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Lista", exact: true }).click();
     assert.equal(await page.locator("#calendarList").isVisible(), true);
     assert.equal(await page.locator("#calendarList").getByText("Past Guest", { exact: false }).count(), 0);
-    assert.match(await page.locator("#calendarList").innerText(), /23 oct 2026/i);
+    assert.match(await page.locator("#calendarList").innerText(), /26 oct 2026/i);
     await page.getByRole("button", { name: "Incluir pasados", exact: true }).click();
     await page.getByText("Past Birding · Past Guest", { exact: true }).waitFor();
     await page.locator('[data-open-tour="A-1"]').click();
@@ -148,16 +158,16 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/availability") && write.method === "POST"), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-calendar.png", fullPage: true });
     await page.locator('[data-route="sightings"]').click();
-    assert.equal(await page.locator("#reportTour option").count(), 2);
+    assert.equal(await page.locator("#reportTour option").count(), 1);
     assert.equal(await page.locator('#reportTour option', { hasText: "November Guest" }).count(), 0);
     assert.equal(await page.locator('#reportTour option', { hasText: "December Guest" }).count(), 0);
-    await page.locator("#reportTour").selectOption("B-1");
+    await page.locator("#reportTour").selectOption("B-PAST");
     const reportHref = await page.locator("#openReport").getAttribute("href");
     assert.match(reportHref, /^https:\/\/mindobirdwatching\.com\/es\/reporte-de-avistamientos\//);
-    assert.match(reportHref, /booking=A-1/);
-    assert.match(reportHref, /booking_id=B-1/);
-    assert.match(reportHref, /date=2026-10-23/);
-    assert.match(reportHref, /tour_type=full_day/);
+    assert.match(reportHref, /booking=A-PAST/);
+    assert.match(reportHref, /booking_id=B-PAST/);
+    assert.match(reportHref, /date=2026-10-15/);
+    assert.match(reportHref, /tour_type=half_day/);
     await page.getByText("San Lorenzo", { exact: true }).waitFor();
     assert.match(await page.locator("#reportHistory").innerText(), /San Lorenzo/);
     assert.match(await page.locator("#reportHistory").innerText(), /42 especies/);
@@ -168,12 +178,60 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "EN", exact: true }).click();
     assert.match(await page.locator('.view:not([hidden]) h1').innerText(), /Sightings/);
     await page.getByRole("button", { name: "ES", exact: true }).click();
-    await page.locator('[data-route="offers"]').click();
+    await page.locator('[data-route="plans"]').click();
+    await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.match(await page.locator("#offerList").innerText(), /Custom birding package/);
     await page.locator('[data-bid="O-1"]').fill("125");
     await page.getByRole("button", { name: "Me interesa" }).click();
     await page.getByText("Me interesa", { exact: true }).waitFor();
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/offers/O-1/respond") && write.body.bidAmount === "125"), true);
+    await page.getByRole("button", { name: "Planes asignados", exact: true }).click();
+    await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
+    assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /Salida del hotel hacia Mindo/);
+    assert.match(await page.locator("#planList").innerText(), /Transporte\s+\$85[.,]00/);
+    assert.doesNotMatch(await page.locator("#planList").innerText(), /\$1[.,]150[.,]00/);
+    await page.getByRole("button", { name: "EN", exact: true }).click();
+    await page.getByText("Robert · Custom Ecuador itinerary", { exact: true }).waitFor();
+    assert.match(await page.locator("#planList").innerText(), /Depart from the hotel toward Mindo/);
+    assert.match(await page.locator("#planList").innerText(), /Transportation\s+\$85[.,]00/);
+    await page.getByRole("button", { name: "ES", exact: true }).click();
+    await page.getByText("Editar día", { exact: true }).first().click();
+    const firstDayEditor = page.locator('[data-plan-day-editor][data-day-id="day-1"]');
+    await firstDayEditor.locator('input[name="date"]').fill("2027-02-08");
+    await firstDayEditor.locator('input[name="originalCost"]').fill("190");
+    await firstDayEditor.locator('[data-source-cost-row]').first().locator('input[name="sourceAmount"]').fill("90");
+    assert.equal(await firstDayEditor.locator('select[name="sourceCategory"]').first().inputValue(), "transportation");
+    assert.match(await page.locator('[data-plan-save-state]').innerText(), /Cambios sin guardar/);
+    await firstDayEditor.getByRole("button", { name: "Duplicar día" }).click();
+    assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
+    const duplicatedDayId = await page.locator("[data-plan-day-editor]").evaluateAll(editors => editors.find(editor => !/^day-[1-6]$/.test(editor.dataset.dayId))?.dataset.dayId);
+    await page.locator(`[data-plan-day-editor][data-day-id="${duplicatedDayId}"] [data-delete-plan-day]`).evaluate(button => button.click());
+    assert.equal(await page.locator("[data-plan-day-editor]").count(), 6);
+    await page.getByRole("button", { name: "Agregar fecha o día", exact: true }).click();
+    assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
+    await page.getByText("Editar día", { exact: true }).last().click();
+    await page.locator("[data-plan-day-editor]").last().locator('textarea[name="details"]').fill("Día adicional por confirmar con MBW.");
+    await page.locator('[data-plan-cost-form="robert-2027"] input[name="description"]').fill("Intag lodging");
+    await page.locator('[data-plan-cost-form="robert-2027"] input[name="amount"]').fill("80");
+    await page.locator('[data-plan-cost-form="robert-2027"] select[name="category"]').selectOption("lodging");
+    await page.locator('[data-plan-cost-form="robert-2027"] button[type="submit"]').click();
+    await page.getByText("Alojamiento · Intag lodging", { exact: true }).waitFor();
+    assert.match(await page.locator("#planList").innerText(), /\$880[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /Comentarios y preguntas/);
+    await page.locator('[data-plan-comment-form="robert-2027"] textarea').fill("¿Puede MBW confirmar el alojamiento?");
+    await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
+    await page.getByText("¿Puede MBW confirmar el alojamiento?", { exact: true }).waitFor();
+    await page.getByRole("button", { name: "Enviar a revisión" }).click();
+    await page.waitForTimeout(300);
+    const unexpectedDialogs = dialogs.filter(message => !message.includes("¿Eliminar"));
+    if (unexpectedDialogs.length) {
+      const invalid = await page.locator(".planFieldError").evaluateAll(nodes => nodes.map(node => ({ name: node.getAttribute("name"), className: node.className, dayId: node.closest("[data-plan-day-editor]")?.dataset.dayId })));
+      throw new Error(JSON.stringify({ unexpectedDialogs, invalid }));
+    }
+    await page.getByText("Plan guardado", { exact: true }).waitFor();
+    assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans/robert-2027") && write.body.days.length === 7 && write.body.days[0].date === "2027-02-08" && write.body.days[0].originalCost === 190 && write.body.adjustments[0].amount === 80), true);
+    await page.screenshot({ path: "/tmp/mbw-guide-nest-plans.png", fullPage: true });
     await page.locator('[data-route="share"]').click();
     assert.equal(await page.locator(".shareCard").count(), 6);
     assert.match(await page.locator("#shareList").innerText(), /Reseña en Google/);
@@ -201,8 +259,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(new URL(page.url()).searchParams.get("provider"), "PROV-007");
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
     assert.equal(await page.locator('label[for="providerSelect"]').innerText(), "Guide View");
-    assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría · Solo lectura/i);
-    assert.match(await page.locator("#adminPreview").innerText(), /acciones del guía permanecen desactivadas/i);
+    assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría/i);
+    assert.match(await page.locator("#adminPreview").innerText(), /planes personalizados son colaborativos/i);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     const auditPosition = await page.locator("#adminPreview").evaluate(element => ({ position: getComputedStyle(element).position, top: element.getBoundingClientRect().top }));
     assert.equal(auditPosition.position, "sticky");
@@ -211,14 +269,26 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-route="calendar"]').click();
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);
     assert.equal(await page.locator("[data-remove-availability]").count(), 0);
-    await page.locator('[data-route="offers"]').click();
+    await page.locator('[data-route="plans"]').click();
+    await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.equal(await page.locator("[data-offer-response]").count(), 0);
     assert.match(await page.locator("#offerList").innerText(), /solo lectura/i);
+    bootstrap.preview = false;
+    bootstrap.identity = { role: "guide", name: "Chicho", contributorNumber: "001" };
+    bootstrap.providerId = "PROV-CHICHO";
+    bootstrap.providerName = "Chicho";
+    bootstrap.features = { plans: false, opportunities: false };
+    bootstrap.plans = [];
+    bootstrap.offers = [];
+    await page.goto(`http://127.0.0.1:${port}/guide/?view=plans`);
+    await page.getByText("Daniel Kalmes", { exact: true }).waitFor();
+    assert.equal(await page.locator("#plansNav").isVisible(), false);
+    assert.equal(new URL(page.url()).searchParams.get("view"), null);
     const reportUrl = new URL(reportHref);
     await page.goto(`http://127.0.0.1:${port}${reportUrl.pathname}${reportUrl.search}`);
-    assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-23");
-    assert.equal(await page.locator("#tourType").inputValue(), "full_day");
-    assert.equal(await page.locator("#bookingReference").inputValue(), "A-1");
+    assert.equal(await page.locator("#tourDate").inputValue(), "2026-10-15");
+    assert.equal(await page.locator("#tourType").inputValue(), "half_day");
+    assert.equal(await page.locator("#bookingReference").inputValue(), "A-PAST");
     assert.equal(await page.locator("#contributorNumber").inputValue(), "007");
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 });

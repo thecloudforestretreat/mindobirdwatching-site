@@ -1,7 +1,12 @@
 // Authenticate at the origin too: Access headers alone are not proof of identity.
 const ADMIN = "https://admin.mindobirdwatching.com";
 const ISSUER = "https://tcfr-mbw.cloudflareaccess.com";
-const AUDIENCE = "62ad79ee3af18f90b4827d5a84be038d4df901a56cbc21abda1ac5991ea89060";
+const AUDIENCES = new Set([
+  // MBW Admin (staff only).
+  "62ad79ee3af18f90b4827d5a84be038d4df901a56cbc21abda1ac5991ea89060",
+  // MBW Guide Nest (path-scoped Cloudflare Access application).
+  "b4d788474b91e0b737ff8d49489f7b127fc63dd3ed9ece6464b999ca84aaa7e0",
+]);
 const NEST_GUIDE_PAGES = new Set([
   "/guide", "/guide/", "/guide/index.html", "/api/guide/bootstrap", "/api/guide/reports",
 ]);
@@ -11,6 +16,10 @@ const NEST_GUIDE_ASSETS = new Set([
 ]);
 let cachedKeys;
 let keysExpireAt = 0;
+
+export function hasTrustedAudience(aud) {
+  return Array.isArray(aud) && aud.some(value => AUDIENCES.has(value));
+}
 
 function decode(value) {
   return Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
@@ -24,7 +33,7 @@ export async function verifyIdentity(token) {
   const claims = JSON.parse(new TextDecoder().decode(decode(parts[1])));
   const now = Math.floor(Date.now() / 1000);
   if (header.alg !== "RS256" || typeof header.kid !== "string" ||
-      claims.iss !== ISSUER || !Array.isArray(claims.aud) || !claims.aud.includes(AUDIENCE) ||
+      claims.iss !== ISSUER || !hasTrustedAudience(claims.aud) ||
       !Number.isFinite(claims.exp) || claims.exp <= now ||
       (claims.nbf !== undefined && (!Number.isFinite(claims.nbf) || claims.nbf > now)) ||
       typeof claims.email !== "string" || !claims.email.trim()) throw new Error("Invalid claims");
@@ -46,7 +55,7 @@ export async function verifyIdentity(token) {
 export function guideMayRequest(request) {
   const path = new URL(request.url).pathname;
   if (["GET", "HEAD"].includes(request.method)) return NEST_GUIDE_PAGES.has(path) || NEST_GUIDE_ASSETS.has(path);
-  if (request.method === "POST" && (/^\/api\/guide\/assignments\/[A-Za-z0-9_.-]+\/accept$/.test(path) || path === "/api/guide/availability" || /^\/api\/guide\/offers\/[A-Za-z0-9_.-]+\/respond$/.test(path))) return true;
+  if (request.method === "POST" && (/^\/api\/guide\/assignments\/[A-Za-z0-9_.-]+\/accept$/.test(path) || path === "/api/guide/availability" || /^\/api\/guide\/offers\/[A-Za-z0-9_.-]+\/respond$/.test(path) || /^\/api\/guide\/plans\/[A-Za-z0-9_.-]+$/.test(path))) return true;
   if (request.method === "DELETE" && /^\/api\/guide\/availability\/[A-Za-z0-9_.-]+$/.test(path)) return true;
   return false;
 }
