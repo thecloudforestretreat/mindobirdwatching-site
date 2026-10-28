@@ -765,6 +765,7 @@
             <p id="snapshotNotice" class="snapshotNotice" role="status" hidden></p>
             <p id="confirmationErrors" class="snapshotNotice" data-warning="true" role="alert" hidden></p>
             <div class="controlGrid">
+              <div class="field"><label for="languageInput">Confirmation language / Idioma</label><select id="languageInput"><option value="en">English</option><option value="es">Español</option></select></div>
               <div class="field">
                 <label for="bookingSelect">Select Confirmation</label>
                 <select id="bookingSelect"></select>
@@ -1040,7 +1041,7 @@
 
       function cacheEls(){
         const ids = [
-          "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "customGuideField", "customGuideInput", "manualEntryBtn",
+          "languageInput", "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "customGuideField", "customGuideInput", "manualEntryBtn",
           "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
           "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
           "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupTime", "outPickupLocation", "outNotes", "outGuideImage",
@@ -1076,7 +1077,7 @@
           if(idx >= 0) selectRecord(idx);
         });
 
-        ["statusInput", "guideInput", "customGuideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+        ["languageInput", "statusInput", "guideInput", "customGuideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
           els[id].addEventListener("input", updatePreviewFromForm);
           els[id].addEventListener("change", updatePreviewFromForm);
         });
@@ -1383,6 +1384,7 @@
       }
 
       function selectRecord(index){
+        els.languageInput.value="en";
         state.confirmationSnapshotCreatedAt=undefined;
         renderSnapshotNotice();
         state.activeIndex = index;
@@ -1394,6 +1396,7 @@
       }
 
       function startManualConfirmation(){
+        els.languageInput.value="en";
         state.confirmationSnapshotCreatedAt=undefined;
         renderSnapshotNotice();
         state.activeIndex = -1;
@@ -1681,9 +1684,10 @@
       function defaultDraftForTour(tour, previous){
         const category = tourCategory(tour);
         const night = category === "night";
-        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : category === "transportation" ? "Juan" : category === "bear" ? "Javier" : (previous && previous.guide) || els.guideInput.value || "Chicho";
+        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : category === "transportation" ? "Juan" : category === "bear" ? "Other" : (previous && previous.guide) || els.guideInput.value || "Chicho";
         return {
           tour,
+          language: (previous && previous.language) || els.languageInput.value || "en",
           display: tour,
           guide,
           customGuideName:"",
@@ -1701,6 +1705,7 @@
         if(state.switchingConfirmation || !state.confirmationDrafts.length) return;
         const draft = state.confirmationDrafts[state.activeConfirmation];
         if(!draft) return;
+        draft.language = els.languageInput.value;
         draft.guide = els.guideInput.value;
         draft.customGuideName = els.guideInput.value === "Other" ? els.customGuideInput.value.trim() : "";
         draft.contact = els.contactInput.value;
@@ -1717,6 +1722,7 @@
         const draft = state.confirmationDrafts[state.activeConfirmation];
         if(!draft) return;
         state.switchingConfirmation = true;
+        els.languageInput.value = draft.language || "en";
         setSelectValue(els.guideInput, draft.guide);
         els.customGuideInput.value = draft.customGuideName || "";
         els.customGuideField.hidden = draft.guide !== "Other";
@@ -1827,7 +1833,33 @@
         if(force || !els.transportationInput.value) els.transportationInput.value = "Pick Up";
       }
 
+      function confirmationSpanish(){return els.languageInput?.value==="es";}
+      function confirmationText(value){
+        if(!confirmationSpanish())return value;
+        const translations={"TOUR CONFIRMATION":"CONFIRMACIÓN DEL TOUR","Date Issued:":"Fecha de emisión:","Guest(s):":"Visitantes:","Guest Phone:":"Teléfono:","Tour Date:":"Fecha del tour:","Guide:":"Guía:","Contact #:":"Contacto:","Tour Type:":"Tour:","Length:":"Duración:","Transportation:":"Transporte:","Pickup Time:":"Hora de salida:","Pickup Location:":"Recogida:","Full Day":"Día completo","Half Day":"Medio día","Multi Day":"Varios días","Evening activity":"Actividad nocturna","2 hrs":"2 horas","3 hrs":"3 horas","Flexible":"Flexible","Pick Up":"Recogida","Yes":"Sí","No":"No","To be confirmed":"Por confirmar","Guide to be confirmed":"Guía por confirmar","Transportation details":"Detalles del transporte","Night Walk":"Caminata nocturna","Hummingbird Tour":"Tour de colibríes","Half Day Birdwatching Tour":"Avistamiento de aves de medio día","Private Insect & Macro Wildlife Search":"Búsqueda privada de insectos y fauna para macrofotografía","Orchid Garden Tour":"Tour del jardín de orquídeas","Quad Tour":"Tour en cuatrimoto","Mindo River Tubing":"Tubing en el río Mindo","Canyoning":"Barranquismo","Tour + Activities":"Tour y actividades","Transportation":"Transporte","Quito → Mindo → Quito Transportation":"Transporte Quito → Mindo → Quito","Quito → Mindo Transportation":"Transporte Quito → Mindo","Mountain Biking":"Ciclismo de montaña","Chocolate Tour":"Tour de chocolate","Coffee Tour":"Tour de café","Waterfall Hike":"Caminata a las cascadas","Butterfly Garden":"Mariposario","Jewels of the Morning Forest":"Joyas del bosque matutino","Dance of the Andean Cock-of-the-Rock":"Danza del gallito de la peña","Quest for Five Toucans & the Andean Cock-of-the-Rock":"Cinco tucanes y el gallito de la peña","Extended Half-Day Spectacled Bear Tour":"Tour de oso de anteojos de medio día extendido","Full-Day Spectacled Bear, Condor and Andean Wildlife Tour":"Tour de día completo: oso de anteojos, cóndor y fauna andina"};
+        const key=Object.keys(translations).find(key=>key.toLowerCase()===String(value).toLowerCase());
+        return key?translations[key]:value;
+      }
+      function confirmationNote(value){
+        if(!confirmationSpanish())return value;
+        // Translate only generator-owned note labels. Preserve names, addresses and staff text.
+        return String(value).replace(/Service time \(Mindo, Ecuador\): /g,"Horario (Mindo, Ecuador): ").replace(/Start time to be confirmed/g,"Hora de inicio por confirmar").replace(/Transport leg: /g,"Trayecto: ").replace(/Drop-off: /g,"Destino: ");
+      }
+      function updateConfirmationLanguage(){
+        const certificate=document.getElementById("certificate");
+        if(!certificate)return;
+        certificate.lang=confirmationSpanish()?"es":"en";
+        certificate.querySelector(".certTitle").textContent=confirmationText("TOUR CONFIRMATION");
+        certificate.querySelector(".certTitle").style.fontSize=confirmationSpanish()?"72px":"";
+        certificate.querySelector(".certTitle").style.left=confirmationSpanish()?"430px":"";
+        certificate.querySelector(".certTitle").style.width=confirmationSpanish()?"1100px":"";
+        certificate.querySelector(".dateIssuedBox").firstChild.textContent=confirmationText("Date Issued:")+" ";
+        const labels=["Guest(s):","Guest Phone:","Tour Date:","Guide:","Contact #:","Tour Type:","Length:","Transportation:","Pickup Time:","Pickup Location:"];
+        certificate.querySelectorAll(".certLabel").forEach((label,index)=>{label.textContent=confirmationText(labels[index]);});
+      }
+
       function updatePreviewFromForm(){
+        updateConfirmationLanguage();
         if(state.validationShown)renderConfirmationValidation();
         const selectedGuide = els.guideInput.value || "Chicho";
         const guide = selectedGuide === "Other" ? (els.customGuideInput.value.trim() || "Guide to be confirmed") : selectedGuide;
@@ -1841,21 +1873,21 @@
           certificate.classList.toggle("birdwatchingArtMode", birdwatchingArt);
           certificate.classList.toggle("activitiesArtMode", activitiesArt);
         }
-        els.outDateIssued.textContent = formatDateIssued(els.dateIssuedInput.value || todayMDY());
+        els.outDateIssued.textContent = confirmationSpanish()?parseDate(els.dateIssuedInput.value || todayMDY()).toLocaleDateString("es-EC"):formatDateIssued(els.dateIssuedInput.value || todayMDY());
         els.outGuests.textContent = els.guestsInput.value || "Guest Name";
         els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
         els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
-        els.outGuide.textContent = guide;
+        els.outGuide.textContent = confirmationText(guide);
         els.outContact.textContent = els.contactInput.value || contactForGuide(selectedGuide) || "";
-        els.outTourType.textContent = els.tourTypeInput.value || "Tour Type";
-        els.outLength.textContent = (els.lengthInput.value || "Full Day").toUpperCase();
+        els.outTourType.textContent = confirmationText(els.tourTypeInput.value || "Tour Type");
+        els.outLength.textContent = confirmationText(els.lengthInput.value || "Full Day").toUpperCase();
         const transport = els.transportationInput.value || "Transportation details";
         const pickupTime = normalizePickupTime(els.pickupTimeInput.value) || els.pickupTimeInput.value || "To be confirmed";
         const pickupLocation = els.pickupLocationInput.value || "";
-        els.outTransportation.textContent = transport;
-        els.outPickupTime.textContent = pickupTime;
-        els.outPickupLocation.textContent = pickupLocation || "To be confirmed";
-        els.outNotes.textContent = formatNote(els.notesInput.value || "");
+        els.outTransportation.textContent = confirmationText(transport);
+        els.outPickupTime.textContent = confirmationText(pickupTime);
+        els.outPickupLocation.textContent = pickupLocation || confirmationText("To be confirmed");
+        els.outNotes.textContent = formatNote(confirmationNote(els.notesInput.value || ""));
         setGuideImage(confirmationImageFor(selectedGuide));
         renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
         saveActiveDraft();
@@ -2095,10 +2127,10 @@
           ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
-          ctx.font = "950 90px Arial, Helvetica, sans-serif";
-          ctx.fillText("TOUR CONFIRMATION", 965, 112);
+          ctx.font = "950 "+(confirmationSpanish()?72:90)+"px Arial, Helvetica, sans-serif";
+          ctx.fillText(confirmationText("TOUR CONFIRMATION"), confirmationSpanish()?980:965, 112, confirmationSpanish()?1100:1500);
           ctx.font = "950 34px Arial, Helvetica, sans-serif";
-          ctx.fillText("Date Issued: " + (els.outDateIssued.textContent || ""), 940, 245);
+          ctx.fillText(confirmationText("Date Issued:")+" " + (els.outDateIssued.textContent || ""), 940, 245);
 
           drawInfoText(ctx, nightWalk);
           drawQrToCanvas(ctx);
@@ -2194,7 +2226,7 @@
 
         rows.forEach(row => {
           ctx.font = "950 25px Arial, Helvetica, sans-serif";
-          ctx.fillText(row.label, labelX, row.y + 4);
+          ctx.fillText(confirmationText(row.label), labelX, row.y + 4);
           ctx.font = "950 " + row.valueSize + "px Arial, Helvetica, sans-serif";
           wrapCanvasText(ctx, row.value, valueX, row.y, row.maxWidth, Math.round(row.valueSize * 1.08));
         });
@@ -2441,6 +2473,7 @@
       function formatTourDateLong(value){
         const d = parseDate(value);
         if(!d) return value || "Tour Date";
+        if(confirmationSpanish())return d.toLocaleDateString("es-EC",{day:"numeric",month:"long",year:"numeric"});
         const weekday = d.toLocaleDateString("en-US", { weekday:"long" });
         const month = d.toLocaleDateString("en-US", { month:"long" });
         return weekday + ", " + month + " " + ordinal(d.getDate()) + ", " + d.getFullYear();
