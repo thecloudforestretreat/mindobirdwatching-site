@@ -28,3 +28,10 @@ test('incomplete or placeholder routes cannot resolve a generic transportation n
  const named=build({},[{...service,label:'Quito to Mindo private transfer',transport:true,dropoff:'Mindo Park'}]);
  assert.equal(named.remaining[0].label,'Quito to Mindo private transfer');
 });
+
+test('placeholder pickup and drop-off locations remain missing for named services',()=>{
+ for(const value of ['PENDING','TBD','Unknown','To be confirmed','Not set','N/A','-']){
+  const m=build({},[{...service,transport:true,pickup:value,dropoff:value}]);
+  assert.equal(m.ready,false);assert.ok(m.missing.some(v=>v.includes('pickup / meeting')));assert.ok(m.missing.some(v=>v.includes('drop-off')));
+ }
+});

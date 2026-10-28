@@ -26,8 +26,8 @@
       if(!day(s.date))add('Confirm tour date');
       if(!/^[1-9]\d*$/.test(clean(s.guests)))add('Confirm guest count');
       if(!s.label||/^(birding|birdwatching|activity|custom|other|service|specialty wildlife|transportation)$/i.test(s.label)||/needs review/i.test(s.label))add('Confirm service name');
-      if(!clean(s.pickup))add('Add pickup / meeting location');
-      if(s.transport&&!clean(s.dropoff))add('Add drop-off location');
+      if(!knownLocation(s.pickup))add('Add pickup / meeting location');
+      if(s.transport&&!knownLocation(s.dropoff))add('Add drop-off location');
       if(!s.flexible&&(!clean(s.start)||!clean(s.end)))add('Confirm start and end times');
       if(s.start&&s.end&&s.start>=s.end)add('Review start and end times');
       if(verified&&s.requiresProvider){
