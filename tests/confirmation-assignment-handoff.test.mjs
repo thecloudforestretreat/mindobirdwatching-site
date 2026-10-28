@@ -28,7 +28,7 @@ function compactHarness(){
  const c=harness(),storage=new Map(),opened=[],toasts=[];
  c.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
  let serial=0,record={inquiry_id:'QA-A',guest_id:'G-A',full_name:'Alpha',phone_number:'PRIVATE-PHONE',requested_date:'2026-10-29'};
- Object.assign(c,{crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++serial).padStart(12,'0')}`},state:{operationsStatus:'ready'},showToast:v=>toasts.push(v),hasUnsavedTourChanges:()=>false,toolRecord:r=>r,getSelected:()=>record,confirmationHandoffItems:()=>[{tour:'PRIVATE-TOUR',date:'2026-10-29'}]});
+ Object.assign(c,{crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++serial).padStart(12,'0')}`},state:{operationsStatus:'ready'},showToast:v=>toasts.push(v),hasUnsavedTourChanges:()=>false,preparationServices:()=>[],toolRecord:r=>r,getSelected:()=>record,confirmationHandoffItems:()=>[{tour:'PRIVATE-TOUR',date:'2026-10-29'}]});
  c.window.open=url=>opened.push(url);
  const crm=fs.readFileSync(new URL('../admin/guest-crm/index.html',import.meta.url),'utf8'),start=crm.indexOf('      function openConfirmationTool('),end=crm.indexOf('\n      function ',start+1);
  vm.runInContext(crm.slice(start,end),c);

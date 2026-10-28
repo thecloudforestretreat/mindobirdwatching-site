@@ -35,3 +35,11 @@ test('placeholder pickup and drop-off locations remain missing for named service
   assert.equal(m.ready,false);assert.ok(m.missing.some(v=>v.includes('pickup / meeting')));assert.ok(m.missing.some(v=>v.includes('drop-off')));
  }
 });
+
+test('linked assignment date conflicts block copying and remain visible after the old date passes',()=>{
+ const input={...service,date:'2026-10-26',itineraryDate:'2026-11-20'},before=JSON.stringify(input);
+ const m=build({},[input]);assert.equal(m.remaining.length,1);assert.equal(m.earlier.length,0);assert.equal(m.ready,false);
+ assert.ok(m.missing.some(v=>v.includes('scheduled 2026-10-26; itinerary 2026-11-20')));assert.equal(m.reminderDate,'2026-11-18');assert.equal(JSON.stringify(input),before);
+ assert.equal(build({},[{...service,itineraryDate:service.date}]).ready,true);
+ const done=build({},[{...input,status:'completed'},service]);assert.equal(done.remaining.length,1);assert.equal(done.ready,true);
+});
