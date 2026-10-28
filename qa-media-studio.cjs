@@ -13,7 +13,9 @@ assert(script.includes('matches(".detailPreview video")'), "Video load failures 
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio.css?v=19"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=23"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.js?v=24"), "Media Studio JS cache key must be current");
+assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
+assert(script.includes("reason?'Reconnect required':'Connection required'"), "Platform cards must distinguish an expired credential from a missing connection");
 assert(script.includes("async function fetchInsights(period)")&&script.includes("50000"), "Analytics requests must allow the reporting workflow to finish");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
 assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
