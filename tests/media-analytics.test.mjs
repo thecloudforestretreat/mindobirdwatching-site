@@ -102,7 +102,7 @@ test("engagement rate excludes engagement-only rows without visibility",()=>{
   ];
   const result=analytics.summary(facebook,"facebook");
   assert.equal(result.comparable,true);
-  assert.equal(result.visibility_label,"Unique viewers");
+  assert.equal(result.visibility_label,"Media views");
   assert.equal(result.visible_records,1);
   assert.equal(result.visibility_coverage,50);
   assert.equal(result.engagements,50);

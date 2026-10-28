@@ -7,7 +7,7 @@
   function clean(value){return String(value==null?"":value).trim()}
   function number(value){var n=Number(value);return Number.isFinite(n)?n:0}
   function visibility(post){return number(post&&post.denominator||post&&post.reach||post&&post.views)}
-  function visibilityLabel(platform){var key=clean(platform).toLowerCase();return key==="instagram"?"Reach":key==="facebook"?"Unique viewers":key==="youtube"?"Views":"Platform visibility"}
+  function visibilityLabel(platform){var key=clean(platform).toLowerCase();return key==="instagram"?"Reach":key==="facebook"?"Media views":key==="youtube"?"Views":"Platform visibility"}
   function metric(post,key){if(key==="engagement_rate")return number(post.engagement_rate);if(key==="engagements")return number(post.engagements);return number(post.result||post.views||post.reach)}
   function median(values){var rows=values.map(number).sort(function(a,b){return a-b}),middle=Math.floor(rows.length/2);return rows.length?(rows.length%2?rows[middle]:(rows[middle-1]+rows[middle])/2):0}
   function confidence(count){return count>=10?"reliable":count>=5?"developing":"early"}
