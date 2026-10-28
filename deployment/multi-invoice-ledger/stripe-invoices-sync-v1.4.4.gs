@@ -225,6 +225,7 @@ function syncInvoicesToExpensesUnlocked_(ss) {
   var expenseKeyColumn = ensureExpenseKeyHeader_(expenses);
   var expenseHeaders = getUniqueHeaders_(expenses);
   validateExpenseSyncHeaders_(invoiceHeaders.index, expenseHeaders.index);
+  var exactDuplicatesRemoved = removeExactAutomaticExpenseDuplicates_(expenses, expenseHeaders);
 
   var invoiceRows = invoices.getLastRow() > 1
     ? invoices.getRange(2, 1, invoices.getLastRow() - 1, invoiceHeaders.values.length).getValues()
@@ -248,7 +249,8 @@ function syncInvoicesToExpensesUnlocked_(ss) {
     reconciled_expenses_locked: 0,
     service_rows_waiting: 0,
     expense_key_column: expenseKeyColumn,
-    stripe_fee_conflicts: 0
+    stripe_fee_conflicts: 0,
+    exact_duplicate_expenses_removed: exactDuplicatesRemoved
   };
 
   Object.keys(stripeGroups).forEach(function (groupKey) {
@@ -270,7 +272,55 @@ function syncInvoicesToExpensesUnlocked_(ss) {
     addExpenseOutcome_(result, serviceOutcome, "service");
   });
 
+  result.exact_duplicate_expenses_removed += removeExactAutomaticExpenseDuplicates_(expenses, expenseHeaders);
+
   return result;
+}
+
+function removeExactAutomaticExpenseDuplicates_(sheet, headers) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 3) return 0;
+  var values = sheet.getRange(2, 1, lastRow - 1, headers.values.length).getValues();
+  var firstByKey = {};
+  var duplicateRows = [];
+  values.forEach(function (valuesRow, index) {
+    var row = rowToObject_(headers.values, valuesRow);
+    row.__rowNumber = index + 2;
+    var key = cleanSyncValue_(row.expense_key);
+    if (!key || cleanSyncValue_(row.source_type).toLowerCase() !== "automatic") return;
+    var first = firstByKey[key];
+    if (!first) {
+      firstByKey[key] = row;
+      return;
+    }
+    if (isExactAutomaticExpenseDuplicate_(first, row)) duplicateRows.push(row.__rowNumber);
+  });
+  duplicateRows.sort(function (a, b) { return b - a; }).forEach(function (rowNumber) {
+    sheet.getRange(rowNumber, 1, 1, headers.values.length).clearContent();
+  });
+  return duplicateRows.length;
+}
+
+function isExactAutomaticExpenseDuplicate_(left, right) {
+  var fields = [
+    "expense_id", "expense_date", "expense_month", "expense_type", "invoice_no",
+    "tour_date", "tour_completed", "paid_to", "payment_method", "amount",
+    "payment_reference", "notes", "expense_category", "accrual_month",
+    "reconciled", "guide_paid_actual", "fees_paid_actual",
+    "expense_reconciled_flag", "expense_key", "ledger_entry_id", "paid_date",
+    "product_selected", "service_type", "tour_key", "invoice_id",
+    "transaction_id", "source_type", "source_record_id", "expense_status",
+    "locked_at"
+  ];
+  return fields.every(function (field) {
+    if (field === "expense_date" || field === "tour_date" || field === "paid_date") {
+      return dateKeySync_(left[field]) === dateKeySync_(right[field]);
+    }
+    if (field === "amount" || field === "guide_paid_actual" || field === "fees_paid_actual") {
+      return roundSyncMoney_(parseSyncMoney_(left[field])) === roundSyncMoney_(parseSyncMoney_(right[field]));
+    }
+    return cleanSyncValue_(left[field]) === cleanSyncValue_(right[field]);
+  });
 }
 
 function ensureExpenseKeyHeader_(sheet) {
@@ -809,18 +859,16 @@ function setMappedInvoiceValue_(cell, value) {
   }
 
   if (allowed) {
-    var normalized = cleanSyncValue_(value);
-    var valid = allowed.some(function (candidate) {
-      return cleanSyncValue_(candidate) === normalized;
-    });
-    if (!valid) {
+    var canonical = canonicalizeSyncValueAgainstAllowed_(value, allowed);
+    if (canonical === null) {
       console.log(JSON.stringify({
         warning: "invalid_dropdown_value_skipped",
         cell: cell.getA1Notation(),
-        value: normalized
+        value: cleanSyncValue_(value)
       }));
       return false;
     }
+    value = canonical;
   }
 
   try {
@@ -835,6 +883,23 @@ function setMappedInvoiceValue_(cell, value) {
     }));
     return false;
   }
+}
+
+function canonicalSyncToken_(value) {
+  return cleanSyncValue_(value)
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function canonicalizeSyncValueAgainstAllowed_(value, allowed) {
+  var wanted = canonicalSyncToken_(value);
+  if (!wanted) return "";
+  for (var i = 0; i < allowed.length; i++) {
+    if (canonicalSyncToken_(allowed[i]) === wanted) return cleanSyncValue_(allowed[i]);
+  }
+  return null;
 }
 
 /** Clears only the incomplete sandbox test row left by the validation stop. */
@@ -1142,6 +1207,7 @@ function getStripeToInvoiceMapping_() {
     guest_phone: "guest_phone",
     home_country: "home_country",
     party_size: "party_size",
+    service_type: "service_type",
     product_selected: "product_selected",
     tour_guide: "tour_guide",
     payment_method: "payment_method",
