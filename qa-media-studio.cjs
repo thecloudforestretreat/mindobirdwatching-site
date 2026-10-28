@@ -11,8 +11,9 @@ assert(script.includes('"https://www.youtube.com/watch?v="+encodeURIComponent(id
 assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary previews must fall back to the published YouTube video");
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
-assert(page.includes("media-studio.css?v=18"), "Media Studio CSS cache key must be current");
-assert(page.includes("media-studio.js?v=17"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio.css?v=19"), "Media Studio CSS cache key must be current");
+assert(page.includes("media-analytics.js?v=3"), "Media analytics cache key must be current");
+assert(page.includes("media-studio.js?v=18"), "Media Studio JS cache key must be current");
 assert(styles.includes(".youtubeFallback"), "YouTube fallback player must be styled");
 assert(script.includes('function editorLabel(item){return item.type==="reel"?"Edit Reel":"Edit Carousel"}'), "Editor links must identify the correct media type");
 assert(script.includes('class="calendarEventEdit"'), "Calendar cards must expose a direct editor link");
@@ -25,4 +26,4 @@ assert(script.includes('if(["scheduled","publishing","ready"].includes(s)&&carou
 assert(script.includes('due within 2 days and not ready'), "Media Studio must warn about imminent posts that are not ready");
 assert(script.includes("typeLabel+' · '+esc(stateLabel)"), "Calendar cards must spell out their readiness state");
 
-console.log(JSON.stringify({ ok: true, checks: 19, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: 20, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true }, null, 2));

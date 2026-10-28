@@ -39,10 +39,10 @@ test("Media Studio keeps clean downloads as the default and brands single or ZIP
 
 test("Media Studio loads the watermark helper before the download controller",()=>{
   const html=fs.readFileSync(path.join(root,"admin/media/index.html"),"utf8");
-  assert.match(html,/media-studio\.css\?v=16/);
+  assert.match(html,/media-studio\.css\?v=19/);
   const helper=html.indexOf("media-watermark.js?v=1");
-  const analytics=html.indexOf("media-analytics.js?v=2");
-  const controller=html.indexOf("media-studio.js?v=14");
+  const analytics=html.indexOf("media-analytics.js?v=3");
+  const controller=html.indexOf("media-studio.js?v=18");
   assert.ok(helper>=0&&analytics>helper&&controller>analytics);
 });
 

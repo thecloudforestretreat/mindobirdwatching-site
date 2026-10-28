@@ -15,15 +15,19 @@ function buildWorkflow(){
   return JSON.parse(readFileSync(output,"utf8"));
 }
 
-test("analytics workflow queries both stored Facebook IDs and published posts",()=>{
+test("analytics workflow queries Facebook posts and reels with the correct object fields",()=>{
   const workflow=buildWorkflow();
   const names=new Set(workflow.nodes.map(node=>node.name));
-  assert.ok(names.has("[META] Facebook Stored IDs"));
+  assert.ok(names.has("[META] Facebook Stored Posts"));
+  assert.ok(names.has("[META] Facebook Stored Reels"));
+  assert.ok(names.has("[JOIN] Facebook Stored Objects"));
   assert.ok(names.has("[META] Facebook Batch Insights"));
   assert.ok(names.has("[JOIN] Facebook Sources"));
   const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
   assert.match(prepare,/published_posts/);
   assert.match(prepare,/fb_ids_url/);
+  assert.match(prepare,/fb_reels_url/);
+  assert.match(prepare,/description,picture,thumbnails,likes/);
   assert.match(prepare,/facebook_caption/);
 });
 
@@ -34,5 +38,11 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
   assert.match(report,/score-candidates\[1\]\.score>=\.15/);
   assert.match(report,/facebook_match_method/);
   assert.match(report,/not_returned_or_ambiguous/);
+  assert.match(report,/denominator=v\.reach\|\|v\.views/);
+  assert.match(report,/visibility_available/);
+  assert.match(report,/visibility_missing/);
+  assert.match(report,/facebookPageAuthorized/);
+  assert.match(report,/connection_reason/);
+  assert.doesNotMatch(report,/v\.reach\|\|v\.engaged_users\|\|engagement/);
   for(const node of workflow.nodes.filter(node=>node.type==="n8n-nodes-base.code"))assert.doesNotThrow(()=>new Function(node.parameters.jsCode),node.name);
 });
