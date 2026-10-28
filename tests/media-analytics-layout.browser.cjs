@@ -21,6 +21,8 @@ const path=require("node:path");
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px document overflow`);
       assert.equal(await page.locator('.platformComparisonSet[data-layout="stacked"] .platformComparisonGrid').count(),4);
       assert.equal(await page.locator(".platformTagRow").count(),5);
+      assert.equal(await page.getByText("Fair comparison window",{exact:true}).count(),1);
+      assert.equal(await page.getByText("first-7-day totals",{exact:true}).count(),1);
       assert.deepEqual(errors,[]);
       if(width>=1024)assert.equal(await page.locator(".platformTagTable").evaluate(element=>element.scrollWidth>element.clientWidth),false,`${width}px topic matrix should fit without clipping`);
       else assert.equal(await page.locator(".platformTagTable").evaluate(element=>element.scrollWidth>element.clientWidth),true,"Mobile topic matrix should scroll inside its card");
