@@ -30,6 +30,9 @@ test("analytics workflow queries Facebook posts and reels with the correct objec
   assert.match(prepare,/description,picture,thumbnails,likes/);
   assert.match(prepare,/facebook_caption/);
   assert.match(prepare,/post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views/);
+  assert.match(prepare,/const facebookPostCandidates = values => unique\(values\.map/);
+  assert.match(prepare,/const facebookReelCandidates = values => unique\(values\.map/);
+  assert.doesNotMatch(prepare,/facebookCandidates = values => unique\(values\.flatMap/);
   assert.doesNotMatch(prepare,/post_impressions_unique/);
   assert.doesNotMatch(prepare,/post_engaged_users/);
 });

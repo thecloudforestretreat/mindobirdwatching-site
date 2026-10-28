@@ -127,13 +127,14 @@ const unique = values => [...new Set(values.filter(Boolean))];
 const ig = unique(records.map(r => r.instagram_post_id));
 const yt = unique(records.map(r => r.youtube_post_id));
 const facebookPageId = '753092067877601';
-const facebookCandidates = values => unique(values.flatMap(value => {
+const facebookPostCandidates = values => unique(values.map(value => {
   const raw=clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop();
   const bare=raw.split('_').pop();
-  return [raw,bare && !raw.includes('_') ? facebookPageId+'_'+bare : ''];
+  return raw.includes('_') ? raw : (bare ? facebookPageId+'_'+bare : '');
 }));
-const fbPostCandidates = facebookCandidates(records.filter(r=>r.type!=='reel').map(r=>r.facebook_post_id));
-const fbReelCandidates = facebookCandidates(records.filter(r=>r.type==='reel').map(r=>r.facebook_post_id));
+const facebookReelCandidates = values => unique(values.map(value => clean(value).replace(/^https?:\/\/[^/]+\//,'').replace(/[?#].*$/,'').replace(/\/$/,'').split('/').pop().split('_').pop()));
+const fbPostCandidates = facebookPostCandidates(records.filter(r=>r.type!=='reel').map(r=>r.facebook_post_id));
+const fbReelCandidates = facebookReelCandidates(records.filter(r=>r.type==='reel').map(r=>r.facebook_post_id));
 const enc = encodeURIComponent;
 return [{json:{...ctx,records,
   ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
