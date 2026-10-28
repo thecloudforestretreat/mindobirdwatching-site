@@ -6,7 +6,12 @@
   const closed=new Set(['cancelled','did_not_book','duplicate','spam']);
   function build({record,services,today,verified}){
     if(closed.has(record.status)||/^(yes|true|1|y)$/i.test(clean(record.is_archived)))return null;
-    const chosen=services.filter(s=>s.selected||s.status==='completed').map(s=>({...s,date:day(s.date),start:time(s.start),end:time(s.end)}));
+    const knownLocation=v=>{const text=clean(v);return text&&!/^(unknown|unassigned|pending|tbd|to be confirmed|not set|n\/a|-)$/i.test(text)?text:'';};
+    const chosen=services.filter(s=>s.selected||s.status==='completed').map(s=>{
+      const pickup=knownLocation(s.pickup),dropoff=knownLocation(s.dropoff);
+      const route=s.transport&&/^transportation$/i.test(clean(s.label))&&pickup&&dropoff&&pickup.toLowerCase()!==dropoff.toLowerCase();
+      return {...s,label:route?'Transportation · '+pickup+' → '+dropoff:s.label,date:day(s.date),start:time(s.start),end:time(s.end)};
+    });
     const order=(a,b)=>(day(a.date)||'9999').localeCompare(day(b.date)||'9999')||(a.start||'99:99').localeCompare(b.start||'99:99');
     const remaining=chosen.filter(s=>s.status!=='completed'&&!closed.has(s.status)&&(!day(s.date)||s.date>=today)).slice().sort(order);
     if(!remaining.length||!['booked','deposit_paid','completed'].includes(record.status))return null;
@@ -21,8 +26,8 @@
       if(!day(s.date))add('Confirm tour date');
       if(!/^[1-9]\d*$/.test(clean(s.guests)))add('Confirm guest count');
       if(!s.label||/^(birding|birdwatching|activity|custom|other|service|specialty wildlife|transportation)$/i.test(s.label)||/needs review/i.test(s.label))add('Confirm service name');
-      if(!clean(s.pickup))add('Add pickup / meeting location');
-      if(s.transport&&!clean(s.dropoff))add('Add drop-off location');
+      if(!knownLocation(s.pickup))add('Add pickup / meeting location');
+      if(s.transport&&!knownLocation(s.dropoff))add('Add drop-off location');
       if(!s.flexible&&(!clean(s.start)||!clean(s.end)))add('Confirm start and end times');
       if(s.start&&s.end&&s.start>=s.end)add('Review start and end times');
       if(verified&&s.requiresProvider){
