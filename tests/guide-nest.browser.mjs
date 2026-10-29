@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "playwright";
-import { robertPlan } from "../functions/lib/guide-plans.mjs";
+import { blankPlan, robertPlan } from "../functions/lib/guide-plans.mjs";
 
 const projectRoot = process.cwd();
 const root = join(projectRoot, "admin");
@@ -73,6 +73,13 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     writes.push({ url: route.request().url(), method: route.request().method(), body: route.request().postDataJSON() });
     bootstrap.offers[0].response = route.request().postDataJSON().response;
     await route.fulfill({ json: { ok: true, verified: true } });
+  });
+  await page.route(`http://127.0.0.1:${port}/api/guide/plans`, async route => {
+    const body = route.request().postDataJSON();
+    const created = blankPlan({ ...body, planId: "alice-2027", providerId: body.providerId, providerName: body.providerName, title: { es: body.title, en: body.title }, brief: { guestCount: body.guestCount, traveler: { es: body.traveler, en: body.traveler }, lodging: { es: body.lodging, en: body.lodging }, pickup: { es: body.pickup, en: body.pickup }, dropoff: { es: body.dropoff, en: body.dropoff }, request: { es: body.request, en: body.request }, interests: { es: body.interests, en: body.interests } } });
+    writes.push({ url: route.request().url(), method: route.request().method(), body });
+    bootstrap.plans.push(created);
+    await route.fulfill({ json: { ok: true, verified: true, plan: created }, status: 201 });
   });
   await page.route(`http://127.0.0.1:${port}/api/guide/plans/**`, async route => {
     const body = route.request().postDataJSON();
@@ -179,6 +186,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.match(await page.locator('.view:not([hidden]) h1').innerText(), /Sightings/);
     await page.getByRole("button", { name: "ES", exact: true }).click();
     await page.locator('[data-route="plans"]').click();
+    assert.equal(await page.locator("#newPlanButton").isVisible(), false);
     await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.match(await page.locator("#offerList").innerText(), /Custom birding package/);
     await page.locator('[data-bid="O-1"]').fill("125");
@@ -270,6 +278,18 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);
     assert.equal(await page.locator("[data-remove-availability]").count(), 0);
     await page.locator('[data-route="plans"]').click();
+    assert.equal(await page.locator("#newPlanButton").isVisible(), true);
+    await page.locator("#newPlanButton").click();
+    await page.locator('#newPlanForm [name="guestName"]').fill("Alice Rivera");
+    await page.locator('#newPlanForm [name="title"]').fill("Alice · Ecuador custom tour");
+    await page.locator('#newPlanForm [name="startDate"]').fill("2027-03-01");
+    await page.locator('#newPlanForm [name="endDate"]').fill("2027-03-04");
+    await page.locator('#newPlanForm [name="request"]').fill("Four-day private itinerary");
+    await page.locator('#newPlanForm button[type="submit"]').click();
+    await page.getByText("Alice · Ecuador custom tour", { exact: true }).waitFor();
+    assert.equal(bootstrap.plans.length, 2);
+    assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans") && write.body.guestName === "Alice Rivera" && write.body.providerId === "PROV-007"), true);
+    await page.screenshot({ path: "/tmp/mbw-guide-nest-admin-plans.png", fullPage: true });
     await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.equal(await page.locator("[data-offer-response]").count(), 0);
     assert.match(await page.locator("#offerList").innerText(), /solo lectura/i);

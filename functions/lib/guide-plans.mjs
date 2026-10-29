@@ -4,7 +4,7 @@ const number = value => {
   return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100000 ? Math.round(parsed * 100) / 100 : 0;
 };
 const date = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
-const PLAN_MARKER = "[GUIDE_PLAN robert-2027]";
+const PLAN_MARKER = "[GUIDE_PLAN";
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
 const ALLOWED_VERIFICATION = new Set(["needs_verification", "estimated", "confirmed"]);
 const ALLOWED_STATUS = new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
@@ -18,6 +18,60 @@ const bilingual = (value, fallback = {}, max = 1200) => {
 };
 
 export const ROBERT_PLAN_ID = "robert-2027";
+
+export function blankPlan(input = {}) {
+  const planId = text(input.planId, 80);
+  const startDate = date(input.startDate);
+  const endDate = date(input.endDate) || startDate;
+  const guestName = text(input.guestName || "Guest", 160);
+  const title = bilingual(input.title, { es: `${guestName} · Itinerario personalizado`, en: `${guestName} · Custom itinerary` }, 240);
+  const days = [];
+  if (startDate) {
+    const cursor = new Date(`${startDate}T12:00:00Z`), last = new Date(`${endDate}T12:00:00Z`);
+    while (days.length < 24 && cursor <= last) {
+      const dayNumber = days.length + 1;
+      days.push({
+        id: `day-${dayNumber}`,
+        date: cursor.toISOString().slice(0, 10),
+        title: { es: `Día ${dayNumber} por planificar`, en: `Day ${dayNumber} to plan` },
+        details: { es: "", en: "" },
+        sourceCosts: [],
+        costNote: { es: "", en: "" },
+        originalCost: 0,
+      });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+  }
+  return {
+    planId,
+    assignmentId: "",
+    inquiryId: text(input.inquiryId || `PLAN-${planId}`, 128),
+    providerId: text(input.providerId, 128),
+    providerName: text(input.providerName || "Guide", 160),
+    guestName,
+    title,
+    startDate,
+    endDate,
+    status: "guide_drafting",
+    updatedAt: "",
+    brief: {
+      guestCount: text(input.brief?.guestCount || "1", 12),
+      traveler: bilingual(input.brief?.traveler, {}, 1200),
+      lodging: bilingual(input.brief?.lodging, {}, 1200),
+      pickup: bilingual(input.brief?.pickup, {}, 1200),
+      dropoff: bilingual(input.brief?.dropoff, {}, 1200),
+      request: bilingual(input.brief?.request, {}, 1800),
+      interests: bilingual(input.brief?.interests, {}, 1800),
+    },
+    days,
+    adjustments: [],
+    comments: [],
+    history: [],
+    localeUpdatedAt: { es: "", en: "" },
+    originalTotal: 0,
+    synthetic: true,
+  };
+}
 
 export function isNeicer(value) {
   return /\b(?:neicer|neycer)\b/i.test(String(value || ""));
@@ -107,8 +161,10 @@ export function parsePlanRow(row) {
   if (!isPlanRow(row)) return null;
   try {
     const parsed = JSON.parse(String(row.internal_note || "{}"));
-    const base = robertPlan({ providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name });
-    return sanitizePlan({ ...base, ...parsed, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false });
+    const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
+    const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
+    const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
+    return sanitizePlan({ ...base, ...parsed, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
   } catch { return null; }
 }
 
@@ -227,7 +283,7 @@ export function planAssignment(plan) {
     provider_name_other: "",
     assignment_status: plan.status === "approved" ? "confirmed" : "pending",
     provider_informed: "Yes",
-    confirmation_note: `${PLAN_MARKER}|${plan.status}`,
+    confirmation_note: `${PLAN_MARKER} ${plan.planId}]|${plan.status}`,
     internal_note: JSON.stringify(stored),
     created_by: "JPG",
   };
