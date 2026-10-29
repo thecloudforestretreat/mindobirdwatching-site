@@ -11,7 +11,6 @@ export async function onRequestPost({ request, env, params }) {
     if (!writesEnabled(env) || !env.N8N_CRM_ADMIN_TOKEN) throw Object.assign(new Error("Tour plan updates are temporarily unavailable."), { status: 503 });
     assertSameOrigin(request, env);
     const planId = validId(params.planId), body = await readJson(request, 24000);
-    if (planId !== ROBERT_PLAN_ID) return json(404, { ok: false, error: "Tour plan not found." });
     const rows = await listRecords(env, "list_assignments", {});
     const currentRow = rows.find(row => isPlanRow(row) && String(row.assignment_group_id) === `PLAN-${planId}`);
     const requestedProvider = { providerId: String(body.providerId || "").trim(), providerName: String(body.providerName || "").trim() };
@@ -24,7 +23,7 @@ export async function onRequestPost({ request, env, params }) {
       if (!isNeicer(requestedProvider.providerName) && !(currentRow && isNeicer(providerName(currentRow)))) return json(403, { ok: false, error: "Choose Neicer in Guide View before editing this plan." });
       if (currentRow && requestedProvider.providerId && String(currentRow.provider_id || "") !== requestedProvider.providerId) return json(404, { ok: false, error: "Tour plan not found." });
     }
-    const current = currentRow ? parsePlanRow(currentRow) : robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName });
+    const current = currentRow ? parsePlanRow(currentRow) : planId === ROBERT_PLAN_ID ? robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName }) : null;
     if (!current) return json(409, { ok: false, error: "The saved plan could not be read safely." });
     if (currentRow && String(body.updatedAt || "") !== String(currentRow.updated_at || "")) {
       return json(409, { ok: false, code: "PLAN_STALE", error: "This plan changed after you opened it. Refresh before saving so no work is overwritten." });

@@ -9,6 +9,7 @@ import { onRequestPost as createGuideAvailability } from "../functions/api/guide
 import { onRequestDelete as deleteGuideAvailability } from "../functions/api/guide/availability/[assignmentId].js";
 import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/offers/[assignmentId]/respond.js";
 import { onRequestPost as saveGuidePlan } from "../functions/api/guide/plans/[planId].js";
+import { onRequestPost as createGuidePlan } from "../functions/api/guide/plans/index.js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
 import { robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
 
@@ -330,6 +331,43 @@ test("Neicer can edit guide dates and prices while the submitted total is recalc
   assert.equal(changed.adjustments[0].amount, 80);
 });
 
+test("an admin can create multiple guide-scoped custom plans while guides cannot create them", async () => {
+  const savedFetch = globalThis.fetch;
+  let rows = [];
+  const pilot = {
+    ...env,
+    MBW_GUIDE_ROLE_MAP: JSON.stringify({ "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"] } }),
+    MBW_MOBILE_WRITE_ENABLED: "true",
+  };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "create_assignment") {
+        rows.push({ ...payload.assignment, assignment_id: `PLAN-ROW-${rows.length + 1}`, updated_at: `v${rows.length + 1}` });
+        return Response.json({ ok: true });
+      }
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const makeRequest = guestName => new Request("http://localhost/api/guide/plans", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ providerId: "PROV-NEICER", providerName: "Neicer", guestName, inquiryId: `INQ-${guestName}`, title: `${guestName} Ecuador`, startDate: "2027-03-01", endDate: "2027-03-04", guestCount: "2", request: "Long custom tour" }) });
+    const first = await createGuidePlan({ request: makeRequest("Alice"), env: pilot });
+    const second = await createGuidePlan({ request: makeRequest("Bruno"), env: pilot });
+    assert.equal(first.status, 201);
+    assert.equal(second.status, 201);
+    assert.equal(rows.length, 2);
+    assert.notEqual(rows[0].assignment_group_id, rows[1].assignment_group_id);
+    const firstBody = await first.json();
+    assert.equal(firstBody.plan.guestName, "Alice");
+    assert.equal(firstBody.plan.days.length, 4);
+    assert.equal(firstBody.plan.providerId, "PROV-NEICER");
+    assert.equal(firstBody.plan.inquiryId, "INQ-Alice");
+
+    const denied = await createGuidePlan({ request: makeRequest("Denied"), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" } });
+    assert.equal(denied.status, 403);
+    assert.equal(rows.length, 2);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
 test("Neicer can save Robert's plan but another guide cannot access it", async () => {
   const savedFetch = globalThis.fetch;
   let rows = [];
@@ -423,6 +461,9 @@ test("Guide Nest static shell includes the required restricted workflows", () =>
   assert.match(html, /Avistamientos/);
   assert.match(html, /Share MBW/);
   assert.match(html, /data-view="plans"/);
+  assert.match(html, /id="newPlanForm"/);
+  assert.match(html, /data-i18n="createAndAssign"/);
+  assert.match(js, /mutate\("\/api\/guide\/plans", "POST"/);
   assert.match(html, /data-language="es"/);
   assert.match(html, /Reportes anteriores/);
   assert.match(js, /Copy guest message/);
