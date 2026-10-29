@@ -4,7 +4,8 @@
   // The admin Pages project is static; its API is deployed with the main site
   // and explicitly allows requests from the protected admin origin.
   var API = "https://mindobirdwatching.com/api/admin/reels";
-  var state = { rows: [], activeStatus: "review", query: "", selected: null, loading: false, generationPoll: null };
+  var INSIGHTS_API = "https://mindobirdwatching.com/api/admin/media-insights?period=90d";
+  var state = { rows: [], activeStatus: "review", query: "", selected: null, loading: false, generationPoll: null, timing: null };
   var routeParams = new URLSearchParams(window.location.search), pendingOpenId = cleanRoute(routeParams.get("id"));
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && routeParams.get("demo") === "1";
 
@@ -259,7 +260,7 @@
   }
   function render() { renderCounts(); renderCards(); }
 
-  function openComposer() { setDefaultBatchSchedule(false); $("composerBackdrop").hidden = false; document.body.style.overflow = "hidden"; if (!$("batchItems").children.length) addBatchRow(); }
+  function openComposer() { setDefaultBatchSchedule(false); $("composerBackdrop").hidden = false; document.body.style.overflow = "hidden"; if (!$("batchItems").children.length) addBatchRow(); applyTimingGuidance(); }
   function closeComposer() { $("composerBackdrop").hidden = true; document.body.style.overflow = ""; }
   function todayInEastern() { return easternNow().date; }
   function defaultStartDate() { return addDays(todayInEastern(), 1, false); }
@@ -273,7 +274,47 @@
     var start = $("batchStartDate");
     start.min = todayInEastern();
     if (force || !start.value || start.value < start.min) start.value = defaultStartDate();
-    if (force) $("batchTime").value = "07:00";
+    if (force) { $("batchTime").value = "07:00"; delete $("batchTime").dataset.userEdited; }
+  }
+  function weekdayName(dateString) {
+    return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date(dateString + "T12:00:00Z").getUTCDay()];
+  }
+  function setTimingGuidance(message, tone) {
+    var panel = $("timingGuidance");
+    if (!panel) return;
+    panel.textContent = message;
+    panel.dataset.tone = tone || "";
+  }
+  function useTimingRecommendation(data) {
+    var recommendations = data && data.recommendations || {};
+    var date = $("batchStartDate").value || defaultStartDate();
+    var day = weekdayName(date);
+    var slots = Array.isArray(recommendations.slots) ? recommendations.slots.filter(function (slot) { return Array.isArray(slot.days) && slot.days.includes(day); }) : [];
+    var priorities = ["instagram", "facebook", "youtube"];
+    var slot = priorities.map(function (platform) { return slots.find(function (candidate) { return clean(candidate.platform).toLowerCase() === platform; }); }).find(Boolean);
+    if (!recommendations.configured || !slot) {
+      var count = Number(recommendations.sample_size || 0), minimum = Number(recommendations.minimum_posts_per_slot || 5);
+      setTimingGuidance("7:00 AM ET baseline · No evidence-qualified " + day + " slot yet (" + count + " comparable sample" + (count === 1 ? "" : "s") + "; at least " + minimum + " per slot required).", "baseline");
+      return;
+    }
+    var recommendedTime = time24(slot.time);
+    if (recommendedTime && !$("batchTime").dataset.userEdited) {
+      $("batchTime").value = recommendedTime;
+      refreshBatchDates();
+    }
+    setTimingGuidance(clean(slot.platform) + " evidence recommends " + clean(slot.time) + " ET on " + day + " · " + clean(slot.basis) + ". You can still choose another time.", "recommended");
+  }
+  async function applyTimingGuidance() {
+    if (demoMode) { setTimingGuidance("7:00 AM ET baseline · Analytics recommendations are unavailable in preview mode.", "baseline"); return; }
+    if (state.timing) { useTimingRecommendation(state.timing); return; }
+    setTimingGuidance("Checking comparable first-seven-day performance…", "checking");
+    try {
+      var response = await fetch(INSIGHTS_API, { cache: "no-store" });
+      var data = await response.json();
+      if (!response.ok || data.ok === false) throw new Error("Timing analytics did not answer.");
+      state.timing = data;
+      useTimingRecommendation(data);
+    } catch (_) { setTimingGuidance("7:00 AM ET baseline · Timing analytics are temporarily unavailable, so no unsupported recommendation was applied.", "warning"); }
   }
   function refreshBatchDates() {
     var start = $("batchStartDate").value || defaultStartDate();
@@ -527,7 +568,9 @@
     $("reviewBackdrop").addEventListener("click", function (event) { if (event.target === event.currentTarget) closeReview(); });
     $("addReelRow").addEventListener("click", addBatchRow);
     $("batchItems").addEventListener("click", function (event) { var button = event.target.closest("[data-remove-row]"); if (!button) return; button.closest(".batchItem").remove(); numberBatchRows(); refreshBatchDates(); });
-    ["batchStartDate", "batchTime", "batchPattern"].forEach(function (id) { $(id).addEventListener("change", refreshBatchDates); });
+    $("batchStartDate").addEventListener("change", function () { refreshBatchDates(); applyTimingGuidance(); });
+    $("batchPattern").addEventListener("change", refreshBatchDates);
+    $("batchTime").addEventListener("change", function () { this.dataset.userEdited = "true"; refreshBatchDates(); });
     $("batchForm").addEventListener("submit", submitBatch);
     $("refreshQueue").addEventListener("click", loadRows);
     $("refreshHealth").addEventListener("click", loadHealth);
