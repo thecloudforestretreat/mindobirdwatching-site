@@ -37,6 +37,14 @@ if (!code.includes("action === 'replace_media'")) {
   code = code.replace(updateNeedle, replacement + updateNeedle);
 }
 
+// X is currently copy-only and post_to_x is false in production. A stale X
+// draft must not block approval for Instagram, Facebook, YouTube, or TikTok.
+// Keep the X copy checks available if automated X publishing is enabled later.
+code = code.replace(
+  "const proseAndTitle = [row.instagram_caption_raw,row.youtube_title,row.tiktok_caption,row.x_caption].filter(Boolean).join(' ');",
+  "const proseAndTitle = [row.instagram_caption_raw,row.youtube_title,row.tiktok_caption,truthy(row.post_to_x) ? row.x_caption : ''].filter(Boolean).join(' ');",
+);
+
 const retryNeedle = "if (action === 'retry_reel') {";
 if (!code.includes(retryNeedle)) throw new Error("The retry_reel action was not found.");
 if (!code.includes("action === 'publish_overdue'")) {
@@ -65,6 +73,10 @@ if (!code.includes("action === 'publish_overdue'")) {
   code = code.replace(retryNeedle, recovery + retryNeedle);
 }
 plan.parameters.jsCode = code;
+
+if (!plan.parameters.jsCode.includes("truthy(row.post_to_x) ? row.x_caption : ''")) {
+  throw new Error('The copy-only X approval guard was not applied.');
+}
 
 const routeValues = route.parameters.rules.values;
 if (!routeValues.some(value => value.outputKey === "health")) {
