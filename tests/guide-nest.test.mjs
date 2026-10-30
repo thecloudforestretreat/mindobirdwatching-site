@@ -29,8 +29,12 @@ test("Guide Nest exposes branded browser icons and an explicit read-only admin a
   assert.match(index, /rel="icon"[^>]+mbw-app-gold-transparent-192\.png/);
   assert.match(index, /data-i18n="auditMode"/);
   assert.match(index, /href="\/app\/\?view=today" data-i18n="returnNest"/);
-  assert.match(index, /<label for="providerSelect" data-i18n="previewGuide">Guide View<\/label>/);
-  assert.match(script, /previewGuide: "Guide View"/);
+  assert.match(index, /data-preview-mode="guide"/);
+  assert.match(index, /data-preview-mode="admin"/);
+  assert.match(index, /<label for="providerSelect" data-i18n="previewGuide">Guía<\/label>/);
+  assert.match(script, /guidePreviewMode: "Guide Preview"/);
+  assert.match(script, /adminReviewMode: "Admin Review"/);
+  assert.match(script, /if \(!isAdminReview\(\)\) return ""/);
   assert.match(script, /initialParams\.get\("provider"\)/);
   assert.match(css, /#actionList\{grid-template-columns:1fr\}/);
 });

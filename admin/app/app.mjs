@@ -97,7 +97,7 @@ function renderPlanAttention() {
   panel.hidden = !items.length;
   if (!items.length) { panel.innerHTML = ""; return; }
   panel.innerHTML = `<div class="planAttentionHeading"><div><p class="eyebrow">Custom itineraries</p><h2 id="planAttentionHeading">Plans needing attention</h2></div><span>${items.length}</span></div><div class="planAttentionList">${items.map(({ plan, guest, dateMismatch }) => {
-    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
+    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId, mode: "admin" });
     const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
     const reason = plan.status === "admin_review" ? "Guide submitted this itinerary for admin review." : "CRM dates do not match the itinerary dates.";
     return `<article class="planAttentionCard"><div><strong>${esc(guest.name || plan.guestName || "Guest")}</strong><span class="badge ${dateMismatch ? "badge--warn" : ""}">${plan.status === "admin_review" ? "Review" : "Check dates"}</span></div><p>${esc(title)}</p><small>${esc(reason)}</small><div class="planAttentionActions"><button type="button" data-guest="${esc(plan.inquiryId)}">Open guest</button><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Review plan</a></div></article>`;
@@ -109,7 +109,7 @@ function customPlanMarkup(guest) {
   if (!plans.length) return "";
   const statusLabels = { guide_drafting: "Working draft", admin_review: "Ready for review", changes_requested: "Changes requested", approved: "Approved" };
   return plans.map(plan => {
-    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
+    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId, mode: "admin" });
     const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
     const dates = plan.startDate ? (plan.endDate && plan.endDate !== plan.startDate ? `${shortDate(plan.startDate)}–${shortDate(plan.endDate)}` : shortDate(plan.startDate)) : "Dates to be confirmed";
     const status = statusLabels[plan.status] || "In progress";

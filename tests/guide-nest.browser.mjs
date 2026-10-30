@@ -288,9 +288,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(requestedProvider, "PROV-007");
     assert.equal(new URL(page.url()).searchParams.get("provider"), "PROV-007");
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
-    assert.equal(await page.locator('label[for="providerSelect"]').innerText(), "Guide View");
+    assert.equal(await page.locator('label[for="providerSelect"]').innerText(), "Guía");
     assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría/i);
-    assert.match(await page.locator("#adminPreview").innerText(), /planes personalizados son colaborativos/i);
+    assert.match(await page.locator("#adminPreview").innerText(), /precios MBW, márgenes y herramientas administrativas permanecen ocultos/i);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     const auditPosition = await page.locator("#adminPreview").evaluate(element => ({ position: getComputedStyle(element).position, top: element.getBoundingClientRect().top }));
     assert.equal(auditPosition.position, "sticky");
@@ -300,6 +300,13 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("#availabilityPanel").isVisible(), false);
     assert.equal(await page.locator("[data-remove-availability]").count(), 0);
     await page.locator('[data-route="plans"]').click();
+    assert.equal(await page.locator("#newPlanButton").isVisible(), false);
+    assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).isVisible(), true);
+    assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).isEnabled(), false);
+    assert.match(await page.locator(".planActions").first().innerText(), /Vista exacta y de solo lectura/i);
+    await page.getByRole("button", { name: "Revisión administrativa" }).click();
+    assert.equal(new URL(page.url()).searchParams.get("mode"), "admin");
     assert.equal(await page.locator("#newPlanButton").isVisible(), true);
     assert.equal(await page.locator(".adminPricing").count(), 1);
     assert.match(await page.locator(".adminPricing").innerText(), /Revisión de precios MBW|MBW pricing review/);

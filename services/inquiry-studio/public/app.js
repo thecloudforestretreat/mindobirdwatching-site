@@ -65,7 +65,7 @@ async function loadPlanReviews() {
       const details = document.createElement('small');
       details.textContent = [planStatusLabel(plan.status), plan.providerName && 'Guide: ' + plan.providerName, plan.startDate && plan.endDate && `${plan.startDate} – ${plan.endDate}`].filter(Boolean).join(' · ');
       const link = document.createElement('a');
-      const query = new URLSearchParams({ view: 'plans', provider: plan.providerId || plan.providerName || '', plan: plan.planId });
+      const query = new URLSearchParams({ view: 'plans', provider: plan.providerId || plan.providerName || '', plan: plan.planId, mode: 'admin' });
       link.href = '/guide/?' + query.toString();
       link.textContent = plan.status === 'approved' ? 'Open approved itinerary' : 'Review itinerary';
       article.append(title, details, link);
