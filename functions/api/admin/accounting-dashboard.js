@@ -212,7 +212,19 @@ export async function onRequestGet({ request }) {
     const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
     const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
     const monthly = income.filter(row => validMonth(row.month_ky)).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
-    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {}, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3), priorMonth = addDays(`${month}-01`, -1).slice(0, 7);
+    const incomeCurrent = monthly.find(row => row.month === month) || {}, invoiceProjection = monthProjection(invoices, month, today), projection = {
+      ...invoiceProjection,
+      earnedProfit: number(incomeCurrent.profit),
+      earnedRevenue: number(incomeCurrent.revenue),
+      earnedGuests: number(current.guests_served),
+      completedServices: number(current.completed_services),
+      projectedProfit: number(incomeCurrent.profit) + number(invoiceProjection.futureProfit),
+      projectedRevenue: number(incomeCurrent.revenue) + number(invoiceProjection.futureRevenue),
+      projectedGuests: number(current.guests_served) + number(invoiceProjection.futureGuests),
+      earnedSource: "report_income_summary",
+      futureSource: "invoices",
+      invoiceEarnedProfit: number(invoiceProjection.earnedProfit),
+    }, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3), priorMonth = addDays(`${month}-01`, -1).slice(0, 7);
     const cash = { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) };
     return reply(200, {
       ok: true, updated_at: new Date().toISOString(), control_date: today,
@@ -228,7 +240,7 @@ export async function onRequestGet({ request }) {
       guides, guide_totals: { due_completed: guides.reduce((sum, row) => sum + row.due, 0), completed_items: guides.reduce((sum, row) => sum + row.dueCount, 0), future_obligations: guides.reduce((sum, row) => sum + row.future, 0) },
       advertising_fund: { contribution_due: number(ledgerSummary.contribution_due), contribution_collected: number(ledgerSummary.contribution_collected), ad_spend_used: number(ledgerSummary.ad_spend_used), outstanding_from_guides: number(ledgerSummary.contribution_due_balance), available: number(ledgerSummary.advertising_fund_balance), status: text(ledgerSummary.notes) },
       expenses: { month, month_total: monthExpenses.reduce((sum, row) => sum + Math.abs(number(row.amount)), 0), unreconciled, missing_receipts: missingReceipts },
-      controls: { open_settlements: openSettlements, profit_variance: projection.earnedProfit - number(incomeCurrent.profit), ...anomalySummary(invoices, expenses, today, text(latestRecon.date)) },
+      controls: { open_settlements: openSettlements, profit_variance: invoiceProjection.earnedProfit - number(incomeCurrent.profit), ...anomalySummary(invoices, expenses, today, text(latestRecon.date)) },
     });
   } catch (error) {
     console.error("Accounting dashboard feed failed", error);
