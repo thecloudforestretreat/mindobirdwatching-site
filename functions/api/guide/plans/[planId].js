@@ -1,7 +1,7 @@
 import { guideIdentity, identityMatchesProvider } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
 import { errorResponse, json, methodNotAllowed, assertSameOrigin, readJson, validId, writesEnabled } from "../../../lib/mobile-http.mjs";
-import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, planAssignment, robertPlan, sanitizePlan, validatePlanForReview } from "../../../lib/guide-plans.mjs";
+import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, planAssignment, planForGuide, robertPlan, sanitizePlan, validatePlanForReview } from "../../../lib/guide-plans.mjs";
 
 const providerName = row => String(row.provider_name === "Other" ? row.provider_name_other : row.provider_name || "").trim();
 
@@ -54,8 +54,13 @@ export async function onRequestPost({ request, env, params }) {
       status: requestedStatus,
       providerId: current.providerId || requestedProvider.providerId,
       providerName: current.providerName || requestedProvider.providerName,
+      mbwPricing: actor.role === "admin" ? (body.mbwPricing || current.mbwPricing) : current.mbwPricing,
     };
     const plan = sanitizePlan(incoming, current);
+    if (actor.role === "admin" && requestedStatus === "approved") {
+      plan.mbwPricing.approvedAt = new Date().toISOString();
+      plan.mbwPricing.approvedBy = actor.name;
+    }
     if (current.status === "approved" && requestedStatus === "approved" && actor.role === "admin") {
       return json(409, { ok: false, code: "PLAN_LOCKED", error: "This approved plan is locked. Reopen it before making more changes." });
     }
@@ -63,8 +68,11 @@ export async function onRequestPost({ request, env, params }) {
       const validationErrors = validatePlanForReview(plan);
       if (validationErrors.length) return json(400, { ok: false, code: "PLAN_VALIDATION", error: "Complete the highlighted itinerary details before submitting for review.", validationErrors });
     }
+    if (requestedStatus === "approved" && plan.days.some(day => Number(plan.mbwPricing?.days?.find(item => item.dayId === day.id)?.sellPrice || 0) <= 0)) {
+      return json(400, { ok: false, code: "PLAN_PRICING", error: "Enter the MBW price for every day before approving the itinerary." });
+    }
     if (!plan.providerId && !plan.providerName) return json(400, { ok: false, error: "The plan needs an assigned guide." });
-    const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || comments.length !== (current.comments || []).length || current.status !== plan.status;
+    const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || JSON.stringify(current.mbwPricing || {}) !== JSON.stringify(plan.mbwPricing || {}) || comments.length !== (current.comments || []).length || current.status !== plan.status;
     if (changed) {
       const action = current.status !== plan.status ? "status_changed" : comments.length !== (current.comments || []).length ? "comment_added" : "plan_updated";
       plan.history = [...(current.history || []), { id: crypto.randomUUID(), actor: actor.name, role: actor.role, action, fromStatus: current.status, toStatus: plan.status, changedAt: new Date().toISOString() }].slice(-100);
@@ -76,7 +84,7 @@ export async function onRequestPost({ request, env, params }) {
     const verified = (await listRecords(env, "list_assignments", {})).find(row => isPlanRow(row) && String(row.assignment_group_id) === `PLAN-${planId}`);
     const saved = verified && parsePlanRow(verified);
     if (!saved) return json(202, { ok: true, verified: false, error: "The plan was submitted but not verified. Refresh before retrying." });
-    return json(currentRow ? 200 : 201, { ok: true, verified: true, plan: saved });
+    return json(currentRow ? 200 : 201, { ok: true, verified: true, plan: actor.role === "guide" ? planForGuide(saved) : saved });
   } catch (error) { return errorResponse(error); }
 }
 

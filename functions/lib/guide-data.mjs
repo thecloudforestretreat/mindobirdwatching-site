@@ -1,7 +1,7 @@
 import { listRecords } from "./mobile-crm.mjs";
 import { normalizeAssignment, normalizeBooking, normalizeInquiry, normalizeProvider } from "./mobile-domain.mjs";
 import { identityMatchesProvider } from "./mobile-auth.mjs";
-import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, robertPlan } from "./guide-plans.mjs";
+import { ROBERT_PLAN_ID, isNeicer, isPlanRow, parsePlanRow, planForGuide, robertPlan } from "./guide-plans.mjs";
 
 const BOOKED = new Set(["booked", "deposit_pending", "deposit_paid", "payment_pending", "completed"]);
 const CLOSED_ASSIGNMENTS = new Set(["cancelled", "canceled"]);
@@ -151,8 +151,11 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   const providerAssignments = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
     assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status)
   );
-  const plans = pilotEnabled ? providerAssignments.filter(({ row }) => isPlanRow(row)).map(({ row }) => parsePlanRow(row)).filter(Boolean) : [];
-  if (pilotEnabled && !plans.some(plan => plan.planId === ROBERT_PLAN_ID)) plans.unshift(robertPlan(selectedProvider));
+  const plans = pilotEnabled ? providerAssignments.filter(({ row }) => isPlanRow(row)).map(({ row }) => parsePlanRow(row)).filter(Boolean).map(plan => identity.role === "guide" ? planForGuide(plan) : plan) : [];
+  if (pilotEnabled && !plans.some(plan => plan.planId === ROBERT_PLAN_ID)) {
+    const fallbackPlan = robertPlan(selectedProvider);
+    plans.unshift(identity.role === "guide" ? planForGuide(fallbackPlan) : fallbackPlan);
+  }
   plans.sort((left, right) => `${left.status === "approved" ? "1" : "0"}-${left.startDate || "9999-12-31"}`.localeCompare(`${right.status === "approved" ? "1" : "0"}-${right.startDate || "9999-12-31"}`));
   const availability = providerAssignments.filter(({ row, assignment }) => assignmentKind(row, assignment) === "availability")
     .filter(({ assignment }) => !assignment.serviceDate || assignment.serviceDate >= cutoff)

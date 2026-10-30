@@ -236,6 +236,15 @@ export function sanitizePlan(input, current = robertPlan()) {
   }).filter(day => day.date && (day.title.es || day.title.en));
   const normalizedDays = days.length ? days.sort((a, b) => a.date.localeCompare(b.date)) : current.days;
   const originalTotal = normalizedDays.reduce((sum, day) => sum + number(day.originalCost), 0);
+  const pricingInput = input.mbwPricing && typeof input.mbwPricing === "object" ? input.mbwPricing : current.mbwPricing || {};
+  const pricingByDay = new Map(Array.isArray(pricingInput.days) ? pricingInput.days.map(item => [String(item?.dayId || ""), item]) : []);
+  const mbwPricing = {
+    currency: "USD",
+    days: normalizedDays.map(day => ({ dayId: day.id, sellPrice: number(pricingByDay.get(day.id)?.sellPrice) })),
+    notes: text(pricingInput.notes, 1000),
+    approvedAt: text(pricingInput.approvedAt, 80),
+    approvedBy: text(pricingInput.approvedBy, 120),
+  };
   return {
     ...current,
     planId: text(input.planId || current.planId, 80),
@@ -256,12 +265,19 @@ export function sanitizePlan(input, current = robertPlan()) {
       es: text(input.localeUpdatedAt?.es || current.localeUpdatedAt?.es, 80),
       en: text(input.localeUpdatedAt?.en || current.localeUpdatedAt?.en, 80),
     },
-    // Only the guide-cost layer is editable. MBW pricing is never present in this record.
     days: normalizedDays,
+    mbwPricing,
     startDate: normalizedDays[0]?.date || current.startDate,
     endDate: normalizedDays.at(-1)?.date || current.endDate,
     originalTotal,
   };
+}
+
+// Internal selling prices and markup are never returned to a guide session.
+export function planForGuide(plan) {
+  if (!plan || typeof plan !== "object") return plan;
+  const { mbwPricing, ...guidePlan } = plan;
+  return guidePlan;
 }
 
 export function validatePlanForReview(plan) {

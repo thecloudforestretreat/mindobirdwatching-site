@@ -240,7 +240,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-plan-comment-form="robert-2027"] textarea').fill("¿Puede MBW confirmar el alojamiento?");
     await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
     await page.getByText("¿Puede MBW confirmar el alojamiento?", { exact: true }).waitFor();
-    await page.getByRole("button", { name: "Enviar a revisión" }).click();
+    await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).click();
     await page.waitForTimeout(300);
     const unexpectedDialogs = dialogs.filter(message => !message.includes("¿Eliminar"));
     if (unexpectedDialogs.length) {
