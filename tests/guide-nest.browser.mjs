@@ -280,6 +280,11 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     const width = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
     assert.ok(width.scroll <= width.client + 1, `Guide Nest overflows: ${width.scroll}px > ${width.client}px`);
     assert.equal(await page.locator(".cards").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length), 1);
+    await page.goto(`http://127.0.0.1:${port}/guide/?view=plans&mode=admin`);
+    await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
+    assert.equal(await page.locator("#adminPreview").isVisible(), false);
+    assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.equal(await page.locator("[data-mbw-price],[data-lodging-price]").count(), 0);
     bootstrap.preview = true;
     bootstrap.identity = { role: "owner", name: "Juan" };
     bootstrap.providerOptions = [{ providerId: "PROV-007", name: "Neycer · Night Walk Guide" }];
