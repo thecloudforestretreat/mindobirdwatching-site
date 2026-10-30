@@ -51,9 +51,9 @@ export async function onRequestPost({ request, env }) {
     });
     const plan = sanitizePlan(base, base);
     plan.history = [{ id: crypto.randomUUID(), actor: clean(identity.name || identity.email || "MBW Admin", 120), role: "admin", action: "plan_created", fromStatus: "", toStatus: plan.status, changedAt: new Date().toISOString() }];
-    await crmCall(env, "create_assignment", { guest_phone: "", assignment: planAssignment(plan) });
+    await crmCall(env, "create_assignment", { guest_phone: "", assignment: await planAssignment(plan) });
     const verified = (await listRecords(env, "list_assignments", {})).find(row => isPlanRow(row) && String(row.assignment_group_id) === `PLAN-${planId}`);
-    const saved = verified && parsePlanRow(verified);
+    const saved = verified && await parsePlanRow(verified);
     if (!saved) return json(202, { ok: true, verified: false, error: "The plan was submitted but not verified. Refresh before retrying." });
     return json(201, { ok: true, verified: true, plan: saved });
   } catch (error) { return errorResponse(error); }

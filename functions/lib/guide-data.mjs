@@ -151,7 +151,7 @@ export async function loadGuideData(env, identity, requestedProvider = "") {
   const providerAssignments = assignmentRows.map(row => ({ row, assignment: normalizeAssignment(row) })).filter(({ assignment }) =>
     assignment.assignmentId && assignmentMatchesProvider(assignment, selectedProvider) && !CLOSED_ASSIGNMENTS.has(assignment.status)
   );
-  const plans = pilotEnabled ? providerAssignments.filter(({ row }) => isPlanRow(row)).map(({ row }) => parsePlanRow(row)).filter(Boolean).map(plan => identity.role === "guide" ? planForGuide(plan) : plan) : [];
+  const plans = pilotEnabled ? (await Promise.all(providerAssignments.filter(({ row }) => isPlanRow(row)).map(({ row }) => parsePlanRow(row)))).filter(Boolean).map(plan => identity.role === "guide" ? planForGuide(plan) : plan) : [];
   if (pilotEnabled && !plans.some(plan => plan.planId === ROBERT_PLAN_ID)) {
     const fallbackPlan = robertPlan(selectedProvider);
     plans.unshift(identity.role === "guide" ? planForGuide(fallbackPlan) : fallbackPlan);

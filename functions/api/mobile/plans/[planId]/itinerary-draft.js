@@ -11,7 +11,8 @@ export async function onRequestGet({ request, env, params }) {
     }
     const planId = validId(params.planId);
     const rows = await listRecords(env, "list_assignments", {});
-    const plan = rows.filter(isPlanRow).map(parsePlanRow).find(item => item?.planId === planId);
+    const plans = await Promise.all(rows.filter(isPlanRow).map(parsePlanRow));
+    const plan = plans.find(item => item?.planId === planId);
     if (!plan) throw Object.assign(new Error("The itinerary plan was not found."), { status: 404 });
     return json(200, { ok: true, draft: guestItineraryDraft(plan) });
   } catch (error) {

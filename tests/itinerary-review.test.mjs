@@ -80,7 +80,7 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   assert.match(crm, /source:\s*"guide_plan"/);
 });
 
-test("stored plans remain complete while staying below the guarded n8n form limit", () => {
+test("stored plans remain complete while staying below the guarded n8n form limit", async () => {
   const base = robertPlan({ providerId: "PROV-NEICER", providerName: "Neicer" });
   const plan = sanitizePlan({
     ...base,
@@ -92,11 +92,11 @@ test("stored plans remain complete while staying below the guarded n8n form limi
       createdAt: "2026-10-30T12:00:00.000Z",
     }))],
   }, base);
-  const assignment = planAssignment(plan);
+  const assignment = await planAssignment(plan);
   const payload = JSON.stringify({ action: "update_assignment", assignment, expected_updated_at: "2026-10-30T12:00:00.000Z" });
   const wireBody = new URLSearchParams({ payload }).toString();
   assert.ok(wireBody.length < 16000, `encoded form body was ${wireBody.length} bytes`);
-  const restored = parsePlanRow({ ...assignment, updated_at: "2026-10-30T12:00:00.000Z" });
+  const restored = await parsePlanRow({ ...assignment, updated_at: "2026-10-30T12:00:00.000Z" });
   assert.equal(restored.comments.length, plan.comments.length);
   assert.equal(restored.comments.at(-1).message, plan.comments.at(-1).message);
 });

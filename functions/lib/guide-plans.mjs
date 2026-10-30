@@ -6,6 +6,7 @@ const number = value => {
 const date = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
 const PLAN_MARKER = "[GUIDE_PLAN";
 const PLAN_STORAGE_PREFIX = "MBW_PLAN_B64URL_V1:";
+const PLAN_STORAGE_GZIP_PREFIX = "MBW_PLAN_GZIP_B64URL_V2:";
 const PLAN_STORAGE_KEYS = {
   planId: "a", assignmentId: "b", inquiryId: "c", providerId: "d", providerName: "e", guestName: "f", guestCount: "g",
   title: "h", startDate: "i", endDate: "j", status: "k", brief: "l", days: "m", adjustments: "n", comments: "o",
@@ -27,27 +28,46 @@ const COST_CATEGORY_ORDER = new Map([
 const GUEST_LINE_CATEGORIES = new Set(["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"]);
 const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
 
-function encodeStoredPlan(plan) {
+function base64Url(bytes) {
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function bytesFromBase64Url(value) {
+  const encoded = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = encoded + "=".repeat((4 - (encoded.length % 4)) % 4);
+  const binary = atob(padded);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+async function encodeStoredPlan(plan) {
   const compact = value => Array.isArray(value)
     ? value.map(compact)
     : value && typeof value === "object"
       ? Object.fromEntries(Object.entries(value).map(([key, item]) => [PLAN_STORAGE_KEYS[key] || key, compact(item)]))
       : value;
-  const bytes = new TextEncoder().encode(JSON.stringify(compact(plan)));
-  let binary = "";
-  for (let index = 0; index < bytes.length; index += 8192) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
-  }
-  return PLAN_STORAGE_PREFIX + btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const source = new TextEncoder().encode(JSON.stringify(compact(plan)));
+  const compressed = await new Response(
+    new Blob([source]).stream().pipeThrough(new CompressionStream("gzip")),
+  ).arrayBuffer();
+  return PLAN_STORAGE_GZIP_PREFIX + base64Url(new Uint8Array(compressed));
 }
 
-function decodeStoredPlan(value) {
+async function decodeStoredPlan(value) {
   const stored = String(value || "{}");
-  if (!stored.startsWith(PLAN_STORAGE_PREFIX)) return JSON.parse(stored);
-  const encoded = stored.slice(PLAN_STORAGE_PREFIX.length).replace(/-/g, "+").replace(/_/g, "/");
-  const padded = encoded + "=".repeat((4 - (encoded.length % 4)) % 4);
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  if (!stored.startsWith(PLAN_STORAGE_PREFIX) && !stored.startsWith(PLAN_STORAGE_GZIP_PREFIX)) return JSON.parse(stored);
+  let bytes;
+  if (stored.startsWith(PLAN_STORAGE_GZIP_PREFIX)) {
+    const compressed = bytesFromBase64Url(stored.slice(PLAN_STORAGE_GZIP_PREFIX.length));
+    bytes = new Uint8Array(await new Response(
+      new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip")),
+    ).arrayBuffer());
+  } else {
+    bytes = bytesFromBase64Url(stored.slice(PLAN_STORAGE_PREFIX.length));
+  }
   const expand = item => Array.isArray(item)
     ? item.map(expand)
     : item && typeof item === "object"
@@ -234,10 +254,10 @@ export function isPlanRow(row) {
   return String(row.assignment_kind || "").trim().toLowerCase() === "tour_plan" || String(row.assignment_group_id || "").startsWith("PLAN-") || String(row.confirmation_note || "").includes("[GUIDE_PLAN ");
 }
 
-export function parsePlanRow(row) {
+export async function parsePlanRow(row) {
   if (!isPlanRow(row)) return null;
   try {
-    const parsed = decodeStoredPlan(row.internal_note);
+    const parsed = await decodeStoredPlan(row.internal_note);
     const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
     const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
     const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
@@ -442,7 +462,7 @@ export function validatePlanForReview(plan) {
   return errors;
 }
 
-export function planAssignment(plan) {
+export async function planAssignment(plan) {
   const stored = { ...plan };
   delete stored.synthetic;
   return {
@@ -471,7 +491,7 @@ export function planAssignment(plan) {
     // percent-encodes every quote and brace and can exceed its guarded request
     // limit even when the original plan is modest. Base64url preserves the
     // complete plan while keeping the wire payload compact and URL-safe.
-    internal_note: encodeStoredPlan(stored),
+    internal_note: await encodeStoredPlan(stored),
     created_by: "JPG",
   };
 }

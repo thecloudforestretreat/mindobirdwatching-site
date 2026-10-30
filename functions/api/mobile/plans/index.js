@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
       throw Object.assign(new Error("This review queue is available only to MBW administrators."), { status: 403 });
     }
     const rows = await listRecords(env, "list_assignments", {});
-    const plans = rows.filter(isPlanRow).map(parsePlanRow).filter(Boolean).map(plan => ({
+    const plans = (await Promise.all(rows.filter(isPlanRow).map(parsePlanRow))).filter(Boolean).map(plan => ({
       planId: plan.planId,
       inquiryId: plan.inquiryId,
       providerId: plan.providerId,

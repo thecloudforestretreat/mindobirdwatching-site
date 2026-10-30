@@ -5,9 +5,9 @@ import {
 } from "./mobile-domain.mjs";
 import { isPlanRow, parsePlanRow } from "./guide-plans.mjs";
 
-function customPlanSummary(row) {
+async function customPlanSummary(row) {
   if (!isPlanRow(row)) return null;
-  const plan = parsePlanRow(row);
+  const plan = await parsePlanRow(row);
   if (!plan?.planId || !plan?.inquiryId) return null;
   return {
     planId: plan.planId,
@@ -36,7 +36,7 @@ export async function loadMobileData(env) {
   const inquiries = inquiryRows.map(normalizeInquiry).filter(item => item.inquiryId);
   const interactions = interactionRows.map(normalizeInteraction).filter(item => item.interactionId);
   const assignments = assignmentRows.map(normalizeAssignment).filter(item => item.assignmentId);
-  const customPlans = assignmentRows.map(customPlanSummary).filter(Boolean);
+  const customPlans = (await Promise.all(assignmentRows.map(customPlanSummary))).filter(Boolean);
   const providers = providerRows.map(normalizeProvider).filter(item => item.name && item.active);
   const payments = paymentRows.map(normalizePayment).filter(item => item.paymentId || item.invoiceNo);
   const bookings = bookingRows.map(normalizeBooking).filter(item => item.bookingId);

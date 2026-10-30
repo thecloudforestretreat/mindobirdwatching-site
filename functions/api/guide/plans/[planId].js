@@ -27,7 +27,7 @@ export async function onRequestPost({ request, env, params }) {
       if (!isNeicer(requestedProvider.providerName) && !(currentRow && isNeicer(providerName(currentRow)))) return json(403, { ok: false, error: "Choose Neicer in Guide View before editing this plan." });
       if (currentRow && requestedProvider.providerId && !identityMatchesProvider({ providerId: requestedProvider.providerId, providerIds: [requestedProvider.providerId], providerName: requestedProvider.providerName }, currentRow.provider_id, providerName(currentRow))) return json(404, { ok: false, error: "Tour plan not found." });
     }
-    const current = currentRow ? parsePlanRow(currentRow) : planId === ROBERT_PLAN_ID ? robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName }) : null;
+    const current = currentRow ? await parsePlanRow(currentRow) : planId === ROBERT_PLAN_ID ? robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName }) : null;
     if (!current) return json(409, { ok: false, error: "The saved plan could not be read safely." });
     if (currentRow && String(body.updatedAt || "") !== String(currentRow.updated_at || "")) {
       return json(409, { ok: false, code: "PLAN_STALE", error: "This plan changed after you opened it. Refresh before saving so no work is overwritten." });
@@ -90,7 +90,7 @@ export async function onRequestPost({ request, env, params }) {
       plan.history = [...(current.history || []), { id: crypto.randomUUID(), actor: actor.name, role: actor.role, action, fromStatus: current.status, toStatus: plan.status, changedAt: new Date().toISOString() }].slice(-100);
       if (["es", "en"].includes(body.editLanguage)) plan.localeUpdatedAt = { ...(current.localeUpdatedAt || {}), [body.editLanguage]: new Date().toISOString() };
     }
-    const assignment = { ...(currentRow || {}), ...planAssignment(plan) };
+    const assignment = { ...(currentRow || {}), ...await planAssignment(plan) };
     // crmCall only resolves after n8n explicitly confirms the write. Avoid a
     // second list_assignments workflow inside this request: that redundant
     // verification can exceed the edge response window for a large itinerary
