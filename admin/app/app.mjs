@@ -17,9 +17,6 @@ const FOREGROUND_SYNC_MIN_AGE_MS = 5 * 60 * 1000;
 const RECONNECT_SYNC_MIN_AGE_MS = 60 * 1000;
 const AUTO_RETRY_COOLDOWN_MS = 60 * 1000;
 const SERVICE_TIME_DEFAULTS = { MBW004: { start: "06:00", end: "09:00" }, MBW005: { start: "05:00", end: "10:00" }, MBW006: { start: "05:00", end: "15:00" }, MBW016: { start: "19:00", end: "21:00" } };
-const CUSTOM_PLANS = new Map([
-  ["INQ-20261023224230-9029", { planId: "robert-2027", providerId: "PROV-NEICER", title: "Robert’s private Ecuador itinerary", dates: "February 9–14, 2027" }],
-]);
 const productCode = value => String(value || "").trim().toUpperCase().match(/^(MBW\d+)/)?.[1] || "";
 const serviceTimes = tour => SERVICE_TIME_DEFAULTS[productCode(tour?.product)] || { start: "", end: "" };
 const state = { session: null, data: null, route: "actions", cached: false, guest: null, currentGuestId: "", actionQueue: [], guestQueue: [], todayQueue: [], deskView: "list", repFilter: "all", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null, lastSyncedAt: 0, snapshotSavedAt: 0, connectionMode: "loading" };
@@ -79,10 +76,16 @@ function guestDocumentsMarkup(guest) {
 }
 
 function customPlanMarkup(guest) {
-  const plan = CUSTOM_PLANS.get(guest.inquiryId);
-  if (!plan) return "";
-  const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
-  return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">Working draft</span></div><div class="recordItem"><strong>${esc(plan.title)}</strong><p>${esc(plan.dates)} · Assigned to Neicer</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div><div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
+  const plans = (state.data?.customPlans || []).filter(plan => plan.inquiryId === guest.inquiryId);
+  if (!plans.length) return "";
+  const statusLabels = { guide_drafting: "Working draft", admin_review: "Ready for review", changes_requested: "Changes requested", approved: "Approved" };
+  return plans.map(plan => {
+    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
+    const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
+    const dates = plan.startDate ? (plan.endDate && plan.endDate !== plan.startDate ? `${shortDate(plan.startDate)}–${shortDate(plan.endDate)}` : shortDate(plan.startDate)) : "Dates to be confirmed";
+    const status = statusLabels[plan.status] || "In progress";
+    return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">${esc(status)}</span></div><div class="recordItem"><strong>${esc(title)}</strong><p>${esc(dates)} · Assigned to ${esc(plan.providerName || "guide")}</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div><div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
+  }).join("");
 }
 
 function guestSummaryMarkup(item, fallback = "Guest", assignee = "") {
