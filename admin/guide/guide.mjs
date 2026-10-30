@@ -50,6 +50,10 @@ Object.assign(COPY.es, {
   translationReady: "Traducción en inglés lista para revisar. Guarda los cambios cuando esté correcta.",
   translationHelp: "La IA local crea un borrador en inglés sin cambiar el español ni los costos del guía. Revisa el texto antes de guardarlo o usarlo con un huésped.",
   translationSaveFirst: "Guarda o descarta los cambios actuales antes de traducir.",
+  translationCurrent: "Inglés sincronizado",
+  translationAutomatic: "Actualizando automáticamente el borrador en inglés…",
+  copyGuideWhatsApp: "Copiar costos para WhatsApp",
+  guideWhatsAppCopied: "Desglose del guía copiado para WhatsApp",
 });
 Object.assign(COPY.en, {
   translateEnglish: "Translate draft to English",
@@ -57,6 +61,10 @@ Object.assign(COPY.en, {
   translationReady: "English translation is ready for review. Save changes when it is correct.",
   translationHelp: "Local AI creates an English draft without changing the Spanish source or guide costs. Review it before saving or using it with a guest.",
   translationSaveFirst: "Save or discard your current changes before translating.",
+  translationCurrent: "English synchronized",
+  translationAutomatic: "Automatically updating the English draft…",
+  copyGuideWhatsApp: "Copy guide costs for WhatsApp",
+  guideWhatsAppCopied: "Guide cost breakdown copied for WhatsApp",
 });
 
 const TERMINOLOGY = {
@@ -89,6 +97,7 @@ let reportsLinked = true;
 let reportsLoaded = false;
 let reportsLoading = false;
 let toastTimer;
+const autoTranslatingPlans = new Set();
 let tourView = localStorage.getItem("mbw-guide-tour-view") === "all" ? "all" : "upcoming";
 let tourRange = ["7", "30", "all"].includes(localStorage.getItem("mbw-guide-tour-range")) ? localStorage.getItem("mbw-guide-tour-range") : "7";
 let tourSearch = "";
@@ -410,11 +419,10 @@ function syncPlanDayEditors(planId) {
     day.dropoffLocation = localizedDraft(day.dropoffLocation); day.dropoffLocation[language] = editor.querySelector('[name="dropoffLocation"]')?.value.trim() || "";
     day.overnightCity = localizedDraft(day.overnightCity); day.overnightCity[language] = editor.querySelector('[name="overnightCity"]')?.value.trim() || "";
     day.costNote = localizedDraft(day.costNote); day.costNote[language] = editor.querySelector('[name="costNote"]')?.value.trim() || "";
-    day.sourceCosts = sortPlanCosts([...editor.querySelectorAll("[data-source-cost-row]")].map((row, index) => ({
-      id: row.dataset.costId || `${day.id}-source-${index + 1}`,
-      category: row.querySelector('[name="sourceCategory"]')?.value || "other",
-      amount: Number(row.querySelector('[name="sourceAmount"]')?.value || 0),
-    })).filter(item => item.amount > 0));
+    day.sourceCosts = sortPlanCosts([...editor.querySelectorAll("[data-source-cost-row]")].map((row, index) => {
+      const rawAmount = row.querySelector('[name="sourceAmount"]')?.value.trim() || "";
+      return { id: row.dataset.costId || `${day.id}-source-${index + 1}`, category: row.querySelector('[name="sourceCategory"]')?.value || "other", amount: Number(rawAmount || 0), entered: rawAmount !== "" };
+    }).filter(item => item.entered && item.amount >= 0).map(({ entered, ...item }) => item));
     day.originalCost = day.sourceCosts.length ? day.sourceCosts.reduce((sum, item) => sum + item.amount, 0) : Number(editor.querySelector('[name="originalCost"]')?.value || 0);
     const totalInput = editor.querySelector('[name="originalCost"]'); if (totalInput) totalInput.value = day.originalCost;
   });
@@ -453,7 +461,9 @@ function suggestedGuestLines(plan, dayId, sellPrice, lodgingPrice = 0) {
   const categories = [...grouped.keys()].sort((left, right) => (costCategoryOrder.get(left) ?? 70) - (costCategoryOrder.get(right) ?? 70));
   const requestedLodging = categories.includes("lodging") ? Math.min(Math.max(0, Number(lodgingPrice || 0)), sellPrice) : 0;
   const distributable = sellPrice - requestedLodging;
-  const allocationCategories = requestedLodging > 0 ? categories.filter(category => category !== "lodging") : categories;
+  const zeroCategories = categories.filter(category => Number(grouped.get(category) || 0) === 0 && !(category === "lodging" && requestedLodging > 0));
+  let allocationCategories = categories.filter(category => Number(grouped.get(category) || 0) > 0 && !(category === "lodging" && requestedLodging > 0));
+  if (!allocationCategories.length && distributable > 0) { grouped.set("other", 1); allocationCategories = ["other"]; }
   const basisTotal = allocationCategories.reduce((sum, category) => sum + Number(grouped.get(category) || 0), 0) || allocationCategories.length || 1;
   let allocated = 0;
   const lines = allocationCategories.map((category, index) => {
@@ -462,10 +472,11 @@ function suggestedGuestLines(plan, dayId, sellPrice, lodgingPrice = 0) {
     allocated += amount;
     return { id: crypto.randomUUID(), category, label: { ...guestCategoryLabels[category] }, amount };
   }).filter(item => item.amount > 0);
+  zeroCategories.forEach(category => lines.push({ id: crypto.randomUUID(), category, label: { ...guestCategoryLabels[category] }, amount: 0 }));
   if (requestedLodging > 0) lines.push({ id: crypto.randomUUID(), category: "lodging", label: { ...guestCategoryLabels.lodging }, amount: requestedLodging });
   const difference = Number((sellPrice - lines.reduce((sum, item) => sum + item.amount, 0)).toFixed(2));
   if (difference && lines.length) lines[lines.length - 1].amount = Number((lines[lines.length - 1].amount + difference).toFixed(2));
-  return lines;
+  return sortPlanCosts(lines);
 }
 
 function syncPlanPricing(planId) {
@@ -477,12 +488,10 @@ function syncPlanPricing(planId) {
   plan.mbwPricing.days = plan.days.map(day => {
     const sellInput = workspace.querySelector(`[data-mbw-price="${CSS.escape(day.id)}"]`), lodgingInput = workspace.querySelector(`[data-lodging-price="${CSS.escape(day.id)}"]`);
     const prior = existing.get(day.id) || {};
-    const guestLines = [...workspace.querySelectorAll(`[data-guest-lines-for="${CSS.escape(day.id)}"] [data-guest-line]`)].map((row, index) => ({
-      id: row.dataset.guestLine || prior.guestLines?.[index]?.id || crypto.randomUUID(),
-      category: row.querySelector('[name="guestCategory"]')?.value || "other",
-      label: { ...(prior.guestLines?.[index]?.label || {}), [language]: row.querySelector('[name="guestLabel"]')?.value.trim() || "" },
-      amount: Number(row.querySelector('[name="guestAmount"]')?.value || 0),
-    })).filter(item => (item.label.es || item.label.en) && item.amount > 0);
+    const guestLines = [...workspace.querySelectorAll(`[data-guest-lines-for="${CSS.escape(day.id)}"] [data-guest-line]`)].map((row, index) => {
+      const rawAmount = row.querySelector('[name="guestAmount"]')?.value.trim() || "";
+      return { id: row.dataset.guestLine || prior.guestLines?.[index]?.id || crypto.randomUUID(), category: row.querySelector('[name="guestCategory"]')?.value || "other", label: { ...(prior.guestLines?.[index]?.label || {}), [language]: row.querySelector('[name="guestLabel"]')?.value.trim() || "" }, amount: Number(rawAmount || 0), entered: rawAmount !== "" };
+    }).filter(item => item.entered && (item.label.es || item.label.en) && item.amount >= 0).map(({ entered, ...item }) => item);
     return {
       dayId: day.id,
       sellPrice: sellInput ? Number(sellInput.value || 0) : Number(prior.sellPrice || 0),
@@ -531,13 +540,29 @@ function brandedItineraryEmail(plan) {
   return `Subject: ${plan.guestName}'s custom Ecuador itinerary\n\nHello ${plan.guestName},\n\nThank you for planning your Ecuador journey with Mindo Bird Watching. Below is your proposed itinerary and detailed final price breakdown based on the details currently confirmed.\n\n${days}\n\nFinal itinerary total: ${money(total)}${lodgingTotal ? `\nLodging included in that total: ${money(lodgingTotal)}` : ""}\n\nPlease let us know if you would like any adjustments before we finalize the arrangements.\n\nWarm regards,\nMindo Bird Watching\nhttps://mindobirdwatching.com/`;
 }
 
+function guideCostWhatsApp(plan) {
+  const date = value => new Intl.DateTimeFormat("es-EC", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`)).replace(/\./g, "");
+  const lines = [`*${localizedDraft(plan.title).es || plan.guestName || "Itinerario"}*`, "*Revisión de costos del guía*", ""];
+  plan.days.forEach((day, index) => {
+    lines.push(`*Día ${index + 1} · ${date(day.date)}*`);
+    lines.push(localizedDraft(day.title).es || localizedDraft(day.title).en);
+    const costs = sortPlanCosts(day.sourceCosts || []);
+    costs.forEach(item => lines.push(`• ${COPY.es[{ transportation: "transportation", guide: "guideCost", food: "food", lodging: "lodging", entrance: "entrance", reserve: "reserve", activity: "activity", other: "other" }[item.category] || "other"]}: ${money(item.amount)}`));
+    (plan.adjustments || []).filter(item => item.dayId === day.id).forEach(item => lines.push(`• ${item.description || COPY.es.other}: ${money(item.amount)}`));
+    lines.push(`*Total del día: ${money(guideDayCost(plan, day.id))}*`, "");
+  });
+  lines.push(`*Total cotizado por el guía: ${money(plan.days.reduce((sum, day) => sum + guideDayCost(plan, day.id), 0))}*`);
+  lines.push("Por favor revisa y confirma los días, conceptos y costos antes de finalizar el itinerario.");
+  return lines.join("\n");
+}
+
 function renderAdminPricing(plan, locked) {
   if (!isAdminReview()) return "";
   const prices = new Map((plan.mbwPricing?.days || []).map(item => [item.dayId, { sellPrice: Number(item.sellPrice || 0), lodgingPrice: Number(item.lodgingPrice || 0), guestLines: item.guestLines || [] }]));
   const categoryOptions = selected => ["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"].map(value => `<option value="${value}" ${value === selected ? "selected" : ""}>${esc(costCategoryLabel(value))}</option>`).join("");
   const rows = plan.days.map(day => {
     const cost = guideDayCost(plan, day.id), price = prices.get(day.id) || {}, sellPrice = Number(price.sellPrice || 0);
-    const guestLines = (price.guestLines || []).map(line => `<div class="guestPriceLine" data-guest-line="${esc(line.id)}"><select name="guestCategory" ${locked ? "disabled" : ""}>${categoryOptions(line.category)}</select><input name="guestLabel" maxlength="160" value="${esc(localized(line.label))}" placeholder="${esc(t("guestLineLabel"))}" ${locked ? "disabled" : ""}><input name="guestAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" value="${esc(line.amount || "")}" ${locked ? "disabled" : ""}>${locked ? "" : `<button type="button" data-remove-guest-line aria-label="${esc(t("remove"))}">×</button>`}</div>`).join("");
+    const guestLines = (price.guestLines || []).map(line => `<div class="guestPriceLine" data-guest-line="${esc(line.id)}"><select name="guestCategory" ${locked ? "disabled" : ""}>${categoryOptions(line.category)}</select><input name="guestLabel" maxlength="160" value="${esc(localized(line.label))}" placeholder="${esc(t("guestLineLabel"))}" ${locked ? "disabled" : ""}><input name="guestAmount" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(line.amount ?? "")}" ${locked ? "disabled" : ""}>${locked ? "" : `<button type="button" data-remove-guest-line aria-label="${esc(t("remove"))}">×</button>`}</div>`).join("");
     const guestTotal = (price.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0), mismatch = sellPrice > 0 && Math.abs(guestTotal - sellPrice) > 0.009;
     return `<div class="pricingRow"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" ${locked ? "disabled" : ""}></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label><div class="guestPriceEditor" data-guest-lines-for="${esc(day.id)}"><h4>${esc(t("guestBreakdown"))}</h4>${guestLines}${locked ? "" : `<div class="guestPriceActions"><button type="button" data-build-guest-lines data-day-id="${esc(day.id)}">${esc(t("buildGuestBreakdown"))}</button><button type="button" data-add-guest-line data-day-id="${esc(day.id)}">+ ${esc(t("addGuestLine"))}</button></div>`}${mismatch ? `<small class="guestPriceMismatch">${esc(t("guestBreakdownMismatch"))}</small>` : ""}</div></div>`;
   }).join("");
@@ -547,7 +572,7 @@ function renderAdminPricing(plan, locked) {
 }
 
 function renderSourceCostEditRow(plan, day, item, costIndex, locked = false) {
-  return `<div class="sourceCostEditRow" data-source-cost-row data-cost-id="${esc(item.id || `${day.id}-source-${costIndex + 1}`)}"><label><span>${t("category")}</span><select name="sourceCategory" ${locked ? "disabled" : ""}>${sourceCostOptions(item.category)}</select></label><label><span>${t("amount")}</span><input name="sourceAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" value="${esc(item.amount || "")}" ${locked ? "disabled" : ""}></label>${locked ? "" : `<button type="button" data-remove-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" aria-label="${esc(t("remove"))}">×</button>`}</div>`;
+  return `<div class="sourceCostEditRow" data-source-cost-row data-cost-id="${esc(item.id || `${day.id}-source-${costIndex + 1}`)}"><label><span>${t("category")}</span><select name="sourceCategory" ${locked ? "disabled" : ""}>${sourceCostOptions(item.category)}</select></label><label><span>${t("amount")}</span><input name="sourceAmount" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(item.amount ?? "")}" ${locked ? "disabled" : ""}></label>${locked ? "" : `<button type="button" data-remove-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" aria-label="${esc(t("remove"))}">×</button>`}</div>`;
 }
 
 function renderPlanDay(plan, day, index) {
@@ -595,7 +620,7 @@ function renderPlans() {
     const localeStamp = plan.localeUpdatedAt?.[language];
     return `<details class="planWorkspace" data-plan="${esc(plan.planId)}" ${plans.length === 1 || planIndex === 0 || initialPlanId === plan.planId ? "open" : ""}><summary class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(localized(plan.title))}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></summary>
       <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${localized(brief.traveler)}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${localized(brief.pickup)} → ${localized(brief.dropoff)}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(localized(brief.lodging))}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(localized(brief.request))}</strong></div><div class="wide"><small>${language === "es" ? "Intereses" : "Interests"}</small><strong>${esc(localized(brief.interests))}</strong></div></div></section>
-      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span></div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}. ${t("translationPending")}</p>${isAdminReview() && language === "en" && !locked ? `<div class="planTranslation"><p>${esc(t("translationHelp"))}</p><button class="actionWarning" type="button" data-translate-plan="${esc(plan.planId)}">${esc(t("translateEnglish"))}</button></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
+      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span>${isAdminReview() ? `<button type="button" data-copy-guide-whatsapp="${esc(plan.planId)}">${esc(t("copyGuideWhatsApp"))}</button>` : ""}</div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}${language === "en" && !englishTranslationNeeded(plan) ? ` · ${esc(t("translationCurrent"))}` : ""}</p>${isAdminReview() && language === "en" && !locked && englishTranslationNeeded(plan) ? `<div class="planTranslation"><p>${esc(t("translationAutomatic"))}</p></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div>${readOnly ? "" : `<form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category">${costCategories.map(category => `<option value="${category}">${esc(costCategoryLabel(category))}</option>`).join("")}</select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form>`}</section>
       ${renderAdminPricing(plan, locked)}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
@@ -609,6 +634,7 @@ function renderPlans() {
     if (link && lodgingBlock) lodgingBlock.insertAdjacentHTML("beforeend", `<a class="planBriefLink" href="${esc(link)}" target="_blank" rel="noopener">${esc(language === "es" ? "Ver recomendaciones de alojamiento en Mindo" : "View Mindo lodging recommendations")}</a>`);
   });
   for (const plan of plans) updatePlanSaveState(plan.planId);
+  queueMicrotask(maybeAutoTranslatePlans);
 }
 
 async function savePlan(planId, status) {
@@ -664,6 +690,45 @@ async function translatePlanToEnglish(planId, button) {
   plan.localeUpdatedAt = { ...(plan.localeUpdatedAt || {}), en: result.generatedAt || new Date().toISOString() };
   markPlanDirty(planId); renderPlans();
   $("#toast").textContent = t("translationReady"); $("#toast").hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("#toast").hidden = true; }, 3500);
+}
+
+function englishTranslationNeeded(plan) {
+  if (!plan || !plan.days?.length) return false;
+  const missing = !localizedDraft(plan.title).en || plan.days.some(day => !localizedDraft(day.title).en || !localizedDraft(day.details).en || !localizedDraft(day.pickupLocation).en || !localizedDraft(day.dropoffLocation).en || !localizedDraft(day.overnightCity).en);
+  const spanishUpdated = Date.parse(plan.localeUpdatedAt?.es || "") || 0;
+  const englishUpdated = Date.parse(plan.localeUpdatedAt?.en || "") || 0;
+  return missing || spanishUpdated > englishUpdated;
+}
+
+async function autoTranslatePlanToEnglish(planId) {
+  if (autoTranslatingPlans.has(planId) || dirtyPlans.has(planId) || savingPlans.has(planId)) return;
+  const plan = planFor(planId);
+  if (!plan || !englishTranslationNeeded(plan)) return;
+  autoTranslatingPlans.add(planId); renderPlans();
+  try {
+    const response = await fetch(`/api/guide/plans/${encodeURIComponent(planId)}/translate`, {
+      method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ updatedAt: plan.updatedAt || "" }),
+    });
+    const result = await readApiBody(response);
+    if (!response.ok || !result.translation) throw new Error(result.error || "The automatic English translation could not be created.");
+    applyEnglishTranslation(plan, result.translation);
+    plan.localeUpdatedAt = { ...(plan.localeUpdatedAt || {}), en: result.generatedAt || new Date().toISOString() };
+    markPlanDirty(planId);
+    await savePlan(planId, plan.status);
+  } catch (error) {
+    $("#toast").textContent = error.message; $("#toast").hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("#toast").hidden = true; }, 5000);
+  } finally {
+    autoTranslatingPlans.delete(planId);
+  }
+}
+
+function maybeAutoTranslatePlans() {
+  if (!isAdminReview() || language !== "en") return;
+  for (const source of data?.plans || []) {
+    const plan = planFor(source.planId);
+    if (plan && plan.status !== "approved" && englishTranslationNeeded(plan)) autoTranslatePlanToEnglish(plan.planId);
+  }
 }
 
 function shareMessage(kind, url) {
@@ -823,6 +888,12 @@ document.addEventListener("click", event => {
   const clearCalendarSelection = event.target.closest("[data-clear-calendar-selection]");
   if (clearCalendarSelection) { selectedCalendarDate = ""; selectedAssignmentId = ""; renderTours(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
+  const copyGuideWhatsApp = event.target.closest("[data-copy-guide-whatsapp]");
+  if (copyGuideWhatsApp) {
+    const plan = planFor(copyGuideWhatsApp.dataset.copyGuideWhatsapp);
+    if (plan) copyText(guideCostWhatsApp(plan)).then(() => { $("#toast").textContent = t("guideWhatsAppCopied"); }).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
+    return;
+  }
   const copyPlanEmail = event.target.closest("[data-copy-plan-email]"); if (copyPlanEmail) { const plan = planFor(copyPlanEmail.dataset.copyPlanEmail); if (plan) copyText(brandedItineraryEmail(plan)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser.")); }
   const translatePlan = event.target.closest("[data-translate-plan]");
   if (translatePlan) { translatePlanToEnglish(translatePlan.dataset.translatePlan, translatePlan).catch(error => { translatePlan.disabled = false; translatePlan.textContent = t("translateEnglish"); alert(error.message); }); return; }

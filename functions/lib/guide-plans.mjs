@@ -336,11 +336,11 @@ export function sanitizePlan(input, current = robertPlan()) {
       id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
       category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
       amount: number(cost.amount),
-    })).filter(cost => cost.amount > 0) : (prior.sourceCosts || []).map((cost, costIndex) => ({
+    })).filter(cost => cost.amount >= 0) : (prior.sourceCosts || []).map((cost, costIndex) => ({
       id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
       category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
       amount: number(cost.amount),
-    })).filter(cost => cost.amount > 0));
+    })).filter(cost => cost.amount >= 0));
     return {
       ...prior,
       id,
@@ -370,7 +370,7 @@ export function sanitizePlan(input, current = robertPlan()) {
         category: GUEST_LINE_CATEGORIES.has(line.category) ? line.category : "other",
         label: bilingual(line.label, {}, 160),
         amount: number(line.amount),
-      })).filter(line => (line.label.es || line.label.en) && line.amount > 0)),
+      })).filter(line => (line.label.es || line.label.en) && line.amount >= 0)),
     })),
     notes: text(pricingInput.notes, 1000),
     approvedAt: text(pricingInput.approvedAt, 80),

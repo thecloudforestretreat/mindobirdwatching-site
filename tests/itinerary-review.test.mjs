@@ -23,6 +23,14 @@ test("daily cost order always ends with transportation then lodging when present
   assert.deepEqual(plan.days[0].sourceCosts.slice(-2).map(item => item.category), ["transportation", "lodging"]);
 });
 
+test("explicit zero-dollar guide and guest cost lines remain visible", () => {
+  const base = robertPlan();
+  const day = { ...base.days[0], sourceCosts: [...base.days[0].sourceCosts, { id: "no-reserve-fee", category: "reserve", amount: 0 }] };
+  const plan = sanitizePlan({ ...base, days: [day, ...base.days.slice(1)], mbwPricing: { days: [{ dayId: day.id, sellPrice: 420, guestLines: [{ id: "guest-no-reserve-fee", category: "reserve", label: { en: "Reserve fee", es: "Tarifa de reserva" }, amount: 0 }] }] } });
+  assert.equal(plan.days[0].sourceCosts.find(item => item.id === "no-reserve-fee")?.amount, 0);
+  assert.equal(plan.mbwPricing.days[0].guestLines.find(item => item.id === "guest-no-reserve-fee")?.amount, 0);
+});
+
 test("Robert plan carries the dated lodging and route review without exposing MBW pricing to guides", () => {
   const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
   assert.match(plan.comments[0].message, /primeros 3 días en Mindo/);

@@ -97,10 +97,11 @@ test("only an administrator can request a read-only local translation", async t 
   assert.equal(denied.status, 403);
 });
 
-test("Guide Nest exposes translation only inside admin English review", () => {
+test("Guide Nest automatically refreshes stale English only inside admin review", () => {
   const script = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
-  assert.match(script, /isAdminReview\(\) && language === "en"/);
-  assert.match(script, /data-translate-plan/);
-  assert.match(script, /without changing the Spanish source or guide costs/);
+  assert.match(script, /function englishTranslationNeeded/);
+  assert.match(script, /function maybeAutoTranslatePlans/);
+  assert.match(script, /if \(!isAdminReview\(\) \|\| language !== "en"\) return/);
+  assert.doesNotMatch(script, /data-translate-plan="/);
   assert.match(script, /\/translate`,/);
 });
