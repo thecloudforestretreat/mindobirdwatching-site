@@ -210,6 +210,16 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await firstDayEditor.locator('input[name="originalCost"]').fill("190");
     await firstDayEditor.locator('[data-source-cost-row]').first().locator('input[name="sourceAmount"]').fill("90");
     assert.equal(await firstDayEditor.locator('select[name="sourceCategory"]').first().inputValue(), "transportation");
+    await firstDayEditor.getByRole("button", { name: "Agregar costo estándar" }).click();
+    assert.equal(await firstDayEditor.locator('[data-source-cost-row]').count(), 4);
+    assert.equal(await firstDayEditor.evaluate(editor => editor.closest("details").open), true);
+    const addedCost = firstDayEditor.locator('[data-source-cost-row]').last();
+    assert.equal(await addedCost.locator('select[name="sourceCategory"]').inputValue(), "other");
+    await addedCost.locator('select[name="sourceCategory"]').selectOption("lodging");
+    await addedCost.locator('input[name="sourceAmount"]').fill("125");
+    await addedCost.getByRole("button", { name: "Quitar" }).click();
+    assert.equal(await firstDayEditor.locator('[data-source-cost-row]').count(), 3);
+    assert.equal(await firstDayEditor.evaluate(editor => editor.closest("details").open), true);
     assert.match(await page.locator('[data-plan-save-state]').innerText(), /Cambios sin guardar/);
     await firstDayEditor.getByRole("button", { name: "Duplicar día" }).click();
     assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);

@@ -341,6 +341,7 @@ test("saved guide-plan briefs and reserve costs remain the source of truth", () 
       ...original.brief,
       request: { es: "Usar solo chofer cuando no se requiera guía.", en: "Use a driver only when a guide is not required." },
       dropoff: { es: "Hora del vuelo pendiente.", en: "Flight time pending." },
+      lodgingLink: "https://mindobirdwatching.com/recommendations/",
     },
     days: original.days.map((day, index) => index === 0 ? {
       ...day,
@@ -350,6 +351,7 @@ test("saved guide-plan briefs and reserve costs remain the source of truth", () 
   }, original);
   assert.equal(changed.brief.request.es, "Usar solo chofer cuando no se requiera guía.");
   assert.equal(changed.brief.dropoff.en, "Flight time pending.");
+  assert.equal(changed.brief.lodgingLink, "https://mindobirdwatching.com/recommendations/");
   assert.equal(changed.days[0].sourceCosts[0].category, "reserve");
   assert.equal(changed.updatedAt, "2026-10-30T00:04:36.660Z");
   assert.equal(changed.synthetic, false);
@@ -424,6 +426,26 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
 
     const chicho = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "chicho@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(chicho.status, 404);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("admin can save an existing name-linked plan when the CRM row has no provider ID", async () => {
+  const savedFetch = globalThis.fetch;
+  const base = { ...robertPlan({ providerName: "Neicer" }), assignmentId: "PLAN-NAME-LINKED", synthetic: false, updatedAt: "v1" };
+  let rows = [{ assignment_id: "PLAN-NAME-LINKED", assignment_group_id: "PLAN-robert-2027", provider_name: "Neicer", confirmation_note: "[GUIDE_PLAN robert-2027]|guide_drafting", internal_note: JSON.stringify(base), updated_at: "v1" }];
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: rows });
+      if (payload.action === "update_assignment") { rows = [{ ...payload.assignment, updated_at: "v2" }]; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${payload.action}`);
+    };
+    const response = await saveGuidePlan({
+      request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ providerId: "PROV-NEICER", providerName: "Neicer", updatedAt: "v1", status: "guide_drafting", days: base.days }) }),
+      env: { ...env, MBW_MOBILE_WRITE_ENABLED: "true" },
+      params: { planId: "robert-2027" },
+    });
+    assert.equal(response.status, 200);
   } finally { globalThis.fetch = savedFetch; }
 });
 

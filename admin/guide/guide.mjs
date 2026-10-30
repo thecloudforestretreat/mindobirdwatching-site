@@ -1,5 +1,6 @@
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+const safeMbwLink = value => { try { const url = new URL(String(value || "")); return url.protocol === "https:" && /^(?:www\.)?mindobirdwatching\.com$/i.test(url.hostname) ? url.href : ""; } catch { return ""; } };
 const LANGUAGE_KEY = "mbw-guide-language-v1";
 const TIP_URL = "https://mindobirdwatching.com/tip-your-guide/";
 const COPY = {
@@ -373,13 +374,17 @@ function syncPlanDayEditors(planId) {
 }
 function syncAllPlanEditors() { for (const plan of data?.plans || []) syncPlanDayEditors(plan.planId); }
 
+function renderSourceCostEditRow(plan, day, item, costIndex, locked = false) {
+  return `<div class="sourceCostEditRow" data-source-cost-row data-cost-id="${esc(item.id || `${day.id}-source-${costIndex + 1}`)}"><label><span>${t("category")}</span><select name="sourceCategory" ${locked ? "disabled" : ""}>${sourceCostOptions(item.category)}</select></label><label><span>${t("amount")}</span><input name="sourceAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" value="${esc(item.amount || "")}" ${locked ? "disabled" : ""}></label>${locked ? "" : `<button type="button" data-remove-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" aria-label="${esc(t("remove"))}">×</button>`}</div>`;
+}
+
 function renderPlanDay(plan, day, index) {
   const sourceCosts = Array.isArray(day.sourceCosts) ? day.sourceCosts : [];
   const locked = plan.status === "approved";
   const sourceTotal = sourceCosts.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const mismatch = sourceCosts.length && Math.abs(sourceTotal - Number(day.originalCost || 0)) > 0.009;
   const readCosts = sourceCosts.length ? `<dl class="sourceCosts" aria-label="${esc(t("sourceBreakdown"))}">${sourceCosts.map(item => `<div><dt>${esc(costCategoryLabel(item.category))}</dt><dd>${esc(money(item.amount))}</dd></div>`).join("")}</dl>` : "";
-  const editCosts = sourceCosts.map((item, costIndex) => `<div class="sourceCostEditRow" data-source-cost-row data-cost-id="${esc(item.id || `${day.id}-source-${costIndex + 1}`)}"><label><span>${t("category")}</span><select name="sourceCategory" ${locked ? "disabled" : ""}>${sourceCostOptions(item.category)}</select></label><label><span>${t("amount")}</span><input name="sourceAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" value="${esc(item.amount)}" ${locked ? "disabled" : ""}></label>${locked ? "" : `<button type="button" data-remove-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" aria-label="${esc(t("remove"))}">×</button>`}</div>`).join("");
+  const editCosts = sourceCosts.map((item, costIndex) => renderSourceCostEditRow(plan, day, item, costIndex, locked)).join("");
   const note = localized(day.costNote);
   return `<article data-plan-day="${esc(day.id)}"><time>${index + 1}<small>${esc(dateLabel(day.date))}</small></time><div><strong>${esc(localized(day.title))}</strong><p>${esc(localized(day.details))}</p>${readCosts}${note ? `<small class="sourceCostNote">${esc(note)}</small>` : ""}${mismatch ? `<small class="sourceCostWarning">${esc(t("breakdownMismatch"))}</small>` : ""}<details class="planDayEditor"><summary>${t("editDay")}</summary><div data-plan-day-editor data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}"><div class="planDayFields"><label><span>${t("date")}</span><input name="date" type="date" value="${esc(day.date)}" required ${locked ? "disabled" : ""}></label><label><span>${t("dayTotal")}</span><input name="originalCost" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(day.originalCost || 0)}" ${locked ? "disabled" : ""}></label><label class="wide"><span>${t("dayTitle")}</span><input name="title" maxlength="240" value="${esc(localized(day.title))}" required ${locked ? "disabled" : ""}></label><label class="wide"><span>${t("dayDetails")}</span><textarea name="details" maxlength="1800" ${locked ? "disabled" : ""}>${esc(localized(day.details))}</textarea></label><label class="wide"><span>${t("costNote")}</span><textarea name="costNote" maxlength="500" ${locked ? "disabled" : ""}>${esc(note)}</textarea></label></div><h4>${t("costBreakdown")}</h4><div class="sourceCostEditor">${editCosts}</div>${locked ? "" : `<div class="planDayTools"><button class="addSourceCost" type="button" data-add-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("addCostLine")}</button><button type="button" data-duplicate-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("duplicateDay")}</button><button class="danger" type="button" data-delete-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("deleteDay")}</button></div>`}</div></details></div><b>${day.originalCost ? esc(money(day.originalCost)) : "—"}</b></article>`;
 }
@@ -414,6 +419,12 @@ function renderPlans() {
       <details class="planHistory planSection"><summary>${t("activityHistory")}</summary><ol>${history}</ol></details>
       <div class="planActions"><span data-plan-save-state aria-live="polite"></span>${actions}</div></details>`;
   }).join("");
+  document.querySelectorAll("[data-plan]").forEach(workspace => {
+    const plan = planFor(workspace.dataset.plan);
+    const link = safeMbwLink(plan?.brief?.lodgingLink);
+    const lodgingBlock = workspace.querySelectorAll(".planBrief > div")[2];
+    if (link && lodgingBlock) lodgingBlock.insertAdjacentHTML("beforeend", `<a class="planBriefLink" href="${esc(link)}" target="_blank" rel="noopener">${esc(language === "es" ? "Ver recomendaciones de alojamiento en Mindo" : "View Mindo lodging recommendations")}</a>`);
+  });
   for (const plan of plans) updatePlanSaveState(plan.planId);
 }
 
@@ -572,9 +583,9 @@ document.addEventListener("click", event => {
   const offerResponse = event.target.closest("[data-offer-response]");
   if (offerResponse) { const bid = document.querySelector(`[data-bid="${CSS.escape(offerResponse.dataset.id)}"]`)?.value || ""; offerResponse.disabled = true; mutate(`/api/guide/offers/${encodeURIComponent(offerResponse.dataset.id)}/respond`, "POST", { response: offerResponse.dataset.offerResponse, bidAmount: bid }).then(refreshCurrent).catch(error => { offerResponse.disabled = false; alert(error.message); }); }
   const removeSourceCost = event.target.closest("[data-remove-source-cost]");
-  if (removeSourceCost) { const planId = removeSourceCost.dataset.planId; removeSourceCost.closest("[data-source-cost-row]")?.remove(); syncPlanDayEditors(planId); markPlanDirty(planId); renderPlans(); return; }
+  if (removeSourceCost) { const planId = removeSourceCost.dataset.planId; removeSourceCost.closest("[data-source-cost-row]")?.remove(); syncPlanDayEditors(planId); markPlanDirty(planId); return; }
   const addSourceCost = event.target.closest("[data-add-source-cost]");
-  if (addSourceCost) { const planId = addSourceCost.dataset.planId, plan = planFor(planId); syncPlanDayEditors(planId); const day = plan?.days.find(item => item.id === addSourceCost.dataset.dayId); if (day) day.sourceCosts.push({ id: crypto.randomUUID(), category: "transportation", amount: 0 }); markPlanDirty(planId); renderPlans(); return; }
+  if (addSourceCost) { const planId = addSourceCost.dataset.planId, plan = planFor(planId), editor = addSourceCost.closest("[data-plan-day-editor]"); syncPlanDayEditors(planId); const day = plan?.days.find(item => item.id === addSourceCost.dataset.dayId); if (day && editor) { const item = { id: crypto.randomUUID(), category: "other", amount: 0 }; editor.querySelector(".sourceCostEditor")?.insertAdjacentHTML("beforeend", renderSourceCostEditRow(plan, day, item, day.sourceCosts.length)); markPlanDirty(planId); editor.querySelector("[data-source-cost-row]:last-child select")?.focus(); } return; }
   const addPlanDay = event.target.closest("[data-add-plan-day]");
   if (addPlanDay) { const planId = addPlanDay.dataset.addPlanDay, plan = planFor(planId); syncPlanDayEditors(planId); if (plan) { const latest = plan.days.map(item => item.date).filter(Boolean).sort().at(-1) || plan.endDate || todayInEcuador(); plan.days.push({ id: `day-${crypto.randomUUID()}`, date: addDays(latest, 1), title: { es: "Nuevo día por planificar", en: "New day to plan" }, details: { es: "", en: "" }, sourceCosts: [], costNote: { es: "", en: "" }, originalCost: 0 }); markPlanDirty(planId); renderPlans(); } return; }
   const duplicateDay = event.target.closest("[data-duplicate-plan-day]");

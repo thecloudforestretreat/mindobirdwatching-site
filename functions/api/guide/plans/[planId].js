@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env, params }) {
       requestedProvider.providerName = identity.providerName || identity.name;
     } else {
       if (!isNeicer(requestedProvider.providerName) && !(currentRow && isNeicer(providerName(currentRow)))) return json(403, { ok: false, error: "Choose Neicer in Guide View before editing this plan." });
-      if (currentRow && requestedProvider.providerId && String(currentRow.provider_id || "") !== requestedProvider.providerId) return json(404, { ok: false, error: "Tour plan not found." });
+      if (currentRow && requestedProvider.providerId && !identityMatchesProvider({ providerId: requestedProvider.providerId, providerIds: [requestedProvider.providerId], providerName: requestedProvider.providerName }, currentRow.provider_id, providerName(currentRow))) return json(404, { ok: false, error: "Tour plan not found." });
     }
     const current = currentRow ? parsePlanRow(currentRow) : planId === ROBERT_PLAN_ID ? robertPlan({ providerId: requestedProvider.providerId, providerName: requestedProvider.providerName }) : null;
     if (!current) return json(409, { ok: false, error: "The saved plan could not be read safely." });
