@@ -193,7 +193,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Me interesa" }).click();
     await page.getByText("Me interesa", { exact: true }).waitFor();
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/offers/O-1/respond") && write.body.bidAmount === "125"), true);
-    await page.getByRole("button", { name: "Planes asignados", exact: true }).click();
+    await page.getByRole("button", { name: "Itinerarios asignados", exact: true }).click();
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
     assert.equal(await page.locator(".adminPricing").count(), 0);
     assert.doesNotMatch(await page.locator("#planList").innerText(), /Revisión de precios MBW|Precio MBW|Margen sobre costo/);
@@ -259,7 +259,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
       const invalid = await page.locator(".planFieldError").evaluateAll(nodes => nodes.map(node => ({ name: node.getAttribute("name"), className: node.className, dayId: node.closest("[data-plan-day-editor]")?.dataset.dayId })));
       throw new Error(JSON.stringify({ unexpectedDialogs, invalid }));
     }
-    await page.getByText("Plan guardado", { exact: true }).waitFor();
+    await page.getByText("Itinerario guardado", { exact: true }).waitFor();
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans/robert-2027") && write.body.days.length === 7 && write.body.days[0].date === "2027-02-08" && write.body.days[0].originalCost === 190 && write.body.adjustments[0].amount === 80), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-plans.png", fullPage: true });
     await page.locator('[data-route="share"]').click();
@@ -293,7 +293,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(requestedProvider, "PROV-007");
     assert.equal(new URL(page.url()).searchParams.get("provider"), "PROV-007");
     assert.equal(await page.locator("#adminPreview").isVisible(), true);
-    assert.equal(await page.locator('label[for="providerSelect"]').innerText(), "Guía");
+    assert.equal(await page.locator('label[for="providerSelect"] [data-i18n="previewGuide"]').innerText(), "Guía");
     assert.match(await page.locator("#adminPreview").innerText(), /Modo de auditoría/i);
     assert.match(await page.locator("#adminPreview").innerText(), /precios MBW, márgenes y herramientas administrativas permanecen ocultos/i);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
