@@ -32,7 +32,7 @@
     const s=ops?.summary||{},p=ops?.projection||{},cash=ops?.cash||{},guide=ops?.guide_totals||{},monthly=ops?.monthly||[],net=s.net||0;
     const profitSignal=signal(p.projectedProfit,goals.monthlyProfit),cashSignal=signal(cash.available_operating_cash,goals.operatingCash),netMargin=s.revenue?net/s.revenue:0;
     const cards=[
-      ["Projected month profit",moneyExact(p.projectedProfit),moneyExact(p.earnedProfit)+" actual earned · "+moneyExact(p.futureProfit)+" booked in "+integer(p.futureServices)+" remaining service"+(integer(p.futureServices)===1?"":"s"),profitSignal],
+      ["Projected month profit",moneyExact(p.projectedProfit),moneyExact(p.earnedProfit)+" actual earned · "+moneyExact(p.futureProfit)+" booked in "+integer(p.futureServices)+" remaining service"+(num(p.futureServices)===1?"":"s"),profitSignal],
       ["Available operating cash",moneyExact(cash.available_operating_cash),moneyExact(cash.restricted_ad_fund)+" restricted",cashSignal],
       ["YTD net income",moneyExact(net),pct(netMargin)+" of earned revenue",[net>=0?"Profitable YTD":"Loss YTD",net>=0?"good":"bad"]],
       ["Guide payables due",moneyExact(guide.due_completed),integer(guide.completed_items)+" completed items",[guide.due_completed?"Action needed":"All clear",guide.due_completed?"warn":"good"]]
@@ -55,8 +55,8 @@
   }
 
   function renderTrend(){
-    const rows=(ops?.monthly||[]).slice(-13);if(!rows.length){$("trendInsight").textContent="No monthly history available.";$("trendChart").innerHTML="";return}
-    const current=rows.at(-1),prior=rows.at(-2)||{},metrics=["revenue","profit","net"],all=rows.flatMap(row=>metrics.map(key=>num(row[key]))),min=Math.min(0,...all),max=Math.max(1,...all),width=Math.max(780,rows.length*72),height=330,left=58,right=22,top=22,bottom=47,plotWidth=width-left-right,plotHeight=height-top-bottom,range=max-min||1,y=value=>top+(max-num(value))/range*plotHeight,x=index=>left+(index+.5)*plotWidth/rows.length,zero=y(0),monthName=value=>new Intl.DateTimeFormat("en-US",{month:"short",timeZone:"UTC"}).format(new Date(value+"-01T12:00:00Z"));
+    const mobile=window.innerWidth<=760,rows=(ops?.monthly||[]).slice(mobile?-6:-13);if(!rows.length){$("trendInsight").textContent="No monthly history available.";$("trendChart").innerHTML="";return}
+    const current=rows.at(-1),prior=rows.at(-2)||{},metrics=["revenue","profit","net"],all=rows.flatMap(row=>metrics.map(key=>num(row[key]))),min=Math.min(0,...all),max=Math.max(1,...all),width=Math.max(mobile?520:780,rows.length*72),height=330,left=58,right=22,top=22,bottom=47,plotWidth=width-left-right,plotHeight=height-top-bottom,range=max-min||1,y=value=>top+(max-num(value))/range*plotHeight,x=index=>left+(index+.5)*plotWidth/rows.length,zero=y(0),monthName=value=>new Intl.DateTimeFormat("en-US",{month:"short",timeZone:"UTC"}).format(new Date(value+"-01T12:00:00Z"));
     const delta=(key)=>num(prior[key])?(num(current[key])-num(prior[key]))/Math.abs(num(prior[key])):0;
     $("trendInsight").innerHTML=metrics.map(key=>`<span data-series="${key}"><b>${key==="net"?"Net income":key[0].toUpperCase()+key.slice(1)}</b><strong>${moneyExact(current[key])}</strong><small>${prior.month?`${delta(key)>=0?"+":""}${pct(delta(key))} vs prior`:"First comparable month"}</small></span>`).join("");
     const grid=Array.from({length:5},(_,index)=>{const value=max-(range/4)*index,yy=y(value);return`<g class="chartGrid"><line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}"></line><text x="${left-9}" y="${yy+4}" text-anchor="end">${Math.abs(value)>=1000?money(value):moneyExact(value)}</text></g>`}).join("");
