@@ -78,7 +78,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "El correo muestra el itinerario aprobado y el desglose de precios finales por día. Nunca incluye la cotización del guía, la ganancia ni el margen de MBW.",
     moveEarlier: "Mover a un día anterior", moveLater: "Mover a un día posterior",
     dayLogistics: "Logística del día", pickupLocation: "Lugar de recogida", dropoffLocation: "Lugar de llegada", overnightCity: "Ciudad donde se hospeda", logisticsPending: "Por confirmar",
-    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Edita un día a la vez. El total desglosado y la diferencia se actualizan en vivo sin reemplazar tus cambios. Guarda el día para continuar; Guardar cambios al final hace el único envío al servidor.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Restablecer distribución proporcional", resetGuestBreakdownConfirm: "Esto reemplazará los valores personalizados de este día con una distribución proporcional desde la cotización del guía. ¿Continuar?", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.", guestBreakdownTotal: "Total desglosado", guestBreakdownBalanced: "Coincide con el precio diario", guestBreakdownRemaining: "Falta asignar", guestBreakdownOver: "Excede por", savePricingDay: "Guardar día y continuar", pricingDaySaved: "Día listo", pricingDraftHelp: "Se guarda en este borrador. Usa Guardar cambios una sola vez al terminar todos los días.",
+    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Edita los conceptos de un día. Su suma se convierte automáticamente en el precio final del día y recalcula la ganancia y el margen. El total puede ser menor que el precio preliminar, pero nunca menor que la cotización del guía.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Restablecer distribución proporcional", resetGuestBreakdownConfirm: "Esto reemplazará los valores personalizados de este día con una distribución proporcional desde la cotización del guía. ¿Continuar?", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.", guestBreakdownTotal: "Total desglosado", guideFloor: "Mínimo del guía", guestBreakdownBalanced: "Precio final actualizado", guestBreakdownRemaining: "Falta asignar", guestBreakdownOver: "Excede por", guestBelowGuideQuote: "El total para el huésped no puede ser menor que la cotización del guía.", guestAboveGuideQuote: "Ganancia sobre cotización", savePricingDay: "Guardar día y continuar", pricingDaySaved: "Día listo", pricingDraftHelp: "Se guarda en este borrador. Usa Guardar cambios una sola vez al terminar todos los días.",
   },
   en: {
     tourPlans: "Itineraries", assignedPlans: "Assigned itineraries", noPlans: "No custom itineraries are assigned to you.",
@@ -90,7 +90,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "The email shows the approved itinerary and final day-by-day price breakdown. It never includes the guide quote, profit, or MBW markup.",
     moveEarlier: "Move to an earlier day", moveLater: "Move to a later day",
     dayLogistics: "Daily logistics", pickupLocation: "Pickup location", dropoffLocation: "Drop-off location", overnightCity: "Overnight city", logisticsPending: "To be confirmed",
-    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "Edit one day at a time. The itemized total and difference update live without replacing your changes. Save the day to continue; Save changes at the bottom makes the single server submission.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Reset proportional allocation", resetGuestBreakdownConfirm: "This will replace this day's custom values with a proportional allocation from the guide quote. Continue?", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.", guestBreakdownTotal: "Itemized total", guestBreakdownBalanced: "Matches daily price", guestBreakdownRemaining: "Still to allocate", guestBreakdownOver: "Over by", savePricingDay: "Save day & continue", pricingDaySaved: "Day complete", pricingDraftHelp: "Saved in this draft. Use Save changes once after finishing every day.",
+    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "Edit the items for one day. Their sum automatically becomes the final daily price and recalculates profit and markup. The total may be lower than the preliminary price, but never lower than the guide quote.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Reset proportional allocation", resetGuestBreakdownConfirm: "This will replace this day's custom values with a proportional allocation from the guide quote. Continue?", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.", guestBreakdownTotal: "Itemized total", guideFloor: "Guide minimum", guestBreakdownBalanced: "Final price updated", guestBreakdownRemaining: "Still to allocate", guestBreakdownOver: "Over by", guestBelowGuideQuote: "The guest total cannot be lower than the guide quote.", guestAboveGuideQuote: "Profit above guide quote", savePricingDay: "Save day & continue", pricingDaySaved: "Day complete", pricingDraftHelp: "Saved in this draft. Use Save changes once after finishing every day.",
   },
 };
 
@@ -543,23 +543,32 @@ function updatePricingDisplay(planId, edited = null) {
     if (lodgingAmount) lodgingAmount.value = edited.value;
   }
   syncPlanPricing(planId);
+  const editedPricingDay = edited?.closest?.("[data-pricing-day]")?.dataset.pricingDay || "";
   let guideTotal = 0, mbwTotal = 0, lodgingTotal = 0;
   for (const day of plan.days) {
-    const cost = guideDayCost(plan, day.id), pricing = plan.mbwPricing.days.find(item => item.dayId === day.id) || {}, price = Number(pricing.sellPrice || 0);
+    const cost = guideDayCost(plan, day.id), pricing = plan.mbwPricing.days.find(item => item.dayId === day.id) || {};
+    const guestTotal = (pricing.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0);
+    if (day.id === editedPricingDay && edited?.matches?.("[name=guestAmount]")) {
+      pricing.sellPrice = guestTotal;
+      pricing.lodgingPrice = (pricing.guestLines || []).filter(line => line.category === "lodging").reduce((sum, line) => sum + Number(line.amount || 0), 0);
+      const priceInput = workspace.querySelector(`[data-mbw-price="${CSS.escape(day.id)}"]`), lodgingInput = workspace.querySelector(`[data-lodging-price="${CSS.escape(day.id)}"]`);
+      if (priceInput) priceInput.value = guestTotal.toFixed(2);
+      if (lodgingInput) lodgingInput.value = Number(pricing.lodgingPrice || 0).toFixed(2);
+    }
+    const price = Number(pricing.sellPrice || 0);
     guideTotal += cost; mbwTotal += price; lodgingTotal += Number(pricing.lodgingPrice || 0);
     const percentInput = workspace.querySelector(`[data-markup-percent="${CSS.escape(day.id)}"]`);
     if (percentInput && percentInput !== edited) percentInput.value = markupValue(cost, price);
     const profit = workspace.querySelector(`[data-profit-for="${CSS.escape(day.id)}"]`); if (profit) profit.textContent = price > 0 ? money(profitValue(cost, price)) : "—";
-    const guestTotal = (pricing.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0);
-    const difference = Number((price - guestTotal).toFixed(2));
+    const difference = Number((guestTotal - cost).toFixed(2));
     const summary = workspace.querySelector(`[data-guest-summary-for="${CSS.escape(day.id)}"]`);
     const totalNode = workspace.querySelector(`[data-guest-total-for="${CSS.escape(day.id)}"]`);
     const differenceNode = workspace.querySelector(`[data-guest-difference-for="${CSS.escape(day.id)}"]`);
     const priceNode = workspace.querySelector(`[data-guest-price-for="${CSS.escape(day.id)}"]`);
     if (totalNode) totalNode.textContent = money(guestTotal);
     if (priceNode) priceNode.textContent = money(price);
-    if (summary) summary.classList.toggle("guestPriceSummary--balanced", Math.abs(difference) <= 0.009);
-    if (differenceNode) differenceNode.textContent = Math.abs(difference) <= 0.009 ? t("guestBreakdownBalanced") : `${difference > 0 ? t("guestBreakdownRemaining") : t("guestBreakdownOver")}: ${money(Math.abs(difference))}`;
+    if (summary) summary.classList.toggle("guestPriceSummary--balanced", difference >= -0.009);
+    if (differenceNode) differenceNode.textContent = difference >= -0.009 ? `${t("guestAboveGuideQuote")}: ${money(Math.max(0, difference))}` : `${t("guestBelowGuideQuote")} ${money(Math.abs(difference))}`;
   }
   const total = workspace.querySelector("[data-mbw-total]"), lodging = workspace.querySelector("[data-lodging-total]"), markup = workspace.querySelector("[data-markup-total]"), profit = workspace.querySelector("[data-profit-total]");
   if (total) total.textContent = money(mbwTotal);
@@ -606,10 +615,10 @@ function renderAdminPricing(plan, locked) {
   const rows = plan.days.map(day => {
     const cost = guideDayCost(plan, day.id), price = prices.get(day.id) || {}, sellPrice = Number(price.sellPrice || 0);
     const guestLines = (price.guestLines || []).map(line => `<div class="guestPriceLine" data-guest-line="${esc(line.id)}"><select name="guestCategory" ${locked ? "disabled" : ""}>${categoryOptions(line.category)}</select><input name="guestLabel" maxlength="160" value="${esc(localized(line.label))}" placeholder="${esc(t("guestLineLabel"))}" ${locked ? "disabled" : ""}><input name="guestAmount" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(line.amount ?? "")}" ${locked ? "disabled" : ""}>${locked ? "" : `<button type="button" data-remove-guest-line aria-label="${esc(t("remove"))}">×</button>`}</div>`).join("");
-    const guestTotal = (price.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0), mismatch = sellPrice > 0 && Math.abs(guestTotal - sellPrice) > 0.009;
-    const balanceLabel = mismatch ? `${guestTotal < sellPrice ? t("guestBreakdownRemaining") : t("guestBreakdownOver")}: ${money(Math.abs(sellPrice - guestTotal))}` : t("guestBreakdownBalanced");
+    const guestTotal = (price.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0), belowGuide = guestTotal < cost - 0.009;
+    const balanceLabel = belowGuide ? `${t("guestBelowGuideQuote")} ${money(cost - guestTotal)}` : `${t("guestAboveGuideQuote")}: ${money(Math.max(0, guestTotal - cost))}`;
     const pricingDayKey = `${plan.planId}:${day.id}`, dayComplete = completedPricingDays.has(pricingDayKey);
-    return `<div class="pricingRow${dayComplete ? " pricingRow--complete" : ""}" data-pricing-day="${esc(day.id)}"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" ${locked ? "disabled" : ""}></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label><div class="guestPriceEditor" data-guest-lines-for="${esc(day.id)}"><div class="guestPriceEditorHead"><h4>${esc(t("guestBreakdown"))}</h4><div class="guestPriceSummary${mismatch ? "" : " guestPriceSummary--balanced"}" data-guest-summary-for="${esc(day.id)}"><span>${esc(t("guestBreakdownTotal"))}: <b data-guest-total-for="${esc(day.id)}">${esc(money(guestTotal))}</b> / <b data-guest-price-for="${esc(day.id)}">${esc(money(sellPrice))}</b></span><strong data-guest-difference-for="${esc(day.id)}">${esc(balanceLabel)}</strong></div></div>${guestLines}${locked ? "" : `<div class="guestPriceActions"><button class="guestPriceReset" type="button" data-build-guest-lines data-day-id="${esc(day.id)}">${esc(t("buildGuestBreakdown"))}</button><button type="button" data-add-guest-line data-day-id="${esc(day.id)}">+ ${esc(t("addGuestLine"))}</button><button class="guestPriceFinish${dayComplete ? " complete" : ""}" type="button" data-finish-pricing-day data-day-id="${esc(day.id)}">${esc(dayComplete ? t("pricingDaySaved") : t("savePricingDay"))}</button><small>${esc(t("pricingDraftHelp"))}</small></div>`}</div></div>`;
+    return `<div class="pricingRow${dayComplete ? " pricingRow--complete" : ""}" data-pricing-day="${esc(day.id)}"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" readonly></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" readonly></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" readonly></label><div class="guestPriceEditor" data-guest-lines-for="${esc(day.id)}"><div class="guestPriceEditorHead"><h4>${esc(t("guestBreakdown"))}</h4><div class="guestPriceSummary${belowGuide ? "" : " guestPriceSummary--balanced"}" data-guest-summary-for="${esc(day.id)}"><span>${esc(t("guestBreakdownTotal"))}: <b data-guest-total-for="${esc(day.id)}">${esc(money(guestTotal))}</b> · ${esc(t("guideFloor"))}: <b>${esc(money(cost))}</b></span><strong data-guest-difference-for="${esc(day.id)}">${esc(balanceLabel)}</strong></div></div>${guestLines}${locked ? "" : `<div class="guestPriceActions"><button class="guestPriceReset" type="button" data-build-guest-lines data-day-id="${esc(day.id)}">${esc(t("buildGuestBreakdown"))}</button><button type="button" data-add-guest-line data-day-id="${esc(day.id)}">+ ${esc(t("addGuestLine"))}</button><button class="guestPriceFinish${dayComplete ? " complete" : ""}" type="button" data-finish-pricing-day data-day-id="${esc(day.id)}">${esc(dayComplete ? t("pricingDaySaved") : t("savePricingDay"))}</button><small>${esc(t("pricingDraftHelp"))}</small></div>`}</div></div>`;
   }).join("");
   const guideTotal = plan.days.reduce((sum, day) => sum + guideDayCost(plan, day.id), 0), mbwTotal = [...prices.values()].reduce((sum, value) => sum + value.sellPrice, 0), lodgingTotal = [...prices.values()].reduce((sum, value) => sum + value.lodgingPrice, 0);
   const email = plan.status === "approved" ? `<div class="emailPreview"><h4>${t("brandedEmail")}</h4><p>${t("brandedEmailHelp")}</p><button type="button" data-prepare-guest-itinerary="${esc(plan.planId)}">${esc(t("prepareGuestItinerary"))}</button><button type="button" data-copy-plan-email="${esc(plan.planId)}">${t("copyBrandedEmail")}</button></div>` : "";
@@ -977,13 +986,19 @@ document.addEventListener("click", event => {
   if (finishPricingDay) {
     const workspace = finishPricingDay.closest("[data-plan]"), planId = workspace?.dataset.plan, dayId = finishPricingDay.dataset.dayId, plan = planFor(planId);
     syncPlanPricing(planId);
-    const pricing = plan?.mbwPricing?.days?.find(item => item.dayId === dayId) || {}, sellPrice = Number(pricing.sellPrice || 0);
+    const pricing = plan?.mbwPricing?.days?.find(item => item.dayId === dayId) || {}, guideQuote = guideDayCost(plan, dayId);
     const guestTotal = (pricing.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0);
-    if (sellPrice <= 0 || !(pricing.guestLines || []).length || Math.abs(guestTotal - sellPrice) > 0.009) {
-      alert(t("guestBreakdownMismatch"));
+    if (!(pricing.guestLines || []).length || guestTotal < guideQuote - 0.009) {
+      alert(t("guestBelowGuideQuote"));
       workspace?.querySelector(`[data-guest-summary-for="${CSS.escape(dayId)}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    pricing.sellPrice = guestTotal;
+    pricing.lodgingPrice = (pricing.guestLines || []).filter(line => line.category === "lodging").reduce((sum, line) => sum + Number(line.amount || 0), 0);
+    const priceInput = workspace?.querySelector(`[data-mbw-price="${CSS.escape(dayId)}"]`), lodgingInput = workspace?.querySelector(`[data-lodging-price="${CSS.escape(dayId)}"]`);
+    if (priceInput) priceInput.value = guestTotal.toFixed(2);
+    if (lodgingInput) lodgingInput.value = Number(pricing.lodgingPrice || 0).toFixed(2);
+    updatePricingDisplay(planId);
     completedPricingDays.add(`${planId}:${dayId}`); markPlanDirty(planId);
     const row = finishPricingDay.closest("[data-pricing-day]");
     row?.classList.add("pricingRow--complete"); finishPricingDay.classList.add("complete"); finishPricingDay.textContent = t("pricingDaySaved");

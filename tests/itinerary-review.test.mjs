@@ -60,6 +60,7 @@ test("Inquiry Studio plan queue is admin-only and returns plan summaries", async
 test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   const guide = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
   const css = fs.readFileSync(new URL("../admin/guide/guide.css", import.meta.url), "utf8");
+  const guideHtml = fs.readFileSync(new URL("../admin/guide/index.html", import.meta.url), "utf8");
   const studio = fs.readFileSync(new URL("../services/inquiry-studio/public/index.html", import.meta.url), "utf8");
   const studioJs = fs.readFileSync(new URL("../services/inquiry-studio/public/app.js", import.meta.url), "utf8");
   assert.match(guide, /Send preliminary itinerary to MBW/);
@@ -68,14 +69,17 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /recordGuideConfirmation: "Confirm guide review"/);
   assert.match(guide, /function rebuildGuestBreakdown/);
   assert.match(guide, /function backfillMissingGuestBreakdowns/);
-  assert.match(guide, /guestBreakdownBalanced: "Matches daily price"/);
+  assert.match(guide, /guestAboveGuideQuote: "Profit above guide quote"/);
   assert.match(guide, /data-guest-total-for/);
   assert.match(guide, /lodgingAmount\.value = edited\.value/);
-  assert.match(guide, /The itemized total and difference update live without replacing your changes/);
+  assert.match(guide, /Their sum automatically becomes the final daily price/);
+  assert.match(guide, /guestBelowGuideQuote/);
+  assert.match(guide, /pricing\.sellPrice = guestTotal/);
   assert.match(guide, /savePricingDay: "Save day & continue"/);
   assert.match(guide, /data-finish-pricing-day/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
+  assert.match(guideHtml, /guide-20261030-v41/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
   assert.match(studioJs, /Prepare Guest Itinerary/);
