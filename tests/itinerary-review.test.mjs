@@ -65,8 +65,9 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /Send preliminary itinerary to MBW/);
   assert.match(guide, /actionWarning/);
   assert.match(guide, /data-lodging-price/);
-  assert.match(guide, /recordGuideConfirmation: "Record guide confirmation"/);
+  assert.match(guide, /recordGuideConfirmation: "Confirm guide review"/);
   assert.match(guide, /function rebuildGuestBreakdown/);
+  assert.match(guide, /function backfillMissingGuestBreakdowns/);
   assert.match(guide, /Markup is distributed proportionally/);
   assert.match(css, /--gold:#d3a126/);
   assert.match(studio, /Custom itinerary reviews/);

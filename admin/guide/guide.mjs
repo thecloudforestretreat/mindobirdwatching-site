@@ -54,7 +54,7 @@ Object.assign(COPY.es, {
   translationAutomatic: "Actualizando automáticamente el borrador en inglés…",
   copyGuideWhatsApp: "Copiar costos para WhatsApp",
   guideWhatsAppCopied: "Desglose del guía copiado para WhatsApp",
-  recordGuideConfirmation: "Registrar confirmación del guía",
+  recordGuideConfirmation: "Confirmar revisión",
   externalConfirmationHelp: "Si el guía confirmó el borrador por WhatsApp o por teléfono, registra esa confirmación para continuar con la revisión final.",
 });
 Object.assign(COPY.en, {
@@ -67,7 +67,7 @@ Object.assign(COPY.en, {
   translationAutomatic: "Automatically updating the English draft…",
   copyGuideWhatsApp: "Copy guide costs for WhatsApp",
   guideWhatsAppCopied: "Guide cost breakdown copied for WhatsApp",
-  recordGuideConfirmation: "Record guide confirmation",
+  recordGuideConfirmation: "Confirm guide review",
   externalConfirmationHelp: "If the guide confirmed the draft by WhatsApp or phone, record that confirmation to continue to final review.",
 });
 
@@ -515,6 +515,18 @@ function rebuildGuestBreakdown(planId, dayId) {
   return true;
 }
 
+function backfillMissingGuestBreakdowns(plan) {
+  if (!isAdminReview() || !Array.isArray(plan?.mbwPricing?.days)) return false;
+  let changed = false;
+  plan.days.forEach(day => {
+    const pricing = plan.mbwPricing.days.find(item => item.dayId === day.id);
+    if (!pricing || Number(pricing.sellPrice || 0) <= 0 || pricing.guestLines?.length) return;
+    pricing.guestLines = suggestedGuestLines(plan, day.id, Number(pricing.sellPrice), Number(pricing.lodgingPrice || 0));
+    if (pricing.guestLines.length) changed = true;
+  });
+  return changed;
+}
+
 function updatePricingDisplay(planId, edited = null) {
   const plan = planFor(planId), workspace = document.querySelector(`[data-plan="${CSS.escape(planId)}"]`);
   if (!plan || !workspace) return;
@@ -621,6 +633,7 @@ function renderPlans() {
   if (!plans.length) { $("#planList").innerHTML = empty(t("noPlans")); return; }
   $("#planList").innerHTML = plans.map((source, planIndex) => {
     const plan = planFor(source.planId);
+    if (backfillMissingGuestBreakdowns(plan) && plan.status !== "approved") dirtyPlans.add(plan.planId);
     const locked = plan.status === "approved";
     const readOnly = locked || isGuidePreview();
     const addedTotal = plan.adjustments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
