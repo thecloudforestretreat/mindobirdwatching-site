@@ -71,6 +71,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
       interactions.push(interaction);
       return route.fulfill({ status: 201, json: { ok: true, verified: true, record: interaction } });
     }
+    if (path.endsWith(`/guests/${record.inquiryId}`) && route.request().method() === "PATCH") {
+      const payload = route.request().postDataJSON();
+      record = { ...record, requestedDate: payload.patch.requested_date_start, requestedDateEnd: payload.patch.requested_date_end, updatedAt: "2026-10-20T15:03:00Z" };
+      return route.fulfill({ json: { ok: true, verified: true, record } });
+    }
     if (path.endsWith(`/guests/${record.inquiryId}`)) {
       await new Promise(resolve => setTimeout(resolve, 600));
       return route.fulfill({ json: { ok: true, record, readiness: readiness(), journey: [{ id: "contact", label: "Contact", state: "complete", evidence: "Contacted" }, { id: "payment", label: "Payment", state: "attention", evidence: "Payment pending" }], data: { interactions, assignments: [], bookings: [], payments: [] } } });
@@ -230,6 +235,13 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     const communicationText = await page.locator('[data-section="communication"] .recordList').innerText();
     assert.match(communicationText, /Email · Incoming[\s\S]*Guest asked whether pickup is included\./);
     assert.match(communicationText, /Email · Outgoing[\s\S]*Confirmed pickup is included/);
+    await page.locator(".planDateWarning summary").click();
+    const dateWarningText = await page.locator(".planDateWarning").innerText();
+    assert.match(dateWarningText, /Current CRM[\s\S]*Oct 22, 2026/i);
+    assert.match(dateWarningText, /Itinerary[\s\S]*Feb 9, 2027–Feb 14, 2027/i);
+    await page.getByText("Confirm CRM date update", { exact: true }).click();
+    await page.getByText("CRM dates reconciled and verified.", { exact: true }).waitFor({ state: "visible" });
+    await page.locator(".planDateWarning").waitFor({ state: "detached" });
     await page.locator("#closeGuest").click();
     assert.equal(await page.locator("#moreStatusFilter option").count(), 9);
     assert.equal(await page.locator("#moreStatusFilter").isVisible(), true);

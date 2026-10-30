@@ -114,6 +114,41 @@ test("mobile profile editing preserves CRM identity helpers", async () => {
   } finally { globalThis.fetch = savedFetch; }
 });
 
+test("itinerary date reconciliation updates the canonical CRM range once and verifies it", async () => {
+  const savedFetch = globalThis.fetch;
+  let row = { inquiry_id: "INQ-DATES", guest_id: "G-DATES", full_name: "Date Guest", status: "planning", requested_date: "2027-02-09", requested_date_start: "2027-02-09", requested_date_end: "2027-02-13", updated_at: "d1" };
+  let writes = 0;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [row] });
+      if (["list_interactions", "list_assignments", "list_bookings", "list_payments"].includes(body.action)) return Response.json({ ok: true, records: [] });
+      if (body.action === "update_inquiry") { writes += 1; row = { ...body.record, updated_at: "d2" }; return Response.json({ ok: true }); }
+      throw new Error(`Unexpected ${body.action}`);
+    };
+    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-DATES", { expectedUpdatedAt: "d1", patch: { requested_date: "2027-02-09", requested_date_start: "2027-02-09", requested_date_end: "2027-02-14" } }), env, params: { inquiryId: "INQ-DATES" } });
+    const result = await response.json();
+    assert.equal(response.status, 200); assert.equal(result.verified, true); assert.equal(writes, 1);
+    assert.equal(row.requested_date, "2027-02-09"); assert.equal(row.requested_date_start, "2027-02-09"); assert.equal(row.requested_date_end, "2027-02-14");
+    assert.match(row.internal_notes, /requested_date, requested_date_start, requested_date_end/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test("itinerary date reconciliation rejects an end date before its start without writing", async () => {
+  const savedFetch = globalThis.fetch; let writes = 0;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const body = payload(options);
+      if (body.action === "list_inquiries") return Response.json({ ok: true, records: [{ inquiry_id: "INQ-DATES-BAD", guest_id: "G-DATES-BAD", full_name: "Date Guest", requested_date: "2027-02-09", updated_at: "b1" }] });
+      if (["list_interactions", "list_assignments", "list_bookings", "list_payments"].includes(body.action)) return Response.json({ ok: true, records: [] });
+      if (body.action === "update_inquiry") writes += 1;
+      return Response.json({ ok: true });
+    };
+    const response = await patchGuest({ request: request("/api/mobile/guests/INQ-DATES-BAD", { expectedUpdatedAt: "b1", patch: { requested_date_start: "2027-02-14", requested_date_end: "2027-02-09" } }), env, params: { inquiryId: "INQ-DATES-BAD" } });
+    assert.equal(response.status, 400); assert.equal(writes, 0);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
 test("stale guest mutation returns 409 without writing", async () => {
   const savedFetch = globalThis.fetch; let writes = 0;
   try {

@@ -64,7 +64,7 @@ export async function onRequestPatch({ request, env, params }) {
     if (body.expectedUpdatedAt && String(body.expectedUpdatedAt) !== current.record.updatedAt) {
       return json(409, { ok: false, error: "This record changed since it was loaded. Refresh and review before saving." });
     }
-    const limits = new Map([["followup_date", 10], ["status", 40], ["priority", 20], ["assigned_to", 30], ["first_name", 80], ["last_name", 80], ["full_name", 160], ["phone_number", 60], ["email", 254], ["country", 120], ["guest_count", 3], ["requested_date", 10], ["pickup_location", 500], ["notes", 3000]]);
+    const limits = new Map([["followup_date", 10], ["status", 40], ["priority", 20], ["assigned_to", 30], ["first_name", 80], ["last_name", 80], ["full_name", 160], ["phone_number", 60], ["email", 254], ["country", 120], ["guest_count", 3], ["requested_date", 10], ["requested_date_start", 10], ["requested_date_end", 10], ["pickup_location", 500], ["notes", 3000]]);
     const patch = body.patch;
     if (!patch || typeof patch !== "object" || Array.isArray(patch) || !Object.keys(patch).length) return json(400, { ok: false, error: "No supported changes were supplied." });
     for (const [field, value] of Object.entries(patch)) {
@@ -77,7 +77,12 @@ export async function onRequestPatch({ request, env, params }) {
     if (patch.first_name !== undefined && !patch.first_name.trim()) return json(400, { ok: false, error: "First name is required." });
     if (patch.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email)) return json(400, { ok: false, error: "Enter a valid email address." });
     if (patch.guest_count && (!/^\d{1,2}$/.test(patch.guest_count) || Number(patch.guest_count) < 1 || Number(patch.guest_count) > 99)) return json(400, { ok: false, error: "Guests must be between 1 and 99." });
-    if (patch.requested_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.requested_date)) return json(400, { ok: false, error: "Use a valid tour date." });
+    for (const field of ["requested_date", "requested_date_start", "requested_date_end"]) {
+      if (patch[field] && !/^\d{4}-\d{2}-\d{2}$/.test(patch[field])) return json(400, { ok: false, error: "Use valid itinerary dates." });
+    }
+    const requestedStart = patch.requested_date_start || patch.requested_date || current.raw.requested_date_start || current.raw.requested_date;
+    const requestedEnd = patch.requested_date_end || (patch.requested_date !== undefined ? patch.requested_date : current.raw.requested_date_end || requestedStart);
+    if (requestedStart && requestedEnd && requestedEnd < requestedStart) return json(400, { ok: false, error: "The itinerary end date cannot be before the start date." });
     const updated = { ...current.raw, ...patch, updated_at: new Date().toISOString() };
     if (patch.full_name !== undefined) {
       const names = patch.full_name.trim().split(/\s+/); updated.first_name = names[0] || ""; updated.last_name = names.slice(1).join(" ");
@@ -89,7 +94,11 @@ export async function onRequestPatch({ request, env, params }) {
     if (patch.email !== undefined) updated.email_normalized = patch.email.trim().toLowerCase();
     if (patch.country !== undefined) updated.home_country = patch.country;
     if (patch.guest_count !== undefined) updated.guest_count_text = patch.guest_count;
-    if (patch.requested_date !== undefined) { updated.requested_date_start = patch.requested_date; updated.requested_date_end = patch.requested_date; }
+    if (patch.requested_date !== undefined || patch.requested_date_start !== undefined || patch.requested_date_end !== undefined) {
+      updated.requested_date = requestedStart;
+      updated.requested_date_start = requestedStart;
+      updated.requested_date_end = requestedEnd;
+    }
     updated.internal_notes = [current.raw.internal_notes || "", `Mobile edit by ${identity.staffCode || identity.email} · ${updated.updated_at} · fields: ${Object.keys(patch).join(", ")}`].filter(Boolean).join("\n");
     await crmCall(env, "update_inquiry", { record: updated, inquiry_row: updated, expected_updated_at: current.record.updatedAt });
     const verified = await loadGuest(env, inquiryId);

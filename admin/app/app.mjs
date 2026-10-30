@@ -76,9 +76,9 @@ function guestDocumentsMarkup(guest) {
 }
 
 function planDateMismatch(plan, guest) {
-  const dates = recordDates(guest, relatedBookings(guest));
-  if (!dates.length || !plan.startDate) return false;
-  const guestStart = dates[0], guestEnd = dates.at(-1) || guestStart, planEnd = plan.endDate || plan.startDate;
+  const fallbackDates = recordDates(guest, relatedBookings(guest));
+  const guestStart = guest.requestedDate || fallbackDates[0], guestEnd = guest.requestedDateEnd || guestStart, planEnd = plan.endDate || plan.startDate;
+  if (!guestStart || !plan.startDate) return false;
   return guestStart !== plan.startDate || guestEnd !== planEnd;
 }
 
@@ -113,7 +113,9 @@ function customPlanMarkup(guest) {
     const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
     const dates = plan.startDate ? (plan.endDate && plan.endDate !== plan.startDate ? `${shortDate(plan.startDate)}–${shortDate(plan.endDate)}` : shortDate(plan.startDate)) : "Dates to be confirmed";
     const status = statusLabels[plan.status] || "In progress";
-    const dateWarning = planDateMismatch(plan, guest) ? `<p class="planDateWarning"><strong>Dates need review.</strong> The CRM guest dates do not match this itinerary’s ${esc(dates)} schedule.</p>` : "";
+    const fallbackDates = recordDates(guest, relatedBookings(guest)), guestStart = guest.requestedDate || fallbackDates[0] || "", guestEnd = guest.requestedDateEnd || guestStart;
+    const currentDates = guestStart ? (guestEnd !== guestStart ? `${shortDate(guestStart)}–${shortDate(guestEnd)}` : shortDate(guestStart)) : "Not set";
+    const dateWarning = planDateMismatch(plan, guest) ? `<details class="planDateWarning"><summary><strong>Dates need review.</strong> Compare before updating the CRM.</summary><div class="dateComparison"><span><small>Current CRM</small><b>${esc(currentDates)}</b></span><span><small>Itinerary</small><b>${esc(dates)}</b></span></div><p>This changes only the CRM guest date range. It does not alter the guide’s itinerary or run a plan-save workflow.</p><button type="button" data-reconcile-plan="${esc(plan.planId)}" data-start-date="${esc(plan.startDate)}" data-end-date="${esc(plan.endDate || plan.startDate)}">Confirm CRM date update</button></details>` : "";
     return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">${esc(status)}</span></div><div class="recordItem"><strong>${esc(title)}</strong><p>${esc(dates)} · Assigned to ${esc(plan.providerName || "guide")}</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div>${dateWarning}<div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
   }).join("");
 }
@@ -352,6 +354,19 @@ async function saveProfile(event) {
   try { await api.patchGuest(guest.inquiryId, { expectedUpdatedAt: guest.updatedAt, patch }); toast("Guest details saved and verified."); await openGuest(guest.inquiryId, "profile"); await refresh(false); } catch (error) { toast(error.message); button.disabled = false; }
 }
 
+async function reconcilePlanDates(button) {
+  const guest = state.guest?.record, startDate = button.dataset.startDate, endDate = button.dataset.endDate || startDate;
+  if (!guest || !/^\d{4}-\d{2}-\d{2}$/.test(startDate || "") || !/^\d{4}-\d{2}-\d{2}$/.test(endDate || "")) return toast("The itinerary dates are incomplete.");
+  if (endDate < startDate) return toast("The itinerary end date cannot be before its start date.");
+  button.disabled = true; button.textContent = "Updating CRM…";
+  try {
+    await api.patchGuest(guest.inquiryId, { expectedUpdatedAt: guest.updatedAt, patch: { requested_date: startDate, requested_date_start: startDate, requested_date_end: endDate } });
+    await refresh(false); await openGuest(guest.inquiryId); toast("CRM dates reconciled and verified.");
+  } catch (error) {
+    toast(error.message); button.disabled = false; button.textContent = "Confirm CRM date update";
+  }
+}
+
 function openNewGuest() {
   if (!state.session?.capabilities?.write) return toast("Guest creation is read only for this account.");
   const dialog = $("#newGuestDialog"), form = $("#newGuestForm"); form.reset(); form.elements.guest_count.value = "1"; form.elements.followup_date.value = addIsoDays(todayIso(), 3); dialog.showModal(); setTimeout(() => form.elements.full_name.focus(), 50);
@@ -499,6 +514,7 @@ $("#newGuestButton").addEventListener("click", openNewGuest);
 $("#closeNewGuest").addEventListener("click", () => $("#newGuestDialog").close());
 $("#newGuestDialog").addEventListener("click", event => { if (event.target === event.currentTarget) event.currentTarget.close(); });
 $("#newGuestForm").addEventListener("submit", createGuest);
+$("#guestDetail").addEventListener("click", event => { const button = event.target.closest("[data-reconcile-plan]"); if (button) reconcilePlanDates(button); });
 $("#retryButton").addEventListener("click", () => location.reload());
 $("#refreshButton").addEventListener("click", () => refresh());
 $("#actionsView").addEventListener("click", event => {
@@ -533,5 +549,5 @@ window.addEventListener("online", () => { connection(state.cached ? "cached" : "
 window.addEventListener("offline", () => connection("offline", "Offline"));
 setInterval(updateConnectionAge, 30 * 1000);
 setInterval(() => maybeAutomaticRefresh(AUTO_SYNC_INTERVAL_MS), 60 * 1000);
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=30", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=31", { scope: "/app/" }).catch(() => {});
 start();
