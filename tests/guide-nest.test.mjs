@@ -331,6 +331,30 @@ test("Neicer can edit guide dates and prices while the submitted total is recalc
   assert.equal(changed.adjustments[0].amount, 80);
 });
 
+test("saved guide-plan briefs and reserve costs remain the source of truth", () => {
+  const original = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+  const changed = sanitizePlan({
+    ...original,
+    synthetic: false,
+    updatedAt: "2026-10-30T00:04:36.660Z",
+    brief: {
+      ...original.brief,
+      request: { es: "Usar solo chofer cuando no se requiera guía.", en: "Use a driver only when a guide is not required." },
+      dropoff: { es: "Hora del vuelo pendiente.", en: "Flight time pending." },
+    },
+    days: original.days.map((day, index) => index === 0 ? {
+      ...day,
+      sourceCosts: [{ id: "alambi-reserve", category: "reserve", amount: 10 }],
+      originalCost: 10,
+    } : day),
+  }, original);
+  assert.equal(changed.brief.request.es, "Usar solo chofer cuando no se requiera guía.");
+  assert.equal(changed.brief.dropoff.en, "Flight time pending.");
+  assert.equal(changed.days[0].sourceCosts[0].category, "reserve");
+  assert.equal(changed.updatedAt, "2026-10-30T00:04:36.660Z");
+  assert.equal(changed.synthetic, false);
+});
+
 test("an admin can create multiple guide-scoped custom plans while guides cannot create them", async () => {
   const savedFetch = globalThis.fetch;
   let rows = [];

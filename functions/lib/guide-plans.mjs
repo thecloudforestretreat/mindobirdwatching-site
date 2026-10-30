@@ -169,6 +169,17 @@ export function parsePlanRow(row) {
 }
 
 export function sanitizePlan(input, current = robertPlan()) {
+  const briefInput = input.brief && typeof input.brief === "object" ? input.brief : {};
+  const currentBrief = current.brief && typeof current.brief === "object" ? current.brief : {};
+  const brief = {
+    guestCount: text(briefInput.guestCount ?? currentBrief.guestCount ?? "1", 12),
+    traveler: bilingual(briefInput.traveler, currentBrief.traveler, 1200),
+    lodging: bilingual(briefInput.lodging, currentBrief.lodging, 1200),
+    pickup: bilingual(briefInput.pickup, currentBrief.pickup, 1200),
+    dropoff: bilingual(briefInput.dropoff, currentBrief.dropoff, 1200),
+    request: bilingual(briefInput.request, currentBrief.request, 1800),
+    interests: bilingual(briefInput.interests, currentBrief.interests, 1800),
+  };
   const adjustments = Array.isArray(input.adjustments) ? input.adjustments.slice(0, 80).map((item, index) => ({
     id: text(item.id || `cost-${index + 1}`, 80),
     dayId: text(item.dayId, 40),
@@ -220,19 +231,21 @@ export function sanitizePlan(input, current = robertPlan()) {
       originalCost: number(item?.originalCost),
     };
   }).filter(day => day.date && (day.title.es || day.title.en));
-  // Robert's first saved draft used "reserve" for entrance fees. Keep actual reserve
-  // fees distinct while migrating only those known legacy source lines.
-  for (const day of days) if (["day-1", "day-3", "day-4"].includes(day.id)) {
-    day.sourceCosts = day.sourceCosts.map(cost => cost.category === "reserve" ? { ...cost, category: "entrance" } : cost);
-  }
   const normalizedDays = days.length ? days.sort((a, b) => a.date.localeCompare(b.date)) : current.days;
   const originalTotal = normalizedDays.reduce((sum, day) => sum + number(day.originalCost), 0);
   return {
     ...current,
+    planId: text(input.planId || current.planId, 80),
     assignmentId: text(input.assignmentId || current.assignmentId, 128),
+    inquiryId: text(input.inquiryId || current.inquiryId, 128),
     providerId: text(input.providerId || current.providerId, 128),
     providerName: text(input.providerName || current.providerName, 160),
+    guestName: text(input.guestName || current.guestName, 160),
+    title: bilingual(input.title, current.title, 240),
+    brief,
     status: ALLOWED_STATUS.has(input.status) ? input.status : current.status,
+    updatedAt: text(input.updatedAt || current.updatedAt, 80),
+    synthetic: input.synthetic === false ? false : Boolean(input.synthetic ?? current.synthetic),
     adjustments,
     comments,
     history,
