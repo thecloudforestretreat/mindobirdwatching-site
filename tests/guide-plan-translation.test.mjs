@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { onRequestPost as translateGuidePlan } from "../functions/api/guide/plans/[planId]/translate.js";
-import { planAssignment, robertPlan } from "../functions/lib/guide-plans.mjs";
+import { parsePlanRow, planAssignment, robertPlan } from "../functions/lib/guide-plans.mjs";
 import { planTranslationSource, validatePlanTranslation } from "../functions/lib/guide-plan-translation.mjs";
 
 const env = {
@@ -53,6 +53,20 @@ test("translation validation requires exactly the saved day IDs", () => {
   const result = validatePlanTranslation(translated(source), source.days.map(day => day.id));
   assert.equal(result.days.length, 6);
   assert.throws(() => validatePlanTranslation({ ...translated(source), days: translated(source).days.slice(1) }, source.days.map(day => day.id)), /translated days/);
+});
+
+test("the saved Robert draft receives the one-time Neicer route revision without changing private pricing", async () => {
+  const legacy = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+  legacy.routeRevision = "";
+  legacy.days[2] = { ...legacy.days[2], title: { es: "Ruta anterior", en: "Previous route" }, originalCost: 415 };
+  legacy.mbwPricing = { currency: "USD", days: legacy.days.map(day => ({ dayId: day.id, sellPrice: day.id === "day-3" ? 555 : 0, lodgingPrice: 0, guestLines: [] })) };
+  const row = { ...await planAssignment(legacy), assignment_id: "PLAN-LEGACY", updated_at: "v-old" };
+  const migrated = await parsePlanRow(row);
+  assert.equal(migrated.routeRevision, "neicer-2026-10-30-v2");
+  assert.match(migrated.days[2].title.es, /Santa Rosa/);
+  assert.equal(migrated.days[2].originalCost, 180);
+  assert.equal(migrated.mbwPricing.days.find(item => item.dayId === "day-3").sellPrice, 555);
+  assert.equal(migrated.comments.filter(item => item.id === "neicer-robert-route-2026-10-30-v2").length, 1);
 });
 
 test("only an administrator can request a read-only local translation", async t => {

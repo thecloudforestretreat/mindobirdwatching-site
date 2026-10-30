@@ -15,7 +15,7 @@ const PLAN_STORAGE_KEYS = {
   dropoffLocation: "E", overnightCity: "F", sourceCosts: "G", costNote: "H", originalCost: "I", category: "J", amount: "K",
   description: "L", verification: "M", dayId: "N", message: "O", author: "P", role: "Q", createdAt: "R", action: "S",
   fromStatus: "T", toStatus: "U", changedAt: "V", addedBy: "W", addedAt: "X", notes: "Y", approvedAt: "Z",
-  approvedBy: "aa", sellPrice: "ab", lodgingPrice: "ac", guestLines: "ad", label: "ae",
+  approvedBy: "aa", sellPrice: "ab", lodgingPrice: "ac", guestLines: "ad", label: "ae", routeRevision: "af",
 };
 const PLAN_STORAGE_KEYS_REVERSE = Object.fromEntries(Object.entries(PLAN_STORAGE_KEYS).map(([key, value]) => [value, key]));
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
@@ -27,6 +27,8 @@ const COST_CATEGORY_ORDER = new Map([
 ]);
 const GUEST_LINE_CATEGORIES = new Set(["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"]);
 const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
+const ROBERT_ROUTE_REVISION = "neicer-2026-10-30-v2";
+const ROBERT_NEICER_UPDATE_ID = "neicer-robert-route-2026-10-30-v2";
 
 function base64Url(bytes) {
   let binary = "";
@@ -173,6 +175,7 @@ export function robertPlan(provider = {}) {
     startDate: "2027-02-09",
     endDate: "2027-02-14",
     status: "guide_drafting",
+    routeRevision: ROBERT_ROUTE_REVISION,
     updatedAt: "",
     brief: {
       guestCount: "1",
@@ -247,6 +250,24 @@ export function robertPlan(provider = {}) {
   };
 }
 
+function applyRobertRouteRevision(plan) {
+  const revised = robertPlan({ providerId: plan.providerId, providerName: plan.providerName });
+  const replacements = new Map(revised.days.slice(2, 5).map(day => [day.id, day]));
+  const comments = (plan.comments || []).some(item => item.id === ROBERT_NEICER_UPDATE_ID) ? plan.comments : [...(plan.comments || []), {
+    id: ROBERT_NEICER_UPDATE_ID,
+    message: "Actualización de Neicer (30 oct 2026): Día 3, Las Cotingas y Santa Rosa para buscar el tucán azul; por la tarde, jardín de orquídeas y caminata nocturna. Costos confirmados: transporte $60, ingresos $40 y guía $80. Día 4, salida muy temprano para un día completo en Intag y alojamiento en Intag. Día 5, salida de Intag para un día completo en Otavalo, Mercado de los Ponchos, Laguna Cuicocha y Cotacachi, con alojamiento en Otavalo. Los costos de los días 4 y 5 siguen pendientes.",
+    author: "Neicer",
+    role: "guide",
+    createdAt: "2026-10-30T17:30:00.000Z",
+  }];
+  return sanitizePlan({
+    ...plan,
+    routeRevision: ROBERT_ROUTE_REVISION,
+    days: plan.days.map(day => replacements.get(day.id) || day),
+    comments,
+  }, plan);
+}
+
 export function isPlanRow(row) {
   return String(row.assignment_kind || "").trim().toLowerCase() === "tour_plan" || String(row.assignment_group_id || "").startsWith("PLAN-") || String(row.confirmation_note || "").includes("[GUIDE_PLAN ");
 }
@@ -258,7 +279,8 @@ export async function parsePlanRow(row) {
     const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
     const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
     const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
-    const plan = sanitizePlan({ ...base, ...parsed, inquiryId: planId === ROBERT_PLAN_ID ? ROBERT_INQUIRY_ID : parsed.inquiryId, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
+    let plan = sanitizePlan({ ...base, ...parsed, inquiryId: planId === ROBERT_PLAN_ID ? ROBERT_INQUIRY_ID : parsed.inquiryId, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
+    if (planId === ROBERT_PLAN_ID && parsed.routeRevision !== ROBERT_ROUTE_REVISION) plan = applyRobertRouteRevision(plan);
     if (planId === ROBERT_PLAN_ID && !plan.comments.some(item => item.id === ROBERT_ROUTE_REVIEW_ID)) {
       plan.comments.push(base.comments.find(item => item.id === ROBERT_ROUTE_REVIEW_ID));
     }
@@ -365,6 +387,7 @@ export function sanitizePlan(input, current = robertPlan()) {
     title: bilingual(input.title, current.title, 240),
     brief,
     status: ALLOWED_STATUS.has(input.status) ? input.status : current.status,
+    routeRevision: text(input.routeRevision || current.routeRevision, 80),
     updatedAt: text(input.updatedAt || current.updatedAt, 80),
     synthetic: input.synthetic === false ? false : Boolean(input.synthetic ?? current.synthetic),
     adjustments,
