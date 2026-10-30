@@ -15,13 +15,14 @@
     { id:"staff", label:"Staff Info", href:hub+"staff-info/", group:"Operations" },
     { id:"recommendations", label:"Recommendations", href:hub+"recommendations/", group:"Operations" },
     { id:"birding", label:"Birding", href:hub+"birding/", group:"Operations" },
+    { id:"accounting", label:"Accounting", href:hub+"accounting/", group:"Finance & Control" },
     { id:"marketing", label:"Marketing", href:hub+"marketing/", group:"Growth & Content" },
     { id:"media", label:"Media", href:hub+"media/", group:"Growth & Content" },
     { id:"portfolio", label:"Website Growth", href:hub+"portfolio/", group:"Growth & Content" },
     { id:"maps", label:"Markets & Origins", href:hub+"analytics/maps/", group:"Growth & Content" },
     { id:"reports", label:"Reports", href:hub+"reports/", group:"Growth & Content" }
   ];
-  var quickIds = ["app", "guest-crm", "whatsapp", "reports"];
+  var quickIds = ["app", "guest-crm", "whatsapp", "accounting", "reports"];
   function currentId(host) {
     if (host.dataset.adminPage) return host.dataset.adminPage;
     var path = window.location.pathname.replace(/\/?$/, "/");
@@ -51,7 +52,7 @@
     var more=document.createElement("details"); more.className="adminGlobalNav__more";
     var summary=document.createElement("summary"); summary.className="adminGlobalNav__link"; summary.textContent="All tools"; more.appendChild(summary);
     var menu=document.createElement("div"); menu.className="adminGlobalNav__menu";
-    ["Guests & Sales","Guest Documents","Payments","Operations","Growth & Content"].forEach(function(group){
+    ["Guests & Sales","Guest Documents","Payments","Operations","Finance & Control","Growth & Content"].forEach(function(group){
       var section=document.createElement("section"); var heading=document.createElement("strong"); heading.textContent=group; section.appendChild(heading);
       pages.filter(function(page){return page.group===group;}).forEach(function(page){section.appendChild(toolLink(page,"adminGlobalNav__menuLink"));}); menu.appendChild(section);
     });
