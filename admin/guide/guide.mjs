@@ -535,6 +535,12 @@ function updatePricingDisplay(planId, edited = null) {
     const priceInput = workspace.querySelector(`[data-mbw-price="${CSS.escape(dayId)}"]`);
     if (priceInput) priceInput.value = cost > 0 ? (cost * (1 + percent / 100)).toFixed(2) : "";
   }
+  if (edited?.matches?.("[data-lodging-price]")) {
+    const editor = workspace.querySelector(`[data-guest-lines-for="${CSS.escape(edited.dataset.lodgingPrice)}"]`);
+    const lodgingRow = [...(editor?.querySelectorAll("[data-guest-line]") || [])].find(row => row.querySelector('[name="guestCategory"]')?.value === "lodging");
+    const lodgingAmount = lodgingRow?.querySelector('[name="guestAmount"]');
+    if (lodgingAmount) lodgingAmount.value = edited.value;
+  }
   syncPlanPricing(planId);
   let guideTotal = 0, mbwTotal = 0, lodgingTotal = 0;
   for (const day of plan.days) {
