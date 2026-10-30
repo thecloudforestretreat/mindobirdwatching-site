@@ -51,7 +51,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "El correo muestra el itinerario aprobado y el desglose de precios finales por día. Nunca incluye la cotización del guía, la ganancia ni el margen de MBW.",
     moveEarlier: "Mover a un día anterior", moveLater: "Mover a un día posterior",
     dayLogistics: "Logística del día", pickupLocation: "Lugar de recogida", dropoffLocation: "Lugar de llegada", overnightCity: "Ciudad donde se hospeda", logisticsPending: "Por confirmar",
-    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Estas son las únicas líneas de precio que pasan al itinerario del huésped. Deben sumar el precio final del día.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.",
+    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Estas son las únicas líneas de precio que pasan al itinerario del huésped. Deben sumar el precio final del día.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Crear desde la cotización del guía", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.",
   },
   en: {
     tourPlans: "Itineraries", assignedPlans: "Assigned itineraries", noPlans: "No custom itineraries are assigned to you.",
@@ -63,7 +63,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "The email shows the approved itinerary and final day-by-day price breakdown. It never includes the guide quote, profit, or MBW markup.",
     moveEarlier: "Move to an earlier day", moveLater: "Move to a later day",
     dayLogistics: "Daily logistics", pickupLocation: "Pickup location", dropoffLocation: "Drop-off location", overnightCity: "Overnight city", logisticsPending: "To be confirmed",
-    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "These are the only price lines sent to the guest itinerary. They must add up to the final daily price.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.",
+    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "These are the only price lines sent to the guest itinerary. They must add up to the final daily price.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Build from guide quote", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.",
   },
 };
 
@@ -415,6 +415,44 @@ const markupLabel = (cost, price) => cost > 0 && price > 0 ? `${(((price - cost)
 const markupValue = (cost, price) => cost > 0 && price > 0 ? Number((((price - cost) / cost) * 100).toFixed(1)) : "";
 const profitValue = (cost, price) => price > 0 ? price - cost : 0;
 
+const guestCategoryLabels = {
+  guide: { es: "Guía privado", en: "Private guiding" },
+  entrance: { es: "Entradas", en: "Entrance fees" },
+  reserve: { es: "Reservas", en: "Reserve fees" },
+  activity: { es: "Actividades", en: "Activities" },
+  food: { es: "Alimentación", en: "Meals" },
+  other: { es: "Otros servicios", en: "Other services" },
+  transportation: { es: "Transporte privado", en: "Private transportation" },
+  lodging: { es: "Alojamiento", en: "Lodging" },
+};
+
+function suggestedGuestLines(plan, dayId, sellPrice, lodgingPrice = 0) {
+  const day = plan.days.find(item => item.id === dayId);
+  if (!day || sellPrice <= 0) return [];
+  const grouped = new Map();
+  for (const item of [...(day.sourceCosts || []), ...(plan.adjustments || []).filter(item => item.dayId === dayId)]) {
+    const category = costCategories.includes(item.category) ? item.category : "other";
+    grouped.set(category, (grouped.get(category) || 0) + Math.max(0, Number(item.amount || 0)));
+  }
+  if (!grouped.size) grouped.set("other", 1);
+  const categories = [...grouped.keys()].sort((left, right) => (costCategoryOrder.get(left) ?? 70) - (costCategoryOrder.get(right) ?? 70));
+  const requestedLodging = categories.includes("lodging") ? Math.min(Math.max(0, Number(lodgingPrice || 0)), sellPrice) : 0;
+  const distributable = sellPrice - requestedLodging;
+  const allocationCategories = requestedLodging > 0 ? categories.filter(category => category !== "lodging") : categories;
+  const basisTotal = allocationCategories.reduce((sum, category) => sum + Number(grouped.get(category) || 0), 0) || allocationCategories.length || 1;
+  let allocated = 0;
+  const lines = allocationCategories.map((category, index) => {
+    const last = index === allocationCategories.length - 1;
+    const amount = last ? Number((distributable - allocated).toFixed(2)) : Number((distributable * ((grouped.get(category) || 1) / basisTotal)).toFixed(2));
+    allocated += amount;
+    return { id: crypto.randomUUID(), category, label: { ...guestCategoryLabels[category] }, amount };
+  }).filter(item => item.amount > 0);
+  if (requestedLodging > 0) lines.push({ id: crypto.randomUUID(), category: "lodging", label: { ...guestCategoryLabels.lodging }, amount: requestedLodging });
+  const difference = Number((sellPrice - lines.reduce((sum, item) => sum + item.amount, 0)).toFixed(2));
+  if (difference && lines.length) lines[lines.length - 1].amount = Number((lines[lines.length - 1].amount + difference).toFixed(2));
+  return lines;
+}
+
 function syncPlanPricing(planId) {
   if (!isAdmin()) return;
   const plan = planFor(planId), workspace = document.querySelector(`[data-plan="${CSS.escape(planId)}"]`);
@@ -486,7 +524,7 @@ function renderAdminPricing(plan, locked) {
     const cost = guideDayCost(plan, day.id), price = prices.get(day.id) || {}, sellPrice = Number(price.sellPrice || 0);
     const guestLines = (price.guestLines || []).map(line => `<div class="guestPriceLine" data-guest-line="${esc(line.id)}"><select name="guestCategory" ${locked ? "disabled" : ""}>${categoryOptions(line.category)}</select><input name="guestLabel" maxlength="160" value="${esc(localized(line.label))}" placeholder="${esc(t("guestLineLabel"))}" ${locked ? "disabled" : ""}><input name="guestAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" value="${esc(line.amount || "")}" ${locked ? "disabled" : ""}>${locked ? "" : `<button type="button" data-remove-guest-line aria-label="${esc(t("remove"))}">×</button>`}</div>`).join("");
     const guestTotal = (price.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0), mismatch = sellPrice > 0 && Math.abs(guestTotal - sellPrice) > 0.009;
-    return `<div class="pricingRow"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" ${locked ? "disabled" : ""}></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label><div class="guestPriceEditor" data-guest-lines-for="${esc(day.id)}"><h4>${esc(t("guestBreakdown"))}</h4>${guestLines}${locked ? "" : `<button type="button" data-add-guest-line data-day-id="${esc(day.id)}">+ ${esc(t("addGuestLine"))}</button>`}${mismatch ? `<small class="guestPriceMismatch">${esc(t("guestBreakdownMismatch"))}</small>` : ""}</div></div>`;
+    return `<div class="pricingRow"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" ${locked ? "disabled" : ""}></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label><div class="guestPriceEditor" data-guest-lines-for="${esc(day.id)}"><h4>${esc(t("guestBreakdown"))}</h4>${guestLines}${locked ? "" : `<div class="guestPriceActions"><button type="button" data-build-guest-lines data-day-id="${esc(day.id)}">${esc(t("buildGuestBreakdown"))}</button><button type="button" data-add-guest-line data-day-id="${esc(day.id)}">+ ${esc(t("addGuestLine"))}</button></div>`}${mismatch ? `<small class="guestPriceMismatch">${esc(t("guestBreakdownMismatch"))}</small>` : ""}</div></div>`;
   }).join("");
   const guideTotal = plan.days.reduce((sum, day) => sum + guideDayCost(plan, day.id), 0), mbwTotal = [...prices.values()].reduce((sum, value) => sum + value.sellPrice, 0), lodgingTotal = [...prices.values()].reduce((sum, value) => sum + value.lodgingPrice, 0);
   const email = plan.status === "approved" ? `<div class="emailPreview"><h4>${t("brandedEmail")}</h4><p>${t("brandedEmailHelp")}</p><button type="button" data-prepare-guest-itinerary="${esc(plan.planId)}">${esc(t("prepareGuestItinerary"))}</button><button type="button" data-copy-plan-email="${esc(plan.planId)}">${t("copyBrandedEmail")}</button></div>` : "";
@@ -669,7 +707,10 @@ async function mutate(url, method = "POST", body = {}) {
 async function readApiBody(response) {
   const raw = await response.text();
   try { return raw ? JSON.parse(raw) : {}; }
-  catch { return { error: language === "es" ? "El servicio tardó demasiado o devolvió una respuesta inesperada. Tus cambios siguen en este dispositivo; intenta guardar nuevamente en un momento." : "The service took too long or returned an unexpected response. Your changes are still on this device; try the final save again in a moment." }; }
+  catch {
+    const status = response.status ? ` (${response.status})` : "";
+    return { error: language === "es" ? `El servicio devolvió una respuesta inesperada${status}. Tus cambios siguen en este dispositivo; vuelve a guardar en un momento.` : `The service returned an unexpected response${status}. Your changes are still on this device; try the final save again in a moment.` };
+  }
 }
 
 async function refreshCurrent() { await load(data?.providerId || data?.providerName || ""); }
@@ -754,6 +795,19 @@ document.addEventListener("click", event => {
     if (pricing) pricing.guestLines = [...(pricing.guestLines || []), { id: crypto.randomUUID(), category: "other", label: { es: "", en: "" }, amount: 0 }];
     markPlanDirty(planId); renderPlans();
     document.querySelector(`[data-guest-lines-for="${CSS.escape(dayId)}"] [data-guest-line]:last-of-type input[name="guestLabel"]`)?.focus();
+    return;
+  }
+  const buildGuestLines = event.target.closest("[data-build-guest-lines]");
+  if (buildGuestLines) {
+    const workspace = buildGuestLines.closest("[data-plan]"), planId = workspace?.dataset.plan, plan = planFor(planId), dayId = buildGuestLines.dataset.dayId;
+    syncPlanPricing(planId);
+    const pricing = plan?.mbwPricing?.days?.find(item => item.dayId === dayId);
+    if (!pricing || Number(pricing.sellPrice || 0) <= 0) {
+      alert(language === "es" ? "Ingresa primero el precio final del día." : "Enter the final daily price first.");
+      return;
+    }
+    pricing.guestLines = suggestedGuestLines(plan, dayId, Number(pricing.sellPrice), Number(pricing.lodgingPrice || 0));
+    markPlanDirty(planId); renderPlans();
     return;
   }
   const removeGuestLine = event.target.closest("[data-remove-guest-line]");

@@ -10,7 +10,11 @@ export async function onRequestPost({ request, env, params }) {
     const identity = await guideIdentity(request, env);
     if (!writesEnabled(env) || !env.N8N_CRM_ADMIN_TOKEN) throw Object.assign(new Error("Tour plan updates are temporarily unavailable."), { status: 503 });
     assertSameOrigin(request, env);
-    const planId = validId(params.planId), body = await readJson(request, 24000);
+    // A multi-day bilingual plan includes structured days, source costs, review
+    // history, comments, and (for admins) guest-facing pricing. Keep a firm
+    // bound, but leave enough room for a real itinerary instead of rejecting it
+    // at the edge with an HTML 413 response.
+    const planId = validId(params.planId), body = await readJson(request, 128000);
     const rows = await listRecords(env, "list_assignments", {});
     const currentRow = rows.find(row => isPlanRow(row) && String(row.assignment_group_id) === `PLAN-${planId}`);
     const requestedProvider = { providerId: String(body.providerId || "").trim(), providerName: String(body.providerName || "").trim() };

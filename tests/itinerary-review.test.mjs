@@ -63,6 +63,18 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(studioJs, /Prepare Guest Itinerary/);
 });
 
+test("large collaborative plans remain bounded but saveable and CRM uses the linked plan workflow", () => {
+  const endpoint = fs.readFileSync(new URL("../functions/api/guide/plans/[planId].js", import.meta.url), "utf8");
+  const guide = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
+  const crm = fs.readFileSync(new URL("../admin/guest-crm/index.html", import.meta.url), "utf8");
+  assert.match(endpoint, /readJson\(request, 128000\)/);
+  assert.match(guide, /Build from guide quote/);
+  assert.match(guide, /suggestedGuestLines/);
+  assert.match(crm, /Custom itinerary workflow/);
+  assert.match(crm, /guidePlanForRecord/);
+  assert.match(crm, /source:\s*"guide_plan"/);
+});
+
 test("approved plans produce a guest-only generator draft and guides cannot fetch it", async () => {
   const base = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
   const plan = sanitizePlan({ ...base, status: "approved", comments: [{ message: "PRIVATE COMMENT", author: "Juan", role: "admin" }], mbwPricing: {
