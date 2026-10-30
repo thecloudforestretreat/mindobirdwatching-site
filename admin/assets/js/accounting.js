@@ -23,7 +23,15 @@
     renderAll();const errors=results.filter(result=>result.status==="rejected").map(result=>result.reason.message);$("errorPanel").hidden=!errors.length;$("errorCopy").textContent=errors.join(" · ");const any=accounting||balances||ops;$("dataState").dataset.tone=errors.length?(any?"good":"error"):"good";$("dataState").textContent=errors.length?(any?"Partial live data":"Feeds unavailable"):"Live sources connected";$("refreshBtn").disabled=false;
   }
 
-  function renderAll(){renderMacro();renderForecast();renderMicro();renderControls();const stamp=ops?.updated_at||accounting?.updated_at;$("asOfLabel").textContent=stamp?"Updated "+new Date(stamp).toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"Live timestamp unavailable"}
+  function renderAll(){renderMacro();renderForecast();renderMicro();renderControls();markNegativeValues();const stamp=ops?.updated_at||accounting?.updated_at;$("asOfLabel").textContent=stamp?"Updated "+new Date(stamp).toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"Live timestamp unavailable"}
+  function markNegativeValues(root=document){
+    root.querySelectorAll(".number--negative").forEach(node=>node.classList.remove("number--negative"));
+    root.querySelectorAll("strong,b,td,span,small").forEach(node=>{
+      if(node.children.length)return;
+      const value=clean(node.textContent).replace(/\u2212/g,"-");
+      if(/^-\s*(?:\$|\d[\d,.]*%)/.test(value))node.classList.add("number--negative");
+    });
+  }
   function switchView(view){document.querySelectorAll(".viewTab").forEach(button=>button.classList.toggle("is-active",button.dataset.view===view));document.querySelectorAll(".viewPanel").forEach(panel=>{const active=panel.dataset.panel===view;panel.hidden=!active;panel.classList.toggle("is-active",active)});window.scrollTo({top:0,behavior:"smooth"})}
   function signal(current,target,invert=false){if(!target)return["No target","warn"];const ratio=num(current)/target,good=invert?ratio<=1:ratio>=1;return[(ratio*100).toFixed(0)+"% of goal",good?"good":ratio>=(invert?0.8:0.75)?"warn":"bad"]}
   function elapsedRatio(dateText,period){const match=clean(dateText).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!match)return 1;const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);if(period==="month")return day/new Date(year,month,0).getDate();const start=Date.UTC(year,0,1),current=Date.UTC(year,month-1,day),days=(Date.UTC(year+1,0,1)-start)/86400000;return((current-start)/86400000+1)/days}
@@ -132,5 +140,5 @@
 
   function fillGoals(){const fields={goalRevenue:"revenue",goalProfit:"profit",goalMargin:"margin",goalGuests:"guests",goalServices:"services",goalMonthlyProfit:"monthlyProfit",goalOperatingCash:"operatingCash"};Object.entries(fields).forEach(([id,key])=>$(id).value=goals[key])}
   function openGoals(){fillGoals();$("goalDialog").showModal()}
-  function saveGoals(){const fields={revenue:"goalRevenue",profit:"goalProfit",margin:"goalMargin",guests:"goalGuests",services:"goalServices",monthlyProfit:"goalMonthlyProfit",operatingCash:"goalOperatingCash"};Object.entries(fields).forEach(([key,id])=>goals[key]=Math.max(0,num($(id).value)));localStorage.setItem(GOAL_KEY,JSON.stringify(goals));$("goalDialog").close();renderMacro()}
+  function saveGoals(){const fields={revenue:"goalRevenue",profit:"goalProfit",margin:"goalMargin",guests:"goalGuests",services:"goalServices",monthlyProfit:"goalMonthlyProfit",operatingCash:"goalOperatingCash"};Object.entries(fields).forEach(([key,id])=>goals[key]=Math.max(0,num($(id).value)));localStorage.setItem(GOAL_KEY,JSON.stringify(goals));$("goalDialog").close();renderMacro();markNegativeValues()}
 })();
