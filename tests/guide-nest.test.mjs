@@ -422,7 +422,7 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
     };
     const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day);
     editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], costNote: { es: "Total proporcionado; desglose pendiente.", en: "Total provided; breakdown pending." }, originalCost: 60 });
-    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }] };
+    const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }], mbwPricing: { days: [{ dayId: "day-1", sellPrice: 999 }], notes: "Guide must not set or receive this" } };
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
     const saved = await neicer.json();
@@ -430,6 +430,9 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
     assert.equal(saved.plan.startDate, "2027-02-08");
     assert.equal(saved.plan.endDate, "2027-02-15");
     assert.equal(saved.plan.adjustments[0].description, "Intag lodge");
+    assert.equal("mbwPricing" in saved.plan, false);
+    assert.equal(JSON.stringify(rows[0]).includes("999"), false);
+    assert.equal(JSON.stringify(rows[0]).includes("Guide must not set or receive this"), false);
     assert.equal(rows[0].provider_id, "PROV-NEICER");
 
     const chicho = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "chicho@example.test" }, params: { planId: "robert-2027" } });

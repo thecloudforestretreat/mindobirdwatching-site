@@ -195,6 +195,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/offers/O-1/respond") && write.body.bidAmount === "125"), true);
     await page.getByRole("button", { name: "Planes asignados", exact: true }).click();
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
+    assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.doesNotMatch(await page.locator("#planList").innerText(), /Revisión de precios MBW|Precio MBW|Margen sobre costo/);
+    assert.equal(await page.getByRole("button", { name: "Guardar borrador", exact: true }).count(), 1);
+    assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW", exact: true }).count(), 1);
+    assert.equal(await page.getByRole("button", { name: "Solicitar cambios", exact: true }).count(), 0);
+    assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
     assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
     assert.match(await page.locator("#planList").innerText(), /Salida del hotel hacia Mindo/);
     assert.match(await page.locator("#planList").innerText(), /Transporte\s+\$85[.,]00/);
@@ -293,6 +299,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("[data-remove-availability]").count(), 0);
     await page.locator('[data-route="plans"]').click();
     assert.equal(await page.locator("#newPlanButton").isVisible(), true);
+    assert.equal(await page.locator(".adminPricing").count(), 1);
+    assert.match(await page.locator(".adminPricing").innerText(), /Revisión de precios MBW|MBW pricing review/);
     await page.locator("#newPlanButton").click();
     await page.locator('#newPlanForm [name="guestName"]').fill("Alice Rivera");
     await page.locator('#newPlanForm [name="title"]').fill("Alice · Ecuador custom tour");
