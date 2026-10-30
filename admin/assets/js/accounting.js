@@ -1,100 +1,67 @@
 (function(){
   "use strict";
-  const ACCOUNTING_API="https://n8n.mindobirdwatching.com/webhook/mbw-meta-ads-insights";
-  const BALANCES_API="/api/crm/balances";
-  const OPERATIONS_API="/api/admin/accounting-dashboard";
-  const $=id=>document.getElementById(id);
-  const clean=value=>String(value??"").trim();
-  const num=value=>{const n=Number(value);return Number.isFinite(n)?n:0};
-  const money=value=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(num(value));
-  const integer=value=>new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(num(value));
-  const esc=value=>clean(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
-  const monthLabel=key=>new Intl.DateTimeFormat("en-US",{month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(key+"-01T12:00:00Z"));
-  const todayNY=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const ACCOUNTING_API="https://n8n.mindobirdwatching.com/webhook/mbw-meta-ads-insights",BALANCES_API="/api/crm/balances",OPERATIONS_API="/api/admin/accounting-dashboard",GOAL_KEY="mbw.accounting.goals.v2";
+  const DEFAULT_GOALS={revenue:25000,profit:8000,margin:30,guests:300,services:200,monthlyProfit:800,operatingCash:5000};
+  const $=id=>document.getElementById(id),clean=value=>String(value??"").trim(),num=value=>{const n=Number(value);return Number.isFinite(n)?n:0},money=value=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(num(value)),moneyExact=value=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(num(value)),integer=value=>new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(num(value)),pct=value=>(num(value)*100).toFixed(1)+"%",esc=value=>clean(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[ch]);
+  let accounting=null,balances=null,ops=null,trendMetric="revenue",activitySort="profit",activityDirection=-1,goals=loadGoals();
 
-  document.addEventListener("DOMContentLoaded",()=>{$("refreshBtn").addEventListener("click",load);load()});
+  document.addEventListener("DOMContentLoaded",()=>{
+    $("refreshBtn").addEventListener("click",load);
+    document.querySelectorAll(".viewTab").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.view)));
+    $("trendSwitch").addEventListener("click",event=>{const button=event.target.closest("button[data-metric]");if(!button)return;trendMetric=button.dataset.metric;document.querySelectorAll("#trendSwitch button").forEach(item=>item.classList.toggle("is-active",item===button));renderTrend()});
+    $("microPeriod").addEventListener("change",renderMicro);
+    document.querySelectorAll("th[data-sort]").forEach(th=>th.addEventListener("click",()=>{if(activitySort===th.dataset.sort)activityDirection*=-1;else{activitySort=th.dataset.sort;activityDirection=th.dataset.sort==="title"?1:-1}renderActivities()}));
+    $("goalBtn").addEventListener("click",openGoals);$("saveGoals").addEventListener("click",saveGoals);$("resetGoals").addEventListener("click",()=>{goals={...DEFAULT_GOALS};fillGoals()});
+    load();
+  });
 
-  async function json(url){const response=await fetch(url,{credentials:"same-origin",cache:"no-store"});if(!response.ok)throw new Error(url.includes("balances")?"Customer-balance feed unavailable":"Accounting feed unavailable");const body=await response.json();if(body.ok===false)throw new Error(body.error||"Reporting feed unavailable");return body}
-
+  function loadGoals(){try{return{...DEFAULT_GOALS,...JSON.parse(localStorage.getItem(GOAL_KEY)||"{}")}}catch{return{...DEFAULT_GOALS}}}
+  async function json(url){const response=await fetch(url,{credentials:"same-origin",cache:"no-store"});if(!response.ok)throw new Error(url.includes("balances")?"Customer balances unavailable":url.includes("accounting-dashboard")?"Accounting controls unavailable":"Invoice reporting unavailable");const body=await response.json();if(body.ok===false)throw new Error(body.error||"Reporting source unavailable");return body}
   async function load(){
     $("refreshBtn").disabled=true;$("dataState").dataset.tone="loading";$("dataState").textContent="Refreshing live data";$("errorPanel").hidden=true;
-    const [accountingResult,balanceResult,operationsResult]=await Promise.allSettled([json(ACCOUNTING_API),json(BALANCES_API),json(OPERATIONS_API)]);
-    const accounting=accountingResult.status==="fulfilled"?accountingResult.value:null;
-    const balances=balanceResult.status==="fulfilled"?balanceResult.value:null;
-    const operations=operationsResult.status==="fulfilled"?operationsResult.value:null;
-    if(accounting)renderAccounting(accounting,operations);else renderAccountingUnavailable(operations);
-    renderBalances(balances);
-    renderOperations(operations);
-    renderControls(accounting,balances,operations,accountingResult,balanceResult,operationsResult);
-    const errors=[accountingResult,balanceResult,operationsResult].filter(item=>item.status==="rejected").map(item=>item.reason.message);
-    $("errorPanel").hidden=!errors.length;$("errorCopy").textContent=errors.length?errors.join(" · "):"";
-    $("dataState").dataset.tone=errors.length?(accounting||balances||operations?"good":"error"):"good";
-    $("dataState").textContent=errors.length?(accounting||balances||operations?"Partial live data":"Feeds unavailable"):"Live sources connected";
-    $("refreshBtn").disabled=false;
+    const results=await Promise.allSettled([json(ACCOUNTING_API),json(BALANCES_API),json(OPERATIONS_API)]);accounting=results[0].status==="fulfilled"?results[0].value:null;balances=results[1].status==="fulfilled"?results[1].value:null;ops=results[2].status==="fulfilled"?results[2].value:null;
+    renderAll();const errors=results.filter(result=>result.status==="rejected").map(result=>result.reason.message);$("errorPanel").hidden=!errors.length;$("errorCopy").textContent=errors.join(" · ");const any=accounting||balances||ops;$("dataState").dataset.tone=errors.length?(any?"good":"error"):"good";$("dataState").textContent=errors.length?(any?"Partial live data":"Feeds unavailable"):"Live sources connected";$("refreshBtn").disabled=false;
   }
 
-  function renderAccounting(data,operations){
-    const monthly=Array.isArray(data.accounting_monthly)?data.accounting_monthly:[];
-    const currentKey=todayNY().slice(0,7),current=monthly.find(row=>row.month===currentKey)||monthly.at(-1)||{};
-    const year=currentKey.slice(0,4),ytd=monthly.filter(row=>clean(row.month).startsWith(year+"-")).reduce((out,row)=>{out.collected+=num(row.amount_received);out.gross+=num(row.mbw_gross_actual);out.profit+=num(row.mbw_profit_accrual);out.invoices+=num(row.paid_invoices);return out},{collected:0,gross:0,profit:0,invoices:0});
-    const day=Number(todayNY().slice(8,10)),days=new Date(Number(year),Number(currentKey.slice(5,7)),0).getDate(),paceProfit=day?num(current.mbw_profit_accrual)/day*days:0;
-    const margin=num(current.mbw_gross_actual)?num(current.mbw_profit_accrual)/num(current.mbw_gross_actual):0;
-    const kpis=[
-      ["Available operating cash",operations?money(operations.cash.available_operating_cash):"—",operations&&operations.cash.date?"Reconciled through "+operations.cash.date:"Daily reconciliation unavailable"],
-      ["Guide payables due",operations?money(operations.guide_totals.due_completed):"—",operations?integer(operations.guide_totals.completed_items)+" completed service items":"Guide queue unavailable"],
-      ["Collected this month",money(current.amount_received),integer(current.paid_invoices)+" paid invoice rows"],
-      ["MBW gross this month",money(current.mbw_gross_actual),"After pass-through amounts"],
-      ["Earned profit this month",money(current.mbw_profit_accrual),(margin*100).toFixed(1)+"% margin on MBW gross"],
-      ["Profit pace run rate",money(paceProfit),"Pace only; excludes future booked profit"],
-      ["YTD MBW gross",money(ytd.gross),integer(ytd.invoices)+" paid invoice rows"],
-      ["YTD earned profit",money(ytd.profit),ytd.gross?(ytd.profit/ytd.gross*100).toFixed(1)+"% margin":"No gross revenue"]
+  function renderAll(){renderMacro();renderMicro();renderControls();const stamp=ops?.updated_at||accounting?.updated_at;$("asOfLabel").textContent=stamp?"Updated "+new Date(stamp).toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"Live timestamp unavailable"}
+  function switchView(view){document.querySelectorAll(".viewTab").forEach(button=>button.classList.toggle("is-active",button.dataset.view===view));document.querySelectorAll(".viewPanel").forEach(panel=>{const active=panel.dataset.panel===view;panel.hidden=!active;panel.classList.toggle("is-active",active)});window.scrollTo({top:0,behavior:"smooth"})}
+  function signal(current,target,invert=false){if(!target)return["No target","warn"];const ratio=num(current)/target,good=invert?ratio<=1:ratio>=1;return[(ratio*100).toFixed(0)+"% of goal",good?"good":ratio>=(invert?0.8:0.75)?"warn":"bad"]}
+
+  function renderMacro(){
+    const s=ops?.summary||{},p=ops?.projection||{},cash=ops?.cash||{},guide=ops?.guide_totals||{},monthly=ops?.monthly||[],net=s.net||0;
+    const profitSignal=signal(p.projectedProfit,goals.monthlyProfit),cashSignal=signal(cash.available_operating_cash,goals.operatingCash),netMargin=s.revenue?net/s.revenue:0;
+    const cards=[
+      ["Projected month profit",moneyExact(p.projectedProfit),moneyExact(p.earnedProfit)+" earned + "+moneyExact(p.futureProfit)+" booked",profitSignal],
+      ["Available operating cash",moneyExact(cash.available_operating_cash),moneyExact(cash.restricted_ad_fund)+" restricted",cashSignal],
+      ["YTD net income",moneyExact(net),pct(netMargin)+" of earned revenue",[net>=0?"Profitable YTD":"Loss YTD",net>=0?"good":"bad"]],
+      ["Guide payables due",moneyExact(guide.due_completed),integer(guide.completed_items)+" completed items",[guide.due_completed?"Action needed":"All clear",guide.due_completed?"warn":"good"]]
     ];
-    $("kpiGrid").innerHTML=kpis.map(item=>`<article class="kpi"><span>${esc(item[0])}</span><strong>${item[1]}</strong><small>${esc(item[2])}</small></article>`).join("");
-    $("asOfLabel").textContent=data.updated_at?"Updated "+new Date(data.updated_at).toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET":"Live reporting timestamp unavailable";
-    renderMonthly(monthly);
-    const life=data.lifetime_summary||{},campaign=data.current_campaign_summary||{};
-    $("adMetrics").innerHTML=[["Lifetime Meta spend",money(life.spend)],["Current campaign spend",money(campaign.spend)],["Landing views",integer(campaign.landing_page_views)],["Cost per landing view",campaign.landing_page_views?money(num(campaign.spend)/num(campaign.landing_page_views)):"—"]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("");
+    $("spotlightGrid").innerHTML=cards.map((item,index)=>`<article class="spotlight" style="--tint:${["#e4f2dc","#e4efe9","#e8f1dc","#fff0cf"][index]}"><span>${esc(item[0])}</span><strong>${item[1]}</strong><small>${esc(item[2])}</small><b class="signal" data-tone="${item[3][1]}">${esc(item[3][0])}</b></article>`).join("");
+    const goalRows=[["Annual revenue",s.revenue,goals.revenue,money],["Annual profit",s.profit,goals.profit,money],["Profit margin",s.margin*100,goals.margin,value=>num(value).toFixed(1)+"%"],["Guests",s.guests,goals.guests,integer],["Services",s.services,goals.services,integer],["Monthly profit",p.projectedProfit,goals.monthlyProfit,money]];
+    $("goalGrid").innerHTML=goalRows.map(row=>{const progress=row[2]?row[1]/row[2]:0;return`<div class="goalMetric"><header><span>${esc(row[0])}</span><b>${Math.round(progress*100)}%</b></header><div class="progress"><i style="width:${Math.min(100,Math.max(0,progress*100))}%"></i></div><small>${row[3](row[1])} of ${row[3](row[2])}</small></div>`}).join("");
+    const last3=monthly.slice(-3),avg=(key)=>last3.length?last3.reduce((sum,row)=>sum+num(row[key]),0)/last3.length:0,best=[...monthly].sort((a,b)=>b.profit-a.profit)[0],prior=monthly.at(-2)||{},current=monthly.at(-1)||{},momentum=prior.profit?(current.profit-prior.profit)/Math.abs(prior.profit):0,runway=avg("expenses")?cash.available_operating_cash/avg("expenses"):0;
+    const averages=[["3-mo avg revenue",money(avg("revenue")),"Smooths monthly swings"],["3-mo avg profit",money(avg("profit")),"Recent earning power"],["Best profit month",best?money(best.profit):"—",best?.month||"No history"],["Profit momentum",(momentum>=0?"+":"")+pct(momentum),"Latest vs prior month"],["Cash runway",runway.toFixed(1)+" mo","Using 3-mo avg expenses"],["Avg profit / service",s.services?money(s.profit/s.services):"—",integer(s.services)+" completed services"]];
+    $("averageGrid").innerHTML=averages.map(item=>`<div class="average"><span>${esc(item[0])}</span><strong>${item[1]}</strong><small>${esc(item[2])}</small></div>`).join("");
+    $("cashMetrics").innerHTML=[["Ledger balance",moneyExact(cash.ledger_balance)],["Restricted ad fund",moneyExact(cash.restricted_ad_fund)],["Operating cash",moneyExact(cash.available_operating_cash)],["Future guide obligations",moneyExact(guide.future_obligations)],["Reconciled through",cash.date||"—"]].map(metric=>`<div class="stackMetric"><span>${esc(metric[0])}</span><strong>${metric[1]}</strong></div>`).join("");renderTrend();
   }
 
-  function renderAccountingUnavailable(operations){
-    const cards=[["Available operating cash",operations?money(operations.cash.available_operating_cash):"—",operations?"From daily reconciliation":"Feed unavailable"],["Guide payables due",operations?money(operations.guide_totals.due_completed):"—",operations?integer(operations.guide_totals.completed_items)+" completed service items":"Feed unavailable"]];
-    cards.push(...["Collected this month","MBW gross this month","Earned profit this month","Profit pace run rate","YTD MBW gross","YTD earned profit"].map(label=>[label,"—","Accounting feed unavailable"]));
-    $("kpiGrid").innerHTML=cards.map(item=>`<article class="kpi"><span>${esc(item[0])}</span><strong>${item[1]}</strong><small>${esc(item[2])}</small></article>`).join("");
-    $("monthlyChart").innerHTML='<p class="sourceNote">Monthly performance is unavailable.</p>';$("monthlyRows").innerHTML='<tr><td colspan="6">Accounting feed unavailable.</td></tr>';$("adMetrics").innerHTML='<p class="sourceNote">Advertising totals are unavailable.</p>';
+  function renderTrend(){
+    const rows=(ops?.monthly||[]).slice(-13),values=rows.map(row=>num(row[trendMetric])),max=Math.max(1,...values.map(Math.abs)),current=values.at(-1)||0,prior=values.at(-2)||0,delta=prior?(current-prior)/Math.abs(prior):0,label=trendMetric[0].toUpperCase()+trendMetric.slice(1);
+    $("trendInsight").innerHTML=`<strong>${label}: ${moneyExact(current)}</strong> · ${prior?`${delta>=0?"+":""}${pct(delta)} vs prior month`:"First comparable month"}`;
+    $("trendChart").setAttribute("aria-label",`${label} by month`);$("trendChart").innerHTML=rows.map(row=>{const value=num(row[trendMetric]),height=Math.max(value?3:0,Math.abs(value)/max*100);return`<div class="trendMonth" data-tone="${value<0?"negative":"positive"}" style="--height:${height}%" title="${esc(row.month)} · ${moneyExact(value)}"><b>${Math.abs(value)>=1000?money(value):moneyExact(value)}</b><i style="height:${height}%"></i><span>${esc(row.month.slice(5))}</span></div>`}).join("")||'<p>No monthly history available.</p>';
   }
 
-  function renderMonthly(rows){
-    const visible=rows.slice(-13),max=Math.max(1,...visible.map(row=>num(row.mbw_gross_actual)));
-    $("monthlyChart").innerHTML=visible.map(row=>{const gross=num(row.mbw_gross_actual),profit=num(row.mbw_profit_accrual),gh=Math.max(gross?2:0,gross/max*100),ph=Math.max(profit?2:0,profit/max*100);return`<div class="chartMonth" title="${esc(monthLabel(row.month))}: ${money(gross)} gross; ${money(profit)} profit"><i class="gross" style="height:${gh}%"></i><i class="profit" style="height:${ph}%"></i><span>${esc(row.month.slice(5))}</span></div>`}).join("");
-    $("monthlyRows").innerHTML=[...visible].reverse().map(row=>{const gross=num(row.mbw_gross_actual),profit=num(row.mbw_profit_accrual);return`<tr><td><strong>${esc(monthLabel(row.month))}</strong></td><td>${integer(row.paid_invoices)}</td><td>${money(row.amount_received)}</td><td>${money(gross)}</td><td>${money(profit)}</td><td>${gross?(profit/gross*100).toFixed(1)+"%":"—"}</td></tr>`}).join("")||'<tr><td colspan="6">No monthly accounting history returned.</td></tr>';
-  }
+  function renderMicro(){renderActivities();renderWeekdays();renderExpenseMix();renderGuides();renderBalances()}
+  function periodValue(row,key){return $("microPeriod").value==="month"?num(row["month"+key[0].toUpperCase()+key.slice(1)]):num(row[key])}
+  function renderActivities(){const rows=[...(ops?.activities||[])].map(row=>({...row,displayRevenue:periodValue(row,"revenue"),displayProfit:periodValue(row,"profit"),displayGuests:periodValue(row,"guests"),displayServices:periodValue(row,"services")})).filter(row=>row.displayServices||row.displayRevenue||row.displayProfit);rows.forEach(row=>{row.displayMargin=row.displayRevenue?row.displayProfit/row.displayRevenue:0;row.displayAverageProfit=row.displayServices?row.displayProfit/row.displayServices:0});const key={revenue:"displayRevenue",profit:"displayProfit",guests:"displayGuests",services:"displayServices",margin:"displayMargin",averageProfit:"displayAverageProfit"}[activitySort]||activitySort;rows.sort((a,b)=>activitySort==="title"?clean(a.title).localeCompare(clean(b.title))*activityDirection:(num(a[key])-num(b[key]))*activityDirection);$("activityRows").innerHTML=rows.map(row=>`<tr><td class="activityName"><strong>${esc(row.title)}</strong><small>${esc(row.code)} · ${esc(row.serviceType)}</small></td><td>${integer(row.displayServices)}</td><td>${integer(row.displayGuests)}</td><td>${moneyExact(row.displayRevenue)}</td><td>${moneyExact(row.displayProfit)}</td><td>${pct(row.displayMargin)}</td><td>${moneyExact(row.displayAverageProfit)}</td></tr>`).join("")||'<tr><td colspan="7">No earned activity rows in this period.</td></tr>'}
+  function renderWeekdays(){const month=$("microPeriod").value==="month",rows=(ops?.weekdays||[]).map(row=>({...row,displayServices:month?num(row.monthServices):num(row.services),displayProfit:month?num(row.monthProfit):num(row.profit)})).filter(row=>row.displayServices).sort((a,b)=>b.displayServices-a.displayServices||b.displayProfit-a.displayProfit).slice(0,8);$("weekdayList").innerHTML=rows.map((row,index)=>`<div class="rankItem"><b>${index+1}</b><div><strong>${esc(row.weekday)} · ${esc(row.serviceType)}</strong><small>${moneyExact(row.displayProfit)} profit</small></div><span>${integer(row.displayServices)}</span></div>`).join("")||'<p class="hint">No completed services in this period.</p>'}
+  function renderExpenseMix(){const month=$("microPeriod").value==="month",rows=(ops?.expense_mix||[]).map(row=>({category:row.category,amount:month?num(row.monthAmount):num(row.amount)})).filter(row=>row.amount).sort((a,b)=>b.amount-a.amount),max=Math.max(1,...rows.map(row=>row.amount));$("expenseMix").innerHTML=rows.slice(0,9).map(row=>`<div class="barItem"><header><span>${esc(row.category)}</span><b>${moneyExact(row.amount)}</b></header><div class="barTrack"><i style="width:${row.amount/max*100}%"></i></div></div>`).join("")||'<p class="hint">No expenses in this period.</p>'}
+  function renderGuides(){const rows=ops?.guides||[];$("guideTotal").textContent=moneyExact(ops?.guide_totals?.due_completed)+" due";$("guideRows").innerHTML=rows.map(row=>`<tr><td><strong>${esc(row.guide)}</strong></td><td>${moneyExact(row.due)}</td><td>${integer(row.dueCount)}</td><td>${moneyExact(row.future)}</td><td>${esc(row.oldestDue||"—")}</td></tr>`).join("")||'<tr><td colspan="5">No open guide obligations.</td></tr>'}
+  function renderBalances(){if(!balances){$("balanceSummary").textContent="Feed unavailable";$("balanceRows").innerHTML='<tr><td colspan="7">Customer balances unavailable.</td></tr>';return}const rows=(balances.records||[]).filter(row=>num(row.balance)>0&&row.status!=="paid").sort((a,b)=>{const rank={overdue:0,due_soon:1,review:2,undated:3,upcoming:4,unknown:5};return(rank[a.status]??9)-(rank[b.status]??9)||clean(a.dueDate).localeCompare(clean(b.dueDate))}),total=rows.reduce((sum,row)=>sum+num(row.balance),0);$("balanceSummary").textContent=moneyExact(total)+" · "+rows.length+" bookings";$("balanceRows").innerHTML=rows.slice(0,25).map(row=>`<tr><td><strong>${esc(row.name)}</strong></td><td>${esc(row.tourDate||"—")}</td><td>${row.total==null?"—":moneyExact(row.total)}</td><td>${row.paid==null?"—":moneyExact(row.paid)}</td><td>${moneyExact(row.balance)}</td><td>${esc(row.dueDate||"Not recorded")}</td><td><span class="statusBadge" data-tone="${row.status==="overdue"?"danger":row.status==="due_soon"||row.status==="review"?"warn":"good"}">${esc(clean(row.status).replaceAll("_"," "))}</span></td></tr>`).join("")||'<tr><td colspan="7">No open customer balances.</td></tr>'}
 
-  function renderBalances(data){
-    if(!data){$("balanceSummary").textContent="Feed unavailable";$("balanceRows").innerHTML='<tr><td colspan="7">Customer balances could not be loaded.</td></tr>';return}
-    const records=Array.isArray(data.records)?data.records:[],open=records.filter(row=>num(row.balance)>0&&row.status!=="paid").sort((a,b)=>{const rank={overdue:0,due_soon:1,review:2,undated:3,upcoming:4,unknown:5};return(rank[a.status]??9)-(rank[b.status]??9)||clean(a.dueDate).localeCompare(clean(b.dueDate))}),total=open.reduce((sum,row)=>sum+num(row.balance),0);
-    $("balanceSummary").textContent=money(total)+" across "+open.length+" bookings";
-    $("balanceRows").innerHTML=open.slice(0,20).map(row=>`<tr><td><strong>${esc(row.name)}</strong></td><td>${esc(row.tourDate||"—")}</td><td>${row.total==null?"—":money(row.total)}</td><td>${row.paid==null?"—":money(row.paid)}</td><td>${money(row.balance)}</td><td>${esc(row.dueDate||"Not recorded")}</td><td><span class="statusBadge" data-tone="${row.status==="overdue"?"danger":row.status==="due_soon"||row.status==="review"?"warn":"good"}">${esc(clean(row.status).replaceAll("_"," "))}</span></td></tr>`).join("")||'<tr><td colspan="7">No open customer balances were returned.</td></tr>';
-  }
+  function renderControls(){const records=balances?.records||[],review=records.filter(row=>row.status==="review").length,overdue=records.filter(row=>row.status==="overdue").length,unmatched=num(balances?.unmatched),checks=[[accounting?"good":"danger","Invoice reporting feed",accounting?integer(accounting.accounting_summary?.paid_invoice_count)+" paid invoice rows verified":"Unavailable"],[balances?"good":"danger","Customer balance feed",balances?integer(records.length)+" booking records checked":"Unavailable"],[ops?"good":"danger","Accounting operations feed",ops?"Invoices, expenses, guides and cash connected":"Unavailable"],[overdue?"danger":"good","Overdue customer balances",overdue?integer(overdue)+" need follow-up":"No overdue balances"],[review?"warn":"good","Balances needing review",review?integer(review)+" have incomplete or conflicting evidence":"No balance review flags"],[unmatched?"warn":"good","Unmatched deposits",unmatched?integer(unmatched)+" are not linked to a CRM inquiry":"No unmatched deposits"],[ops?.expenses?.unreconciled?"warn":"good","Unreconciled expenses",ops?integer(ops.expenses.unreconciled)+" rows need review":"Unavailable"],[ops?.expenses?.missing_receipts?"warn":"good","Receipt coverage",ops?integer(ops.expenses.missing_receipts)+" paid rows lack receipt links":"Unavailable"],[ops?.controls?.open_settlements?"warn":"good","Open settlements",ops?integer(ops.controls.open_settlements)+" records remain open":"No open settlement records"]];$("controlList").innerHTML=checks.map(item=>`<div class="control" data-tone="${item[0]}"><i></i><div><strong>${esc(item[1])}</strong><small>${esc(item[2])}</small></div></div>`).join("");const fund=ops?.advertising_fund||{},cash=ops?.cash||{};$("adMetrics").innerHTML=[["Available",moneyExact(fund.available)],["Outstanding from guides",moneyExact(fund.outstanding_from_guides)],["Collected",moneyExact(fund.contribution_collected)],["Ad spend used",moneyExact(fund.ad_spend_used)]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("");$("reconMetrics").innerHTML=[["Ledger balance",moneyExact(cash.ledger_balance)],["Restricted",moneyExact(cash.restricted_ad_fund)],["Operating cash",moneyExact(cash.available_operating_cash)],["Through",cash.date||"—"]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("")}
 
-  function renderOperations(data){
-    if(!data){$("guideRows").innerHTML='<tr><td colspan="5">Guide payment queue is unavailable.</td></tr>';$("reconMetrics").innerHTML='<p class="sourceNote">Daily reconciliation is unavailable.</p>';return}
-    $("guideRows").innerHTML=(data.guides||[]).map(row=>`<tr><td><strong>${esc(row.guide)}</strong></td><td>${money(row.due)}</td><td>${integer(row.dueCount)}</td><td>${money(row.future)}</td><td>${esc(row.oldestDue||"—")}</td></tr>`).join("")||'<tr><td colspan="5">No open guide obligations were returned.</td></tr>';
-    $("reconMetrics").innerHTML=[["Ledger balance",money(data.cash.ledger_balance)],["Restricted ad fund",money(data.cash.restricted_ad_fund)],["Available operating cash",money(data.cash.available_operating_cash)],["Reconciled through",data.cash.date||"—"]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("");
-    const fund=data.advertising_fund||{};
-    $("adMetrics").insertAdjacentHTML("beforeend",[["Ad fund available",money(fund.available)],["Guide contributions outstanding",money(fund.outstanding_from_guides)],["Contributions collected",money(fund.contribution_collected)]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join(""));
-  }
-
-  function renderControls(accounting,balances,operations,accountingResult,balanceResult,operationsResult){
-    const balanceRows=balances&&Array.isArray(balances.records)?balances.records:[],review=balanceRows.filter(row=>row.status==="review").length,overdue=balanceRows.filter(row=>row.status==="overdue").length,unmatched=num(balances&&balances.unmatched),checks=[
-      [accounting?"good":"danger","Invoice reporting feed",accounting?integer(accounting.accounting_summary&&accounting.accounting_summary.paid_invoice_count)+" paid invoice rows verified":"Unavailable: "+clean(accountingResult.reason&&accountingResult.reason.message)],
-      [balances?"good":"danger","Customer balance feed",balances?integer(balanceRows.length)+" booking records checked":"Unavailable: "+clean(balanceResult.reason&&balanceResult.reason.message)],
-      [operations?"good":"danger","Guide and cash control feed",operations?"Queue and daily reconciliation are connected":"Unavailable: "+clean(operationsResult.reason&&operationsResult.reason.message)],
-      [overdue?"danger":"good","Overdue customer balances",overdue?integer(overdue)+" require follow-up":"No overdue balances returned"],
-      [review?"warn":"good","Balance records needing review",review?integer(review)+" have conflicting or incomplete evidence":"No review flags returned"],
-      [unmatched?"warn":"good","Unmatched deposits",unmatched?integer(unmatched)+" deposits are not linked to a CRM inquiry":"No unmatched deposits returned"],
-      [operations&&operations.expenses.unreconciled?"warn":"good","Unreconciled expenses",operations?integer(operations.expenses.unreconciled)+" expense rows require review":"Expense control unavailable"],
-      [operations&&operations.controls.open_settlements?"warn":"good","Open guide settlements",operations?integer(operations.controls.open_settlements)+" settlement records remain open":"Settlement control unavailable"]
-    ];
-    $("controlList").innerHTML=checks.map(item=>`<div class="control" data-tone="${item[0]}"><i></i><div><strong>${esc(item[1])}</strong><small>${esc(item[2])}</small></div></div>`).join("");
-  }
+  function fillGoals(){const fields={goalRevenue:"revenue",goalProfit:"profit",goalMargin:"margin",goalGuests:"guests",goalServices:"services",goalMonthlyProfit:"monthlyProfit",goalOperatingCash:"operatingCash"};Object.entries(fields).forEach(([id,key])=>$(id).value=goals[key])}
+  function openGoals(){fillGoals();$("goalDialog").showModal()}
+  function saveGoals(){const fields={revenue:"goalRevenue",profit:"goalProfit",margin:"goalMargin",guests:"goalGuests",services:"goalServices",monthlyProfit:"goalMonthlyProfit",operatingCash:"goalOperatingCash"};Object.entries(fields).forEach(([key,id])=>goals[key]=Math.max(0,num($(id).value)));localStorage.setItem(GOAL_KEY,JSON.stringify(goals));$("goalDialog").close();renderMacro()}
 })();
