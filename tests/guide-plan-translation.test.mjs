@@ -1,0 +1,92 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { onRequestPost as translateGuidePlan } from "../functions/api/guide/plans/[planId]/translate.js";
+import { planAssignment, robertPlan } from "../functions/lib/guide-plans.mjs";
+import { planTranslationSource, validatePlanTranslation } from "../functions/lib/guide-plan-translation.mjs";
+
+const env = {
+  LOCAL_TEST_IDENTITY: "owner@example.test",
+  MBW_MOBILE_ROLE_MAP: JSON.stringify({ "owner@example.test": { role: "owner", name: "Juan Pablo" } }),
+  MBW_GUIDE_ROLE_MAP: JSON.stringify({ "neicer@example.test": { role: "guide", name: "Neicer", providerName: "Neicer", providerIds: ["PROV-NEICER"] } }),
+  N8N_CRM_ADMIN_TOKEN: "test-token",
+  N8N_CRM_ADMIN_URL: "https://n8n.example.test/webhook/mobile",
+  CRM_SUMMARY_TOKEN: "local-ai-test-token",
+};
+
+const translated = source => ({
+  title: "Robert · Updated custom itinerary",
+  brief: {
+    traveler: "Age 78 · reasonably healthy · no long hikes",
+    lodging: "2–3 star lodging",
+    pickup: "Airport hotel",
+    dropoff: "Quito airport",
+    request: "Spend the first three days in Mindo and the following two days farther north.",
+    interests: "Birding, Mindo, Intag, and Otavalo",
+  },
+  days: source.days.map(day => ({
+    id: day.id,
+    title: `Translated ${day.title}`,
+    details: `Translated ${day.details}`,
+    pickupLocation: `Translated ${day.pickupLocation}`,
+    dropoffLocation: `Translated ${day.dropoffLocation}`,
+    overnightCity: `Translated ${day.overnightCity}`,
+    costNote: day.costNote ? `Translated ${day.costNote}` : "",
+  })),
+});
+
+test("Neicer's route update keeps three Mindo days and only confirmed day-three costs", () => {
+  const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+  assert.match(plan.days[2].details.es, /Santa Rosa/);
+  assert.equal(plan.days[2].overnightCity.es, "Mindo");
+  assert.deepEqual(plan.days[2].sourceCosts.map(item => [item.category, item.amount]), [["transportation", 60], ["guide", 80], ["entrance", 40]]);
+  assert.equal(plan.days[2].originalCost, 180);
+  assert.equal(plan.days[3].overnightCity.es, "Intag");
+  assert.equal(plan.days[3].originalCost, 0);
+  assert.match(plan.days[3].costNote.es, /pendientes de cotización/);
+  assert.equal(plan.days[4].overnightCity.es, "Otavalo");
+  assert.equal(plan.days[4].originalCost, 0);
+});
+
+test("translation validation requires exactly the saved day IDs", () => {
+  const source = planTranslationSource(robertPlan());
+  const result = validatePlanTranslation(translated(source), source.days.map(day => day.id));
+  assert.equal(result.days.length, 6);
+  assert.throws(() => validatePlanTranslation({ ...translated(source), days: translated(source).days.slice(1) }, source.days.map(day => day.id)), /translated days/);
+});
+
+test("only an administrator can request a read-only local translation", async t => {
+  const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+  const assignment = await planAssignment(plan);
+  const row = { ...assignment, assignment_id: "PLAN-ROW", updated_at: "v1" };
+  const calls = [];
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    calls.push(String(url));
+    if (String(url).endsWith("mbw-guide-plan-local-translate")) {
+      const source = JSON.parse(options.body).source;
+      return Response.json({ result: translated(source), model: "gpt-oss:20b" });
+    }
+    const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+    assert.equal(payload.action, "list_assignments");
+    return Response.json({ ok: true, records: [row] });
+  });
+  const request = new Request("http://localhost/api/guide/plans/robert-2027/translate", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify({ updatedAt: "v1" }) });
+  const response = await translateGuidePlan({ request, env, params: { planId: "robert-2027" } });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.model, "gpt-oss:20b");
+  assert.equal(body.reviewRequired, true);
+  assert.equal(body.translation.days[2].id, "day-3");
+  assert.equal(calls.filter(url => url.endsWith("mbw-guide-plan-local-translate")).length, 1);
+
+  const denied = await translateGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027/translate", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: "{}" }), env: { ...env, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
+  assert.equal(denied.status, 403);
+});
+
+test("Guide Nest exposes translation only inside admin English review", () => {
+  const script = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
+  assert.match(script, /isAdminReview\(\) && language === "en"/);
+  assert.match(script, /data-translate-plan/);
+  assert.match(script, /without changing the Spanish source or guide costs/);
+  assert.match(script, /\/translate`,/);
+});

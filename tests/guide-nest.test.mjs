@@ -364,12 +364,12 @@ test("Neicer can edit guide dates and prices while the submitted total is recalc
     originalTotal: 99999,
     adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
   }, original);
-  assert.equal(changed.originalTotal, 800);
+  assert.equal(changed.originalTotal, 520);
   assert.equal(changed.startDate, "2027-02-08");
-  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 225, 235, 0, 0]);
+  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 180, 0, 0, 0]);
   assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [80, 20, 90]);
-  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [80, 15, 130]);
-  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [80, 15, 140]);
+  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [80, 40, 60]);
+  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), []);
   assert.equal(changed.adjustments[0].amount, 80);
 });
 
@@ -460,7 +460,7 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
     const saved = await neicer.json();
-    assert.equal(saved.plan.originalTotal, 860);
+    assert.equal(saved.plan.originalTotal, 580);
     assert.equal(saved.plan.startDate, "2027-02-08");
     assert.equal(saved.plan.endDate, "2027-02-15");
     assert.equal(saved.plan.adjustments[0].description, "Intag lodge");

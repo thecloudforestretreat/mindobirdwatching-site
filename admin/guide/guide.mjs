@@ -44,6 +44,21 @@ const COPY = {
   },
 };
 
+Object.assign(COPY.es, {
+  translateEnglish: "Traducir borrador al inglés",
+  translatingEnglish: "Traduciendo con IA local…",
+  translationReady: "Traducción en inglés lista para revisar. Guarda los cambios cuando esté correcta.",
+  translationHelp: "La IA local crea un borrador en inglés sin cambiar el español ni los costos del guía. Revisa el texto antes de guardarlo o usarlo con un huésped.",
+  translationSaveFirst: "Guarda o descarta los cambios actuales antes de traducir.",
+});
+Object.assign(COPY.en, {
+  translateEnglish: "Translate draft to English",
+  translatingEnglish: "Translating with local AI…",
+  translationReady: "English translation is ready for review. Save changes when it is correct.",
+  translationHelp: "Local AI creates an English draft without changing the Spanish source or guide costs. Review it before saving or using it with a guest.",
+  translationSaveFirst: "Save or discard your current changes before translating.",
+});
+
 const TERMINOLOGY = {
   es: {
     guideQuote: "Cotización del guía", mbwPrice: "Precio final para huésped", markup: "Margen %", profit: "Ganancia USD",
@@ -580,7 +595,7 @@ function renderPlans() {
     const localeStamp = plan.localeUpdatedAt?.[language];
     return `<details class="planWorkspace" data-plan="${esc(plan.planId)}" ${plans.length === 1 || planIndex === 0 || initialPlanId === plan.planId ? "open" : ""}><summary class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(localized(plan.title))}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></summary>
       <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${localized(brief.traveler)}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${localized(brief.pickup)} → ${localized(brief.dropoff)}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(localized(brief.lodging))}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(localized(brief.request))}</strong></div><div class="wide"><small>${language === "es" ? "Intereses" : "Interests"}</small><strong>${esc(localized(brief.interests))}</strong></div></div></section>
-      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span></div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}. ${t("translationPending")}</p><div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
+      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span></div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}. ${t("translationPending")}</p>${isAdminReview() && language === "en" && !locked ? `<div class="planTranslation"><p>${esc(t("translationHelp"))}</p><button class="actionWarning" type="button" data-translate-plan="${esc(plan.planId)}">${esc(t("translateEnglish"))}</button></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div>${readOnly ? "" : `<form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category">${costCategories.map(category => `<option value="${category}">${esc(costCategoryLabel(category))}</option>`).join("")}</select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form>`}</section>
       ${renderAdminPricing(plan, locked)}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
@@ -619,6 +634,36 @@ async function savePlan(planId, status) {
   savingPlans.delete(planId); dirtyPlans.delete(planId); updatePlanSaveState(planId, result.plan?.updatedAt || new Date().toISOString());
   $("#toast").textContent = t("savedPlan"); $("#toast").hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("#toast").hidden = true; }, 1800);
   await refreshCurrent();
+}
+
+function applyEnglishTranslation(plan, translation) {
+  plan.title = localizedDraft(plan.title); plan.title.en = translation.title;
+  for (const key of ["traveler", "lodging", "pickup", "dropoff", "request", "interests"]) {
+    plan.brief[key] = localizedDraft(plan.brief[key]); plan.brief[key].en = translation.brief[key];
+  }
+  const translatedDays = new Map(translation.days.map(day => [day.id, day]));
+  for (const day of plan.days) {
+    const translated = translatedDays.get(day.id); if (!translated) continue;
+    for (const key of ["title", "details", "pickupLocation", "dropoffLocation", "overnightCity", "costNote"]) {
+      day[key] = localizedDraft(day[key]); day[key].en = translated[key] || "";
+    }
+  }
+}
+
+async function translatePlanToEnglish(planId, button) {
+  if (dirtyPlans.has(planId)) throw new Error(t("translationSaveFirst"));
+  const plan = planFor(planId); if (!plan) return;
+  button.disabled = true; button.textContent = t("translatingEnglish");
+  const response = await fetch(`/api/guide/plans/${encodeURIComponent(planId)}/translate`, {
+    method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ updatedAt: plan.updatedAt || "" }),
+  });
+  const result = await readApiBody(response);
+  if (!response.ok || !result.translation) throw new Error(result.error || (language === "es" ? "No se pudo crear la traducción." : "The translation could not be created."));
+  applyEnglishTranslation(plan, result.translation);
+  plan.localeUpdatedAt = { ...(plan.localeUpdatedAt || {}), en: result.generatedAt || new Date().toISOString() };
+  markPlanDirty(planId); renderPlans();
+  $("#toast").textContent = t("translationReady"); $("#toast").hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("#toast").hidden = true; }, 3500);
 }
 
 function shareMessage(kind, url) {
@@ -779,6 +824,8 @@ document.addEventListener("click", event => {
   if (clearCalendarSelection) { selectedCalendarDate = ""; selectedAssignmentId = ""; renderTours(); }
   const copy = event.target.closest("[data-copy]"); if (copy) copyText(decodeURIComponent(copy.dataset.copy)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser."));
   const copyPlanEmail = event.target.closest("[data-copy-plan-email]"); if (copyPlanEmail) { const plan = planFor(copyPlanEmail.dataset.copyPlanEmail); if (plan) copyText(brandedItineraryEmail(plan)).catch(() => alert(language === "es" ? "No se puede copiar en este navegador." : "Copy is unavailable in this browser.")); }
+  const translatePlan = event.target.closest("[data-translate-plan]");
+  if (translatePlan) { translatePlanToEnglish(translatePlan.dataset.translatePlan, translatePlan).catch(error => { translatePlan.disabled = false; translatePlan.textContent = t("translateEnglish"); alert(error.message); }); return; }
   const prepareGuest = event.target.closest("[data-prepare-guest-itinerary]");
   if (prepareGuest) {
     const planId = prepareGuest.dataset.prepareGuestItinerary;
