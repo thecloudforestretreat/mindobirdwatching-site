@@ -45,11 +45,19 @@ const COPY = {
 };
 
 const TERMINOLOGY = {
+  es: {
+    guideQuote: "Cotización del guía", mbwPrice: "Precio final para huésped", markup: "Margen %", profit: "Ganancia USD",
+    lodgingAllocation: "Alojamiento incluido", pricingPrivacy: "Área privada de MBW. La cotización del guía, el precio final, la ganancia y el margen nunca se comparten con el guía ni con el huésped.",
+    brandedEmailHelp: "El correo muestra el itinerario aprobado y el desglose de precios finales por día. Nunca incluye la cotización del guía, la ganancia ni el margen de MBW.",
+  },
   en: {
     tourPlans: "Itineraries", assignedPlans: "Assigned itineraries", noPlans: "No custom itineraries are assigned to you.",
     approvePlan: "Approve itinerary", reopenPlan: "Reopen itinerary", savedPlan: "Itinerary saved", planUpdated: "Updated the itinerary",
     newPlan: "New itinerary", createPlan: "Create an assigned itinerary", planTitle: "Itinerary title", createAndAssign: "Create and assign itinerary",
-    planCreated: "Itinerary created and assigned", planCreatedAction: "Created the itinerary",
+    planCreated: "Itinerary created and assigned", planCreatedAction: "Created the itinerary", guideQuote: "Guide quote",
+    mbwPrice: "Final guest price", markup: "Markup %", profit: "Profit USD", lodgingAllocation: "Lodging included",
+    pricingPrivacy: "Private MBW workspace. The guide quote, final price, profit, and markup are never shared with the guide or guest.",
+    brandedEmailHelp: "The email shows the approved itinerary and final day-by-day price breakdown. It never includes the guide quote, profit, or MBW markup.",
   },
 };
 
@@ -392,6 +400,8 @@ function syncAllPlanEditors() { for (const plan of data?.plans || []) syncPlanDa
 
 const guideDayCost = (plan, dayId) => Number(plan.days.find(day => day.id === dayId)?.originalCost || 0) + plan.adjustments.filter(item => item.dayId === dayId).reduce((sum, item) => sum + Number(item.amount || 0), 0);
 const markupLabel = (cost, price) => cost > 0 && price > 0 ? `${(((price - cost) / cost) * 100).toFixed(1)}%` : "—";
+const markupValue = (cost, price) => cost > 0 && price > 0 ? Number((((price - cost) / cost) * 100).toFixed(1)) : "";
+const profitValue = (cost, price) => price > 0 ? price - cost : 0;
 
 function syncPlanPricing(planId) {
   if (!isAdmin()) return;
@@ -399,47 +409,59 @@ function syncPlanPricing(planId) {
   if (!plan || !workspace) return;
   plan.mbwPricing ||= { currency: "USD", days: [], notes: "" };
   const existing = new Map((plan.mbwPricing.days || []).map(item => [item.dayId, item]));
-  plan.mbwPricing.days = plan.days.map(day => ({
-    dayId: day.id,
-    sellPrice: Number(workspace.querySelector(`[data-mbw-price="${CSS.escape(day.id)}"]`)?.value || existing.get(day.id)?.sellPrice || 0),
-    lodgingPrice: Number(workspace.querySelector(`[data-lodging-price="${CSS.escape(day.id)}"]`)?.value || existing.get(day.id)?.lodgingPrice || 0),
-  }));
+  plan.mbwPricing.days = plan.days.map(day => {
+    const sellInput = workspace.querySelector(`[data-mbw-price="${CSS.escape(day.id)}"]`), lodgingInput = workspace.querySelector(`[data-lodging-price="${CSS.escape(day.id)}"]`);
+    return {
+      dayId: day.id,
+      sellPrice: sellInput ? Number(sellInput.value || 0) : Number(existing.get(day.id)?.sellPrice || 0),
+      lodgingPrice: lodgingInput ? Number(lodgingInput.value || 0) : Number(existing.get(day.id)?.lodgingPrice || 0),
+    };
+  });
 }
 
-function updatePricingDisplay(planId) {
+function updatePricingDisplay(planId, edited = null) {
   const plan = planFor(planId), workspace = document.querySelector(`[data-plan="${CSS.escape(planId)}"]`);
   if (!plan || !workspace) return;
+  if (edited?.matches?.("[data-markup-percent]")) {
+    const dayId = edited.dataset.markupPercent, cost = guideDayCost(plan, dayId), percent = Number(edited.value || 0);
+    const priceInput = workspace.querySelector(`[data-mbw-price="${CSS.escape(dayId)}"]`);
+    if (priceInput) priceInput.value = cost > 0 ? (cost * (1 + percent / 100)).toFixed(2) : "";
+  }
   syncPlanPricing(planId);
   let guideTotal = 0, mbwTotal = 0, lodgingTotal = 0;
   for (const day of plan.days) {
     const cost = guideDayCost(plan, day.id), pricing = plan.mbwPricing.days.find(item => item.dayId === day.id) || {}, price = Number(pricing.sellPrice || 0);
     guideTotal += cost; mbwTotal += price; lodgingTotal += Number(pricing.lodgingPrice || 0);
-    const output = workspace.querySelector(`[data-markup-for="${CSS.escape(day.id)}"]`); if (output) output.textContent = markupLabel(cost, price);
+    const percentInput = workspace.querySelector(`[data-markup-percent="${CSS.escape(day.id)}"]`);
+    if (percentInput && percentInput !== edited) percentInput.value = markupValue(cost, price);
+    const profit = workspace.querySelector(`[data-profit-for="${CSS.escape(day.id)}"]`); if (profit) profit.textContent = price > 0 ? money(profitValue(cost, price)) : "—";
   }
-  const total = workspace.querySelector("[data-mbw-total]"), lodging = workspace.querySelector("[data-lodging-total]"), markup = workspace.querySelector("[data-markup-total]");
+  const total = workspace.querySelector("[data-mbw-total]"), lodging = workspace.querySelector("[data-lodging-total]"), markup = workspace.querySelector("[data-markup-total]"), profit = workspace.querySelector("[data-profit-total]");
   if (total) total.textContent = money(mbwTotal);
   if (lodging) lodging.textContent = money(lodgingTotal);
   if (markup) markup.textContent = markupLabel(guideTotal, mbwTotal);
+  if (profit) profit.textContent = mbwTotal > 0 ? money(mbwTotal - guideTotal) : "—";
 }
 
 function brandedItineraryEmail(plan) {
   const pricing = new Map((plan.mbwPricing?.days || []).map(item => [item.dayId, { sellPrice: Number(item.sellPrice || 0), lodgingPrice: Number(item.lodgingPrice || 0) }]));
   const total = [...pricing.values()].reduce((sum, value) => sum + value.sellPrice, 0);
   const lodgingTotal = [...pricing.values()].reduce((sum, value) => sum + value.lodgingPrice, 0);
+  const guestDate = value => value ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`)) : "Date pending";
   const days = plan.days.map((day, index) => {
     const price = pricing.get(day.id) || {};
-    return `Day ${index + 1} — ${dateLabel(day.date)}\n${localizedDraft(day.title).en || localized(day.title)}\n${localizedDraft(day.details).en || localized(day.details)}${price.sellPrice ? `\nPrice: ${money(price.sellPrice)}` : ""}${price.lodgingPrice ? `\nAccommodation allocation: ${money(price.lodgingPrice)}` : ""}`;
+    return `Day ${index + 1} — ${guestDate(day.date)}\n${localizedDraft(day.title).en || localized(day.title)}\n${localizedDraft(day.details).en || localized(day.details)}${price.sellPrice ? `\nFinal day price: ${money(price.sellPrice)}` : ""}${price.lodgingPrice ? `\nLodging included in this price: ${money(price.lodgingPrice)}` : ""}`;
   }).join("\n\n");
-  return `Subject: ${plan.guestName}'s custom Ecuador itinerary\n\nHello ${plan.guestName},\n\nThank you for planning your Ecuador journey with Mindo Bird Watching. Below is your proposed itinerary based on the details currently confirmed.\n\n${days}\n\nEstimated itinerary total: ${money(total)}${lodgingTotal ? `\nAccommodation included in that total: ${money(lodgingTotal)}` : ""}\n\nPlease let us know if you would like any adjustments before we finalize the arrangements.\n\nWarm regards,\nMindo Bird Watching\nhttps://mindobirdwatching.com/`;
+  return `Subject: ${plan.guestName}'s custom Ecuador itinerary\n\nHello ${plan.guestName},\n\nThank you for planning your Ecuador journey with Mindo Bird Watching. Below is your proposed itinerary and detailed final price breakdown based on the details currently confirmed.\n\n${days}\n\nFinal itinerary total: ${money(total)}${lodgingTotal ? `\nLodging included in that total: ${money(lodgingTotal)}` : ""}\n\nPlease let us know if you would like any adjustments before we finalize the arrangements.\n\nWarm regards,\nMindo Bird Watching\nhttps://mindobirdwatching.com/`;
 }
 
 function renderAdminPricing(plan, locked) {
   if (!isAdminReview()) return "";
   const prices = new Map((plan.mbwPricing?.days || []).map(item => [item.dayId, { sellPrice: Number(item.sellPrice || 0), lodgingPrice: Number(item.lodgingPrice || 0) }]));
-  const rows = plan.days.map(day => { const cost = guideDayCost(plan, day.id), price = prices.get(day.id) || {}; return `<div class="pricingRow"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label><b data-markup-for="${esc(day.id)}">${esc(markupLabel(cost, price.sellPrice))}</b></div>`; }).join("");
+  const rows = plan.days.map(day => { const cost = guideDayCost(plan, day.id), price = prices.get(day.id) || {}, sellPrice = Number(price.sellPrice || 0); return `<div class="pricingRow"><div><strong>${esc(dateLabel(day.date))} · ${esc(localized(day.title))}</strong></div><span class="guideQuoteValue"><small class="pricingMobileLabel">${t("guideQuote")}</small>${esc(money(cost))}</span><label><span class="pricingMobileLabel">${t("mbwPrice")}</span><input data-mbw-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${sellPrice || ""}" ${locked ? "disabled" : ""}></label><label><span class="pricingMobileLabel">${t("markup")}</span><input data-markup-percent="${esc(day.id)}" type="number" min="-100" max="1000" step="0.1" inputmode="decimal" value="${markupValue(cost, sellPrice)}" ${locked ? "disabled" : ""}></label><b><span class="pricingMobileLabel">${t("profit")}</span><span data-profit-for="${esc(day.id)}">${sellPrice ? esc(money(profitValue(cost, sellPrice))) : "—"}</span></b><label><span class="pricingMobileLabel">${t("lodgingAllocation")}</span><input data-lodging-price="${esc(day.id)}" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${price.lodgingPrice || ""}" ${locked ? "disabled" : ""}></label></div>`; }).join("");
   const guideTotal = plan.days.reduce((sum, day) => sum + guideDayCost(plan, day.id), 0), mbwTotal = [...prices.values()].reduce((sum, value) => sum + value.sellPrice, 0), lodgingTotal = [...prices.values()].reduce((sum, value) => sum + value.lodgingPrice, 0);
   const email = plan.status === "approved" ? `<div class="emailPreview"><h4>${t("brandedEmail")}</h4><p>${t("brandedEmailHelp")}</p><button type="button" data-copy-plan-email="${esc(plan.planId)}">${t("copyBrandedEmail")}</button></div>` : "";
-  return `<section class="planSection adminPricing"><h3>${t("mbwPricing")}</h3><p class="pricingPrivacy">${t("pricingPrivacy")}</p><div class="pricingHead"><span></span><b>${t("guidePrice")}</b><b>${t("mbwPrice")}</b><b>${t("lodgingAllocation")}</b><b>${t("markup")}</b></div>${rows}<div class="pricingTotals"><strong>${t("totals")}</strong><span>${esc(money(guideTotal))}</span><span data-mbw-total>${esc(money(mbwTotal))}</span><span data-lodging-total>${esc(money(lodgingTotal))}</span><b data-markup-total>${esc(markupLabel(guideTotal, mbwTotal))}</b></div>${email}</section>`;
+  return `<section class="planSection adminPricing"><h3>${t("mbwPricing")}</h3><p class="pricingPrivacy">${t("pricingPrivacy")}</p><div class="pricingHead"><span></span><b>${t("guideQuote")}</b><b>${t("mbwPrice")}</b><b>${t("markup")}</b><b>${t("profit")}</b><b>${t("lodgingAllocation")}</b></div>${rows}<div class="pricingTotals"><strong>${t("totals")}</strong><span>${esc(money(guideTotal))}</span><span data-mbw-total>${esc(money(mbwTotal))}</span><b data-markup-total>${esc(markupLabel(guideTotal, mbwTotal))}</b><b data-profit-total>${mbwTotal ? esc(money(mbwTotal - guideTotal)) : "—"}</b><span data-lodging-total>${esc(money(lodgingTotal))}</span></div>${email}</section>`;
 }
 
 function renderSourceCostEditRow(plan, day, item, costIndex, locked = false) {
@@ -490,7 +512,7 @@ function renderPlans() {
       ${renderAdminPricing(plan, locked)}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
       <details class="planHistory planSection"><summary>${t("activityHistory")}</summary><ol>${history}</ol></details>
-      <div class="planActions"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? t("adminActionHelp") : t("handoffHelp")}</p>${actions}</div></details>`;
+      <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? t("adminActionHelp") : t("handoffHelp")}</p>${actions}</div></details>`;
   }).join("");
   document.querySelectorAll("[data-plan]").forEach(workspace => {
     const plan = planFor(workspace.dataset.plan);
@@ -725,7 +747,7 @@ $("#reportTour").addEventListener("change", updateReportLink);
 $("#refresh").addEventListener("click", () => { if (!dirtyPlans.size || confirm(language === "es" ? "Hay cambios sin guardar. ¿Actualizar y descartarlos?" : "You have unsaved changes. Refresh and discard them?")) load(data?.providerId || data?.providerName || ""); });
 $("#retry").addEventListener("click", () => load());
 applyLanguage();
-document.addEventListener("input", event => { const workspace = event.target.closest?.("[data-plan]"); if (workspace) { markPlanDirty(workspace.dataset.plan); if (event.target.matches?.("[data-mbw-price],[data-lodging-price]")) updatePricingDisplay(workspace.dataset.plan); } });
+document.addEventListener("input", event => { const workspace = event.target.closest?.("[data-plan]"); if (workspace) { markPlanDirty(workspace.dataset.plan); if (event.target.matches?.("[data-mbw-price],[data-markup-percent],[data-lodging-price]")) updatePricingDisplay(workspace.dataset.plan, event.target); } });
 window.addEventListener("beforeunload", event => { if (dirtyPlans.size) { event.preventDefault(); event.returnValue = ""; } });
 const initialParams = new URLSearchParams(location.search);
 const initialPlanId = initialParams.get("plan") || "";

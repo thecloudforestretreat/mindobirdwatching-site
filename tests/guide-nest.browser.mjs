@@ -196,9 +196,11 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Itinerarios asignados", exact: true }).click();
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
     assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.equal(await page.locator("[data-mbw-price],[data-markup-percent],[data-lodging-price]").count(), 0);
     assert.doesNotMatch(await page.locator("#planList").innerText(), /Revisión de precios MBW|Precio MBW|Margen sobre costo/);
     assert.equal(await page.getByRole("button", { name: "Guardar borrador", exact: true }).count(), 1);
     assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW", exact: true }).count(), 1);
+    assert.equal(await page.locator(".planActions--guide").evaluate(element => getComputedStyle(element).position), "static");
     assert.equal(await page.getByRole("button", { name: "Solicitar cambios", exact: true }).count(), 0);
     assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
     assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
@@ -284,7 +286,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
     assert.equal(await page.locator("#adminPreview").isVisible(), false);
     assert.equal(await page.locator(".adminPricing").count(), 0);
-    assert.equal(await page.locator("[data-mbw-price],[data-lodging-price]").count(), 0);
+    assert.equal(await page.locator("[data-mbw-price],[data-markup-percent],[data-lodging-price]").count(), 0);
     bootstrap.preview = true;
     bootstrap.identity = { role: "owner", name: "Juan" };
     bootstrap.providerOptions = [{ providerId: "PROV-007", name: "Neycer · Night Walk Guide" }];
@@ -316,6 +318,13 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator(".adminPricing").count(), 1);
     assert.match(await page.locator(".adminPricing").innerText(), /Revisión de precios MBW|MBW pricing review/);
     assert.equal(await page.locator("[data-lodging-price]").count(), 7);
+    assert.equal(await page.locator("[data-markup-percent]").count(), 7);
+    const firstMarkup = page.locator("[data-markup-percent]").first(), firstFinalPrice = page.locator("[data-mbw-price]").first();
+    await firstMarkup.fill("33");
+    assert.equal(await firstFinalPrice.inputValue(), "359.10");
+    await firstFinalPrice.fill("400");
+    assert.equal(await firstMarkup.inputValue(), "48.1");
+    assert.match(await page.locator("[data-profit-for]").first().innerText(), /130[.,]00/);
     assert.match(await page.locator(".planActions").first().innerText(), /controles de administrador/i);
     await page.locator("#newPlanButton").click();
     await page.locator('#newPlanForm [name="guestName"]').fill("Alice Rivera");

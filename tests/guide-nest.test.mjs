@@ -36,6 +36,10 @@ test("Guide Nest exposes branded browser icons and an explicit read-only admin a
   assert.match(script, /guidePreviewMode: "Guide Preview"/);
   assert.match(script, /adminReviewMode: "Admin Review"/);
   assert.match(script, /if \(!isAdminReview\(\)\) return ""/);
+  assert.match(script, /data-markup-percent/);
+  assert.match(script, /Final day price:/);
+  assert.match(script, /Final itinerary total:/);
+  assert.match(script, /planActions--guide/);
   assert.match(script, /initialParams\.get\("provider"\)/);
   assert.match(css, /#actionList\{grid-template-columns:1fr\}/);
 });
