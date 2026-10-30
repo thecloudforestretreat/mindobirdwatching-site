@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { onRequestGet } from "../functions/api/mobile/plans/index.js";
-import { robertPlan, sanitizePlan, sortPlanCosts } from "../functions/lib/guide-plans.mjs";
+import { onRequestGet as getGuestItineraryDraft } from "../functions/api/mobile/plans/[planId]/itinerary-draft.js";
+import { guestItineraryDraft, robertPlan, sanitizePlan, sortPlanCosts } from "../functions/lib/guide-plans.mjs";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -59,4 +60,33 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(css, /--gold:#d3a126/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
+  assert.match(studioJs, /Prepare Guest Itinerary/);
+});
+
+test("approved plans produce a guest-only generator draft and guides cannot fetch it", async () => {
+  const base = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
+  const plan = sanitizePlan({ ...base, status: "approved", comments: [{ message: "PRIVATE COMMENT", author: "Juan", role: "admin" }], mbwPricing: {
+    notes: "PRIVATE MARKUP NOTE",
+    days: base.days.map(day => ({ dayId: day.id, sellPrice: 100, lodgingPrice: 25, guestLines: [
+      { category: "activity", label: { en: "Private daily activities", es: "Actividades privadas del día" }, amount: 60 },
+      { category: "transportation", label: { en: "Private transportation", es: "Transporte privado" }, amount: 20 },
+      { category: "lodging", label: { en: "Lodging allowance", es: "Alojamiento provisional" }, amount: 20 },
+    ] })),
+  } }, base);
+  const draft = guestItineraryDraft(plan);
+  assert.equal(draft.items.length, base.days.length * 3);
+  assert.deepEqual(draft.items.slice(0, 3).map(item => item.name), ["Private daily activities", "Private transportation", "Lodging allowance"]);
+  const serialized = JSON.stringify(draft);
+  assert.equal(serialized.includes("PRIVATE COMMENT"), false);
+  assert.equal(serialized.includes("PRIVATE MARKUP NOTE"), false);
+  assert.equal(serialized.includes("sourceCosts"), false);
+
+  const savedFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => Response.json({ ok: true, records: [{ assignment_id: "PLAN-1", assignment_kind: "tour_plan", assignment_group_id: "PLAN-robert-2027", provider_id: "PROV-NEICER", provider_name: "Neicer", internal_note: JSON.stringify(plan), updated_at: "2026-10-30T12:00:00Z" }] });
+    const response = await getGuestItineraryDraft({ request: new Request("http://localhost/api/mobile/plans/robert-2027/itinerary-draft"), env, params: { planId: "robert-2027" } });
+    assert.equal(response.status, 200);
+    const denied = await getGuestItineraryDraft({ request: new Request("http://localhost/api/mobile/plans/robert-2027/itinerary-draft"), env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" }, params: { planId: "robert-2027" } });
+    assert.equal(denied.status, 403);
+  } finally { globalThis.fetch = savedFetch; }
 });

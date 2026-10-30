@@ -12,6 +12,7 @@ const COST_CATEGORY_ORDER = new Map([
   ["guide", 10], ["entrance", 20], ["reserve", 30], ["activity", 40], ["food", 50], ["other", 60],
   ["transportation", 90], ["lodging", 100],
 ]);
+const GUEST_LINE_CATEGORIES = new Set(["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"]);
 const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
 const robertRouteReview = () => ({
   id: ROBERT_ROUTE_REVIEW_ID,
@@ -284,6 +285,12 @@ export function sanitizePlan(input, current = robertPlan()) {
       dayId: day.id,
       sellPrice: number(pricingByDay.get(day.id)?.sellPrice),
       lodgingPrice: number(pricingByDay.get(day.id)?.lodgingPrice),
+      guestLines: sortPlanCosts((Array.isArray(pricingByDay.get(day.id)?.guestLines) ? pricingByDay.get(day.id).guestLines : []).slice(0, 20).map((line, lineIndex) => ({
+        id: text(line.id || `${day.id}-guest-${lineIndex + 1}`, 80),
+        category: GUEST_LINE_CATEGORIES.has(line.category) ? line.category : "other",
+        label: bilingual(line.label, {}, 160),
+        amount: number(line.amount),
+      })).filter(line => (line.label.es || line.label.en) && line.amount > 0)),
     })),
     notes: text(pricingInput.notes, 1000),
     approvedAt: text(pricingInput.approvedAt, 80),
@@ -314,6 +321,59 @@ export function sanitizePlan(input, current = robertPlan()) {
     startDate: normalizedDays[0]?.date || current.startDate,
     endDate: normalizedDays.at(-1)?.date || current.endDate,
     originalTotal,
+  };
+}
+
+export function guestItineraryDraft(plan) {
+  if (!plan || typeof plan !== "object") throw Object.assign(new Error("The itinerary plan is unavailable."), { status: 404 });
+  if (plan.status !== "approved") throw Object.assign(new Error("Approve the itinerary before preparing the guest version."), { status: 409 });
+  const pricing = new Map((plan.mbwPricing?.days || []).map(item => [item.dayId, item]));
+  const items = [];
+  for (const [dayIndex, day] of (plan.days || []).entries()) {
+    const dayPricing = pricing.get(day.id) || {};
+    const lines = sortPlanCosts(dayPricing.guestLines || []);
+    const lineTotal = lines.reduce((sum, line) => sum + number(line.amount), 0);
+    const sellPrice = number(dayPricing.sellPrice);
+    if (!lines.length || Math.abs(lineTotal - sellPrice) > 0.009) {
+      throw Object.assign(new Error(`Complete the guest price breakdown for day ${dayIndex + 1} before preparing the itinerary.`), { status: 409 });
+    }
+    lines.forEach((line, lineIndex) => items.push({
+      id: line.id,
+      sourceDayId: day.id,
+      date: day.date,
+      type: line.category === "transportation" ? "Transportation" : line.category === "lodging" ? "Lodging" : "Custom",
+      productPreset: "Other",
+      name: line.label.en || line.label.es,
+      nameEs: line.label.es || line.label.en,
+      note: lineIndex === 0 ? [day.details?.en || day.details?.es || "", `Pickup: ${day.pickupLocation?.en || day.pickupLocation?.es || "To be confirmed"}`, `Drop-off: ${day.dropoffLocation?.en || day.dropoffLocation?.es || "To be confirmed"}`, `Overnight: ${day.overnightCity?.en || day.overnightCity?.es || "To be confirmed"}`].filter(Boolean).join("\n") : "",
+      noteEs: lineIndex === 0 ? [day.details?.es || day.details?.en || "", `Recogida: ${day.pickupLocation?.es || day.pickupLocation?.en || "Por confirmar"}`, `Llegada: ${day.dropoffLocation?.es || day.dropoffLocation?.en || "Por confirmar"}`, `Noche: ${day.overnightCity?.es || day.overnightCity?.en || "Por confirmar"}`].filter(Boolean).join("\n") : "",
+      quantity: 1,
+      unitPrice: number(line.amount),
+      dayTitle: day.title?.en || day.title?.es || "",
+      dayTitleEs: day.title?.es || day.title?.en || "",
+      pickupLocation: day.pickupLocation?.en || day.pickupLocation?.es || "",
+      pickupLocationEs: day.pickupLocation?.es || day.pickupLocation?.en || "",
+      dropoffLocation: day.dropoffLocation?.en || day.dropoffLocation?.es || "",
+      dropoffLocationEs: day.dropoffLocation?.es || day.dropoffLocation?.en || "",
+      overnightCity: day.overnightCity?.en || day.overnightCity?.es || "",
+      overnightCityEs: day.overnightCity?.es || day.overnightCity?.en || "",
+    }));
+  }
+  return {
+    source: "guide_plan",
+    sourcePlanId: plan.planId,
+    sourcePlanUpdatedAt: plan.updatedAt || "",
+    inquiryId: plan.inquiryId || "",
+    guestName: plan.guestName || "",
+    guestCount: Number(plan.brief?.guestCount || 1),
+    tripTitle: plan.title?.en || plan.title?.es || "Custom Ecuador itinerary",
+    tripTitleEs: plan.title?.es || plan.title?.en || "Itinerario personalizado en Ecuador",
+    startDate: plan.startDate || plan.days?.[0]?.date || "",
+    endDate: plan.endDate || plan.days?.at(-1)?.date || "",
+    language: "en",
+    brandId: "mbw",
+    itineraryStage: "preliminary",
+    items,
   };
 }
 

@@ -71,6 +71,14 @@ export async function onRequestPost({ request, env, params }) {
     if (requestedStatus === "approved" && plan.days.some(day => Number(plan.mbwPricing?.days?.find(item => item.dayId === day.id)?.sellPrice || 0) <= 0)) {
       return json(400, { ok: false, code: "PLAN_PRICING", error: "Enter the MBW price for every day before approving the itinerary." });
     }
+    if (requestedStatus === "approved" && plan.days.some(day => {
+      const pricing = plan.mbwPricing?.days?.find(item => item.dayId === day.id) || {};
+      const lines = Array.isArray(pricing.guestLines) ? pricing.guestLines : [];
+      const total = lines.reduce((sum, line) => sum + Number(line.amount || 0), 0);
+      return !lines.length || Math.abs(total - Number(pricing.sellPrice || 0)) > 0.009;
+    })) {
+      return json(400, { ok: false, code: "PLAN_GUEST_BREAKDOWN", error: "Complete the guest-facing price breakdown for every day. Each breakdown must equal that day's final price." });
+    }
     if (!plan.providerId && !plan.providerName) return json(400, { ok: false, error: "The plan needs an assigned guide." });
     const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || JSON.stringify(current.mbwPricing || {}) !== JSON.stringify(plan.mbwPricing || {}) || comments.length !== (current.comments || []).length || current.status !== plan.status;
     if (changed) {

@@ -407,7 +407,7 @@
 <script src="/assets/js/communication-library.js?v=20261024-4"></script>
 <link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
-    (() => {
+    (async () => {
       'use strict';
 
       const communications=window.MBW_COMMUNICATIONS;
@@ -835,7 +835,7 @@
       }
 
       const $ = (id) => document.getElementById(id);
-      const state = { items: [], inquiryId:'', itineraryVersion:0, itineraryStatus:'draft', crmRecord:null };
+      const state = { items: [], inquiryId:'', itineraryVersion:0, itineraryStatus:'draft', crmRecord:null, sourcePlanId:'', sourcePlanUpdatedAt:'' };
 
       function uid(){ return 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
       function todayIso(){
@@ -1161,6 +1161,8 @@
           invoiceLink:$('invoiceLink').value.trim(),
           showImages:$('showImages').checked,
           showItemPrices:$('showItemPrices').checked,
+          sourcePlanId:state.sourcePlanId,
+          sourcePlanUpdatedAt:state.sourcePlanUpdatedAt,
           items:state.items.map(item => ({...item}))
         };
       }
@@ -1524,6 +1526,16 @@
           items:inboundItems
         };
       }
+      async function loadGuidePlanItineraryDraft(){
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('source') !== 'guide_plan' || !params.get('plan')) return null;
+        const response = await fetch(`/api/mobile/plans/${encodeURIComponent(params.get('plan'))}/itinerary-draft`,{headers:{Accept:'application/json'},cache:'no-store'});
+        const text = await response.text();
+        let payload;
+        try{ payload=JSON.parse(text); }catch(error){ throw new Error('The approved itinerary returned an invalid response.'); }
+        if(!response.ok || !payload?.draft) throw new Error(payload?.error || 'The approved itinerary could not be loaded.');
+        return payload.draft;
+      }
       function applyCrmItineraryDraft(draft){
         if(!draft) return false;
         communicationBrandId=communications.brand(draft.brandId||draft.brand||new URLSearchParams(location.search).get('brand')).id;
@@ -1531,6 +1543,8 @@
         state.inquiryId = String(draft.inquiryId || '');
         state.itineraryVersion = Number(draft.itineraryVersion || 0);
         state.itineraryStatus = draft.itineraryStatus || 'draft';
+        state.sourcePlanId = String(draft.sourcePlanId || '');
+        state.sourcePlanUpdatedAt = String(draft.sourcePlanUpdatedAt || '');
         try{ state.crmRecord = JSON.parse(localStorage.getItem('mbwSelectedCrmRecord') || 'null'); }catch(error){ state.crmRecord = null; }
         $('saveCrmBtn').disabled = !state.inquiryId;
         $('saveCrmBtn').title = state.inquiryId ? `Save to inquiry ${state.inquiryId}` : 'Open this generator from a CRM inquiry to save it';
@@ -1861,7 +1875,9 @@
         toast('Itinerary reset.');
       });
 
-      const crmDraft = loadCrmItineraryDraft();
+      let guidePlanDraft = null;
+      try{ guidePlanDraft = await loadGuidePlanItineraryDraft(); }catch(error){ toast(error.message); }
+      const crmDraft = guidePlanDraft || loadCrmItineraryDraft();
       const loaded = crmDraft ? applyCrmItineraryDraft(crmDraft) : loadState();
       if(!loaded || !state.items.length){
         state.items=[];

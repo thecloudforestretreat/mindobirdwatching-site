@@ -65,9 +65,11 @@ async function loadPlanReviews() {
       const details = document.createElement('small');
       details.textContent = [planStatusLabel(plan.status), plan.providerName && 'Guide: ' + plan.providerName, plan.startDate && plan.endDate && `${plan.startDate} – ${plan.endDate}`].filter(Boolean).join(' · ');
       const link = document.createElement('a');
-      const query = new URLSearchParams({ view: 'plans', provider: plan.providerId || plan.providerName || '', plan: plan.planId, mode: 'admin' });
-      link.href = '/guide/?' + query.toString();
-      link.textContent = plan.status === 'approved' ? 'Open approved itinerary' : 'Review itinerary';
+      const query = plan.status === 'approved'
+        ? new URLSearchParams({ source: 'guide_plan', plan: plan.planId })
+        : new URLSearchParams({ view: 'plans', provider: plan.providerId || plan.providerName || '', plan: plan.planId, mode: 'admin' });
+      link.href = plan.status === 'approved' ? '/itinerary-generator/?' + query.toString() : '/guide/?' + query.toString();
+      link.textContent = plan.status === 'approved' ? 'Prepare Guest Itinerary' : 'Review itinerary';
       article.append(title, details, link);
       return article;
     }));
