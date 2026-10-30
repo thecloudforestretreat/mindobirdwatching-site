@@ -68,7 +68,9 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /recordGuideConfirmation: "Confirm guide review"/);
   assert.match(guide, /function rebuildGuestBreakdown/);
   assert.match(guide, /function backfillMissingGuestBreakdowns/);
-  assert.match(guide, /Markup is distributed proportionally/);
+  assert.match(guide, /guestBreakdownBalanced: "Matches daily price"/);
+  assert.match(guide, /data-guest-total-for/);
+  assert.match(guide, /the total and difference update live without replacing your changes/);
   assert.match(css, /--gold:#d3a126/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
