@@ -78,6 +78,9 @@
     .stageSelect{font-size:16px;font-weight:900;color:var(--green);border-color:rgba(13,89,37,.35);background:#fff}
     .stageHint{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.45;font-weight:750}
     .stageBadge{display:inline-flex;align-items:center;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:#fff;color:var(--green);border:1px solid rgba(13,89,37,.25);font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
+    .paymentReceivedFields{margin:4px 0 12px;padding:12px;border:1px solid rgba(13,89,37,.25);border-radius:14px;background:#edf7e6}
+    .paymentReceivedFields[hidden]{display:none}
+    .paymentReceivedFields .panelTitle{margin-bottom:9px}
     .guestNote.paidInFullNote{background:#e5f5e8;border-color:#72b486;color:#0D5925;font-size:17px;font-weight:950;text-align:center;letter-spacing:.04em}
     .depositBox.paidInFullBox{background:linear-gradient(135deg,#075b29,#0d7a39)}
     .balancePaid{display:inline-flex;margin:2px 0 15px;padding:8px 13px;border-radius:999px;background:#fff;color:#0D5925;font-size:14px;font-weight:950}
@@ -284,7 +287,7 @@
             <div class="two">
               <div class="field">
                 <label for="discount">Discount or adjustment</label>
-                <input id="discount" type="number" step="0.01" value="0" />
+                <input id="discount" type="text" inputmode="decimal" value="0" data-money-input />
               </div>
               <div class="field">
                 <label for="currency">Currency</label>
@@ -307,6 +310,37 @@
               <textarea id="closingText">Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.</textarea>
             </div>
             <input id="showDeposit" type="checkbox" hidden />
+            <div id="paymentReceivedFields" class="paymentReceivedFields" hidden>
+              <h3 class="panelTitle">Payment Received</h3>
+              <div class="two">
+                <div class="field">
+                  <label for="depositReceivedAmount">Deposit received (USD)</label>
+                  <input id="depositReceivedAmount" type="text" inputmode="decimal" value="100" data-money-input />
+                </div>
+                <div class="field">
+                  <label for="depositReceivedDate">Date received</label>
+                  <input id="depositReceivedDate" type="date" />
+                </div>
+              </div>
+              <div class="two">
+                <div class="field">
+                  <label for="depositReceivedMethod">Payment method</label>
+                  <select id="depositReceivedMethod">
+                    <option value="">Select method</option>
+                    <option value="Stripe">Stripe</option>
+                    <option value="Zelle">Zelle</option>
+                    <option value="Bank transfer">Bank transfer</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="depositReceivedReference">Payment reference</label>
+                  <input id="depositReceivedReference" type="text" placeholder="Optional transaction or invoice reference" />
+                </div>
+              </div>
+              <p class="hint">Saved with this itinerary and shown as a credit in the guest pricing breakdown. Record the payment in the CRM invoice ledger or Accounting as well; this itinerary does not create an accounting transaction.</p>
+            </div>
             <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" readonly type="url" value="https://mindobirdwatching.com/book-tour/deposit/" placeholder="https://…" /><p class="hint">USD-only checkout. A saved CRM inquiry is required before the deposit button appears.</p></div>
             <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
             <div class="field" id="zelleEmailField" hidden>
@@ -327,7 +361,8 @@
             <div class="summaryBox">
               <div class="summaryRow"><span>Services subtotal</span><strong id="subtotalValue">$0.00</strong></div>
               <div class="summaryRow"><span>Adjustment</span><strong id="adjustmentValue">$0.00</strong></div>
-              <div class="summaryRow total"><span>Total</span><strong id="totalValue">$0.00</strong></div>
+              <div class="summaryRow" id="depositSummaryRow" hidden><span>Deposit received</span><strong id="depositReceivedValue">$0.00</strong></div>
+              <div class="summaryRow total"><span id="totalValueLabel">Total</span><strong id="totalValue">$0.00</strong></div>
             </div>
           </div>
         </section>
@@ -579,10 +614,10 @@
 
       const COPY = {
         en: {
-          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your $100 deposit has been received. If you have any questions or would like to pay the remaining invoice in full, do not hesitate to message us via WhatsApp.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', zelleOption:'U.S. travelers may also send the $100 tour deposit through Zelle to', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.', defaultPricing:'The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
+          locale:'en-US', brandTagline:'Private & group cloud forest tours', eyebrow:'Proposed Mindo tour itinerary', guest:'Guest', travelDates:'Travel dates', guests:'Guests', dateTbd:'Date TBD', dateConfirm:'Date to be confirmed', timeTbd:'Time TBD', service:'Service', item:'Itinerary item', pricing:'Pricing Breakdown', adjustment:'Adjustment', total:'Total', depositReceived:'Deposit received', balanceDue:'Balance due', paymentDate:'Date received', paymentMethod:'Payment method', paymentReference:'Reference', nextSteps:'Next Steps', ready:'Ready to Move Forward?', depositText:'Pay the $100 tour deposit to hold your requested date while the final pickup, drop-off, and remaining details are confirmed.', depositPaidTitle:'Deposit Received', depositPaidText:'Your deposit has been received and credited toward this itinerary. The remaining balance is shown below.', payDeposit:'Pay Tour Deposit', payInvoice:'Pay Invoice', invoiceText:'Use the secure invoice link below to complete your payment.', zelleOption:'U.S. travelers may also send the $100 tour deposit through Zelle to', whatsapp:'Message Us on WhatsApp', regards:'Warm regards,', empty:'Add at least one service to build the itinerary.', defaultOpening:'Please review the proposed itinerary below and let me know whether this matches what we discussed.', defaultPricing:'The prices shown reflect the tour and rate arrangement already discussed. Final service details are summarized below.', defaultClosing:'Let me know if you have any questions or would like any changes. If everything looks good, you can secure the tour with the $100 deposit below.', defaultTitle:'Your Mindo Tour Itinerary', hi:'Hi', here:'Here is the proposed itinerary for', pricingLabel:'Pricing', depositLead:'You can secure the tour with the $100 deposit here:', finalLine:'Let me know if this looks good or if you would like any changes.'
         },
         es: {
-          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito de $100. Si tiene alguna pregunta o desea pagar el saldo restante de la factura en su totalidad, no dude en escribirnos por WhatsApp.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', zelleOption:'Los viajeros de Estados Unidos también pueden enviar el depósito de $100 por Zelle a', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
+          locale:'es-EC', brandTagline:'Tours privados y grupales en el bosque nublado', eyebrow:'Itinerario propuesto para su tour en Mindo', guest:'Huésped', travelDates:'Fechas del viaje', guests:'Personas', dateTbd:'Fecha por confirmar', dateConfirm:'Fecha por confirmar', timeTbd:'Hora por confirmar', service:'Servicio', item:'Actividad del itinerario', pricing:'Desglose de precios', adjustment:'Ajuste', total:'Total', depositReceived:'Depósito recibido', balanceDue:'Saldo pendiente', paymentDate:'Fecha de pago', paymentMethod:'Método de pago', paymentReference:'Referencia', nextSteps:'Próximos pasos', ready:'¿Listo para continuar?', depositText:'Pague el depósito de $100 para reservar la fecha solicitada mientras confirmamos los detalles finales de recogida, regreso y demás aspectos del tour.', depositPaidTitle:'Depósito recibido', depositPaidText:'Hemos recibido su depósito y lo hemos aplicado a este itinerario. El saldo pendiente aparece a continuación.', payDeposit:'Pagar depósito del tour', payInvoice:'Pagar factura', invoiceText:'Utilice el enlace seguro de la factura para completar su pago.', zelleOption:'Los viajeros de Estados Unidos también pueden enviar el depósito de $100 por Zelle a', whatsapp:'Escríbanos por WhatsApp', regards:'Saludos cordiales,', empty:'Agregue al menos un servicio para crear el itinerario.', defaultOpening:'Revise el itinerario propuesto a continuación y dígame si coincide con lo que conversamos.', defaultPricing:'Los precios mostrados reflejan el tour y la tarifa que ya conversamos. Los detalles finales de cada servicio se resumen a continuación.', defaultClosing:'Avíseme si tiene alguna pregunta o desea realizar algún cambio. Si todo está bien, puede reservar el tour con el depósito de $100 que aparece a continuación.', defaultTitle:'Su itinerario de tour en Mindo', hi:'Hola', here:'Este es el itinerario propuesto para', pricingLabel:'Precios', depositLead:'Puede reservar el tour con el depósito de $100 aquí:', finalLine:'Avíseme si todo está bien o si desea realizar algún cambio.'
         }
       };
       const ITINERARY_STAGES = ['preliminary','approved_pending','deposit_received','paid_in_full'];
@@ -695,6 +730,7 @@
         const paid = stage === 'paid_in_full';
         $('showDeposit').checked = approved;
         $('depositPaid').checked = deposit || paid;
+        $('paymentReceivedFields').hidden = !deposit;
         $('depositLink').disabled = !approved;
         $('offerZelle').disabled = !approved;
         $('showInvoice').disabled = paid || stage === 'preliminary';
@@ -1050,7 +1086,7 @@
               </div>
               <div class="field">
                 <label>Agreed unit price</label>
-                <input type="number" min="0" step="0.01" data-field="unitPrice" value="${escapeHtml(item.unitPrice)}" />
+                <input type="text" inputmode="decimal" data-money-input data-field="unitPrice" value="${escapeHtml(item.unitPrice)}" />
               </div>
             </div>
           </div>
@@ -1080,6 +1116,10 @@
           adjustmentReason:$('adjustmentReason').value.trim(),
           closingText:$('closingText').value.trim(),
           discount:Number($('discount').value || 0),
+          depositReceivedAmount:selectedStage === 'deposit_received' ? Math.max(0,Number($('depositReceivedAmount').value || 0)) : 0,
+          depositReceivedDate:selectedStage === 'deposit_received' ? $('depositReceivedDate').value : '',
+          depositReceivedMethod:selectedStage === 'deposit_received' ? $('depositReceivedMethod').value : '',
+          depositReceivedReference:selectedStage === 'deposit_received' ? $('depositReceivedReference').value.trim() : '',
           showDeposit:selectedStage === 'approved_pending',
           depositPaid:['deposit_received','paid_in_full'].includes(selectedStage),
           paidInFull:selectedStage === 'paid_in_full',
@@ -1096,7 +1136,19 @@
       }
       function totals(data){
         const subtotal = data.items.reduce((sum,item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);
-        return {subtotal,adjustment:Number(data.discount || 0),total:subtotal + Number(data.discount || 0)};
+        const total = subtotal + Number(data.discount || 0);
+        const stage = itineraryStage(data);
+        const received = stage === 'paid_in_full' ? total : stage === 'deposit_received' ? Math.min(total,Math.max(0,Number(data.depositReceivedAmount || 0))) : 0;
+        return {subtotal,adjustment:Number(data.discount || 0),total,received,balance:Math.max(0,total-received)};
+      }
+      function paymentDetails(data){
+        if(itineraryStage(data) !== 'deposit_received') return [];
+        const c = copyFor(data);
+        const details = [];
+        if(data.depositReceivedDate) details.push(`${c.paymentDate}: ${formatShortDate(data.depositReceivedDate,data.language)}`);
+        if(data.depositReceivedMethod) details.push(`${c.paymentMethod}: ${data.depositReceivedMethod}`);
+        if(data.depositReceivedReference) details.push(`${c.paymentReference}: ${data.depositReceivedReference}`);
+        return details;
       }
       function groupedItems(items){
         const groups = new Map();
@@ -1168,10 +1220,10 @@
             <div class="metaCard"><span>${escapeHtml(c.guests)}</span><strong>${escapeHtml(data.guestCount || 1)}</strong></div>
           </div></section>
           ${dayMarkup || `<div class="contentCard"><div class="emptyPreview">${escapeHtml(c.empty)}</div></div>`}
-          ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div></section>` : ''}
+          ${pricingLines ? `<section class="pricingCard"><h3>${escapeHtml(c.pricing)}</h3>${pricingLines}${sum.adjustment ? `<div class="priceLine"><span>${escapeHtml(c.adjustment)}</span><strong>${money(sum.adjustment,data.language)}</strong></div>` : ''}<div class="priceLine${sum.received ? '' : ' total'}"><span>${escapeHtml(c.total)}</span><strong>${money(sum.total,data.language)}</strong></div>${sum.received ? `<div class="priceLine"><span>${escapeHtml(c.depositReceived)}</span><strong>-${money(sum.received,data.language)}</strong></div><div class="priceLine total"><span>${escapeHtml(c.balanceDue)}</span><strong>${money(sum.balance,data.language)}</strong></div>` : ''}</section>` : ''}
           ${data.pricingNote ? `<section class="guestNote${stage === 'paid_in_full' ? ' paidInFullNote' : ''}">${stage === 'paid_in_full' ? `<strong>${escapeHtml(data.pricingNote)}</strong>` : escapeHtml(data.pricingNote)}</section>` : ''}
           <section class="nextStepsCard"><h3>${escapeHtml(c.nextSteps)}</h3><p>${escapeHtml(data.closingText || c.defaultClosing)}</p></section>
-          ${stage !== 'preliminary' ? `<section class="depositBox${stage === 'paid_in_full' ? ' paidInFullBox' : ''}"><h3>${escapeHtml(stageCopy.paymentTitle)}</h3><p>${escapeHtml(stageCopy.paymentText)}</p>${stage === 'paid_in_full' ? `<div class="balancePaid">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</div>` : ''}<div class="ctaButtons">${stage === 'approved_pending' && validHttpsUrl(getDepositLink()) ? `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
+          ${stage !== 'preliminary' ? `<section class="depositBox${stage === 'paid_in_full' ? ' paidInFullBox' : ''}"><h3>${escapeHtml(stageCopy.paymentTitle)}</h3><p>${escapeHtml(stageCopy.paymentText)}</p>${stage === 'deposit_received' ? `<div class="balancePaid">${escapeHtml(c.depositReceived)}: ${money(sum.received,data.language)} · ${escapeHtml(c.balanceDue)}: ${money(sum.balance,data.language)}</div>${paymentDetails(data).length ? `<p>${paymentDetails(data).map(escapeHtml).join(' · ')}</p>` : ''}` : ''}${stage === 'paid_in_full' ? `<div class="balancePaid">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</div>` : ''}<div class="ctaButtons">${stage === 'approved_pending' && validHttpsUrl(getDepositLink()) ? `<a class="depositBtn" href="${escapeHtml(getDepositLink())}" target="_blank" rel="noopener">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a class="depositBtn" href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" target="_blank" rel="noopener">${escapeHtml(c.payInvoice)}</a>` : ''}<a class="whatsappGuestBtn" href="${buildGuestWhatsAppUrl(data)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.whatsapp)}</a></div>${data.offerZelle && stage === 'approved_pending' ? `<p style="margin:14px auto 0;max-width:470px;font-size:15px;line-height:22px"><strong>${escapeHtml(c.zelleOption)} ${escapeHtml(data.zelleEmail)}</strong></p>` : ''}</section>` : ''}
           <section class="signatureCard"><p>${escapeHtml(c.regards)}<br><strong>Mindo Bird Watching</strong></p><div class="socialRow">
             <a href="https://mindobirdwatching.com"><img src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt="Website"></a>
             <a href="https://www.instagram.com/mindobirdwatching/"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
@@ -1267,7 +1319,8 @@
                 <h2 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:28px;color:#0D5925;">${escapeHtml(c.pricing)}</h2>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${priceRows}
                   ${sum.adjustment ? `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;">${escapeHtml(c.adjustment)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;font-weight:900;">${money(sum.adjustment,data.language)}</td></tr>` : ''}
-                  <tr><td style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${escapeHtml(c.total)}</td><td align="right" style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${money(sum.total,data.language)}</td></tr>
+                  <tr><td style="padding:13px 0 0;${sum.received ? '' : 'border-top:2px solid #8db680;'}color:#0D5925;font-size:${sum.received ? '13px' : '18px'};line-height:23px;font-weight:900;">${escapeHtml(c.total)}</td><td align="right" style="padding:13px 0 0;${sum.received ? '' : 'border-top:2px solid #8db680;'}color:#0D5925;font-size:${sum.received ? '13px' : '18px'};line-height:23px;font-weight:900;">${money(sum.total,data.language)}</td></tr>
+                  ${sum.received ? `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;">${escapeHtml(c.depositReceived)}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;font-weight:900;">-${money(sum.received,data.language)}</td></tr><tr><td style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${escapeHtml(c.balanceDue)}</td><td align="right" style="padding:13px 0 0;border-top:2px solid #8db680;color:#0D5925;font-size:18px;line-height:23px;font-weight:900;">${money(sum.balance,data.language)}</td></tr>` : ''}
                 </table>
               </td></tr>
             </table>`
@@ -1286,6 +1339,7 @@
               <tr><td align="center" style="padding:22px 20px;">
                 <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#ffffff;">${escapeHtml(stageCopy.paymentTitle)}</h2>
                 <p style="margin:0 0 14px;font-size:14px;line-height:21px;color:#F4FAEF;">${escapeHtml(stageCopy.paymentText)}</p>
+                ${stage === 'deposit_received' ? `<span style="display:inline-block;margin:0 4px 14px;padding:8px 14px;border-radius:999px;background:#ffffff;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;">${escapeHtml(c.depositReceived)}: ${money(sum.received,data.language)} · ${escapeHtml(c.balanceDue)}: ${money(sum.balance,data.language)}</span>${paymentDetails(data).length ? `<p style="margin:0 0 14px;font-size:13px;line-height:19px;color:#ffffff;">${paymentDetails(data).map(escapeHtml).join(' · ')}</p>` : ''}<br>` : ''}
                 ${communications.billingNote(data.brandId,data.language)?`<p data-billing-brand="mbw" style="margin:0 0 14px;font-size:13px;line-height:19px;color:#ffffff;">${escapeHtml(communications.billingNote(data.brandId,data.language))}</p>`:''}
                 ${stage === 'paid_in_full' ? `<span style="display:inline-block;margin:0 4px 14px;padding:8px 14px;border-radius:999px;background:#ffffff;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;">${escapeHtml(data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00')}</span><br>` : ''}
                 ${stage === 'approved_pending' && validHttpsUrl(getDepositLink()) ? `<a href="${escapeHtml(getDepositLink())}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payDeposit)}</a>` : ''}${data.showInvoice && validHttpsUrl(data.invoiceLink) ? `<a href="${escapeHtml(validHttpsUrl(data.invoiceLink))}" style="display:inline-block;width:220px;margin:0 4px 8px;background:#ffffff;color:#0D5925;text-decoration:none;font-weight:900;font-size:14px;line-height:18px;padding:13px 0;border-radius:14px;text-align:center;">${escapeHtml(c.payInvoice)}</a>` : ''}
@@ -1341,10 +1395,12 @@
           lines.push(`${c.pricingLabel}:`);
           priced.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
-          lines.push(`${c.total}: ${money(sum.total,data.language)}`,'');
+          lines.push(`${c.total}: ${money(sum.total,data.language)}`);
+          if(sum.received) lines.push(`${c.depositReceived}: -${money(sum.received,data.language)}`,`${c.balanceDue}: ${money(sum.balance,data.language)}`);
+          lines.push('');
         }
         if(stage === 'approved_pending') lines.push(stageCopy.paymentText,...(!validHttpsUrl(getDepositLink()) ? [] : [getDepositLink()]),'');
-        if(stage === 'deposit_received') lines.push(stageCopy.paymentText,'');
+        if(stage === 'deposit_received') lines.push(stageCopy.paymentText,`${c.depositReceived}: ${money(sum.received,data.language)}`,`${c.balanceDue}: ${money(sum.balance,data.language)}`,...paymentDetails(data),'');
         if(stage === 'paid_in_full') lines.push(`*${stageCopy.pricing}*`,stageCopy.paymentText,data.language === 'es' ? 'Saldo pendiente: $0.00' : 'Balance due: $0.00','');
         if(data.offerZelle && stage === 'approved_pending') lines.push(`${c.zelleOption} ${data.zelleEmail}`,'');
         if(data.showInvoice && validHttpsUrl(data.invoiceLink)) lines.push(c.invoiceText,validHttpsUrl(data.invoiceLink),'');
@@ -1362,7 +1418,7 @@
           const data = JSON.parse(raw);
           communicationBrandId=communications.brand(data.brandId).id;
           communicationBrandSelect.value=communicationBrandId;
-          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositLink','zelleEmail','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
@@ -1462,7 +1518,12 @@
         if(draft.closingText) $('closingText').value = draft.closingText;
         const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
         const savedStage = ITINERARY_STAGES.includes(draft.itineraryStage) ? draft.itineraryStage : '';
-        $('itineraryStage').value = paymentStatus === 'paid' ? 'paid_in_full' : paymentStatus === 'deposit_paid' ? 'deposit_received' : ['payment_pending','deposit_pending'].includes(paymentStatus) ? 'approved_pending' : savedStage || 'preliminary';
+        $('itineraryStage').value = paymentStatus === 'paid' ? 'paid_in_full' : savedStage || (paymentStatus === 'deposit_paid' ? 'deposit_received' : ['payment_pending','deposit_pending'].includes(paymentStatus) ? 'approved_pending' : 'preliminary');
+        const depositCandidate = [draft.depositReceivedAmount,draft.deposit_received_amount,draft.deposit_amount_paid,state.crmRecord?.deposit_amount_paid,state.crmRecord?.deposit_amount].find(value => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value)));
+        $('depositReceivedAmount').value = depositCandidate === undefined ? '100' : String(Math.max(0,Number(depositCandidate)));
+        $('depositReceivedDate').value = String(draft.depositReceivedDate || draft.deposit_received_date || state.crmRecord?.deposit_paid_at || state.crmRecord?.date_paid || '').slice(0,10);
+        $('depositReceivedMethod').value = draft.depositReceivedMethod || draft.deposit_received_method || state.crmRecord?.payment_method || '';
+        $('depositReceivedReference').value = draft.depositReceivedReference || draft.deposit_received_reference || state.crmRecord?.payment_reference_note || '';
         $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
         $('offerZelle').checked = draft.offerZelle === true;
         $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
@@ -1569,7 +1630,9 @@
           email:data.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '',
           phone_number:data.whatsappNumber, guest_count:data.guestCount,
           requested_date:data.startDate, requested_date_end:data.endDate,
-          payment_request:'deposit', deposit_amount:100,
+          payment_request:data.depositPaid ? 'full' : 'deposit', deposit_amount:data.depositPaid ? Number(data.depositReceivedAmount || 0) : 100,
+          prior_payment_amount:data.depositPaid ? Number(data.depositReceivedAmount || 0) : 0,
+          prior_payment_method:data.depositReceivedMethod || '', prior_payment_date:data.depositReceivedDate || '', prior_payment_reference:data.depositReceivedReference || '',
           zelle_payment_email:data.zelleEmail || 'mindobirdwatching@gmail.com',
           quoted_amount:sum.total, adjustment_amount:sum.adjustment,
           adjustment_label:data.adjustmentReason || 'Adjustments',
@@ -1602,7 +1665,10 @@
         const sum = totals(data);
         $('subtotalValue').textContent = money(sum.subtotal,data.language);
         $('adjustmentValue').textContent = money(sum.adjustment,data.language);
-        $('totalValue').textContent = money(sum.total,data.language);
+        $('depositReceivedValue').textContent = `-${money(sum.received,data.language)}`;
+        $('depositSummaryRow').hidden = !sum.received;
+        $('totalValueLabel').textContent = sum.received ? copyFor(data).balanceDue : copyFor(data).total;
+        $('totalValue').textContent = money(sum.received ? sum.balance : sum.total,data.language);
         const emailHtml = buildEmailSafeHtml(data);
         $('guestPreview').innerHTML = emailHtml;
         $('htmlOutput').value = emailHtml;
@@ -1741,6 +1807,10 @@
         $('adjustmentReason').value='';
         $('closingText').value=COPY.en.defaultClosing;
         $('discount').value='0';
+        $('depositReceivedAmount').value='100';
+        $('depositReceivedDate').value='';
+        $('depositReceivedMethod').value='';
+        $('depositReceivedReference').value='';
         $('showDeposit').checked=true;
         $('offerZelle').checked=false;
         $('zelleEmail').value='mindobirdwatching@gmail.com';
