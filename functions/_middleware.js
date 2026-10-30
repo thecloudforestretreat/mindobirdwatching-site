@@ -95,6 +95,7 @@ export async function onRequest(context) {
   catch { return reject(401, "Sign in through MBW Admin to continue."); }
   const role = configuredRole(context.env, email);
   if (!["owner", "agent", "guide"].includes(role)) return reject(403, "This account is not enabled for MBW Admin.");
+  if (role !== "owner" && (url.pathname === "/itinerary-lab" || url.pathname.startsWith("/itinerary-lab/") || url.pathname.startsWith("/api/itinerary-lab"))) return reject(403, "Itinerary Lab is limited to the MBW owner.");
   const guide = role === "guide";
   if (guide && !guideMayRequest(request)) return reject(403, "Your guide account is limited to Guide Nest. Return to https://admin.mindobirdwatching.com/guide/");
   let response = await context.next();

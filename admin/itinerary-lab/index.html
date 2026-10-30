@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+  <title>Itinerary Lab | MBW Admin</title>
+  <meta name="theme-color" content="#0D5925">
+  <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/itinerary-lab/lab.css?v=1">
+</head>
+<body>
+  <div class="shell">
+    <header class="appHeader"><a class="brand" href="/app/?view=more"><img src="/assets/images/app/mbw-header-logo-160.png" alt=""><span><strong>MBW</strong><small>Itinerary Lab</small></span></a><div class="private"><i></i>Owner only</div></header>
+    <main>
+      <section class="hero"><div><p class="eyebrow">Evidence-based planning</p><h1>Itinerary Lab</h1><p>Turn links, PDFs and working itineraries into reviewed building blocks for future MBW plans.</p></div><button id="addSource" class="primary" type="button">+ Add source</button></section>
+      <section id="stats" class="stats" aria-label="Knowledge status"></section>
+      <p id="notice" class="notice" role="status" hidden></p>
+      <div class="workspace">
+        <aside class="sourcePanel"><div class="panelHeading"><div><p class="eyebrow">Intake queue</p><h2>Sources</h2></div><button id="refresh" type="button" aria-label="Refresh">↻</button></div><div id="sourceList" class="sourceList"><p class="empty">Loading sources…</p></div></aside>
+        <section id="editor" class="editor"><div class="emptyState"><strong>Select a source</strong><p>Review its evidence, edit the structured blocks and save once when ready.</p></div></section>
+      </div>
+    </main>
+  </div>
+  <dialog id="sourceDialog"><form id="sourceForm" method="dialog"><header><div><p class="eyebrow">New intake</p><h2>Add source</h2></div><button class="iconButton" value="cancel" aria-label="Close">×</button></header><div class="dialogBody">
+    <label>Source title<input name="title" required maxlength="240" placeholder="Example: Ecuador immersion itinerary"></label>
+    <div class="two"><label>Source type<select name="sourceType"><option value="url">Link</option><option value="text">Pasted itinerary</option><option value="pdf">PDF reference</option><option value="guest_plan">Guest plan</option></select></label><label>Use rights<select name="rights"><option value="unverified">Needs confirmation</option><option value="private">Private MBW source</option><option value="permission">Permission received</option><option value="public_facts_only">Public facts only</option></select></label></div>
+    <label>Link or document name<input name="sourceReference" maxlength="1000" placeholder="https://… or document filename"></label>
+    <div class="two"><label>Linked guest<input name="linkedGuest" maxlength="160"></label><label>CRM inquiry ID<input name="linkedInquiryId" maxlength="128"></label></div>
+    <label>Paste itinerary text<textarea name="rawText" rows="9" maxlength="12000" placeholder="Paste the itinerary when available. Day headings will become review blocks."></textarea></label>
+    <p class="helper">PDF files are referenced by name in this first release; the supplied Ecuador PDF is already seeded. Automatic PDF extraction will be connected to the local model next.</p>
+  </div><footer><button value="cancel" type="button" id="cancelSource">Cancel</button><button class="primary" type="submit">Prepare intake</button></footer></form></dialog>
+  <script type="module" src="/itinerary-lab/lab.mjs?v=1"></script>
+</body>
+</html>
