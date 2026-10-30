@@ -98,7 +98,7 @@ function monthProjection(invoices, month, today) {
     const date = text(row.tour_date), status = text(row.revenue_status), cancelled = /cancel/i.test(text(row.booking_status));
     if (!date.startsWith(month) || cancelled) continue;
     if (status === "Earned" || text(row.tour_completed) === "Yes") { earnedProfit += number(row.mbw_profit_accrual); earnedRevenue += number(row.mbw_gross_actual); completedServices += 1; }
-    else if (status === "Deferred" && date >= today) { futureProfit += number(row.mbw_profit_accrual); futureRevenue += number(row.mbw_gross_actual || row.mbw_gross_expected); futureServices += 1; }
+    else if (status === "Deferred" && date >= today) { futureProfit += number(row.mbw_profit_expected || row.mbw_profit_accrual); futureRevenue += number(row.mbw_gross_expected || row.mbw_gross_actual); futureServices += 1; }
   }
   return { month, earnedProfit, futureProfit, projectedProfit: earnedProfit + futureProfit, earnedRevenue, futureRevenue, projectedRevenue: earnedRevenue + futureRevenue, completedServices, futureServices };
 }
