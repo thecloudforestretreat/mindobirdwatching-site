@@ -1,7 +1,7 @@
 import { authorize } from "../whatsapp/index.js";
 
 const SHEET_ID = "1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU";
-const TABS = ["daily_recon", "guide_payment_queue", "guide_settlements", "guide_ledger", "expenses", "growth_dashboard", "invoices", "report_income_summary"];
+const TABS = ["daily_recon", "guide_payment_queue", "guide_settlements", "guide_ledger", "expenses", "growth_dashboard", "invoices", "report_income_summary", "deposits"];
 const reply = (status, body) => Response.json(body, { status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
 const text = value => String(value ?? "").trim();
 const number = value => { const n = Number(text(value).replace(/[$,%\s,]/g, "")); return Number.isFinite(n) ? n : 0; };
@@ -103,10 +103,41 @@ function monthProjection(invoices, month, today) {
   return { month, earnedProfit, futureProfit, projectedProfit: earnedProfit + futureProfit, earnedRevenue, futureRevenue, projectedRevenue: earnedRevenue + futureRevenue, earnedGuests, futureGuests, projectedGuests: earnedGuests + futureGuests, completedServices, futureServices };
 }
 
+function weekStart(date) {
+  const parsed = new Date(`${date}T12:00:00Z`), day = (parsed.getUTCDay() + 6) % 7;
+  parsed.setUTCDate(parsed.getUTCDate() - day);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function weeklySummary(invoices, year) {
+  const grouped = new Map();
+  for (const row of invoices) {
+    const date = text(row.tour_date);
+    if (text(row.revenue_status) !== "Earned" || !validDate(date) || !date.startsWith(year + "-")) continue;
+    const week = weekStart(date), item = grouped.get(week) || { week, revenue: 0, profit: 0, guests: 0, services: 0 };
+    item.revenue += number(row.mbw_gross_actual); item.profit += number(row.mbw_profit_accrual); item.guests += number(row.party_size); item.services += 1; grouped.set(week, item);
+  }
+  return [...grouped.values()].sort((a, b) => a.week.localeCompare(b.week));
+}
+
+function average(rows, key) { return rows.length ? rows.reduce((sum, row) => sum + number(row[key]), 0) / rows.length : 0; }
+
+function pipelineSummary(deposits, today) {
+  const rows = deposits.filter(row => validDate(row.tour_date) && text(row.tour_date) >= today && !/cancel|refund/i.test(`${text(row.booking_status)} ${text(row.deposit_status)}`));
+  return {
+    bookings: rows.length,
+    guests: rows.reduce((sum, row) => sum + number(row.party_size), 0),
+    booking_value: rows.reduce((sum, row) => sum + number(row.total_booking_price), 0),
+    cash_collected: rows.reduce((sum, row) => sum + number(row.total_amount_paid), 0),
+    balance_remaining: rows.reduce((sum, row) => sum + number(row.balance_remaining), 0),
+    due_30_days: rows.filter(row => validDate(row.balance_due_date) && row.balance_due_date <= new Date(Date.parse(today + "T12:00:00Z") + 30 * 86400000).toISOString().slice(0, 10)).reduce((sum, row) => sum + number(row.balance_remaining), 0),
+  };
+}
+
 export async function onRequestGet({ request }) {
   const denied = await authorize(request); if (denied) return denied;
   try {
-    const [daily, queue, settlements, ledger, expenses, growth, invoices, income] = await Promise.all(TABS.map(tab));
+    const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits] = await Promise.all(TABS.map(tab));
     const today = guayaquilToday(), month = today.slice(0, 7), year = today.slice(0, 4);
     const latestRecon = [...daily].filter(row => validDate(row.date) && text(row.date) <= today).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
     const ledgerSummary = ledger.find(row => text(row.ledger_id) === "ADLEDGER-SUMMARY") || [...ledger].reverse().find(row => text(row.transaction_type) === "Summary") || {};
@@ -117,12 +148,14 @@ export async function onRequestGet({ request }) {
     const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
     const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
     const monthly = income.filter(row => validMonth(row.month_ky)).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
-    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {};
+    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {}, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3);
     return reply(200, {
       ok: true, updated_at: new Date().toISOString(), control_date: today,
       cash: { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) },
       summary: { year, revenue: number(ytd.earned_revenue), profit: number(ytd.earned_profit), margin: number(ytd.earned_margin) / 100, guests: number(ytd.guests_served), services: number(ytd.completed_services), expenses: number(ytd.operating_expenses), net: number(ytd.net_income), currentMonthRevenue: number(current.earned_revenue), currentMonthProfit: number(current.earned_profit), currentMonthNet: number(current.net_income) },
       projection, monthly,
+      cadence: { current_week: currentWeek, weekly, baselines: { monthly: { revenue: average(completedMonths, "revenue"), profit: average(completedMonths, "profit"), expenses: average(completedMonths, "expenses"), net: average(completedMonths, "net") }, weekly: { revenue: average(completedWeeks, "revenue"), profit: average(completedWeeks, "profit"), guests: average(completedWeeks, "guests"), services: average(completedWeeks, "services") } } },
+      pipeline: pipelineSummary(deposits, today),
       activities: activitySummary(invoices, year, month), weekdays: weekdaySummary(invoices, year, month), expense_mix: expenseMix(expenses, year, month),
       guides, guide_totals: { due_completed: guides.reduce((sum, row) => sum + row.due, 0), completed_items: guides.reduce((sum, row) => sum + row.dueCount, 0), future_obligations: guides.reduce((sum, row) => sum + row.future, 0) },
       advertising_fund: { contribution_due: number(ledgerSummary.contribution_due), contribution_collected: number(ledgerSummary.contribution_collected), ad_spend_used: number(ledgerSummary.ad_spend_used), outstanding_from_guides: number(ledgerSummary.contribution_due_balance), available: number(ledgerSummary.advertising_fund_balance), status: text(ledgerSummary.notes) },
