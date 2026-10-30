@@ -25,3 +25,13 @@ test('saved itinerary retains deposit evidence and balance copy in both language
   assert.match(html,/prior_payment_amount:data\.depositPaid/);
   assert.match(html,/paymentStatus === 'paid' \? 'paid_in_full' : savedStage \|\|/);
 });
+
+test('confirmed itinerary replaces legacy proposal copy and uses a structured receipt card',()=>{
+  assert.ok(html.includes('Your reservation is confirmed. We received your deposit'));
+  assert.ok(html.includes('Su reservación está confirmada. Recibimos su depósito'));
+  assert.ok(html.includes('Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.'));
+  assert.match(html,/function effectiveOpening\(data\)/);
+  assert.match(html,/class="paymentReceipt"/);
+  assert.match(html,/class="paymentReceiptItem"/);
+  assert.match(html,/\.guestHeroImage\{[^}]*aspect-ratio:16\/7;[^}]*object-fit:cover/);
+});
