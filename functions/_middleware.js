@@ -11,7 +11,7 @@ const NEST_GUIDE_PAGES = new Set([
   "/guide", "/guide/", "/guide/index.html", "/api/guide/bootstrap", "/api/guide/reports",
 ]);
 const NEST_GUIDE_ASSETS = new Set([
-  "/guide/guide.css", "/guide/guide.mjs", "/assets/images/app/mbw-header-logo-160.png", "/assets/images/app/mbw-app-gold-transparent-180.png",
+  "/guide/guide.css", "/guide/guide.mjs", "/guide/pricing.mjs", "/assets/images/app/mbw-header-logo-160.png", "/assets/images/app/mbw-app-gold-transparent-180.png",
   "/favicon.ico", "/favicon.svg", "/apple-touch-icon.png", "/site.webmanifest",
 ]);
 let cachedKeys;

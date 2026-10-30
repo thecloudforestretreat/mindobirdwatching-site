@@ -73,13 +73,15 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /data-guest-total-for/);
   assert.match(guide, /lodgingAmount\.value = edited\.value/);
   assert.match(guide, /Their sum automatically becomes the final daily price/);
+  assert.match(guide, /Lodging that night/);
+  assert.match(guide, /summarizeGuestItinerary/);
   assert.match(guide, /guestBelowGuideQuote/);
   assert.match(guide, /pricing\.sellPrice = guestTotal/);
   assert.match(guide, /savePricingDay: "Save day & continue"/);
   assert.match(guide, /data-finish-pricing-day/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
-  assert.match(guideHtml, /guide-20261030-v41/);
+  assert.match(guideHtml, /guide-20261030-v42/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
   assert.match(studioJs, /Prepare Guest Itinerary/);
