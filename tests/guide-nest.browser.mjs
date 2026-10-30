@@ -230,6 +230,10 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
     await page.getByText("Editar día", { exact: true }).last().click();
     await page.locator("[data-plan-day-editor]").last().locator('textarea[name="details"]').fill("Día adicional por confirmar con MBW.");
+    const planWritesBeforeFinish = writes.filter(write => write.url.includes("/api/guide/plans/robert-2027")).length;
+    await page.locator("[data-plan-day-editor]").last().getByRole("button", { name: "Listo con este día" }).click();
+    assert.equal(writes.filter(write => write.url.includes("/api/guide/plans/robert-2027")).length, planWritesBeforeFinish);
+    assert.match(await page.locator('[data-plan-save-state]').innerText(), /Cambios sin guardar/);
     await page.locator('[data-plan-cost-form="robert-2027"] input[name="description"]').fill("Intag lodging");
     await page.locator('[data-plan-cost-form="robert-2027"] input[name="amount"]').fill("80");
     await page.locator('[data-plan-cost-form="robert-2027"] select[name="category"]').selectOption("lodging");
