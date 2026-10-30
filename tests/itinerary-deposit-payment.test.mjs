@@ -25,3 +25,22 @@ test('saved itinerary retains deposit evidence and balance copy in both language
   assert.match(html,/prior_payment_amount:data\.depositPaid/);
   assert.match(html,/paymentStatus === 'paid' \? 'paid_in_full' : savedStage \|\|/);
 });
+
+test('confirmed itinerary replaces legacy proposal copy and uses a structured receipt card',()=>{
+  assert.ok(html.includes('Your reservation is confirmed. We received your deposit'));
+  assert.ok(html.includes('Su reservación está confirmada. Recibimos su depósito'));
+  assert.ok(html.includes('Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.'));
+  assert.match(html,/function effectiveOpening\(data\)/);
+  assert.match(html,/class="paymentReceipt"/);
+  assert.match(html,/class="paymentReceiptItem"/);
+  assert.match(html,/\.guestHeroImage\{[^}]*aspect-ratio:16\/7;[^}]*object-fit:cover/);
+});
+
+test('confirmed layout removes duplicate dates and redundant deposit messaging',()=>{
+  assert.match(html,/stripSubjectDates\(data\.tripTitle \|\| c\.defaultTitle\)/);
+  assert.ok(html.includes("paymentTitle:'DEPOSIT RECEIVED'"));
+  assert.ok(html.includes("paymentText:'Your deposit has been applied to this reservation.\\nThe remaining balance is shown below.'"));
+  assert.match(html,/data\.pricingNote && stage !== 'deposit_received'/);
+  assert.match(html,/class="nextStepsCard\$\{stage === 'deposit_received' \? ' confirmedNextSteps' : ''\}"/);
+  assert.match(html,/function multilineHtml\(value\)/);
+});
