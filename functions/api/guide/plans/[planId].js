@@ -91,12 +91,14 @@ export async function onRequestPost({ request, env, params }) {
       if (["es", "en"].includes(body.editLanguage)) plan.localeUpdatedAt = { ...(current.localeUpdatedAt || {}), [body.editLanguage]: new Date().toISOString() };
     }
     const assignment = { ...(currentRow || {}), ...planAssignment(plan) };
+    // crmCall only resolves after n8n explicitly confirms the write. Avoid a
+    // second list_assignments workflow inside this request: that redundant
+    // verification can exceed the edge response window for a large itinerary
+    // even though the update already succeeded. The client refreshes bootstrap
+    // immediately afterward to obtain the stored row and authoritative timestamp.
     if (currentRow) await crmCall(env, "update_assignment", { assignment, expected_updated_at: currentRow.updated_at || "" });
     else await crmCall(env, "create_assignment", { guest_phone: "", assignment });
-    const verified = (await listRecords(env, "list_assignments", {})).find(row => isPlanRow(row) && String(row.assignment_group_id) === `PLAN-${planId}`);
-    const saved = verified && parsePlanRow(verified);
-    if (!saved) return json(202, { ok: true, verified: false, error: "The plan was submitted but not verified. Refresh before retrying." });
-    return json(currentRow ? 200 : 201, { ok: true, verified: true, plan: actor.role === "guide" ? planForGuide(saved) : saved });
+    return json(currentRow ? 200 : 201, { ok: true, verified: true, plan: actor.role === "guide" ? planForGuide(plan) : plan });
   } catch (error) { return errorResponse(error); }
 }
 

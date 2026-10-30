@@ -2306,6 +2306,7 @@
       function itineraryProduct(value,tour){ const product=clean(value); const map={MBW002:"MBW002 - Private Birdwatching Tour",MBW004:"MBW004 - Jewels of the Morning Forest",MBW005:"MBW005 - Andean Cock-of-the-Rock Dawn Tour",MBW006:"MBW006 - Quest for Five Toucans Full Day"}; return map[product]||product||clean(tour)||"Other"; }
       function itineraryServiceType(item){ const text=(clean(item.product_selected)+" "+clean(item.tour)).toLowerCase(); if(text.includes("transport")) return "Transportation"; if(text.includes("insect")||text.includes("macro")||text.includes("bear")||text.includes("oso")) return "Specialty Wildlife"; if(/night|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|paintball|horseback|mountain biking|swing|sky bike|sky ride/.test(text)) return "Activity"; return "Birdwatching"; }
       function guidePlanForRecord(record){ const inquiryId=clean(record?.inquiry_id); return inquiryId?state.guidePlans.find(plan=>clean(plan.inquiryId)===inquiryId):null; }
+      function guidePlanTitle(plan){ const title=plan?.title; if(title&&typeof title==="object")return clean(title.en||title.es); return clean(title)||clean(plan?.guestName)||"Custom itinerary"; }
       function guidePlanStatusLabel(status){ return ({guide_drafting:"Guide drafting",admin_review:"Ready for admin review",changes_requested:"Changes requested",approved:"Approved for guest itinerary"})[status]||"Planning"; }
       async function loadGuidePlans(){
         try{
@@ -2400,7 +2401,7 @@
         if(els.guidePlanWorkflow){
           els.guidePlanWorkflow.hidden=!linkedPlan;
           if(linkedPlan){
-            els.guidePlanSummary.innerHTML=`<strong>${esc(linkedPlan.title||linkedPlan.guestName||"Custom itinerary")}<span class="guidePlanStatus">${esc(guidePlanStatusLabel(linkedPlan.status))}</span></strong><small>${esc(linkedPlan.providerName||"Guide not assigned")} · Updated ${esc(linkedPlan.updatedAt?formatDateTime(linkedPlan.updatedAt):"pending")}</small>`;
+            els.guidePlanSummary.innerHTML=`<strong>${esc(guidePlanTitle(linkedPlan))}<span class="guidePlanStatus">${esc(guidePlanStatusLabel(linkedPlan.status))}</span></strong><small>${esc(linkedPlan.providerName||"Guide not assigned")} · Updated ${esc(linkedPlan.updatedAt?formatDateTime(linkedPlan.updatedAt):"pending")}</small>`;
             els.openGuidePlanGeneratorBtn.disabled=linkedPlan.status!=="approved";
             els.openGuidePlanGeneratorBtn.title=linkedPlan.status==="approved"?"Open the guest-safe approved draft":"Approve the itemized guest pricing in Guide Nest first";
           }

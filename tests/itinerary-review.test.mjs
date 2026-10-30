@@ -68,10 +68,13 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   const guide = fs.readFileSync(new URL("../admin/guide/guide.mjs", import.meta.url), "utf8");
   const crm = fs.readFileSync(new URL("../admin/guest-crm/index.html", import.meta.url), "utf8");
   assert.match(endpoint, /readJson\(request, 128000\)/);
+  assert.doesNotMatch(endpoint, /const verified = \(await listRecords/);
+  assert.match(endpoint, /crmCall\(env, "update_assignment"/);
   assert.match(guide, /Build from guide quote/);
   assert.match(guide, /suggestedGuestLines/);
   assert.match(crm, /Custom itinerary workflow/);
   assert.match(crm, /guidePlanForRecord/);
+  assert.match(crm, /guidePlanTitle/);
   assert.match(crm, /source:\s*"guide_plan"/);
 });
 
