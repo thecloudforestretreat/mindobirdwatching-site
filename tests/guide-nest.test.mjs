@@ -11,7 +11,7 @@ import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/off
 import { onRequestPost as saveGuidePlan } from "../functions/api/guide/plans/[planId].js";
 import { onRequestPost as createGuidePlan } from "../functions/api/guide/plans/index.js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
-import { ROBERT_INQUIRY_ID, planForGuide, robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
+import { ROBERT_INQUIRY_ID, planForGuide, robertPlan, sanitizePlan, validatePlanForReview } from "../functions/lib/guide-plans.mjs";
 
 test("guide plan serialization strips MBW selling prices and markup inputs", () => {
   const plan = sanitizePlan({ ...robertPlan(), mbwPricing: { days: [{ dayId: "day-1", sellPrice: 350 }], notes: "Internal" } });
@@ -20,6 +20,26 @@ test("guide plan serialization strips MBW selling prices and markup inputs", () 
   const guidePlan = planForGuide(plan);
   assert.equal("mbwPricing" in guidePlan, false);
   assert.equal(JSON.stringify(guidePlan).includes("Internal"), false);
+});
+
+test("daily lodging city and route locations survive sanitization and remain guide-visible", () => {
+  const original = robertPlan();
+  const changed = sanitizePlan({
+    ...original,
+    days: original.days.map((day, index) => index === 0 ? {
+      ...day,
+      pickupLocation: { es: "Hotel del aeropuerto", en: "Airport hotel" },
+      dropoffLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+      overnightCity: { es: "Mindo", en: "Mindo" },
+    } : day),
+  }, original);
+  const first = planForGuide(changed).days[0];
+  assert.equal(first.pickupLocation.en, "Airport hotel");
+  assert.equal(first.dropoffLocation.es, "Hotel en Mindo");
+  assert.equal(first.overnightCity.en, "Mindo");
+  const missing = structuredClone(changed);
+  missing.days[0].overnightCity = { es: "", en: "" };
+  assert.ok(validatePlanForReview(missing).some(error => error.dayId === "day-1" && error.field === "overnightCity"));
 });
 
 test("Guide Nest exposes branded browser icons and an explicit read-only admin audit mode", () => {
@@ -41,6 +61,9 @@ test("Guide Nest exposes branded browser icons and an explicit read-only admin a
   assert.match(script, /Final itinerary total:/);
   assert.match(script, /planActions--guide/);
   assert.match(script, /data-move-plan-day/);
+  assert.match(script, /name="pickupLocation"/);
+  assert.match(script, /name="dropoffLocation"/);
+  assert.match(script, /name="overnightCity"/);
   assert.match(script, /initialParams\.get\("provider"\)/);
   assert.match(css, /#actionList\{grid-template-columns:1fr\}/);
 });
@@ -432,7 +455,7 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
       throw new Error(`Unexpected ${payload.action}`);
     };
     const editableDays = robertPlan().days.map((day, index) => index === 0 ? { ...day, date: "2027-02-08", originalCost: 190, sourceCosts: day.sourceCosts.map((cost, costIndex) => costIndex === 0 ? { ...cost, amount: 90 } : cost) } : day);
-    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, sourceCosts: [], costNote: { es: "Total proporcionado; desglose pendiente.", en: "Total provided; breakdown pending." }, originalCost: 60 });
+    editableDays.push({ id: "day-7", date: "2027-02-15", title: { es: "Día adicional", en: "Additional day" }, details: { es: "Por planificar", en: "To be planned" }, pickupLocation: { es: "Hotel en Quito", en: "Quito hotel" }, dropoffLocation: { es: "Aeropuerto de Quito", en: "Quito airport" }, overnightCity: { es: "Sin alojamiento", en: "No overnight stay" }, sourceCosts: [], costNote: { es: "Total proporcionado; desglose pendiente.", en: "Total provided; breakdown pending." }, originalCost: 60 });
     const requestBody = { providerId: "ignored", providerName: "ignored", status: "admin_review", days: editableDays, adjustments: [{ dayId: "day-5", category: "lodging", description: "Intag lodge", amount: 80, verification: "estimated" }], comments: [{ message: "Please confirm the lodge.", author: "Neicer", role: "guide", createdAt: "2026-10-26T12:00:00.000Z" }], mbwPricing: { days: [{ dayId: "day-1", sellPrice: 999 }], notes: "Guide must not set or receive this" } };
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);

@@ -53,6 +53,9 @@ export function blankPlan(input = {}) {
         date: cursor.toISOString().slice(0, 10),
         title: { es: `Día ${dayNumber} por planificar`, en: `Day ${dayNumber} to plan` },
         details: { es: "", en: "" },
+        pickupLocation: { es: "", en: "" },
+        dropoffLocation: { es: "", en: "" },
+        overnightCity: { es: "", en: "" },
         sourceCosts: [],
         costNote: { es: "", en: "" },
         originalCost: 0,
@@ -124,6 +127,9 @@ export function robertPlan(provider = {}) {
         id: "day-1", date: "2027-02-09",
         title: { es: "Quito · Reserva Alambi · Mindo", en: "Quito · Alambi Reserve · Mindo" },
         details: { es: "Salida del hotel hacia Mindo. Parada de dos horas en la Reserva Alambi, llegada al hotel y tour del chocolate por la tarde.", en: "Depart from the hotel toward Mindo. Spend two hours at Alambi Reserve, arrive at the hotel, and take a chocolate tour in the afternoon." },
+        pickupLocation: { es: "Hotel cerca del aeropuerto de Quito", en: "Hotel near Quito airport" },
+        dropoffLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+        overnightCity: { es: "Mindo", en: "Mindo" },
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 85 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
@@ -135,6 +141,9 @@ export function robertPlan(provider = {}) {
         id: "day-2", date: "2027-02-10",
         title: { es: "Gallo de la Peña, tucanes y actividades en Mindo", en: "Cock-of-the-Rock, toucans, and Mindo activities" },
         details: { es: "Tour de aves del Gallo de la Peña y tucanes de medio día, privado o compartido. Por la tarde, visita al jardín de orquídeas o mariposario y caminata nocturna.", en: "Half-day private or shared birding tour for Cock-of-the-Rock and toucans. In the afternoon, visit the orchid garden or butterfly garden and take a night walk." },
+        pickupLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+        dropoffLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+        overnightCity: { es: "Mindo", en: "Mindo" },
         sourceCosts: [],
         costNote: { es: "Neicer proporcionó el costo total; el desglose de guía, transporte e ingresos está pendiente.", en: "Neicer provided the total cost; the guide, transportation, and entrance-fee breakdown is pending." },
         originalCost: 150,
@@ -143,6 +152,9 @@ export function robertPlan(provider = {}) {
         id: "day-3", date: "2027-02-11",
         title: { es: "Las Cotingas · Otavalo", en: "Las Cotingas · Otavalo" },
         details: { es: "Desayuno para llevar y visita a la Reserva Las Cotingas. Continuación hacia Otavalo para visitar el parque o el Mercado de los Ponchos.", en: "Take breakfast to go and visit Las Cotingas Reserve. Continue to Otavalo to visit the park or the Poncho Market." },
+        pickupLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+        dropoffLocation: { es: "Hotel en Otavalo", en: "Otavalo hotel" },
+        overnightCity: { es: "Otavalo", en: "Otavalo" },
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 130 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
@@ -154,6 +166,9 @@ export function robertPlan(provider = {}) {
         id: "day-4", date: "2027-02-12",
         title: { es: "Tren Tayta Imbabura · Quito", en: "Tren Tayta Imbabura · Quito" },
         details: { es: "Desayuno y salida para el paseo en tren de las 11:00 a. m. Regreso para el almuerzo y continuación hacia Quito.", en: "Breakfast followed by the 11:00 a.m. train ride. Return for lunch and continue to Quito." },
+        pickupLocation: { es: "Hotel en Otavalo", en: "Otavalo hotel" },
+        dropoffLocation: { es: "Quito", en: "Quito" },
+        overnightCity: { es: "Quito", en: "Quito" },
         sourceCosts: [
           { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 140 },
           { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
@@ -161,8 +176,8 @@ export function robertPlan(provider = {}) {
         ],
         originalCost: 235,
       },
-      { id: "day-5", date: "2027-02-13", title: { es: "Día adicional por planificar", en: "Additional day to plan" }, details: { es: "Actividades, transporte, alojamiento y costos pendientes de definir en conjunto.", en: "Activities, transportation, lodging, and costs remain to be planned together." }, sourceCosts: [], originalCost: 0 },
-      { id: "day-6", date: "2027-02-14", title: { es: "Regreso al aeropuerto de Quito", en: "Return to Quito airport" }, details: { es: "Regreso al aeropuerto de Quito al final de la tarde. Actividades y transporte pendientes de confirmar.", en: "Return to Quito airport by late afternoon. Activities and transportation remain to be confirmed." }, sourceCosts: [], originalCost: 0 },
+      { id: "day-5", date: "2027-02-13", title: { es: "Día adicional por planificar", en: "Additional day to plan" }, details: { es: "Actividades, transporte, alojamiento y costos pendientes de definir en conjunto.", en: "Activities, transportation, lodging, and costs remain to be planned together." }, pickupLocation: { es: "Por confirmar", en: "To be confirmed" }, dropoffLocation: { es: "Por confirmar", en: "To be confirmed" }, overnightCity: { es: "Por confirmar", en: "To be confirmed" }, sourceCosts: [], originalCost: 0 },
+      { id: "day-6", date: "2027-02-14", title: { es: "Regreso al aeropuerto de Quito", en: "Return to Quito airport" }, details: { es: "Regreso al aeropuerto de Quito al final de la tarde. Actividades y transporte pendientes de confirmar.", en: "Return to Quito airport by late afternoon. Activities and transportation remain to be confirmed." }, pickupLocation: { es: "Por confirmar", en: "To be confirmed" }, dropoffLocation: { es: "Aeropuerto de Quito", en: "Quito airport" }, overnightCity: { es: "Sin alojamiento; fin del itinerario", en: "No overnight stay; itinerary ends" }, sourceCosts: [], originalCost: 0 },
     ],
     adjustments: [],
     comments: [robertRouteReview()],
@@ -251,6 +266,9 @@ export function sanitizePlan(input, current = robertPlan()) {
       date: date(item?.date || prior.date),
       title: bilingual(item?.title, prior.title, 240),
       details: bilingual(item?.details, prior.details, 1800),
+      pickupLocation: bilingual(item?.pickupLocation, prior.pickupLocation, 300),
+      dropoffLocation: bilingual(item?.dropoffLocation, prior.dropoffLocation, 300),
+      overnightCity: bilingual(item?.overnightCity, prior.overnightCity, 160),
       sourceCosts,
       costNote: bilingual(item?.costNote, prior.costNote, 500),
       originalCost: number(item?.originalCost),
@@ -312,6 +330,9 @@ export function validatePlanForReview(plan) {
     if (!day.date) errors.push({ dayId: day.id, field: "date", index });
     if (!day.title?.es && !day.title?.en) errors.push({ dayId: day.id, field: "title", index });
     if (!day.details?.es && !day.details?.en) errors.push({ dayId: day.id, field: "details", index });
+    if (!day.pickupLocation?.es && !day.pickupLocation?.en) errors.push({ dayId: day.id, field: "pickupLocation", index });
+    if (!day.dropoffLocation?.es && !day.dropoffLocation?.en) errors.push({ dayId: day.id, field: "dropoffLocation", index });
+    if (!day.overnightCity?.es && !day.overnightCity?.en) errors.push({ dayId: day.id, field: "overnightCity", index });
     const costs = Array.isArray(day.sourceCosts) ? day.sourceCosts : [];
     const breakdown = costs.reduce((sum, item) => sum + number(item.amount), 0);
     if (costs.length && Math.abs(breakdown - number(day.originalCost)) > 0.009) errors.push({ dayId: day.id, field: "costs", index });

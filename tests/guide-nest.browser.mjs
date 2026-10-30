@@ -212,6 +212,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
     assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
     assert.match(await page.locator("#planList").innerText(), /Salida del hotel hacia Mindo/);
+    assert.match(await page.locator("#planList").innerText(), /Hotel cerca del aeropuerto de Quito/);
+    assert.match(await page.locator("#planList").innerText(), /Ciudad donde se hospeda\s+Mindo/i);
     assert.match(await page.locator("#planList").innerText(), /Transporte\s+\$85[.,]00/);
     assert.doesNotMatch(await page.locator("#planList").innerText(), /\$1[.,]150[.,]00/);
     await page.getByRole("button", { name: "EN", exact: true }).click();
@@ -245,7 +247,11 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Agregar fecha o día", exact: true }).click();
     assert.equal(await page.locator("[data-plan-day-editor]").count(), 7);
     await page.getByText("Editar día", { exact: true }).last().click();
-    await page.locator("[data-plan-day-editor]").last().locator('textarea[name="details"]').fill("Día adicional por confirmar con MBW.");
+    const addedDayEditor = page.locator("[data-plan-day-editor]").last();
+    await addedDayEditor.locator('textarea[name="details"]').fill("Día adicional por confirmar con MBW.");
+    await addedDayEditor.locator('input[name="pickupLocation"]').fill("Hotel en Quito");
+    await addedDayEditor.locator('input[name="dropoffLocation"]').fill("Aeropuerto de Quito");
+    await addedDayEditor.locator('input[name="overnightCity"]').fill("Sin alojamiento; fin del itinerario");
     const planWritesBeforeFinish = writes.filter(write => write.url.includes("/api/guide/plans/robert-2027")).length;
     await page.locator("[data-plan-day-editor]").last().getByRole("button", { name: "Listo con este día" }).click();
     assert.equal(writes.filter(write => write.url.includes("/api/guide/plans/robert-2027")).length, planWritesBeforeFinish);
