@@ -360,12 +360,13 @@ function syncPlanDayEditors(planId) {
     day.title = localizedDraft(day.title); day.title[language] = editor.querySelector('[name="title"]')?.value.trim() || day.title[language];
     day.details = localizedDraft(day.details); day.details[language] = editor.querySelector('[name="details"]')?.value.trim() || "";
     day.costNote = localizedDraft(day.costNote); day.costNote[language] = editor.querySelector('[name="costNote"]')?.value.trim() || "";
-    day.originalCost = Number(editor.querySelector('[name="originalCost"]')?.value || 0);
     day.sourceCosts = [...editor.querySelectorAll("[data-source-cost-row]")].map((row, index) => ({
       id: row.dataset.costId || `${day.id}-source-${index + 1}`,
       category: row.querySelector('[name="sourceCategory"]')?.value || "other",
       amount: Number(row.querySelector('[name="sourceAmount"]')?.value || 0),
     })).filter(item => item.amount > 0);
+    day.originalCost = day.sourceCosts.length ? day.sourceCosts.reduce((sum, item) => sum + item.amount, 0) : Number(editor.querySelector('[name="originalCost"]')?.value || 0);
+    const totalInput = editor.querySelector('[name="originalCost"]'); if (totalInput) totalInput.value = day.originalCost;
   });
   plan.days.sort((a, b) => String(a.date || "9999").localeCompare(String(b.date || "9999")));
   plan.startDate = plan.days[0]?.date || plan.startDate;
