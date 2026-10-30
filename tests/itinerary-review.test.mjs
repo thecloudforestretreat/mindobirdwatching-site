@@ -65,6 +65,9 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /Send preliminary itinerary to MBW/);
   assert.match(guide, /actionWarning/);
   assert.match(guide, /data-lodging-price/);
+  assert.match(guide, /recordGuideConfirmation: "Record guide confirmation"/);
+  assert.match(guide, /function rebuildGuestBreakdown/);
+  assert.match(guide, /Markup is distributed proportionally/);
   assert.match(css, /--gold:#d3a126/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
@@ -80,7 +83,7 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   assert.doesNotMatch(endpoint, /const verified = \(await listRecords/);
   assert.match(endpoint, /crmCall\(env, "update_assignment"/);
   assert.match(guidePlans, /provider_informed:\s*"No"/);
-  assert.match(guide, /Build from guide quote/);
+  assert.match(guide, /Recalculate from guide quote/);
   assert.match(guide, /suggestedGuestLines/);
   assert.match(crm, /Custom itinerary workflow/);
   assert.match(crm, /guidePlanForRecord/);

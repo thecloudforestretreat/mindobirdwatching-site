@@ -54,6 +54,8 @@ Object.assign(COPY.es, {
   translationAutomatic: "Actualizando automáticamente el borrador en inglés…",
   copyGuideWhatsApp: "Copiar costos para WhatsApp",
   guideWhatsAppCopied: "Desglose del guía copiado para WhatsApp",
+  recordGuideConfirmation: "Registrar confirmación del guía",
+  externalConfirmationHelp: "Si el guía confirmó el borrador por WhatsApp o por teléfono, registra esa confirmación para continuar con la revisión final.",
 });
 Object.assign(COPY.en, {
   translateEnglish: "Translate draft to English",
@@ -65,6 +67,8 @@ Object.assign(COPY.en, {
   translationAutomatic: "Automatically updating the English draft…",
   copyGuideWhatsApp: "Copy guide costs for WhatsApp",
   guideWhatsAppCopied: "Guide cost breakdown copied for WhatsApp",
+  recordGuideConfirmation: "Record guide confirmation",
+  externalConfirmationHelp: "If the guide confirmed the draft by WhatsApp or phone, record that confirmation to continue to final review.",
 });
 
 const TERMINOLOGY = {
@@ -74,7 +78,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "El correo muestra el itinerario aprobado y el desglose de precios finales por día. Nunca incluye la cotización del guía, la ganancia ni el margen de MBW.",
     moveEarlier: "Mover a un día anterior", moveLater: "Mover a un día posterior",
     dayLogistics: "Logística del día", pickupLocation: "Lugar de recogida", dropoffLocation: "Lugar de llegada", overnightCity: "Ciudad donde se hospeda", logisticsPending: "Por confirmar",
-    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Estas son las únicas líneas de precio que pasan al itinerario del huésped. Deben sumar el precio final del día.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Crear desde la cotización del guía", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.",
+    guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "El margen se distribuye proporcionalmente entre los conceptos cotizados para que el desglose coincida con el precio final del día. Los conceptos de $0 permanecen visibles.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Recalcular desde la cotización del guía", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.",
   },
   en: {
     tourPlans: "Itineraries", assignedPlans: "Assigned itineraries", noPlans: "No custom itineraries are assigned to you.",
@@ -86,7 +90,7 @@ const TERMINOLOGY = {
     brandedEmailHelp: "The email shows the approved itinerary and final day-by-day price breakdown. It never includes the guide quote, profit, or MBW markup.",
     moveEarlier: "Move to an earlier day", moveLater: "Move to a later day",
     dayLogistics: "Daily logistics", pickupLocation: "Pickup location", dropoffLocation: "Drop-off location", overnightCity: "Overnight city", logisticsPending: "To be confirmed",
-    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "These are the only price lines sent to the guest itinerary. They must add up to the final daily price.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Build from guide quote", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.",
+    guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "Markup is distributed proportionally across the quoted items so the breakdown equals the final daily price. Zero-dollar items remain visible.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Recalculate from guide quote", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.",
   },
 };
 
@@ -501,6 +505,16 @@ function syncPlanPricing(planId) {
   });
 }
 
+function rebuildGuestBreakdown(planId, dayId) {
+  syncPlanPricing(planId);
+  const plan = planFor(planId);
+  const pricing = plan?.mbwPricing?.days?.find(item => item.dayId === dayId);
+  if (!plan || !pricing || Number(pricing.sellPrice || 0) <= 0) return false;
+  pricing.guestLines = suggestedGuestLines(plan, dayId, Number(pricing.sellPrice), Number(pricing.lodgingPrice || 0));
+  markPlanDirty(planId);
+  return true;
+}
+
 function updatePricingDisplay(planId, edited = null) {
   const plan = planFor(planId), workspace = document.querySelector(`[data-plan="${CSS.escape(planId)}"]`);
   if (!plan || !workspace) return;
@@ -616,7 +630,7 @@ function renderPlans() {
     const comments = plan.comments.length ? plan.comments.map(item => `<article class="planComment"><div><strong>${esc(item.author)}</strong><span>${esc(item.role === "guide" ? (language === "es" ? "Guía" : "Guide") : "MBW")}</span></div><p>${esc(item.message)}</p><small>${esc(item.createdAt ? new Date(item.createdAt).toLocaleString(language === "es" ? "es-EC" : "en-US") : "")}</small></article>`).join("") : "";
     const history = plan.history?.length ? [...plan.history].reverse().slice(0, 12).map(item => `<li><strong>${esc(item.actor)}</strong> ${esc(historyLabel(item.action))}<time>${esc(new Date(item.changedAt).toLocaleString(language === "es" ? "es-EC" : "en-US"))}</time></li>`).join("") : `<li>${esc(t("noHistory"))}</li>`;
     const guideActions = `<button class="actionNeutral" type="button" ${isGuidePreview() ? "disabled" : `data-save-plan="${esc(plan.planId)}" data-plan-status="guide_drafting"`}>${t("saveDraft")}</button><button class="actionWarning" type="button" ${isGuidePreview() ? "disabled" : `data-save-plan="${esc(plan.planId)}" data-plan-status="admin_review"`}>${t("submitReview")}</button>`;
-    const actions = locked ? `<span class="planLocked">${t("approvedLocked")}</span>${isAdminReview() ? `<button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("reopenPlan")}</button>` : ""}` : isAdminReview() ? `<button class="actionNeutral" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="${esc(plan.status)}">${t("saveChanges")}</button><button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("requestChanges")}</button>${plan.status === "admin_review" ? `<button class="actionSuccess" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="approved">${t("approvePlan")}</button>` : ""}` : guideActions;
+    const actions = locked ? `<span class="planLocked">${t("approvedLocked")}</span>${isAdminReview() ? `<button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("reopenPlan")}</button>` : ""}` : isAdminReview() ? `<button class="actionNeutral" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="${esc(plan.status)}">${t("saveChanges")}</button><button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("requestChanges")}</button>${plan.status === "admin_review" ? `<button class="actionSuccess" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="approved">${t("approvePlan")}</button>` : `<button class="actionSuccess" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="admin_review">${t("recordGuideConfirmation")}</button>`}` : guideActions;
     const localeStamp = plan.localeUpdatedAt?.[language];
     return `<details class="planWorkspace" data-plan="${esc(plan.planId)}" ${plans.length === 1 || planIndex === 0 || initialPlanId === plan.planId ? "open" : ""}><summary class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(localized(plan.title))}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></summary>
       <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${localized(brief.traveler)}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${localized(brief.pickup)} → ${localized(brief.dropoff)}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(localized(brief.lodging))}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(localized(brief.request))}</strong></div><div class="wide"><small>${language === "es" ? "Intereses" : "Interests"}</small><strong>${esc(localized(brief.interests))}</strong></div></div></section>
@@ -625,7 +639,7 @@ function renderPlans() {
       ${renderAdminPricing(plan, locked)}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
       <details class="planHistory planSection"><summary>${t("activityHistory")}</summary><ol>${history}</ol></details>
-      <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? t("adminActionHelp") : t("handoffHelp")}</p>${actions}</div></details>`;
+      <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? (plan.status === "admin_review" ? t("adminActionHelp") : t("externalConfirmationHelp")) : t("handoffHelp")}</p>${actions}</div></details>`;
   }).join("");
   document.querySelectorAll("[data-plan]").forEach(workspace => {
     const plan = planFor(workspace.dataset.plan);
@@ -917,15 +931,12 @@ document.addEventListener("click", event => {
   }
   const buildGuestLines = event.target.closest("[data-build-guest-lines]");
   if (buildGuestLines) {
-    const workspace = buildGuestLines.closest("[data-plan]"), planId = workspace?.dataset.plan, plan = planFor(planId), dayId = buildGuestLines.dataset.dayId;
-    syncPlanPricing(planId);
-    const pricing = plan?.mbwPricing?.days?.find(item => item.dayId === dayId);
-    if (!pricing || Number(pricing.sellPrice || 0) <= 0) {
+    const workspace = buildGuestLines.closest("[data-plan]"), planId = workspace?.dataset.plan, dayId = buildGuestLines.dataset.dayId;
+    if (!rebuildGuestBreakdown(planId, dayId)) {
       alert(language === "es" ? "Ingresa primero el precio final del día." : "Enter the final daily price first.");
       return;
     }
-    pricing.guestLines = suggestedGuestLines(plan, dayId, Number(pricing.sellPrice), Number(pricing.lodgingPrice || 0));
-    markPlanDirty(planId); renderPlans();
+    renderPlans();
     return;
   }
   const removeGuestLine = event.target.closest("[data-remove-guest-line]");
@@ -995,6 +1006,13 @@ $("#refresh").addEventListener("click", () => { if (!dirtyPlans.size || confirm(
 $("#retry").addEventListener("click", () => load());
 applyLanguage();
 document.addEventListener("input", event => { const workspace = event.target.closest?.("[data-plan]"); if (workspace) { markPlanDirty(workspace.dataset.plan); if (event.target.matches?.("[data-mbw-price],[data-markup-percent],[data-lodging-price],[name=guestAmount],[name=guestLabel],[name=guestCategory]")) updatePricingDisplay(workspace.dataset.plan, event.target); } });
+document.addEventListener("change", event => {
+  const input = event.target.closest?.("[data-mbw-price],[data-markup-percent],[data-lodging-price]");
+  const workspace = input?.closest?.("[data-plan]");
+  if (!input || !workspace) return;
+  const dayId = input.dataset.mbwPrice || input.dataset.markupPercent || input.dataset.lodgingPrice;
+  if (rebuildGuestBreakdown(workspace.dataset.plan, dayId)) renderPlans();
+});
 window.addEventListener("beforeunload", event => { if (dirtyPlans.size) { event.preventDefault(); event.returnValue = ""; } });
 const initialParams = new URLSearchParams(location.search);
 const initialPlanId = initialParams.get("plan") || "";
