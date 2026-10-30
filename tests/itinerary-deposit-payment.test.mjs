@@ -27,8 +27,8 @@ test('saved itinerary retains deposit evidence and balance copy in both language
 });
 
 test('confirmed itinerary replaces legacy proposal copy and uses a structured receipt card',()=>{
-  assert.ok(html.includes('Your reservation is confirmed. We received your deposit'));
-  assert.ok(html.includes('Su reservación está confirmada. Recibimos su depósito'));
+  assert.ok(html.includes('We received your deposit. The services, dates, and remaining balance are summarized below.'));
+  assert.ok(html.includes('Hemos recibido su depósito. A continuación encontrará los servicios, las fechas y el saldo pendiente.'));
   assert.ok(html.includes('Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.'));
   assert.match(html,/function effectiveOpening\(data\)/);
   assert.match(html,/class="paymentReceipt"/);
@@ -43,4 +43,14 @@ test('confirmed layout removes duplicate dates and redundant deposit messaging',
   assert.match(html,/data\.pricingNote && stage !== 'deposit_received'/);
   assert.match(html,/class="nextStepsCard\$\{stage === 'deposit_received' \? ' confirmedNextSteps' : ''\}"/);
   assert.match(html,/function multilineHtml\(value\)/);
+});
+
+test('confirmed itinerary uses full guest names and non-repetitive receipt copy',()=>{
+  assert.ok(html.includes("opening:'We received your deposit. The services, dates, and remaining balance are summarized below.'"));
+  assert.ok(html.includes("closing:'We look forward to welcoming you.\\nSee you soon!'"));
+  assert.match(html,/\$\{escapeHtml\(c\.hi\)\} \$\{escapeHtml\(data\.guestName \|\| c\.guest\)\}/);
+  assert.match(html,/const guestName = data\.guestName \|\|/);
+  assert.match(html,/const crmFullName = state\.crmRecord\?\.full_name/);
+  assert.match(html,/depositReceivedBox/);
+  assert.match(html,/depositReceiptHeader/);
 });
