@@ -45,12 +45,13 @@ test('confirmed layout removes duplicate dates and redundant deposit messaging',
   assert.match(html,/function multilineHtml\(value\)/);
 });
 
-test('confirmed itinerary uses full guest names and non-repetitive receipt copy',()=>{
+test('confirmed itinerary uses a first-name greeting, full guest field, and non-repetitive receipt copy',()=>{
   assert.ok(html.includes("opening:'We received your deposit. The services, dates, and remaining balance are summarized below.'"));
   assert.ok(html.includes("closing:'We look forward to welcoming you.\\nSee you soon!'"));
-  assert.match(html,/\$\{escapeHtml\(c\.hi\)\} \$\{escapeHtml\(data\.guestName \|\| c\.guest\)\}/);
+  assert.match(html,/\$\{escapeHtml\(c\.hi\)\} \$\{escapeHtml\(guestFirstName\(data\.guestName\) \|\| c\.guest\)\}/);
   assert.match(html,/const guestName = data\.guestName \|\|/);
+  assert.match(html,/const greetingName = guestFirstName\(data\.guestName\)/);
   assert.match(html,/const crmFullName = state\.crmRecord\?\.full_name/);
   assert.match(html,/depositReceivedBox/);
-  assert.match(html,/depositReceiptHeader/);
+  assert.match(html,/\.paymentReceiptItem\{[^}]*text-align:center/);
 });
