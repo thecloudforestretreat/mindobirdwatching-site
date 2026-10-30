@@ -75,6 +75,35 @@ function guestDocumentsMarkup(guest) {
   return `<details class="detailSection collapsibleSection"><summary class="detailTitle"><h3>Guest documents</h3><span class="badge">CRM linked</span></summary><div class="pipelineActions"><a class="pipelineAction" href="${esc(toolUrl("/itinerary-generator/", guest))}" target="_blank" rel="noopener noreferrer">Generate Itinerary</a><a class="pipelineAction" href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Create Confirmation</a></div></details>`;
 }
 
+function planDateMismatch(plan, guest) {
+  const dates = recordDates(guest, relatedBookings(guest));
+  if (!dates.length || !plan.startDate) return false;
+  const guestStart = dates[0], guestEnd = dates.at(-1) || guestStart, planEnd = plan.endDate || plan.startDate;
+  return guestStart !== plan.startDate || guestEnd !== planEnd;
+}
+
+function planAttentionItems() {
+  return (state.data?.customPlans || []).map(plan => {
+    const guest = recordById(plan.inquiryId);
+    if (!guest) return null;
+    const dateMismatch = planDateMismatch(plan, guest);
+    if (plan.status !== "admin_review" && !dateMismatch) return null;
+    return { plan, guest, dateMismatch };
+  }).filter(Boolean).sort((left, right) => String(right.plan.updatedAt || "").localeCompare(String(left.plan.updatedAt || "")));
+}
+
+function renderPlanAttention() {
+  const panel = $("#planAttentionPanel"), items = planAttentionItems();
+  panel.hidden = !items.length;
+  if (!items.length) { panel.innerHTML = ""; return; }
+  panel.innerHTML = `<div class="planAttentionHeading"><div><p class="eyebrow">Custom itineraries</p><h2 id="planAttentionHeading">Plans needing attention</h2></div><span>${items.length}</span></div><div class="planAttentionList">${items.map(({ plan, guest, dateMismatch }) => {
+    const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
+    const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
+    const reason = plan.status === "admin_review" ? "Guide submitted this itinerary for admin review." : "CRM dates do not match the itinerary dates.";
+    return `<article class="planAttentionCard"><div><strong>${esc(guest.name || plan.guestName || "Guest")}</strong><span class="badge ${dateMismatch ? "badge--warn" : ""}">${plan.status === "admin_review" ? "Review" : "Check dates"}</span></div><p>${esc(title)}</p><small>${esc(reason)}</small><div class="planAttentionActions"><button type="button" data-guest="${esc(plan.inquiryId)}">Open guest</button><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Review plan</a></div></article>`;
+  }).join("")}</div>`;
+}
+
 function customPlanMarkup(guest) {
   const plans = (state.data?.customPlans || []).filter(plan => plan.inquiryId === guest.inquiryId);
   if (!plans.length) return "";
@@ -84,7 +113,8 @@ function customPlanMarkup(guest) {
     const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
     const dates = plan.startDate ? (plan.endDate && plan.endDate !== plan.startDate ? `${shortDate(plan.startDate)}–${shortDate(plan.endDate)}` : shortDate(plan.startDate)) : "Dates to be confirmed";
     const status = statusLabels[plan.status] || "In progress";
-    return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">${esc(status)}</span></div><div class="recordItem"><strong>${esc(title)}</strong><p>${esc(dates)} · Assigned to ${esc(plan.providerName || "guide")}</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div><div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
+    const dateWarning = planDateMismatch(plan, guest) ? `<p class="planDateWarning"><strong>Dates need review.</strong> The CRM guest dates do not match this itinerary’s ${esc(dates)} schedule.</p>` : "";
+    return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">${esc(status)}</span></div><div class="recordItem"><strong>${esc(title)}</strong><p>${esc(dates)} · Assigned to ${esc(plan.providerName || "guide")}</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div>${dateWarning}<div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
   }).join("");
 }
 
@@ -144,6 +174,7 @@ function renderActions() {
   document.querySelectorAll("[data-desk-view]").forEach(button => button.classList.toggle("active", button.dataset.deskView === state.deskView));
   $("#calendarPanel").hidden = state.deskView !== "calendar";
   if (state.deskView === "calendar") renderCalendar();
+  renderPlanAttention();
   const filteredMode = state.statusFilter !== "all" || state.deskView === "calendar";
   const visibleActions = state.summaryFilter === "urgent" ? actions.filter(item => item.priority === 0) : state.summaryFilter === "followups" ? actions.filter(item => ["follow-up", "interaction-follow-up"].includes(item.type)) : actions;
   let records = filteredMode
@@ -502,5 +533,5 @@ window.addEventListener("online", () => { connection(state.cached ? "cached" : "
 window.addEventListener("offline", () => connection("offline", "Offline"));
 setInterval(updateConnectionAge, 30 * 1000);
 setInterval(() => maybeAutomaticRefresh(AUTO_SYNC_INTERVAL_MS), 60 * 1000);
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=27", { scope: "/app/" }).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app/sw.js?v=30", { scope: "/app/" }).catch(() => {});
 start();

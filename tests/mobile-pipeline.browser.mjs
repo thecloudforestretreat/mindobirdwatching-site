@@ -48,7 +48,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     if (path.endsWith("/session")) return route.fulfill({ json: { ok: true, identity: { email: "owner@example.test", name: "Juan", role: "owner" }, capabilities: { write: true } } });
     if (path.endsWith("/bootstrap")) {
       await new Promise(resolve => setTimeout(resolve, 700));
-      return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ providerId: "PROV-CHICHO", name: "Chicho", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }, { providerId: "PROV-NEICER", name: "Neicer", role: "guide", serviceType: "Birdwatching", active: true }], customPlans: [{ planId: "robert-2027", inquiryId: record.inquiryId, providerId: "PROV-NEICER", providerName: "Neicer", guestName: "Robert", title: { en: "Robert’s private Ecuador itinerary", es: "Robert · Itinerario personalizado en Ecuador" }, startDate: "2027-02-09", endDate: "2027-02-14", status: "guide_drafting", updatedAt: "2026-10-29T20:00:00Z" }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
+      return route.fulfill({ json: { ok: true, checkedAt: "2026-10-20T15:00:00Z", actions: [{ inquiryId: record.inquiryId, type: "follow-up", priority: 0, reason: "Follow-up due", owner: "JPG" }], today: [], upcoming: schedule, providers: [{ providerId: "PROV-CHICHO", name: "Chicho", role: "guide", serviceType: "Birdwatching", isDefault: true, active: true }, { providerId: "PROV-NEICER", name: "Neicer", role: "guide", serviceType: "Birdwatching", active: true }], customPlans: [{ planId: "robert-2027", inquiryId: record.inquiryId, providerId: "PROV-NEICER", providerName: "Neicer", guestName: "Robert", title: { en: "Robert’s private Ecuador itinerary", es: "Robert · Itinerario personalizado en Ecuador" }, startDate: "2027-02-09", endDate: "2027-02-14", status: "admin_review", updatedAt: "2026-10-29T20:00:00Z" }], recentGuests: [record, completedRecord], inquiries: [record, completedRecord], bookings: [] } });
     }
     if (path.endsWith("/guests") && route.request().method() === "POST") {
       const payload = route.request().postDataJSON().guest;
@@ -92,6 +92,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.deepEqual(await page.locator("#actionRepFilter option").allTextContents(), ["Rep: All", "Unassigned", "JPG", "SS"]);
     assert.match(await page.locator("#connectionState").innerText(), /Synced now/);
     assert.match(await card.innerText(), /Test Testerer/); assert.match(await card.innerText(), /MT/); assert.match(await card.innerText(), /🇺🇸/);
+    assert.equal(await page.getByRole("heading", { name: "Plans needing attention", exact: true }).isVisible(), true);
+    assert.match(await page.locator("#planAttentionPanel").innerText(), /Guide submitted this itinerary for admin review/);
+    assert.doesNotMatch(await page.locator("#planAttentionPanel").innerText(), /markup|margin|price|cost/i);
+    const reviewPlanUrl = new URL(await page.getByText("Review plan", { exact: true }).getAttribute("href"), page.url());
+    assert.equal(reviewPlanUrl.searchParams.get("plan"), "robert-2027");
     assert.match(await card.innerText(), /F\/U\s+Tomorrow/i); assert.doesNotMatch(await card.innerText(), /\bSOON\b|\bNURTURE\b/);
     assert.equal(await page.locator("[data-summary-filter]").count(), 3); await page.locator('[data-summary-filter="followups"]').click(); assert.equal(await page.locator(".actionCard").count(), 1);
     await page.locator('#bottomNav [data-route="guests"]').click();
@@ -154,6 +159,7 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     assert.equal(customPlanUrl.searchParams.get("provider"), "PROV-NEICER");
     assert.equal(customPlanUrl.searchParams.get("plan"), "robert-2027");
     assert.doesNotMatch(await page.locator(".customPlanCard").innerText(), /markup|margin|price|cost/i);
+    assert.match(await page.locator(".customPlanCard").innerText(), /Dates need review/);
     assert.equal(await page.locator(".serviceReadiness").count(), 1);
     assert.match(await page.locator(".serviceReadiness").innerText(), /Payment.*\$ needed/s);
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
