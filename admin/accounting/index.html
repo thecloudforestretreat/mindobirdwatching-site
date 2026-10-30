@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>MBW Accounting | Command Center</title><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0D5925">
-  <link rel="icon" href="/favicon.ico" sizes="any"><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/admin.css?v=accounting-v2"><link rel="stylesheet" href="/assets/css/accounting.css?v=20261030-2">
+  <link rel="icon" href="/favicon.ico" sizes="any"><link rel="stylesheet" href="/assets/css/site.css"><link rel="stylesheet" href="/assets/css/admin.css?v=accounting-v2"><link rel="stylesheet" href="/assets/css/accounting.css?v=20261030-3">
 </head>
 <body data-admin-layout="accounting">
   <div data-admin-nav data-admin-page="accounting"></div>
@@ -14,6 +14,7 @@
     </header>
     <nav class="viewTabs" aria-label="Accounting dashboard views">
       <button class="viewTab is-active" data-view="macro" type="button"><span>Macro</span><small>Health, pace &amp; goals</small></button>
+      <button class="viewTab" data-view="forecast" type="button"><span>Forecast</span><small>Cash &amp; profit outlook</small></button>
       <button class="viewTab" data-view="micro" type="button"><span>Micro</span><small>Drivers &amp; details</small></button>
       <button class="viewTab" data-view="controls" type="button"><span>Controls</span><small>Exceptions &amp; QA</small></button>
       <button id="goalBtn" class="goalButton" type="button">Set goals</button>
@@ -30,10 +31,20 @@
       </div>
     </section>
 
+    <section id="forecastView" class="viewPanel" data-panel="forecast" hidden>
+      <div class="viewIntro"><div><p class="eyebrow">Forward view</p><h2>What happens next—and why?</h2></div><p>Expected collections and obligations are timing estimates, not guarantees.</p></div>
+      <div id="scenarioGrid" class="scenarioGrid"></div>
+      <div class="layout layout--forecast">
+        <article class="card card--span2"><div class="cardHead"><div><p class="eyebrow">13-week liquidity</p><h3>Cash forecast</h3></div><span id="cashForecastSummary" class="pill">Loading</span></div><div id="cashForecastChart" class="cashForecastChart"></div><div id="cashForecastRows" class="tableWrap"></div></article>
+        <article class="card"><div class="cardHead"><div><p class="eyebrow">Variance bridge</p><h3>What changed profit?</h3></div><span class="hint">Current month vs prior month</span></div><div id="profitBridge" class="bridgeList"></div></article>
+        <article class="card"><div class="cardHead"><div><p class="eyebrow">Paid growth</p><h3>Advertising impact</h3></div><span class="hint">Profit before and after Meta spend</span></div><div id="marketingMetrics" class="marketingMetrics"></div></article>
+      </div>
+    </section>
+
     <section id="microView" class="viewPanel" data-panel="micro" hidden>
       <div class="viewIntro"><div><p class="eyebrow">Drill down</p><h2>What is creating the result?</h2></div><select id="microPeriod" aria-label="Micro analysis period"><option value="ytd">Year to date</option><option value="month">Current month</option></select></div>
       <div class="layout layout--micro">
-        <article class="card card--span2"><div class="cardHead"><div><p class="eyebrow">Activity economics</p><h3>Revenue, profit &amp; margin by activity</h3></div><span class="hint">Click a column heading to sort</span></div><div class="tableWrap"><table><thead><tr><th data-sort="title">Activity</th><th data-sort="services">Services</th><th data-sort="guests">Guests</th><th data-sort="revenue">Revenue</th><th data-sort="profit">Profit</th><th data-sort="margin">Margin</th><th data-sort="averageProfit">Avg profit</th></tr></thead><tbody id="activityRows"></tbody></table></div></article>
+        <article class="card card--span2"><div class="cardHead"><div><p class="eyebrow">Activity economics</p><h3>Revenue, profit &amp; unit economics by activity</h3></div><span class="hint">Click a column heading to sort</span></div><div class="tableWrap"><table><thead><tr><th data-sort="title">Activity</th><th data-sort="services">Services</th><th data-sort="guests">Guests</th><th data-sort="revenue">Revenue</th><th data-sort="profit">Profit</th><th data-sort="margin">Margin</th><th data-sort="revenuePerGuest">Rev / guest</th><th data-sort="costPerGuest">Cost / guest</th><th data-sort="profitPerGuest">Profit / guest</th><th data-sort="averageProfit">Profit / service</th></tr></thead><tbody id="activityRows"></tbody></table></div></article>
         <article class="card"><div class="cardHead"><div><p class="eyebrow">Demand timing</p><h3>Popular days</h3></div></div><div id="weekdayList" class="rankList"></div></article>
         <article class="card"><div class="cardHead"><div><p class="eyebrow">Cost structure</p><h3>Expense mix</h3></div></div><div id="expenseMix" class="barList"></div></article>
         <article class="card card--span2"><div class="cardHead"><div><p class="eyebrow">Obligations</p><h3>Guide payment center</h3></div><span id="guideTotal" class="pill"></span></div><div class="tableWrap"><table><thead><tr><th>Guide</th><th>Due now</th><th>Completed items</th><th>Future obligations</th><th>Oldest due</th></tr></thead><tbody id="guideRows"></tbody></table></div></article>
@@ -49,5 +60,5 @@
   </main>
 
   <dialog id="goalDialog" class="goalDialog"><form method="dialog"><div class="dialogHead"><div><p class="eyebrow">Targets</p><h2>Set business goals</h2><p>Saved only in this browser. Accounting records are not changed.</p></div><button value="cancel" class="iconButton" aria-label="Close">×</button></div><div class="goalForm"><label>Annual revenue <input id="goalRevenue" inputmode="decimal"></label><label>Annual profit <input id="goalProfit" inputmode="decimal"></label><label>Profit margin % <input id="goalMargin" inputmode="decimal"></label><label>Guests served <input id="goalGuests" inputmode="numeric"></label><label>Completed services <input id="goalServices" inputmode="numeric"></label><label>Monthly profit <input id="goalMonthlyProfit" inputmode="decimal"></label><label>Operating cash <input id="goalOperatingCash" inputmode="decimal"></label></div><div class="dialogActions"><button id="resetGoals" value="none" type="button" class="button">Reset defaults</button><button id="saveGoals" value="none" type="button" class="button button--primary">Save goals</button></div></form></dialog>
-  <script defer src="/assets/js/admin-nav.js?v=accounting-v2"></script><script defer src="/assets/js/accounting.js?v=20261030-2"></script>
+  <script defer src="/assets/js/admin-nav.js?v=accounting-v2"></script><script defer src="/assets/js/accounting.js?v=20261030-3"></script>
 </body></html>

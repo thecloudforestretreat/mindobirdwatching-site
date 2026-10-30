@@ -26,8 +26,8 @@ function parseCsv(source) {
   return rows.filter(values => values.some(text)).map(values => Object.fromEntries(headers.map((header, index) => [header || `_${index}`, values[index] ?? ""])));
 }
 
-async function tab(name) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+async function tab(name, query = "") {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}${query ? `&tq=${encodeURIComponent(query)}` : ""}`;
   const response = await fetch(url, { headers: { "user-agent": "MBW-Accounting-Dashboard/2.0" } });
   if (!response.ok) throw new Error(`${name}_unavailable`);
   return parseCsv(await response.text());
@@ -122,6 +122,69 @@ function weeklySummary(invoices, year) {
 
 function average(rows, key) { return rows.length ? rows.reduce((sum, row) => sum + number(row[key]), 0) / rows.length : 0; }
 
+function addDays(date, days) {
+  const value = new Date(`${date}T12:00:00Z`); value.setUTCDate(value.getUTCDate() + days); return value.toISOString().slice(0, 10);
+}
+
+function cashForecast(cash, deposits, queue, expenses, today) {
+  const start = weekStart(today), lookback = addDays(start, -56);
+  const operating = expenses.filter(row => {
+    const date = text(row.expense_date), category = text(row.expense_category).toLowerCase(), type = text(row.expense_type).toLowerCase();
+    return validDate(date) && date >= lookback && date < start && text(row.expense_status).toLowerCase() !== "void" && category !== "cogs" && !/guide payout|transportation cogs/.test(type);
+  });
+  const weeklyOperatingBurn = operating.reduce((sum, row) => sum + Math.abs(number(row.amount)), 0) / 8;
+  const collections = deposits.filter(row => number(row.balance_remaining) > 0 && !/cancel|refund/i.test(`${text(row.booking_status)} ${text(row.deposit_status)}`));
+  const obligations = queue.filter(row => number(row.remaining_due) > 0);
+  let ending = number(cash.available_operating_cash);
+  const weeks = Array.from({ length: 13 }, (_, index) => {
+    const week = addDays(start, index * 7), end = addDays(week, 6), opening = ending;
+    const expectedCollections = collections.filter(row => {
+      const due = validDate(row.balance_due_date) ? text(row.balance_due_date) : text(row.tour_date);
+      return validDate(due) && due >= week && due <= end;
+    }).reduce((sum, row) => sum + number(row.balance_remaining), 0);
+    const guidePayments = obligations.filter(row => {
+      const due = serviceDate(row); if (!validDate(due)) return index === 0;
+      return index === 0 ? due <= end : due >= week && due <= end;
+    }).reduce((sum, row) => sum + number(row.remaining_due), 0);
+    ending = opening + expectedCollections - guidePayments - weeklyOperatingBurn;
+    return { week, opening, collections: expectedCollections, guide_payments: guidePayments, operating_burn: weeklyOperatingBurn, ending, below_zero: ending < 0 };
+  });
+  return { opening_cash: number(cash.available_operating_cash), weekly_operating_burn: weeklyOperatingBurn, minimum_cash: Math.min(...weeks.map(row => row.ending)), ending_cash: ending, weeks };
+}
+
+function profitDrivers(invoices, month, priorMonth) {
+  const grouped = new Map();
+  for (const row of invoices) {
+    if (text(row.revenue_status) !== "Earned" || ![month, priorMonth].includes(text(row.earned_month))) continue;
+    const title = text(row.tour_title) || text(row.product_selected) || "Other", item = grouped.get(title) || { title, current: 0, prior: 0, currentServices: 0, priorServices: 0 };
+    if (text(row.earned_month) === month) { item.current += number(row.mbw_profit_accrual); item.currentServices += 1; }
+    else { item.prior += number(row.mbw_profit_accrual); item.priorServices += 1; }
+    grouped.set(title, item);
+  }
+  const rows = [...grouped.values()].map(row => ({ ...row, change: row.current - row.prior })).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  return { month, prior_month: priorMonth, positive: rows.filter(row => row.change > 0).slice(0, 5), negative: rows.filter(row => row.change < 0).slice(0, 5), total_change: rows.reduce((sum, row) => sum + row.change, 0) };
+}
+
+function marketingSummary(rows, year, month, ytdProfit, monthProfit) {
+  const normalized = rows.map(row => ({ month: text(row["Expense Month"] || row.expense_month), spend: Math.abs(number(row["Net Spend"] || row.net_spend)) }));
+  const ytdSpend = normalized.filter(row => row.month.startsWith(year + "-")).reduce((sum, row) => sum + row.spend, 0), monthSpend = normalized.filter(row => row.month === month).reduce((sum, row) => sum + row.spend, 0);
+  return { ytd_spend: ytdSpend, month_spend: monthSpend, ytd_profit_after_ads: ytdProfit - ytdSpend, month_profit_after_ads: monthProfit - monthSpend, ytd_profit_roas: ytdSpend ? ytdProfit / ytdSpend : 0, month_profit_roas: monthSpend ? monthProfit / monthSpend : 0 };
+}
+
+function anomalySummary(invoices, expenses, today, reconDate) {
+  const keys = new Map();
+  invoices.forEach(row => { const key = text(row.tour_key); if (key) keys.set(key, (keys.get(key) || 0) + 1); });
+  const staleDays = validDate(reconDate) ? Math.max(0, Math.floor((Date.parse(`${today}T12:00:00Z`) - Date.parse(`${reconDate}T12:00:00Z`)) / 86400000)) : null;
+  return {
+    completed_missing_expense: invoices.filter(row => text(row.revenue_status) === "Earned" && text(row.expense_reconciled_flag) === "No").length,
+    future_marked_earned: invoices.filter(row => validDate(row.tour_date) && text(row.tour_date) > today && (text(row.revenue_status) === "Earned" || text(row.tour_completed) === "Yes")).length,
+    negative_profit_services: invoices.filter(row => text(row.revenue_status) === "Earned" && number(row.mbw_profit_accrual) < 0).length,
+    duplicate_tour_keys: [...keys.values()].filter(count => count > 1).reduce((sum, count) => sum + count - 1, 0),
+    unreconciled_expenses: expenses.filter(row => text(row.reconciled).toLowerCase() !== "yes" && text(row.expense_status).toLowerCase() !== "void").length,
+    stale_reconciliation_days: staleDays,
+  };
+}
+
 function pipelineSummary(deposits, today) {
   const rows = deposits.filter(row => validDate(row.tour_date) && text(row.tour_date) >= today && !/cancel|refund/i.test(`${text(row.booking_status)} ${text(row.deposit_status)}`));
   return {
@@ -137,7 +200,8 @@ function pipelineSummary(deposits, today) {
 export async function onRequestGet({ request }) {
   const denied = await authorize(request); if (denied) return denied;
   try {
-    const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits] = await Promise.all(TABS.map(tab));
+    const core = await Promise.all([...TABS.map(name => tab(name)), tab("recon_meta_ads_import", "offset 5")]);
+    const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits, metaAds] = core;
     const today = guayaquilToday(), month = today.slice(0, 7), year = today.slice(0, 4);
     const latestRecon = [...daily].filter(row => validDate(row.date) && text(row.date) <= today).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
     const ledgerSummary = ledger.find(row => text(row.ledger_id) === "ADLEDGER-SUMMARY") || [...ledger].reverse().find(row => text(row.transaction_type) === "Summary") || {};
@@ -148,19 +212,23 @@ export async function onRequestGet({ request }) {
     const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
     const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
     const monthly = income.filter(row => validMonth(row.month_ky)).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
-    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {}, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3);
+    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {}, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3), priorMonth = addDays(`${month}-01`, -1).slice(0, 7);
+    const cash = { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) };
     return reply(200, {
       ok: true, updated_at: new Date().toISOString(), control_date: today,
-      cash: { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) },
+      cash,
       summary: { year, revenue: number(ytd.earned_revenue), profit: number(ytd.earned_profit), margin: number(ytd.earned_margin) / 100, guests: number(ytd.guests_served), services: number(ytd.completed_services), expenses: number(ytd.operating_expenses), net: number(ytd.net_income), currentMonthRevenue: number(current.earned_revenue), currentMonthProfit: number(current.earned_profit), currentMonthNet: number(current.net_income) },
       projection, monthly,
       cadence: { current_week: currentWeek, weekly, baselines: { monthly: { revenue: average(completedMonths, "revenue"), profit: average(completedMonths, "profit"), expenses: average(completedMonths, "expenses"), net: average(completedMonths, "net") }, weekly: { revenue: average(completedWeeks, "revenue"), profit: average(completedWeeks, "profit"), guests: average(completedWeeks, "guests"), services: average(completedWeeks, "services") } } },
       pipeline: pipelineSummary(deposits, today),
+      cash_forecast: cashForecast(cash, deposits, queue, expenses, today),
+      profit_drivers: profitDrivers(invoices, month, priorMonth),
+      marketing: marketingSummary(metaAds, year, month, number(ytd.earned_profit), projection.earnedProfit),
       activities: activitySummary(invoices, year, month), weekdays: weekdaySummary(invoices, year, month), expense_mix: expenseMix(expenses, year, month),
       guides, guide_totals: { due_completed: guides.reduce((sum, row) => sum + row.due, 0), completed_items: guides.reduce((sum, row) => sum + row.dueCount, 0), future_obligations: guides.reduce((sum, row) => sum + row.future, 0) },
       advertising_fund: { contribution_due: number(ledgerSummary.contribution_due), contribution_collected: number(ledgerSummary.contribution_collected), ad_spend_used: number(ledgerSummary.ad_spend_used), outstanding_from_guides: number(ledgerSummary.contribution_due_balance), available: number(ledgerSummary.advertising_fund_balance), status: text(ledgerSummary.notes) },
       expenses: { month, month_total: monthExpenses.reduce((sum, row) => sum + Math.abs(number(row.amount)), 0), unreconciled, missing_receipts: missingReceipts },
-      controls: { open_settlements: openSettlements, profit_variance: projection.earnedProfit - number(incomeCurrent.profit) },
+      controls: { open_settlements: openSettlements, profit_variance: projection.earnedProfit - number(incomeCurrent.profit), ...anomalySummary(invoices, expenses, today, text(latestRecon.date)) },
     });
   } catch (error) {
     console.error("Accounting dashboard feed failed", error);
