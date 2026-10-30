@@ -44,16 +44,19 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
   if(email){assert(html.includes('Agreed rate: $28'));const wa=await page.locator(preview+' a[href*="wa.me"]').first().getAttribute('href');assert(decodeURIComponent(wa).includes(name));}
   if(!email){assert.equal(await page.locator('.itemEditor').last().locator('[data-field=unitPrice]').inputValue(),'105');assert.equal(await page.locator('#subtotalValue').innerText(),before);}
   if(!email){
-   const total=await page.locator('#totalValue').innerText();
+   const total=await page.locator('#totalValue').innerText();const totalAmount=Number(total.replace(/[^0-9.-]/g,''));
    for(const stage of ['preliminary','approved_pending','deposit_received','paid_in_full']){
     await page.locator('#itineraryStage').selectOption(stage);
+    if(stage==='deposit_received'){await page.locator('#depositReceivedAmount').fill('100');await page.locator('#depositReceivedDate').fill('2099-11-20');await page.locator('#depositReceivedMethod').selectOption('Stripe');}
+    if(width===1440&&id==='mbw'&&stage==='deposit_received'){const paymentDraft=await page.evaluate(()=>JSON.parse(localStorage.getItem('mbw_itinerary_generator_v1')));assert.equal(paymentDraft.depositReceivedAmount,100);assert.equal(paymentDraft.depositReceivedDate,'2099-11-20');assert.equal(paymentDraft.depositReceivedMethod,'Stripe');await page.screenshot({path:'/tmp/mbw-itinerary-deposit-qa.png',fullPage:true});}
     const links=await page.locator(preview+' a[href*="/book-tour/deposit/"]').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));
     assert.equal(links.length,stage==='approved_pending'?1:0);
     if(links.length){const link=new URL(links[0]);assert.equal(link.origin+link.pathname,'https://mindobirdwatching.com/book-tour/deposit/');assert.equal(link.searchParams.get('inquiry_id'),'INQ-QA-USD');assert.equal(link.searchParams.get('brand'),id);}
     if(id!=='mbw')assert.equal(await page.locator(preview+' [data-billing-brand="mbw"]').count(),stage==='preliminary'?1:2);
     if(width===1440&&id==='choco-andino'&&stage==='approved_pending'){await page.locator(preview+' [data-billing-brand="mbw"]').first().scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/mbw-billing-payment-qa.png'});}
-    assert.equal(await page.locator('#totalValue').innerText(),total);
+    const expected=stage==='deposit_received'?totalAmount-100:stage==='paid_in_full'?0:totalAmount;assert.equal(Number((await page.locator('#totalValue').innerText()).replace(/[^0-9.-]/g,'')),expected);
    }
+   const priceInput=page.locator('.itemEditor').last().locator('[data-field=unitPrice]');const priceBefore=await priceInput.inputValue();await priceInput.evaluate(el=>el.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,bubbles:true,cancelable:true})));assert.equal(await priceInput.inputValue(),priceBefore);
    await page.locator('#itineraryStage').selectOption('preliminary');
    const draft=await page.evaluate(()=>JSON.parse(localStorage.getItem('mbw_itinerary_generator_v1')));assert.equal(draft.brandId,id);assert.equal(draft.billingBrandId,'mbw');
   }
