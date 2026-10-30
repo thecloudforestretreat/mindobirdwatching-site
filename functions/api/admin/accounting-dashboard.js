@@ -75,9 +75,9 @@ function weekdaySummary(invoices, year, month) {
   for (const row of invoices) {
     if (text(row.revenue_status) !== "Earned" || !text(row.earned_month).startsWith(year + "-") || !validDate(row.tour_date)) continue;
     const serviceType = text(row.service_type) || "Other", weekday = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(new Date(text(row.tour_date) + "T12:00:00Z")), key = `${serviceType}|${weekday}`;
-    const item = grouped.get(key) || { serviceType, weekday, services: 0, revenue: 0, profit: 0, monthServices: 0, monthRevenue: 0, monthProfit: 0 };
-    item.services += 1; item.revenue += number(row.mbw_gross_actual); item.profit += number(row.mbw_profit_accrual); grouped.set(key, item);
-    if (text(row.earned_month) === month) { item.monthServices += 1; item.monthRevenue += number(row.mbw_gross_actual); item.monthProfit += number(row.mbw_profit_accrual); }
+    const item = grouped.get(key) || { serviceType, weekday, services: 0, guests: 0, revenue: 0, profit: 0, monthServices: 0, monthGuests: 0, monthRevenue: 0, monthProfit: 0 };
+    item.services += 1; item.guests += number(row.party_size); item.revenue += number(row.mbw_gross_actual); item.profit += number(row.mbw_profit_accrual); grouped.set(key, item);
+    if (text(row.earned_month) === month) { item.monthServices += 1; item.monthGuests += number(row.party_size); item.monthRevenue += number(row.mbw_gross_actual); item.monthProfit += number(row.mbw_profit_accrual); }
   }
   return [...grouped.values()].sort((a, b) => b.services - a.services || b.profit - a.profit);
 }
@@ -93,14 +93,14 @@ function expenseMix(rows, year, currentMonth) {
 }
 
 function monthProjection(invoices, month, today) {
-  let earnedProfit = 0, futureProfit = 0, earnedRevenue = 0, futureRevenue = 0, completedServices = 0, futureServices = 0;
+  let earnedProfit = 0, futureProfit = 0, earnedRevenue = 0, futureRevenue = 0, earnedGuests = 0, futureGuests = 0, completedServices = 0, futureServices = 0;
   for (const row of invoices) {
     const date = text(row.tour_date), status = text(row.revenue_status), cancelled = /cancel/i.test(text(row.booking_status));
     if (!date.startsWith(month) || cancelled) continue;
-    if (status === "Earned" || text(row.tour_completed) === "Yes") { earnedProfit += number(row.mbw_profit_accrual); earnedRevenue += number(row.mbw_gross_actual); completedServices += 1; }
-    else if (status === "Deferred" && date >= today) { futureProfit += number(row.mbw_profit_expected || row.mbw_profit_accrual); futureRevenue += number(row.mbw_gross_expected || row.mbw_gross_actual); futureServices += 1; }
+    if (status === "Earned" || text(row.tour_completed) === "Yes") { earnedProfit += number(row.mbw_profit_accrual); earnedRevenue += number(row.mbw_gross_actual); earnedGuests += number(row.party_size); completedServices += 1; }
+    else if (status === "Deferred" && date >= today) { futureProfit += number(row.mbw_profit_expected || row.mbw_profit_accrual); futureRevenue += number(row.mbw_gross_expected || row.mbw_gross_actual); futureGuests += number(row.party_size); futureServices += 1; }
   }
-  return { month, earnedProfit, futureProfit, projectedProfit: earnedProfit + futureProfit, earnedRevenue, futureRevenue, projectedRevenue: earnedRevenue + futureRevenue, completedServices, futureServices };
+  return { month, earnedProfit, futureProfit, projectedProfit: earnedProfit + futureProfit, earnedRevenue, futureRevenue, projectedRevenue: earnedRevenue + futureRevenue, earnedGuests, futureGuests, projectedGuests: earnedGuests + futureGuests, completedServices, futureServices };
 }
 
 export async function onRequestGet({ request }) {
@@ -108,7 +108,7 @@ export async function onRequestGet({ request }) {
   try {
     const [daily, queue, settlements, ledger, expenses, growth, invoices, income] = await Promise.all(TABS.map(tab));
     const today = guayaquilToday(), month = today.slice(0, 7), year = today.slice(0, 4);
-    const latestRecon = [...daily].filter(row => validDate(row.date)).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
+    const latestRecon = [...daily].filter(row => validDate(row.date) && text(row.date) <= today).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
     const ledgerSummary = ledger.find(row => text(row.ledger_id) === "ADLEDGER-SUMMARY") || [...ledger].reverse().find(row => text(row.transaction_type) === "Summary") || {};
     const guides = guideSummary(queue, today), monthExpenses = expenses.filter(row => text(row.accrual_month || row.expense_month) === month);
     const unreconciled = expenses.filter(row => text(row.reconciled).toLowerCase() !== "yes" && text(row.expense_status).toLowerCase() !== "void").length;
@@ -117,16 +117,17 @@ export async function onRequestGet({ request }) {
     const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
     const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
     const monthly = income.filter(row => validMonth(row.month_ky)).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
+    const projection = monthProjection(invoices, month, today), incomeCurrent = monthly.find(row => row.month === month) || {};
     return reply(200, {
       ok: true, updated_at: new Date().toISOString(), control_date: today,
       cash: { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) },
       summary: { year, revenue: number(ytd.earned_revenue), profit: number(ytd.earned_profit), margin: number(ytd.earned_margin) / 100, guests: number(ytd.guests_served), services: number(ytd.completed_services), expenses: number(ytd.operating_expenses), net: number(ytd.net_income), currentMonthRevenue: number(current.earned_revenue), currentMonthProfit: number(current.earned_profit), currentMonthNet: number(current.net_income) },
-      projection: monthProjection(invoices, month, today), monthly,
+      projection, monthly,
       activities: activitySummary(invoices, year, month), weekdays: weekdaySummary(invoices, year, month), expense_mix: expenseMix(expenses, year, month),
       guides, guide_totals: { due_completed: guides.reduce((sum, row) => sum + row.due, 0), completed_items: guides.reduce((sum, row) => sum + row.dueCount, 0), future_obligations: guides.reduce((sum, row) => sum + row.future, 0) },
       advertising_fund: { contribution_due: number(ledgerSummary.contribution_due), contribution_collected: number(ledgerSummary.contribution_collected), ad_spend_used: number(ledgerSummary.ad_spend_used), outstanding_from_guides: number(ledgerSummary.contribution_due_balance), available: number(ledgerSummary.advertising_fund_balance), status: text(ledgerSummary.notes) },
       expenses: { month, month_total: monthExpenses.reduce((sum, row) => sum + Math.abs(number(row.amount)), 0), unreconciled, missing_receipts: missingReceipts },
-      controls: { open_settlements: openSettlements },
+      controls: { open_settlements: openSettlements, profit_variance: projection.earnedProfit - number(incomeCurrent.profit) },
     });
   } catch (error) {
     console.error("Accounting dashboard feed failed", error);
