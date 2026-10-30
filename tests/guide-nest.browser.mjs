@@ -201,6 +201,13 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.getByRole("button", { name: "Guardar borrador", exact: true }).count(), 1);
     assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW", exact: true }).count(), 1);
     assert.equal(await page.locator(".planActions--guide").evaluate(element => getComputedStyle(element).position), "static");
+    assert.equal(await page.locator("[data-move-plan-day]").count(), 12);
+    await page.locator('[data-move-plan-day][data-day-id="day-1"][data-direction="1"]').click();
+    assert.deepEqual(await page.locator("[data-plan-day]").evaluateAll(days => days.slice(0, 2).map(day => day.dataset.planDay)), ["day-2", "day-1"]);
+    assert.equal(await page.locator('[data-plan-day-editor][data-day-id="day-1"] input[name="date"]').inputValue(), "2027-02-10");
+    assert.equal(await page.locator('[data-plan-day-editor][data-day-id="day-2"] input[name="date"]').inputValue(), "2027-02-09");
+    await page.locator('[data-move-plan-day][data-day-id="day-1"][data-direction="-1"]').click();
+    assert.deepEqual(await page.locator("[data-plan-day]").evaluateAll(days => days.slice(0, 2).map(day => day.dataset.planDay)), ["day-1", "day-2"]);
     assert.equal(await page.getByRole("button", { name: "Solicitar cambios", exact: true }).count(), 0);
     assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
     assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
@@ -309,6 +316,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-route="plans"]').click();
     assert.equal(await page.locator("#newPlanButton").isVisible(), false);
     assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.equal(await page.locator("[data-move-plan-day]").count(), 0);
     assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).isVisible(), true);
     assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).isEnabled(), false);
     assert.match(await page.locator(".planActions").first().innerText(), /Vista exacta y de solo lectura/i);
