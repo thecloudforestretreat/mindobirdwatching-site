@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { onRequestGet } from "../functions/api/mobile/plans/index.js";
 import { onRequestGet as getGuestItineraryDraft } from "../functions/api/mobile/plans/[planId]/itinerary-draft.js";
-import { guestItineraryDraft, robertPlan, sanitizePlan, sortPlanCosts } from "../functions/lib/guide-plans.mjs";
+import { guestItineraryDraft, parsePlanRow, planAssignment, robertPlan, sanitizePlan, sortPlanCosts } from "../functions/lib/guide-plans.mjs";
 
 const env = {
   LOCAL_TEST_IDENTITY: "owner@example.test",
@@ -78,6 +78,27 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   assert.match(crm, /guidePlanForRecord/);
   assert.match(crm, /guidePlanTitle/);
   assert.match(crm, /source:\s*"guide_plan"/);
+});
+
+test("stored plans remain complete while staying below the guarded n8n form limit", () => {
+  const base = robertPlan({ providerId: "PROV-NEICER", providerName: "Neicer" });
+  const plan = sanitizePlan({
+    ...base,
+    comments: [...base.comments, ...Array.from({ length: 8 }, (_, index) => ({
+      id: `comment-${index}`,
+      message: `Detailed bilingual planning feedback ${index}: ${"transport lodging activities and accessibility ".repeat(10)}`,
+      author: "Juan",
+      role: "admin",
+      createdAt: "2026-10-30T12:00:00.000Z",
+    }))],
+  }, base);
+  const assignment = planAssignment(plan);
+  const payload = JSON.stringify({ action: "update_assignment", assignment, expected_updated_at: "2026-10-30T12:00:00.000Z" });
+  const wireBody = new URLSearchParams({ payload }).toString();
+  assert.ok(wireBody.length < 16000, `encoded form body was ${wireBody.length} bytes`);
+  const restored = parsePlanRow({ ...assignment, updated_at: "2026-10-30T12:00:00.000Z" });
+  assert.equal(restored.comments.length, plan.comments.length);
+  assert.equal(restored.comments.at(-1).message, plan.comments.at(-1).message);
 });
 
 test("approved plans produce a guest-only generator draft and guides cannot fetch it", async () => {

@@ -5,6 +5,18 @@ const number = value => {
 };
 const date = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
 const PLAN_MARKER = "[GUIDE_PLAN";
+const PLAN_STORAGE_PREFIX = "MBW_PLAN_B64URL_V1:";
+const PLAN_STORAGE_KEYS = {
+  planId: "a", assignmentId: "b", inquiryId: "c", providerId: "d", providerName: "e", guestName: "f", guestCount: "g",
+  title: "h", startDate: "i", endDate: "j", status: "k", brief: "l", days: "m", adjustments: "n", comments: "o",
+  history: "p", localeUpdatedAt: "q", originalTotal: "r", mbwPricing: "s", updatedAt: "t", traveler: "u", pickupDropoff: "v",
+  lodging: "w", request: "x", interests: "y", lodgingLink: "z", id: "A", date: "B", details: "C", pickupLocation: "D",
+  dropoffLocation: "E", overnightCity: "F", sourceCosts: "G", costNote: "H", originalCost: "I", category: "J", amount: "K",
+  description: "L", verification: "M", dayId: "N", message: "O", author: "P", role: "Q", createdAt: "R", action: "S",
+  fromStatus: "T", toStatus: "U", changedAt: "V", addedBy: "W", addedAt: "X", notes: "Y", approvedAt: "Z",
+  approvedBy: "aa", sellPrice: "ab", lodgingPrice: "ac", guestLines: "ad", label: "ae",
+};
+const PLAN_STORAGE_KEYS_REVERSE = Object.fromEntries(Object.entries(PLAN_STORAGE_KEYS).map(([key, value]) => [value, key]));
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
 const ALLOWED_VERIFICATION = new Set(["needs_verification", "estimated", "confirmed"]);
 const ALLOWED_STATUS = new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
@@ -14,6 +26,35 @@ const COST_CATEGORY_ORDER = new Map([
 ]);
 const GUEST_LINE_CATEGORIES = new Set(["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"]);
 const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
+
+function encodeStoredPlan(plan) {
+  const compact = value => Array.isArray(value)
+    ? value.map(compact)
+    : value && typeof value === "object"
+      ? Object.fromEntries(Object.entries(value).map(([key, item]) => [PLAN_STORAGE_KEYS[key] || key, compact(item)]))
+      : value;
+  const bytes = new TextEncoder().encode(JSON.stringify(compact(plan)));
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+  }
+  return PLAN_STORAGE_PREFIX + btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function decodeStoredPlan(value) {
+  const stored = String(value || "{}");
+  if (!stored.startsWith(PLAN_STORAGE_PREFIX)) return JSON.parse(stored);
+  const encoded = stored.slice(PLAN_STORAGE_PREFIX.length).replace(/-/g, "+").replace(/_/g, "/");
+  const padded = encoded + "=".repeat((4 - (encoded.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  const expand = item => Array.isArray(item)
+    ? item.map(expand)
+    : item && typeof item === "object"
+      ? Object.fromEntries(Object.entries(item).map(([key, value]) => [PLAN_STORAGE_KEYS_REVERSE[key] || key, expand(value)]))
+      : item;
+  return expand(JSON.parse(new TextDecoder().decode(bytes)));
+}
 const robertRouteReview = () => ({
   id: ROBERT_ROUTE_REVIEW_ID,
   message: "Actualización del huésped (30 oct 2026): Robert solicita el desglose del alojamiento por noche o día. Prefiere pasar los primeros 3 días en Mindo, los 2 días siguientes más al norte y terminar en Quito. Antes de volver a enviar el plan, separa el alojamiento en cada día, confirma la propiedad y tarifa, y reorganiza la ruta para reflejar esta preferencia.",
@@ -196,7 +237,7 @@ export function isPlanRow(row) {
 export function parsePlanRow(row) {
   if (!isPlanRow(row)) return null;
   try {
-    const parsed = JSON.parse(String(row.internal_note || "{}"));
+    const parsed = decodeStoredPlan(row.internal_note);
     const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
     const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
     const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
@@ -426,7 +467,11 @@ export function planAssignment(plan) {
     // require provider_informed_by and can also imply a calendar invitation.
     provider_informed: "No",
     confirmation_note: `${PLAN_MARKER} ${plan.planId}]|${plan.status}`,
-    internal_note: JSON.stringify(stored),
+    // The CRM gateway receives form-encoded JSON. A raw nested JSON document
+    // percent-encodes every quote and brace and can exceed its guarded request
+    // limit even when the original plan is modest. Base64url preserves the
+    // complete plan while keeping the wire payload compact and URL-safe.
+    internal_note: encodeStoredPlan(stored),
     created_by: "JPG",
   };
 }
