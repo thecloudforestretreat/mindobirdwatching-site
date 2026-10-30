@@ -214,8 +214,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     const firstDayEditor = page.locator('[data-plan-day-editor][data-day-id="day-1"]');
     await firstDayEditor.locator('input[name="date"]').fill("2027-02-08");
     await firstDayEditor.locator('input[name="originalCost"]').fill("190");
-    await firstDayEditor.locator('[data-source-cost-row]').first().locator('input[name="sourceAmount"]').fill("90");
-    assert.equal(await firstDayEditor.locator('select[name="sourceCategory"]').first().inputValue(), "transportation");
+    const transportationRow = firstDayEditor.locator('[data-source-cost-row]').nth(2);
+    await transportationRow.locator('input[name="sourceAmount"]').fill("90");
+    assert.equal(await transportationRow.locator('select[name="sourceCategory"]').inputValue(), "transportation");
     await firstDayEditor.getByRole("button", { name: "Agregar costo estándar" }).click();
     assert.equal(await firstDayEditor.locator('[data-source-cost-row]').count(), 4);
     assert.equal(await firstDayEditor.evaluate(editor => editor.closest("details").open), true);
@@ -250,6 +251,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-plan-comment-form="robert-2027"] textarea').fill("¿Puede MBW confirmar el alojamiento?");
     await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
     await page.getByText("¿Puede MBW confirmar el alojamiento?", { exact: true }).waitFor();
+    assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).evaluate(button => button.classList.contains("actionWarning")), true);
     await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW" }).click();
     await page.waitForTimeout(300);
     const unexpectedDialogs = dialogs.filter(message => !message.includes("¿Eliminar"));
@@ -301,6 +303,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("#newPlanButton").isVisible(), true);
     assert.equal(await page.locator(".adminPricing").count(), 1);
     assert.match(await page.locator(".adminPricing").innerText(), /Revisión de precios MBW|MBW pricing review/);
+    assert.equal(await page.locator("[data-lodging-price]").count(), 7);
+    assert.match(await page.locator(".planActions").first().innerText(), /controles de administrador/i);
     await page.locator("#newPlanButton").click();
     await page.locator('#newPlanForm [name="guestName"]').fill("Alice Rivera");
     await page.locator('#newPlanForm [name="title"]').fill("Alice · Ecuador custom tour");

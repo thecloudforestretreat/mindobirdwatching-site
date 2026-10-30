@@ -8,6 +8,18 @@ const PLAN_MARKER = "[GUIDE_PLAN";
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
 const ALLOWED_VERIFICATION = new Set(["needs_verification", "estimated", "confirmed"]);
 const ALLOWED_STATUS = new Set(["guide_drafting", "admin_review", "changes_requested", "approved"]);
+const COST_CATEGORY_ORDER = new Map([
+  ["guide", 10], ["entrance", 20], ["reserve", 30], ["activity", 40], ["food", 50], ["other", 60],
+  ["transportation", 90], ["lodging", 100],
+]);
+const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
+const robertRouteReview = () => ({
+  id: ROBERT_ROUTE_REVIEW_ID,
+  message: "Actualización del huésped (30 oct 2026): Robert solicita el desglose del alojamiento por noche o día. Prefiere pasar los primeros 3 días en Mindo, los 2 días siguientes más al norte y terminar en Quito. Antes de volver a enviar el plan, separa el alojamiento en cada día, confirma la propiedad y tarifa, y reorganiza la ruta para reflejar esta preferencia.",
+  author: "Juan",
+  role: "admin",
+  createdAt: "2026-10-30T13:15:00.000Z",
+});
 const bilingual = (value, fallback = {}, max = 1200) => {
   const source = value && typeof value === "object" ? value : {};
   const prior = fallback && typeof fallback === "object" ? fallback : { es: fallback, en: fallback };
@@ -19,6 +31,11 @@ const bilingual = (value, fallback = {}, max = 1200) => {
 
 export const ROBERT_PLAN_ID = "robert-2027";
 export const ROBERT_INQUIRY_ID = "INQ-20261023224230-9029";
+
+export function sortPlanCosts(costs = []) {
+  return [...costs].sort((left, right) =>
+    (COST_CATEGORY_ORDER.get(left.category) ?? 70) - (COST_CATEGORY_ORDER.get(right.category) ?? 70));
+}
 
 export function blankPlan(input = {}) {
   const planId = text(input.planId, 80);
@@ -148,7 +165,7 @@ export function robertPlan(provider = {}) {
       { id: "day-6", date: "2027-02-14", title: { es: "Regreso al aeropuerto de Quito", en: "Return to Quito airport" }, details: { es: "Regreso al aeropuerto de Quito al final de la tarde. Actividades y transporte pendientes de confirmar.", en: "Return to Quito airport by late afternoon. Activities and transportation remain to be confirmed." }, sourceCosts: [], originalCost: 0 },
     ],
     adjustments: [],
-    comments: [],
+    comments: [robertRouteReview()],
     history: [],
     localeUpdatedAt: { es: "", en: "" },
     originalTotal: 795,
@@ -167,7 +184,11 @@ export function parsePlanRow(row) {
     const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
     const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
     const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
-    return sanitizePlan({ ...base, ...parsed, inquiryId: planId === ROBERT_PLAN_ID ? ROBERT_INQUIRY_ID : parsed.inquiryId, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
+    const plan = sanitizePlan({ ...base, ...parsed, inquiryId: planId === ROBERT_PLAN_ID ? ROBERT_INQUIRY_ID : parsed.inquiryId, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
+    if (planId === ROBERT_PLAN_ID && !plan.comments.some(item => item.id === ROBERT_ROUTE_REVIEW_ID)) {
+      plan.comments.push(base.comments.find(item => item.id === ROBERT_ROUTE_REVIEW_ID));
+    }
+    return plan;
   } catch { return null; }
 }
 
@@ -215,7 +236,7 @@ export function sanitizePlan(input, current = robertPlan()) {
   const days = submittedDays.map((item, index) => {
     const id = /^[A-Za-z0-9_.-]{1,80}$/.test(String(item?.id || "")) ? String(item.id) : `day-${index + 1}`;
     const prior = currentDays.get(id) || {};
-    const sourceCosts = Array.isArray(item?.sourceCosts) ? item.sourceCosts.slice(0, 20).map((cost, costIndex) => ({
+    const sourceCosts = sortPlanCosts(Array.isArray(item?.sourceCosts) ? item.sourceCosts.slice(0, 20).map((cost, costIndex) => ({
       id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
       category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
       amount: number(cost.amount),
@@ -223,7 +244,7 @@ export function sanitizePlan(input, current = robertPlan()) {
       id: text(cost.id || `${id}-source-${costIndex + 1}`, 80),
       category: ALLOWED_CATEGORIES.has(cost.category) ? cost.category : "other",
       amount: number(cost.amount),
-    })).filter(cost => cost.amount > 0);
+    })).filter(cost => cost.amount > 0));
     return {
       ...prior,
       id,
@@ -241,7 +262,11 @@ export function sanitizePlan(input, current = robertPlan()) {
   const pricingByDay = new Map(Array.isArray(pricingInput.days) ? pricingInput.days.map(item => [String(item?.dayId || ""), item]) : []);
   const mbwPricing = {
     currency: "USD",
-    days: normalizedDays.map(day => ({ dayId: day.id, sellPrice: number(pricingByDay.get(day.id)?.sellPrice) })),
+    days: normalizedDays.map(day => ({
+      dayId: day.id,
+      sellPrice: number(pricingByDay.get(day.id)?.sellPrice),
+      lodgingPrice: number(pricingByDay.get(day.id)?.lodgingPrice),
+    })),
     notes: text(pricingInput.notes, 1000),
     approvedAt: text(pricingInput.approvedAt, 80),
     approvedBy: text(pricingInput.approvedBy, 120),

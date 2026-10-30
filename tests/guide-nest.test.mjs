@@ -334,9 +334,9 @@ test("Neicer can edit guide dates and prices while the submitted total is recalc
   assert.equal(changed.originalTotal, 800);
   assert.equal(changed.startDate, "2027-02-08");
   assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 225, 235, 0, 0]);
-  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [90, 80, 20]);
-  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [130, 80, 15]);
-  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [140, 80, 15]);
+  assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [80, 20, 90]);
+  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [80, 15, 130]);
+  assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), [80, 15, 140]);
   assert.equal(changed.adjustments[0].amount, 80);
 });
 
@@ -494,9 +494,10 @@ test("guide plan writes enforce status, authorship, and optimistic concurrency",
     });
     assert.equal(created.status, 201);
     const createdBody = await created.json();
-    assert.equal(createdBody.plan.comments[0].author, "Neicer");
-    assert.equal(createdBody.plan.comments[0].role, "guide");
-    assert.notEqual(createdBody.plan.comments[0].createdAt, "2000-01-01");
+    const guideComment = createdBody.plan.comments.find(item => item.id === "comment-new");
+    assert.equal(guideComment.author, "Neicer");
+    assert.equal(guideComment.role, "guide");
+    assert.notEqual(guideComment.createdAt, "2000-01-01");
     assert.equal(createdBody.plan.adjustments[0].addedBy, "Neicer");
     assert.notEqual(createdBody.plan.adjustments[0].addedAt, "2000-01-01");
 

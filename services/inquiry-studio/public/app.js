@@ -38,6 +38,44 @@ async function api(path, body) {
   return data;
 }
 
+async function adminApi(path) {
+  const response = await fetch(path, { credentials: 'same-origin', cache: 'no-store' });
+  const data = await response.json();
+  if (!response.ok) throw Error(data.error || 'Admin review queue unavailable');
+  return data;
+}
+
+function planStatusLabel(status) {
+  return ({ guide_drafting: 'Guide drafting', admin_review: 'Ready for admin review', changes_requested: 'Changes requested', approved: 'Approved' })[status] || 'In progress';
+}
+
+async function loadPlanReviews() {
+  try {
+    const data = await adminApi('/api/mobile/plans');
+    const priority = { admin_review: 0, changes_requested: 1, guide_drafting: 2, approved: 3 };
+    const plans = [...(data.plans || [])].sort((left, right) =>
+      (priority[left.status] ?? 9) - (priority[right.status] ?? 9) || String(right.updatedAt || '').localeCompare(String(left.updatedAt || ''))).slice(0, 6);
+    $('planReviews').hidden = !plans.length;
+    text('planReviewCount', String(plans.filter(plan => plan.status === 'admin_review').length));
+    $('planReviewList').replaceChildren(...plans.map(plan => {
+      const article = document.createElement('article');
+      article.className = 'planReviewCard';
+      const title = document.createElement('strong');
+      title.textContent = plan.guestName || plan.title?.en || plan.title?.es || 'Custom itinerary';
+      const details = document.createElement('small');
+      details.textContent = [planStatusLabel(plan.status), plan.providerName && 'Guide: ' + plan.providerName, plan.startDate && plan.endDate && `${plan.startDate} – ${plan.endDate}`].filter(Boolean).join(' · ');
+      const link = document.createElement('a');
+      const query = new URLSearchParams({ view: 'plans', provider: plan.providerId || plan.providerName || '', plan: plan.planId });
+      link.href = '/guide/?' + query.toString();
+      link.textContent = plan.status === 'approved' ? 'Open approved itinerary' : 'Review itinerary';
+      article.append(title, details, link);
+      return article;
+    }));
+  } catch {
+    $('planReviews').hidden = true;
+  }
+}
+
 function renderList() {
   const query = $('search').value.toLowerCase();
   $('inquiries').replaceChildren();
@@ -280,7 +318,7 @@ $('reload').onclick = async () => {
   const inquiryId = current?.inquiry_id;
   $('reload').disabled = true;
   try {
-    await loadInquiries();
+    await Promise.all([loadInquiries(), loadPlanReviews()]);
     dirty = false;
     const updated = rows.find(row => row.inquiry_id === inquiryId);
     if (updated) await select(updated);
@@ -577,7 +615,7 @@ $('saveGuideResponse').onclick = async () => {
   try {
     const session = await api('/api/session');
     token = session.token;
-    await loadInquiries();
+    await Promise.all([loadInquiries(), loadPlanReviews()]);
   } catch (error) {
     text('source', error.message);
   }
