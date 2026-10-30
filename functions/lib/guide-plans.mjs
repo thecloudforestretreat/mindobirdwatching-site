@@ -421,7 +421,10 @@ export function planAssignment(plan) {
     provider_name: plan.providerName,
     provider_name_other: "",
     assignment_status: plan.status === "approved" ? "confirmed" : "pending",
-    provider_informed: "Yes",
+    // A collaborative itinerary draft is not an operational assignment or a
+    // provider dispatch. Marking it informed makes the CRM assignment workflow
+    // require provider_informed_by and can also imply a calendar invitation.
+    provider_informed: "No",
     confirmation_note: `${PLAN_MARKER} ${plan.planId}]|${plan.status}`,
     internal_note: JSON.stringify(stored),
     created_by: "JPG",
