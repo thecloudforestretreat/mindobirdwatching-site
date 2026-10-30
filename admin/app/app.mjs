@@ -17,6 +17,9 @@ const FOREGROUND_SYNC_MIN_AGE_MS = 5 * 60 * 1000;
 const RECONNECT_SYNC_MIN_AGE_MS = 60 * 1000;
 const AUTO_RETRY_COOLDOWN_MS = 60 * 1000;
 const SERVICE_TIME_DEFAULTS = { MBW004: { start: "06:00", end: "09:00" }, MBW005: { start: "05:00", end: "10:00" }, MBW006: { start: "05:00", end: "15:00" }, MBW016: { start: "19:00", end: "21:00" } };
+const CUSTOM_PLANS = new Map([
+  ["INQ-20261023224230-9029", { planId: "robert-2027", providerId: "PROV-NEICER", title: "Robert’s private Ecuador itinerary", dates: "February 9–14, 2027" }],
+]);
 const productCode = value => String(value || "").trim().toUpperCase().match(/^(MBW\d+)/)?.[1] || "";
 const serviceTimes = tour => SERVICE_TIME_DEFAULTS[productCode(tour?.product)] || { start: "", end: "" };
 const state = { session: null, data: null, route: "actions", cached: false, guest: null, currentGuestId: "", actionQueue: [], guestQueue: [], todayQueue: [], deskView: "list", repFilter: "all", statusFilter: "all", summaryFilter: "open", selectedDate: "", weekStart: "", guestStatusFilter: "active", guestSearchResults: null, lastSyncedAt: 0, snapshotSavedAt: 0, connectionMode: "loading" };
@@ -73,6 +76,13 @@ function pipelineActionsMarkup(guest) {
 }
 function guestDocumentsMarkup(guest) {
   return `<details class="detailSection collapsibleSection"><summary class="detailTitle"><h3>Guest documents</h3><span class="badge">CRM linked</span></summary><div class="pipelineActions"><a class="pipelineAction" href="${esc(toolUrl("/itinerary-generator/", guest))}" target="_blank" rel="noopener noreferrer">Generate Itinerary</a><a class="pipelineAction" href="${esc(toolUrl("/tour-confirmation-generator/", guest))}" target="_blank" rel="noopener noreferrer">Create Confirmation</a></div></details>`;
+}
+
+function customPlanMarkup(guest) {
+  const plan = CUSTOM_PLANS.get(guest.inquiryId);
+  if (!plan) return "";
+  const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId });
+  return `<section class="detailSection customPlanCard"><div class="detailTitle"><div><p class="eyebrow">Collaborative planning</p><h3>Custom itinerary</h3></div><span class="badge">Working draft</span></div><div class="recordItem"><strong>${esc(plan.title)}</strong><p>${esc(plan.dates)} · Assigned to Neicer</p><small>Open the workspace to review the guide’s preliminary itinerary, leave feedback, and complete the admin review.</small></div><div class="toolLinks"><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Open itinerary workspace</a></div></section>`;
 }
 
 function guestSummaryMarkup(item, fallback = "Guest", assignee = "") {
@@ -282,6 +292,7 @@ async function openGuest(id, task = "") {
     body.innerHTML = `${historyWarning}<section class="detailHero detailHero--record ${statusClass(guest.effectiveStatus || guest.status)}">${guestSummaryMarkup(guest)}<div class="detailContactMeta"><span>${esc(guest.country || "Country not recorded")}</span><span>${esc(guest.email || "Email not recorded")}</span><span>${esc(guest.phone || "Phone not recorded")}</span></div><div class="contactLinks">${whatsapp ? `<a href="https://wa.me/${esc(whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}${guest.email ? `<a href="${esc(toolUrl("/custom-email-generator/", guest))}" target="_blank" rel="noopener noreferrer">Email draft</a>` : ""}</div></section>
       <section class="detailSection" data-section="profile"><h3>Guest details</h3>${profileMarkup(guest, canWrite)}</section>
       <section class="detailSection"><div class="detailTitle"><h3>Services & readiness</h3><span class="badge">${guest.tours?.length || 0}</span></div>${serviceMarkup(guest, result.readiness, canWrite)}${serviceCreateMarkup(guest, canWrite)}</section>
+      ${customPlanMarkup(guest)}
       <details class="detailSection collapsibleSection ${statusClass(guest.effectiveStatus || guest.status)}" open><summary class="detailTitle"><h3>Guest Journey</h3><span class="badge">${esc(pretty(guest.effectiveStatus || guest.status))}</span></summary>${guest.needsReconciliation ? `<p class="formNote formNote--warn">Legacy booking or payment records need reconciliation before this inquiry is treated as current.</p>` : ""}${journeyMarkup(result.journey)}</details>
       ${pipelineActionsMarkup(guest)}
       ${guestDocumentsMarkup(guest)}

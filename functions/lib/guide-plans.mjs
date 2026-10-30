@@ -18,6 +18,7 @@ const bilingual = (value, fallback = {}, max = 1200) => {
 };
 
 export const ROBERT_PLAN_ID = "robert-2027";
+export const ROBERT_INQUIRY_ID = "INQ-20261023224230-9029";
 
 export function blankPlan(input = {}) {
   const planId = text(input.planId, 80);
@@ -82,7 +83,7 @@ export function robertPlan(provider = {}) {
   return {
     planId: ROBERT_PLAN_ID,
     assignmentId: "",
-    inquiryId: "ROBERT-CUSTOM-2027",
+    inquiryId: ROBERT_INQUIRY_ID,
     providerId: text(provider.providerId, 128),
     providerName: text(provider.name || provider.providerName || "Neicer", 160),
     guestName: "Robert",
@@ -166,7 +167,7 @@ export function parsePlanRow(row) {
     const planId = text(parsed.planId || String(row.assignment_group_id || "").replace(/^PLAN-/, ""), 80);
     const provider = { providerId: row.provider_id, providerName: row.provider_name === "Other" ? row.provider_name_other : row.provider_name };
     const base = planId === ROBERT_PLAN_ID ? robertPlan(provider) : blankPlan({ ...parsed, ...provider, planId });
-    return sanitizePlan({ ...base, ...parsed, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
+    return sanitizePlan({ ...base, ...parsed, inquiryId: planId === ROBERT_PLAN_ID ? ROBERT_INQUIRY_ID : parsed.inquiryId, assignmentId: row.assignment_id, updatedAt: row.updated_at, synthetic: false }, base);
   } catch { return null; }
 }
 

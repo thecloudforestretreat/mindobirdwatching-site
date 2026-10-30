@@ -11,10 +11,11 @@ import { onRequestPost as respondToGuideOffer } from "../functions/api/guide/off
 import { onRequestPost as saveGuidePlan } from "../functions/api/guide/plans/[planId].js";
 import { onRequestPost as createGuidePlan } from "../functions/api/guide/plans/index.js";
 import { resolveAssignmentService } from "../functions/lib/guide-data.mjs";
-import { planForGuide, robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
+import { ROBERT_INQUIRY_ID, planForGuide, robertPlan, sanitizePlan } from "../functions/lib/guide-plans.mjs";
 
 test("guide plan serialization strips MBW selling prices and markup inputs", () => {
   const plan = sanitizePlan({ ...robertPlan(), mbwPricing: { days: [{ dayId: "day-1", sellPrice: 350 }], notes: "Internal" } });
+  assert.equal(plan.inquiryId, ROBERT_INQUIRY_ID);
   assert.equal(plan.mbwPricing.days.find(item => item.dayId === "day-1").sellPrice, 350);
   const guidePlan = planForGuide(plan);
   assert.equal("mbwPricing" in guidePlan, false);

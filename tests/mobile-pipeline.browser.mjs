@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 
 const root = join(process.cwd(), "admin");
 let record = {
-  inquiryId: "I-MT-1", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
+  inquiryId: "INQ-20261023224230-9029", guestId: "G-MT-1", name: "Test Testerer", country: "United States", countryCode: "US", brand: "MT",
   phone: "+13055550123", email: "test@example.test", partySize: "2", assignedTo: "JPG", status: "payment_pending", effectiveStatus: "payment_pending",
   paymentStatus: "payment_pending", requestedDate: "2026-10-22", requestedDateEnd: "2026-10-22", followupDate: "2026-10-21", updatedAt: "2026-10-20T14:00:00Z",
   tours: [{ id: "T-1", tour: "Mindo Tours Test", product: "MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock", date: "2026-10-22", guests: "2", status: "payment_pending" }],
@@ -147,6 +147,13 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     await page.screenshot({ path: "/tmp/mbw-guest-profile-qa.png", fullPage: false });
     await page.getByText("Next action").waitFor({ state: "visible" });
     assert.equal(await page.getByText("Services & readiness", { exact: true }).isVisible(), true);
+    assert.equal(await page.getByText("Custom itinerary", { exact: true }).isVisible(), true);
+    const customPlanHref = await page.getByText("Open itinerary workspace", { exact: true }).getAttribute("href");
+    const customPlanUrl = new URL(customPlanHref, page.url());
+    assert.equal(customPlanUrl.pathname, "/guide/");
+    assert.equal(customPlanUrl.searchParams.get("provider"), "PROV-NEICER");
+    assert.equal(customPlanUrl.searchParams.get("plan"), "robert-2027");
+    assert.doesNotMatch(await page.locator(".customPlanCard").innerText(), /markup|margin|price|cost/i);
     assert.equal(await page.locator(".serviceReadiness").count(), 1);
     assert.match(await page.locator(".serviceReadiness").innerText(), /Payment.*\$ needed/s);
     assert.equal(await page.getByText("Add another tour, activity, or transfer", { exact: true }).isVisible(), true);
@@ -167,11 +174,11 @@ test("mobile pipeline keeps context, navigation and payment tools usable", async
     const sectionBox = await page.locator('[data-section="follow-up"]').boundingBox(), dateBox = await page.locator('#followupForm input[name="followup_date"]').boundingBox();
     assert.ok(sectionBox && dateBox && dateBox.x >= sectionBox.x && dateBox.x + dateBox.width <= sectionBox.x + sectionBox.width + 1);
     const stripe = await page.locator(".pipelineSection").getByText("Create Stripe Invoice", { exact: true }).getAttribute("href");
-    assert.match(stripe, /inquiry_id=I-MT-1/); assert.match(stripe, /guest=Test\+Testerer/);
+    assert.match(stripe, /inquiry_id=INQ-20261023224230-9029/); assert.match(stripe, /guest=Test\+Testerer/);
     const emailHref = await page.locator(".pipelineSection").getByText("Generate Email", { exact: true }).getAttribute("href");
     const itineraryHref = await page.getByText("Generate Itinerary", { exact: true }).getAttribute("href");
     const confirmationHref = await page.getByText("Create Confirmation", { exact: true }).getAttribute("href");
-    for (const href of [emailHref, itineraryHref, confirmationHref]) { const params = new URL(href, page.url()).searchParams; assert.equal(params.get("inquiry_id"), "I-MT-1"); assert.equal(params.get("guest"), "Test Testerer"); assert.equal(JSON.parse(params.get("tour_items_json")).length, 1); }
+    for (const href of [emailHref, itineraryHref, confirmationHref]) { const params = new URL(href, page.url()).searchParams; assert.equal(params.get("inquiry_id"), "INQ-20261023224230-9029"); assert.equal(params.get("guest"), "Test Testerer"); assert.equal(JSON.parse(params.get("tour_items_json")).length, 1); }
     assert.equal(new URL(itineraryHref, page.url()).searchParams.get("source"), "guest_crm");
     const itineraryPage = await context.newPage(); await itineraryPage.goto(new URL(itineraryHref, page.url()).href); await itineraryPage.locator("#guestName").waitFor({ state: "visible" });
     assert.equal(await itineraryPage.locator("#guestName").inputValue(), "Test Testerer"); assert.equal(await itineraryPage.locator("#guestEmail").inputValue(), "test@example.test"); assert.equal(await itineraryPage.locator("#startDate").inputValue(), "2026-10-22"); assert.ok(await itineraryPage.locator(".itemEditor").count() > 0); await itineraryPage.close();

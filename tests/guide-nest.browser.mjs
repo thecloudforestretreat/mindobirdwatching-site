@@ -312,6 +312,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(bootstrap.plans.length, 2);
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans") && write.body.guestName === "Alice Rivera" && write.body.providerId === "PROV-007"), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-admin-plans.png", fullPage: true });
+    await page.goto(`http://127.0.0.1:${port}/guide/?provider=PROV-007&view=plans&plan=robert-2027`);
+    await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
+    assert.equal(await page.locator('[data-plan="robert-2027"]').getAttribute("open"), "");
     await page.getByRole("button", { name: "Oportunidades", exact: true }).click();
     assert.equal(await page.locator("[data-offer-response]").count(), 0);
     assert.match(await page.locator("#offerList").innerText(), /solo lectura/i);
