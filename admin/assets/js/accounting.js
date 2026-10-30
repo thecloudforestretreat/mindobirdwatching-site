@@ -41,7 +41,7 @@
     const s=ops?.summary||{},p=ops?.projection||{},cash=ops?.cash||{},guide=ops?.guide_totals||{},monthly=ops?.monthly||[],net=s.net||0;
     const profitSignal=signal(p.projectedProfit,goals.monthlyProfit),cashSignal=signal(cash.available_operating_cash,goals.operatingCash),netMargin=s.revenue?net/s.revenue:0;
     const cards=[
-      {label:"October profit forecast",value:moneyExact(p.projectedProfit),detail:`${moneyExact(p.earnedProfit)} earned + ${moneyExact(p.futureProfit)} booked`,source:`Invoices · ${integer(p.futureServices)} remaining service${num(p.futureServices)===1?"":"s"}`,signal:profitSignal},
+      {label:"October profit forecast",value:moneyExact(p.projectedProfit),detail:`${moneyExact(p.earnedProfit)} earned + ${moneyExact(p.futureProfit)} booked`,source:`Income summary actuals + invoices · ${integer(p.futureServices)} remaining service${num(p.futureServices)===1?"":"s"}`,signal:profitSignal},
       {label:"Spendable operating cash",value:moneyExact(cash.available_operating_cash),detail:`${moneyExact(cash.ledger_balance)} ledger − ${moneyExact(cash.restricted_ad_fund)} protected ads`,source:`daily_recon · through ${cash.date||"unavailable"}`,signal:cashSignal},
       {label:"Guests served",kind:"guests",mtd:p.earnedGuests,ytd:s.guests,detail:`MTD completed | YTD completed`,source:`${integer(p.futureGuests)} booked guest${num(p.futureGuests)===1?"":"s"} remaining`,signal:[`${integer(p.earnedGuests)} MTD`,"good"]},
       {label:"Guide payables due",value:moneyExact(guide.due_completed),detail:`${integer(guide.completed_items)} completed items`,source:`${moneyExact(guide.future_obligations)} future obligations`,signal:[guide.due_completed?"Action needed":"All clear",guide.due_completed?"warn":"good"]}
