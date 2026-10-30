@@ -99,7 +99,10 @@ export async function onRequestPost({ request, env, params }) {
     if (currentRow) await crmCall(env, "update_assignment", { assignment, expected_updated_at: currentRow.updated_at || "" });
     else await crmCall(env, "create_assignment", { guest_phone: "", assignment });
     return json(currentRow ? 200 : 201, { ok: true, verified: true, plan: actor.role === "guide" ? planForGuide(plan) : plan });
-  } catch (error) { return errorResponse(error); }
+  } catch (error) {
+    console.error("guide_plan_save_failed", { status: Number(error?.status || 500), message: String(error?.message || "Unknown plan save error") });
+    return errorResponse(error);
+  }
 }
 
 export function onRequestGet() { return methodNotAllowed(["POST"]); }
