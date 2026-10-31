@@ -35,17 +35,19 @@ const translated = source => ({
   })),
 });
 
-test("Neicer's route update keeps three Mindo days and only confirmed day-three costs", () => {
+test("Robert's guest revision keeps two nights each in Mindo and Intag before Otavalo", () => {
   const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
-  assert.match(plan.days[2].details.es, /Santa Rosa/);
-  assert.equal(plan.days[2].overnightCity.es, "Mindo");
-  assert.deepEqual(plan.days[2].sourceCosts.map(item => [item.category, item.amount]), [["transportation", 60], ["guide", 80], ["entrance", 40]]);
-  assert.equal(plan.days[2].originalCost, 180);
+  assert.deepEqual(plan.days.map(day => day.overnightCity.en), ["Mindo", "Mindo", "Intag", "Intag", "Otavalo", "Quito · guest-arranged lodging"]);
+  assert.match(plan.days[2].details.en, /Las Cotingas/);
+  assert.equal(plan.days[2].originalCost, 0);
   assert.equal(plan.days[3].overnightCity.es, "Intag");
   assert.equal(plan.days[3].originalCost, 0);
   assert.match(plan.days[3].costNote.es, /pendientes de cotización/);
   assert.equal(plan.days[4].overnightCity.es, "Otavalo");
   assert.equal(plan.days[4].originalCost, 0);
+  assert.match(plan.days[4].costNote.en, /Do not quote a train/);
+  assert.equal(plan.guestRevisions[0].status, "sent_to_guide");
+  assert.match(plan.brief.lodging.en, /maximum \$70/);
 });
 
 test("translation validation requires exactly the saved day IDs", () => {
@@ -55,18 +57,20 @@ test("translation validation requires exactly the saved day IDs", () => {
   assert.throws(() => validatePlanTranslation({ ...translated(source), days: translated(source).days.slice(1) }, source.days.map(day => day.id)), /translated days/);
 });
 
-test("the saved Robert draft receives the one-time Neicer route revision without changing private pricing", async () => {
+test("the saved Robert draft receives the guest route revision and invalidates affected prices", async () => {
   const legacy = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
   legacy.routeRevision = "";
   legacy.days[2] = { ...legacy.days[2], title: { es: "Ruta anterior", en: "Previous route" }, originalCost: 415 };
   legacy.mbwPricing = { currency: "USD", days: legacy.days.map(day => ({ dayId: day.id, sellPrice: day.id === "day-3" ? 555 : 0, lodgingPrice: 0, guestLines: [] })) };
   const row = { ...await planAssignment(legacy), assignment_id: "PLAN-LEGACY", updated_at: "v-old" };
   const migrated = await parsePlanRow(row);
-  assert.equal(migrated.routeRevision, "neicer-2026-10-30-v2");
-  assert.match(migrated.days[2].title.es, /Santa Rosa/);
-  assert.equal(migrated.days[2].originalCost, 180);
-  assert.equal(migrated.mbwPricing.days.find(item => item.dayId === "day-3").sellPrice, 555);
+  assert.equal(migrated.routeRevision, "guest-2026-10-31-v3");
+  assert.match(migrated.days[2].title.es, /Intag/);
+  assert.equal(migrated.days[2].originalCost, 0);
+  assert.equal(migrated.mbwPricing.days.find(item => item.dayId === "day-3").sellPrice, 0);
+  assert.equal(migrated.status, "changes_requested");
   assert.equal(migrated.comments.filter(item => item.id === "neicer-robert-route-2026-10-30-v2").length, 1);
+  assert.equal(migrated.guestRevisions.filter(item => item.id === "guest-robert-route-2026-10-31-v1").length, 1);
 });
 
 test("only an administrator can request a read-only local translation", async t => {

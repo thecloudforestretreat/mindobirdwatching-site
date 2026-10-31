@@ -19,7 +19,9 @@ test("guide plan serialization strips MBW selling prices and markup inputs", () 
   assert.equal(plan.mbwPricing.days.find(item => item.dayId === "day-1").sellPrice, 350);
   const guidePlan = planForGuide(plan);
   assert.equal("mbwPricing" in guidePlan, false);
+  assert.equal("guestRevisions" in guidePlan, false);
   assert.equal(JSON.stringify(guidePlan).includes("Internal"), false);
+  assert.equal(JSON.stringify(guidePlan).includes("Original guest message"), false);
 });
 
 test("daily lodging city and route locations survive sanitization and remain guide-visible", () => {
@@ -364,11 +366,11 @@ test("Neicer can edit guide dates and prices while the submitted total is recalc
     originalTotal: 99999,
     adjustments: [{ id: "extra-1", dayId: "day-5", category: "lodging", description: "Intag lodging", amount: 80, verification: "estimated" }],
   }, original);
-  assert.equal(changed.originalTotal, 520);
+  assert.equal(changed.originalTotal, 340);
   assert.equal(changed.startDate, "2027-02-08");
-  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 180, 0, 0, 0]);
+  assert.deepEqual(changed.days.map(day => day.originalCost), [190, 150, 0, 0, 0, 0]);
   assert.deepEqual(changed.days[0].sourceCosts.map(item => item.amount), [80, 20, 90]);
-  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), [80, 40, 60]);
+  assert.deepEqual(changed.days[2].sourceCosts.map(item => item.amount), []);
   assert.deepEqual(changed.days[3].sourceCosts.map(item => item.amount), []);
   assert.equal(changed.adjustments[0].amount, 80);
 });
@@ -460,7 +462,7 @@ test("Neicer can save Robert's plan but another guide cannot access it", async (
     const neicer = await saveGuidePlan({ request: new Request("http://localhost/api/guide/plans/robert-2027", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }), env: { ...pilot, LOCAL_TEST_IDENTITY: "neicer@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(neicer.status, 201);
     const saved = await neicer.json();
-    assert.equal(saved.plan.originalTotal, 580);
+    assert.equal(saved.plan.originalTotal, 400);
     assert.equal(saved.plan.startDate, "2027-02-08");
     assert.equal(saved.plan.endDate, "2027-02-15");
     assert.equal(saved.plan.adjustments[0].description, "Intag lodge");

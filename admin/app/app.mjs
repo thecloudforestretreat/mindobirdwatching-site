@@ -87,7 +87,7 @@ function planAttentionItems() {
     const guest = recordById(plan.inquiryId);
     if (!guest) return null;
     const dateMismatch = planDateMismatch(plan, guest);
-    if (plan.status !== "admin_review" && !dateMismatch) return null;
+    if (!['admin_review', 'changes_requested'].includes(plan.status) && !dateMismatch) return null;
     return { plan, guest, dateMismatch };
   }).filter(Boolean).sort((left, right) => String(right.plan.updatedAt || "").localeCompare(String(left.plan.updatedAt || "")));
 }
@@ -99,10 +99,11 @@ function renderPlanAttention() {
   panel.innerHTML = `<div class="planAttentionHeading"><div><p class="eyebrow">Custom itineraries</p><h2 id="planAttentionHeading">Plans needing attention</h2></div><span>${items.length}</span></div><div class="planAttentionList">${items.map(({ plan, guest, dateMismatch }) => {
     const params = new URLSearchParams({ view: "plans", provider: plan.providerId, plan: plan.planId, mode: "admin" });
     const title = plan.title?.en || plan.title?.es || `${plan.guestName || guest.name} custom itinerary`;
-    const reason = plan.status === "admin_review" ? "Guide submitted this itinerary for admin review." : "CRM dates do not match the itinerary dates.";
+    const waitingOnGuide = plan.status === "changes_requested";
+    const reason = plan.status === "admin_review" ? "Guide submitted this itinerary for admin review." : waitingOnGuide ? "Guest revisions were sent to the guide for route and cost confirmation." : "CRM dates do not match the itinerary dates.";
     const updated = plan.updatedAt ? new Date(plan.updatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Update time unavailable";
-    const latest = [...(plan.history || [])].sort((left, right) => String(right.changedAt || "").localeCompare(String(left.changedAt || "")))[0];
-    return `<article class="planAttentionCard"><div><strong>${esc(guest.name || plan.guestName || "Guest")}</strong><span class="badge ${dateMismatch ? "badge--warn" : ""}">${plan.status === "admin_review" ? "Review" : "Check dates"}</span></div><p>${esc(title)}</p><small>${esc(reason)}</small><div class="planAttentionMeta"><span>${esc(`${plan.days?.length || 0} day${plan.days?.length === 1 ? "" : "s"}`)}</span><span>${esc(`Updated ${updated}`)}</span>${latest?.actor ? `<span>${esc(`Last activity: ${latest.actor}`)}</span>` : ""}</div><div class="planAttentionActions"><button type="button" data-guest="${esc(plan.inquiryId)}">Open guest</button><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Review plan</a></div></article>`;
+    const latest = plan.latestActivity;
+    return `<article class="planAttentionCard"><div><strong>${esc(guest.name || plan.guestName || "Guest")}</strong><span class="badge ${dateMismatch ? "badge--warn" : ""}">${plan.status === "admin_review" ? "Review" : waitingOnGuide ? "Waiting on guide" : "Check dates"}</span></div><p>${esc(title)}</p><small>${esc(reason)}</small><div class="planAttentionMeta"><span>${esc(`${plan.dayCount || 0} day${plan.dayCount === 1 ? "" : "s"}`)}</span>${plan.openGuestRevisionCount ? `<span>${esc(`${plan.openGuestRevisionCount} open guest revision${plan.openGuestRevisionCount === 1 ? "" : "s"}`)}</span>` : ""}<span>${esc(`Updated ${updated}`)}</span>${latest?.actor ? `<span>${esc(`Last activity: ${latest.actor}`)}</span>` : ""}</div><div class="planAttentionActions"><button type="button" data-guest="${esc(plan.inquiryId)}">Open guest</button><a href="/guide/?${esc(params.toString())}" target="_blank" rel="noopener noreferrer">Review plan</a></div></article>`;
   }).join("")}</div>`;
 }
 

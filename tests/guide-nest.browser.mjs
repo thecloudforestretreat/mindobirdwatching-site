@@ -196,6 +196,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.getByRole("button", { name: "Itinerarios asignados", exact: true }).click();
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
     assert.equal(await page.locator(".adminPricing").count(), 0);
+    assert.equal(await page.locator(".guestRevisionSection").count(), 0);
     assert.equal(await page.locator("[data-mbw-price],[data-markup-percent],[data-lodging-price]").count(), 0);
     assert.doesNotMatch(await page.locator("#planList").innerText(), /Revisión de precios MBW|Precio MBW|Margen sobre costo/);
     assert.equal(await page.getByRole("button", { name: "Guardar borrador", exact: true }).count(), 1);
@@ -218,7 +219,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.deepEqual(await page.locator("[data-plan-day]").evaluateAll(days => days.slice(0, 2).map(day => day.dataset.planDay)), ["day-1", "day-2"]);
     assert.equal(await page.getByRole("button", { name: "Solicitar cambios", exact: true }).count(), 0);
     assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
-    assert.match(await page.locator("#planList").innerText(), /\$515[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /\$335[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /2 noches en Mindo, 2 noches en Intag y 1 noche en Otavalo/);
+    assert.match(await page.locator("#planList").innerText(), /Tren de la Libertad/);
     assert.match(await page.locator("#planList").innerText(), /Salida del hotel hacia Mindo/);
     assert.match(await page.locator("#planList").innerText(), /Hotel cerca del aeropuerto de Quito/);
     assert.match(await page.locator("#planList").innerText(), /Ciudad donde se hospeda\s+Mindo/i);
@@ -269,7 +272,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-plan-cost-form="robert-2027"] select[name="category"]').selectOption("lodging");
     await page.locator('[data-plan-cost-form="robert-2027"] button[type="submit"]').click();
     await page.getByText("Alojamiento · Intag lodging", { exact: true }).waitFor();
-    assert.match(await page.locator("#planList").innerText(), /\$600[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /\$420[.,]00/);
     assert.match(await page.locator("#planList").innerText(), /Comentarios y preguntas/);
     await page.locator('[data-plan-comment-form="robert-2027"] textarea').fill("¿Puede MBW confirmar el alojamiento?");
     await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
@@ -338,6 +341,9 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(new URL(page.url()).searchParams.get("mode"), "admin");
     assert.equal(await page.locator("#newPlanButton").isVisible(), true);
     assert.equal(await page.locator(".adminPricing").count(), 1);
+    assert.equal(await page.locator(".guestRevisionSection").count(), 1);
+    assert.match(await page.locator(".guestRevisionSection").innerText(), /Revisiones del huésped/);
+    assert.match(await page.locator(".guestRevisionSection").innerText(), /2 noches en Mindo/);
     assert.match(await page.locator(".adminPricing").innerText(), /Revisión de precios MBW|MBW pricing review/);
     assert.equal(await page.locator("[data-lodging-price]").count(), 7);
     assert.equal(await page.locator("[data-markup-percent]").count(), 7);

@@ -54,6 +54,7 @@ export async function onRequestPost({ request, env, params }) {
       ...current,
       adjustments,
       comments,
+      guestRevisions: actor.role === "admin" ? (body.guestRevisions || current.guestRevisions) : current.guestRevisions,
       days: Array.isArray(body.days) ? body.days : current.days,
       status: requestedStatus,
       providerId: current.providerId || requestedProvider.providerId,
@@ -91,7 +92,7 @@ export async function onRequestPost({ request, env, params }) {
       return json(400, { ok: false, code: "PLAN_PRICING_FLOOR", error: "A guest-facing daily total cannot be lower than the guide's quote." });
     }
     if (!plan.providerId && !plan.providerName) return json(400, { ok: false, error: "The plan needs an assigned guide." });
-    const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || JSON.stringify(current.mbwPricing || {}) !== JSON.stringify(plan.mbwPricing || {}) || comments.length !== (current.comments || []).length || current.status !== plan.status;
+    const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || JSON.stringify(current.mbwPricing || {}) !== JSON.stringify(plan.mbwPricing || {}) || JSON.stringify(current.guestRevisions || []) !== JSON.stringify(plan.guestRevisions || []) || comments.length !== (current.comments || []).length || current.status !== plan.status;
     if (changed) {
       const action = current.status !== plan.status ? "status_changed" : comments.length !== (current.comments || []).length ? "comment_added" : "plan_updated";
       plan.history = [...(current.history || []), { id: crypto.randomUUID(), actor: actor.name, role: actor.role, action, fromStatus: current.status, toStatus: plan.status, changedAt: new Date().toISOString() }].slice(-100);

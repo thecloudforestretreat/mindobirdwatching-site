@@ -16,6 +16,7 @@ const PLAN_STORAGE_KEYS = {
   description: "L", verification: "M", dayId: "N", message: "O", author: "P", role: "Q", createdAt: "R", action: "S",
   fromStatus: "T", toStatus: "U", changedAt: "V", addedBy: "W", addedAt: "X", notes: "Y", approvedAt: "Z",
   approvedBy: "aa", sellPrice: "ab", lodgingPrice: "ac", guestLines: "ad", label: "ae", routeRevision: "af",
+  guestRevisions: "ag", source: "ah", rawMessage: "ai", summary: "aj", receivedAt: "ak", resolvedAt: "al",
 };
 const PLAN_STORAGE_KEYS_REVERSE = Object.fromEntries(Object.entries(PLAN_STORAGE_KEYS).map(([key, value]) => [value, key]));
 const ALLOWED_CATEGORIES = new Set(["transportation", "guide", "food", "lodging", "entrance", "reserve", "activity", "other"]);
@@ -27,8 +28,9 @@ const COST_CATEGORY_ORDER = new Map([
 ]);
 const GUEST_LINE_CATEGORIES = new Set(["guide", "entrance", "reserve", "activity", "food", "other", "transportation", "lodging"]);
 const ROBERT_ROUTE_REVIEW_ID = "mbw-robert-route-2026-10-30";
-const ROBERT_ROUTE_REVISION = "neicer-2026-10-30-v2";
+const ROBERT_ROUTE_REVISION = "guest-2026-10-31-v3";
 const ROBERT_NEICER_UPDATE_ID = "neicer-robert-route-2026-10-30-v2";
+const ROBERT_GUEST_REVISION_ID = "guest-robert-route-2026-10-31-v1";
 
 function base64Url(bytes) {
   let binary = "";
@@ -83,6 +85,18 @@ const robertRouteReview = () => ({
   author: "Juan",
   role: "admin",
   createdAt: "2026-10-30T13:15:00.000Z",
+});
+const robertGuestRevision = () => ({
+  id: ROBERT_GUEST_REVISION_ID,
+  source: "guest_email",
+  status: "sent_to_guide",
+  receivedAt: "2026-10-31T16:45:00.000Z",
+  resolvedAt: "",
+  summary: {
+    es: "Robert solicita 2 noches en Mindo, 2 en Intag y 1 en Otavalo; alojamiento de $50 a $70 por noche con desayuno; Las Cotingas antes de Intag; segunda noche en Intag; intercambio de los días 13 y 14; revisión de las opciones de tren; y regreso a un hotel en Quito, no al aeropuerto.",
+    en: "Robert requests 2 nights in Mindo, 2 in Intag, and 1 in Otavalo; lodging at $50–$70 per night including breakfast; Las Cotingas before Intag; a second night in Intag; swapping February 13 and 14; confirmation of the train options; and return to a Quito hotel rather than the airport.",
+  },
+  rawMessage: "Two nights in Mindo, two nights in Intag, and one night in Otavalo. Lodging target about $50 and up to $70 including breakfast. February 11: visit Las Cotingas, then continue to Intag for two nights; the coffee tour is optional. February 12: Campo Colibrí with possible canopy or hot springs and return to Intag, not Mindo. Swap the final two days: consider Tren Tayta Imbabura or Tren de la Libertad on February 13, with Cotacachi and San Antonio, then overnight in Otavalo. On February 14 visit Otavalo market, Parque Cóndor, Laguna Cuicocha, and possibly Cochasquí before returning to Quito. Robert has an extra night before flying and asks whether guide accommodation and meals are included.",
 });
 const bilingual = (value, fallback = {}, max = 1200) => {
   const source = value && typeof value === "object" ? value : {};
@@ -152,6 +166,7 @@ export function blankPlan(input = {}) {
     days,
     adjustments: [],
     comments: [],
+    guestRevisions: [],
     history: [],
     localeUpdatedAt: { es: "", en: "" },
     originalTotal: 0,
@@ -174,17 +189,17 @@ export function robertPlan(provider = {}) {
     title: { es: "Robert · Itinerario personalizado en Ecuador", en: "Robert · Custom Ecuador itinerary" },
     startDate: "2027-02-09",
     endDate: "2027-02-14",
-    status: "guide_drafting",
+    status: "changes_requested",
     routeRevision: ROBERT_ROUTE_REVISION,
     updatedAt: "",
     brief: {
       guestCount: "1",
       traveler: { es: "78 años · estado de salud razonable · sin caminatas largas", en: "Age 78 · reasonably healthy · no long hikes" },
-      lodging: { es: "Alojamiento de 2–3 estrellas", en: "2–3 star lodging" },
+      lodging: { es: "2 noches en Mindo, 2 noches en Intag y 1 noche en Otavalo · objetivo $50, máximo $70 por noche con desayuno. Sugerencias del huésped, sujetas a tarifa y disponibilidad: Mindo Glambird o Casa Vista Alta; Laguna de Cuicocha Guest House o Neblina Bird en Intag; Hotel Doña Esther o Hotel El Geranio en Otavalo.", en: "2 nights in Mindo, 2 nights in Intag, and 1 night in Otavalo · target $50, maximum $70 per night including breakfast. Guest suggestions, subject to rate and availability: Mindo Glambird or Casa Vista Alta; Laguna de Cuicocha Guest House or Neblina Bird in Intag; Hotel Doña Esther or Hotel El Geranio in Otavalo." },
       lodgingLink: "https://mindobirdwatching.com/recommendations/",
       pickup: { es: "Hotel cerca del aeropuerto · 9 de febrero de 2027", en: "Airport hotel · February 9, 2027" },
-      dropoff: { es: "Aeropuerto de Quito · 14 de febrero, al final de la tarde", en: "Quito airport · February 14, late afternoon" },
-      request: { es: "Ampliar el itinerario original de cuatro días a seis días, con una noche adicional en Mindo y una noche en Intag.", en: "Expand the original four-day itinerary to six days, with one additional night in Mindo and one night in Intag." },
+      dropoff: { es: "Hotel en Quito · 14 de febrero", en: "Quito hotel · February 14" },
+      request: { es: "Mantener una ruta de seis días con 2 noches en Mindo, 2 en Intag y 1 en Otavalo para reducir cambios de alojamiento, y finalizar en Quito.", en: "Keep a six-day route with 2 nights in Mindo, 2 in Intag, and 1 in Otavalo to reduce hotel changes, ending in Quito." },
       interests: { es: "Catequilla, Pululahua, Templo del Sol, Alambi, cascadas, chocolate, Gallo de la Peña, tucanes, colibríes, orquídeas o mariposario, caminata nocturna, Las Cotingas, Otavalo, Parque Cóndor, café de Intag, Campo Colibrí o canopy y Tren Tayta Imbabura.", en: "Catequilla, Pululahua, Temple of the Sun, Alambi, waterfalls, chocolate, Cock-of-the-Rock, toucans, hummingbirds, orchids or butterfly garden, night walk, Las Cotingas, Otavalo, Parque Cóndor, Intag coffee, Campo Colibrí or canopy, and the Tren Tayta Imbabura." },
     },
     days: [
@@ -205,7 +220,7 @@ export function robertPlan(provider = {}) {
       {
         id: "day-2", date: "2027-02-10",
         title: { es: "Gallo de la Peña, tucanes y actividades en Mindo", en: "Cock-of-the-Rock, toucans, and Mindo activities" },
-        details: { es: "Tour de aves del Gallo de la Peña y tucanes de medio día, privado o compartido. Por la tarde, visita al jardín de orquídeas o mariposario y caminata nocturna.", en: "Half-day private or shared birding tour for Cock-of-the-Rock and toucans. In the afternoon, visit the orchid garden or butterfly garden and take a night walk." },
+        details: { es: "Tour de aves de medio día para observar tucanes, colibríes y tangaras. Por la tarde, tour de chocolate o mariposario, tarabita y cascada. Si Robert se siente con energía, puede añadirse una caminata nocturna compartida; disponibilidad y costo por confirmar.", en: "Half-day birding for toucans, hummingbirds, and tanagers. In the afternoon, take a chocolate tour or visit the butterfly garden, tarabita, and waterfall. If Robert feels up to it, a shared night walk may be added; availability and cost remain to be confirmed." },
         pickupLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
         dropoffLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
         overnightCity: { es: "Mindo", en: "Mindo" },
@@ -215,34 +230,32 @@ export function robertPlan(provider = {}) {
       },
       {
         id: "day-3", date: "2027-02-11",
-        title: { es: "Las Cotingas · Santa Rosa · actividades en Mindo", en: "Las Cotingas · Santa Rosa · Mindo activities" },
-        details: { es: "Visita a la Reserva Las Cotingas y a la Reserva Santa Rosa para observar el tucán azul. Por la tarde, visita al jardín de orquídeas y caminata nocturna.", en: "Visit Las Cotingas Reserve and Santa Rosa Reserve to look for the blue toucan. In the afternoon, visit the orchid garden and take a night walk." },
+        title: { es: "Mindo · Las Cotingas · Intag", en: "Mindo · Las Cotingas · Intag" },
+        details: { es: "Salida después del desayuno para visitar la Reserva Las Cotingas. Continuación hacia Intag, con llegada prevista alrededor de las 5:00 p. m. y primera noche en Intag. El tour de café es opcional y puede realizarse en otro momento.", en: "Depart after breakfast to visit Las Cotingas Reserve, then continue to Intag with expected arrival around 5:00 p.m. for the first of two nights. The coffee tour is optional and may be arranged at another time." },
         pickupLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
-        dropoffLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
-        overnightCity: { es: "Mindo", en: "Mindo" },
-        sourceCosts: [
-          { category: "transportation", label: { es: "Transporte", en: "Transportation" }, amount: 60 },
-          { category: "guide", label: { es: "Guía", en: "Guide" }, amount: 80 },
-          { category: "entrance", label: { es: "Ingresos", en: "Entrance fees" }, amount: 40 },
-        ],
-        originalCost: 180,
+        dropoffLocation: { es: "Alojamiento en Intag", en: "Intag lodging" },
+        overnightCity: { es: "Intag", en: "Intag" },
+        sourceCosts: [],
+        costNote: { es: "Ruta modificada por el huésped. Neicer debe confirmar transporte, guía, entradas, alojamiento y si sus comidas y hospedaje están incluidos.", en: "Guest-requested route change. Neicer must confirm transportation, guide, entrance, and lodging costs, and whether his meals and lodging are included." },
+        originalCost: 0,
       },
       {
         id: "day-4", date: "2027-02-12",
-        title: { es: "Mindo · día completo en Intag", en: "Mindo · full day in Intag" },
-        details: { es: "Salida muy temprano desde Mindo para realizar un día completo en Intag. Hospedaje en Intag.", en: "Depart very early from Mindo for a full day in Intag. Overnight in Intag." },
-        pickupLocation: { es: "Hotel en Mindo", en: "Mindo hotel" },
+        title: { es: "Valle de Intag · Campo Colibrí", en: "Intag Valley · Campo Colibrí" },
+        details: { es: "Día completo en el valle de Intag con visita a Campo Colibrí. Se puede considerar canopy o aguas termales según disponibilidad, requisitos y conveniencia para Robert. Regreso al alojamiento en Intag para la segunda noche.", en: "Full day in the Intag Valley with a visit to Campo Colibrí. Canopy or hot springs may be considered depending on availability, operating requirements, and suitability for Robert. Return to the Intag lodging for the second night." },
+        pickupLocation: { es: "Alojamiento en Intag", en: "Intag lodging" },
         dropoffLocation: { es: "Alojamiento en Intag", en: "Intag lodging" },
         overnightCity: { es: "Intag", en: "Intag" },
         sourceCosts: [],
         costNote: { es: "Neicer actualizó la ruta; el transporte, la guía, los ingresos y el alojamiento están pendientes de cotización.", en: "Neicer updated the route; transportation, guide, entrance, and lodging costs are pending." },
         originalCost: 0,
       },
-      { id: "day-5", date: "2027-02-13", title: { es: "Intag · día completo en Otavalo", en: "Intag · full day in Otavalo" }, details: { es: "Salida de Intag hacia Otavalo para un día completo con visitas al Mercado de los Ponchos, la Laguna Cuicocha y Cotacachi, la ciudad del cuero. Hospedaje en Otavalo.", en: "Depart from Intag for a full day in Otavalo, visiting the Poncho Market, Cuicocha Lake, and Cotacachi, known for its leatherwork. Overnight in Otavalo." }, pickupLocation: { es: "Alojamiento en Intag", en: "Intag lodging" }, dropoffLocation: { es: "Hotel en Otavalo", en: "Otavalo hotel" }, overnightCity: { es: "Otavalo", en: "Otavalo" }, sourceCosts: [], costNote: { es: "Neicer actualizó la ruta; el transporte, la guía, los ingresos y el alojamiento están pendientes de cotización.", en: "Neicer updated the route; transportation, guide, entrance, and lodging costs are pending." }, originalCost: 0 },
-      { id: "day-6", date: "2027-02-14", title: { es: "Regreso al aeropuerto de Quito", en: "Return to Quito airport" }, details: { es: "Regreso al aeropuerto de Quito al final de la tarde. Actividades y transporte pendientes de confirmar.", en: "Return to Quito airport by late afternoon. Activities and transportation remain to be confirmed." }, pickupLocation: { es: "Por confirmar", en: "To be confirmed" }, dropoffLocation: { es: "Aeropuerto de Quito", en: "Quito airport" }, overnightCity: { es: "Sin alojamiento; fin del itinerario", en: "No overnight stay; itinerary ends" }, sourceCosts: [], originalCost: 0 },
+      { id: "day-5", date: "2027-02-13", title: { es: "Intag · tren por confirmar · Otavalo", en: "Intag · train option to confirm · Otavalo" }, details: { es: "Salida de Intag. Comparar y confirmar la operación, horario, precio y ruta del Tren Tayta Imbabura y del Tren de la Libertad antes de elegir. Según la opción confirmada, incluir Cotacachi y San Antonio de Ibarra, y terminar en el hotel de Otavalo.", en: "Depart Intag. Confirm and compare the operation, schedule, price, and route of Tren Tayta Imbabura and Tren de la Libertad before choosing. Depending on the confirmed option, include Cotacachi and San Antonio de Ibarra, ending at the Otavalo hotel." }, pickupLocation: { es: "Alojamiento en Intag", en: "Intag lodging" }, dropoffLocation: { es: "Hotel en Otavalo", en: "Otavalo hotel" }, overnightCity: { es: "Otavalo", en: "Otavalo" }, sourceCosts: [], costNote: { es: "No cotizar el tren hasta confirmar cuál opera el 13 de febrero de 2027, su horario, precio, punto final y recogida. Transporte, guía y alojamiento pendientes.", en: "Do not quote a train until its February 13, 2027 operation, schedule, price, endpoint, and pickup are confirmed. Transportation, guide, and lodging costs remain pending." }, originalCost: 0 },
+      { id: "day-6", date: "2027-02-14", title: { es: "Otavalo · Cuicocha · Cochasquí · Quito", en: "Otavalo · Cuicocha · Cochasquí · Quito" }, details: { es: "Visita al Mercado de los Ponchos, Parque Cóndor y Laguna Cuicocha. Si el tiempo y el ritmo lo permiten, añadir el Parque Arqueológico Cochasquí antes de continuar a un hotel en Quito. Robert tiene una noche adicional antes de volar, por lo que no se requiere llegada al aeropuerto.", en: "Visit the Poncho Market, Parque Cóndor, and Cuicocha Lake. If timing and pace allow, add Cochasquí Archaeological Park before continuing to a Quito hotel. Robert has an additional night before flying, so airport drop-off is not required." }, pickupLocation: { es: "Hotel en Otavalo", en: "Otavalo hotel" }, dropoffLocation: { es: "Hotel en Quito", en: "Quito hotel" }, overnightCity: { es: "Quito · alojamiento del huésped", en: "Quito · guest-arranged lodging" }, sourceCosts: [], costNote: { es: "Confirmar transporte, guía, entradas y si el alojamiento de Quito forma parte de la cotización.", en: "Confirm transportation, guide, entrance fees, and whether Quito lodging is part of the quote." }, originalCost: 0 },
     ],
     adjustments: [],
     comments: [robertRouteReview()],
+    guestRevisions: [robertGuestRevision()],
     history: [],
     localeUpdatedAt: { es: "", en: "" },
     originalTotal: 515,
@@ -252,19 +265,45 @@ export function robertPlan(provider = {}) {
 
 function applyRobertRouteRevision(plan) {
   const revised = robertPlan({ providerId: plan.providerId, providerName: plan.providerName });
-  const replacements = new Map(revised.days.slice(2, 5).map(day => [day.id, day]));
-  const comments = (plan.comments || []).some(item => item.id === ROBERT_NEICER_UPDATE_ID) ? plan.comments : [...(plan.comments || []), {
+  const replacements = new Map(revised.days.slice(1).map(day => [day.id, day]));
+  const previousDay2 = plan.days.find(day => day.id === "day-2");
+  if (previousDay2) replacements.set("day-2", {
+    ...replacements.get("day-2"),
+    sourceCosts: previousDay2.sourceCosts || [],
+    originalCost: previousDay2.originalCost || 0,
+    costNote: previousDay2.costNote || replacements.get("day-2").costNote,
+  });
+  let comments = (plan.comments || []).some(item => item.id === ROBERT_NEICER_UPDATE_ID) ? plan.comments : [...(plan.comments || []), {
     id: ROBERT_NEICER_UPDATE_ID,
     message: "Actualización de Neicer (30 oct 2026): Día 3, Las Cotingas y Santa Rosa para buscar el tucán azul; por la tarde, jardín de orquídeas y caminata nocturna. Costos confirmados: transporte $60, ingresos $40 y guía $80. Día 4, salida muy temprano para un día completo en Intag y alojamiento en Intag. Día 5, salida de Intag para un día completo en Otavalo, Mercado de los Ponchos, Laguna Cuicocha y Cotacachi, con alojamiento en Otavalo. Los costos de los días 4 y 5 siguen pendientes.",
     author: "Neicer",
     role: "guide",
     createdAt: "2026-10-30T17:30:00.000Z",
   }];
+  if (!comments.some(item => item.id === ROBERT_GUEST_REVISION_ID)) comments = [...comments, {
+    id: ROBERT_GUEST_REVISION_ID,
+    message: "Revisión solicitada por Robert (31 oct 2026): 2 noches Mindo, 2 Intag y 1 Otavalo; presupuesto de alojamiento $50–$70 con desayuno; Las Cotingas antes de Intag; segunda noche en Intag; intercambiar los días 13 y 14; confirmar qué tren opera; finalizar en un hotel de Quito. Revisa y vuelve a cotizar los días 3–6, incluyendo alojamiento y aclarando si hospedaje y comidas del guía están incluidos.",
+    author: "Juan Pablo",
+    role: "admin",
+    createdAt: "2026-10-31T16:45:00.000Z",
+  }];
+  const affectedDays = new Set(["day-3", "day-4", "day-5", "day-6"]);
+  const priorPricing = plan.mbwPricing || { currency: "USD", days: [] };
   return sanitizePlan({
     ...plan,
     routeRevision: ROBERT_ROUTE_REVISION,
+    status: "changes_requested",
     days: plan.days.map(day => replacements.get(day.id) || day),
     comments,
+    guestRevisions: [...(plan.guestRevisions || []).filter(item => item.id !== ROBERT_GUEST_REVISION_ID), robertGuestRevision()],
+    mbwPricing: {
+      ...priorPricing,
+      approvedAt: "",
+      approvedBy: "",
+      days: (priorPricing.days || []).map(item => affectedDays.has(item.dayId)
+        ? { dayId: item.dayId, sellPrice: 0, lodgingPrice: 0, guestLines: [] }
+        : item),
+    },
   }, plan);
 }
 
@@ -318,6 +357,17 @@ export function sanitizePlan(input, current = robertPlan()) {
     role: item.role === "guide" ? "guide" : "admin",
     createdAt: text(item.createdAt, 80),
   })).filter(item => item.message) : [];
+  const guestRevisions = Array.isArray(input.guestRevisions || current.guestRevisions)
+    ? (input.guestRevisions || current.guestRevisions).slice(-20).map((item, index) => ({
+      id: text(item.id || `guest-revision-${index + 1}`, 80),
+      source: ["guest_email", "guest_whatsapp", "guest_call", "other"].includes(item.source) ? item.source : "other",
+      status: ["new", "sent_to_guide", "resolved"].includes(item.status) ? item.status : "new",
+      receivedAt: text(item.receivedAt, 80),
+      resolvedAt: text(item.resolvedAt, 80),
+      summary: bilingual(item.summary, {}, 1800),
+      rawMessage: text(item.rawMessage, 6000),
+    })).filter(item => item.summary.es || item.summary.en || item.rawMessage)
+    : [];
   const history = Array.isArray(input.history || current.history) ? (input.history || current.history).slice(-100).map((item, index) => ({
     id: text(item.id || `history-${index + 1}`, 80),
     actor: text(item.actor, 120),
@@ -400,6 +450,7 @@ export function sanitizePlan(input, current = robertPlan()) {
     synthetic: input.synthetic === false ? false : Boolean(input.synthetic ?? current.synthetic),
     adjustments,
     comments,
+    guestRevisions,
     history,
     localeUpdatedAt: {
       es: text(input.localeUpdatedAt?.es || current.localeUpdatedAt?.es, 80),
@@ -473,7 +524,7 @@ export function guestItineraryDraft(plan) {
 // Internal selling prices and markup are never returned to a guide session.
 export function planForGuide(plan) {
   if (!plan || typeof plan !== "object") return plan;
-  const { mbwPricing, ...guidePlan } = plan;
+  const { mbwPricing, guestRevisions, ...guidePlan } = plan;
   return guidePlan;
 }
 

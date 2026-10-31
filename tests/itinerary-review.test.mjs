@@ -52,6 +52,8 @@ test("Robert plan carries the dated lodging and route review without exposing MB
   const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
   assert.match(plan.comments[0].message, /primeros 3 días en Mindo/);
   assert.match(plan.comments[0].message, /desglose del alojamiento/);
+  assert.match(plan.guestRevisions[0].summary.en, /2 nights in Mindo/);
+  assert.match(plan.guestRevisions[0].rawMessage, /Tren de la Libertad/);
 });
 
 test("Inquiry Studio plan queue is admin-only and returns plan summaries", async () => {
@@ -68,6 +70,8 @@ test("Inquiry Studio plan queue is admin-only and returns plan summaries", async
     assert.equal(response.status, 200);
     assert.equal(body.plans.length, 1);
     assert.equal(body.plans[0].guestName, "Robert");
+    assert.equal(body.plans[0].dayCount, 6);
+    assert.equal(body.plans[0].openGuestRevisionCount, 1);
     assert.equal(JSON.stringify(body.plans).includes("999"), false);
     const denied = await onRequestGet({ request: new Request("http://localhost/api/mobile/plans"), env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" } });
     assert.equal(denied.status, 403);
@@ -100,12 +104,14 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /guestBelowGuideQuote/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
-  assert.match(guideHtml, /guide-20261031-v44/);
+  assert.match(guideHtml, /guide-20261031-v45/);
   assert.match(guide, /function renderPlanChecklist/);
   assert.match(guide, /data-shift-plan-dates/);
   assert.match(guide, /data-discard-plan/);
   assert.match(guide, /data-drag-plan-day/);
   assert.match(guide, /adminReviewWorkspace/);
+  assert.match(guide, /function renderGuestRevisions/);
+  assert.match(guide, /data-guest-revision-form/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
   assert.match(studioJs, /Prepare Guest Itinerary/);
@@ -129,6 +135,7 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   const app = fs.readFileSync(new URL("../admin/app/app.mjs", import.meta.url), "utf8");
   assert.match(app, /planAttentionMeta/);
   assert.match(app, /Last activity:/);
+  assert.match(app, /Waiting on guide/);
 });
 
 test("stored plans remain complete while staying below the guarded n8n form limit", async () => {

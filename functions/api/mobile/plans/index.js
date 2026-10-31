@@ -12,18 +12,24 @@ export async function onRequestGet({ request, env }) {
       throw Object.assign(new Error("This review queue is available only to MBW administrators."), { status: 403 });
     }
     const rows = await listRecords(env, "list_assignments", {});
-    const plans = (await Promise.all(rows.filter(isPlanRow).map(parsePlanRow))).filter(Boolean).map(plan => ({
-      planId: plan.planId,
-      inquiryId: plan.inquiryId,
-      providerId: plan.providerId,
-      providerName: plan.providerName,
-      guestName: plan.guestName,
-      title: plan.title,
-      startDate: plan.startDate,
-      endDate: plan.endDate,
-      status: plan.status,
-      updatedAt: plan.updatedAt,
-    })).sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")));
+    const plans = (await Promise.all(rows.filter(isPlanRow).map(parsePlanRow))).filter(Boolean).map(plan => {
+      const latestActivity = [...(plan.history || [])].sort((left, right) => String(right.changedAt || "").localeCompare(String(left.changedAt || "")))[0] || null;
+      return ({
+        planId: plan.planId,
+        inquiryId: plan.inquiryId,
+        providerId: plan.providerId,
+        providerName: plan.providerName,
+        guestName: plan.guestName,
+        title: plan.title,
+        startDate: plan.startDate,
+        endDate: plan.endDate,
+        status: plan.status,
+        updatedAt: plan.updatedAt,
+        dayCount: plan.days?.length || 0,
+        latestActivity: latestActivity ? { actor: latestActivity.actor, action: latestActivity.action, changedAt: latestActivity.changedAt } : null,
+        openGuestRevisionCount: (plan.guestRevisions || []).filter(item => item.status !== "resolved").length,
+      });
+    }).sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")));
     return json(200, { ok: true, checkedAt: new Date().toISOString(), plans });
   } catch (error) { return errorResponse(error, "Custom itinerary reviews are unavailable."); }
 }
