@@ -203,6 +203,12 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator(".planWorkflow").count(), 1);
     assert.match(await page.locator(".planWorkflow").innerText(), /Asignado[\s\S]*Borrador del guía[\s\S]*Revisión MBW[\s\S]*Aprobado[\s\S]*Versión del huésped/);
     assert.equal(await page.locator(".planActions--guide").evaluate(element => getComputedStyle(element).position), "static");
+    assert.equal(await page.locator(".planChecklist").count(), 1);
+    assert.equal(await page.locator("[data-shift-plan-dates][data-day-id]").count(), 12);
+    await page.getByRole("button", { name: "Mover todas las fechas +1 día", exact: true }).click();
+    assert.equal(await page.locator('[data-plan-day-editor][data-day-id="day-1"] input[name="date"]').inputValue(), "2027-02-10");
+    await page.getByRole("button", { name: "Mover todas las fechas −1 día", exact: true }).click();
+    assert.equal(await page.locator('[data-plan-day-editor][data-day-id="day-1"] input[name="date"]').inputValue(), "2027-02-09");
     assert.equal(await page.locator("[data-move-plan-day]").count(), 12);
     await page.locator('[data-move-plan-day][data-day-id="day-1"][data-direction="1"]').click();
     assert.deepEqual(await page.locator("[data-plan-day]").evaluateAll(days => days.slice(0, 2).map(day => day.dataset.planDay)), ["day-2", "day-1"]);
@@ -355,6 +361,11 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(bootstrap.plans.length, 2);
     assert.equal(writes.some(write => write.url.endsWith("/api/guide/plans") && write.body.guestName === "Alice Rivera" && write.body.providerId === "PROV-007"), true);
     await page.screenshot({ path: "/tmp/mbw-guide-nest-admin-plans.png", fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const desktopWidth = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
+    assert.ok(desktopWidth.scroll <= desktopWidth.client + 1, `Guide Nest admin overflows on desktop: ${desktopWidth.scroll}px > ${desktopWidth.client}px`);
+    await page.screenshot({ path: "/tmp/mbw-guide-nest-admin-plans-desktop.png", fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`http://127.0.0.1:${port}/guide/?provider=PROV-007&view=plans&plan=robert-2027`);
     await page.getByText("Robert · Itinerario personalizado en Ecuador", { exact: true }).waitFor();
     assert.equal(await page.locator('[data-plan="robert-2027"]').getAttribute("open"), "");

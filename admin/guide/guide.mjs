@@ -81,6 +81,7 @@ const TERMINOLOGY = {
     moveEarlier: "Mover a un día anterior", moveLater: "Mover a un día posterior",
     dayLogistics: "Logística del día", pickupLocation: "Lugar de recogida", dropoffLocation: "Lugar de llegada", overnightCity: "Ciudad donde se hospeda", logisticsPending: "Por confirmar",
     guestBreakdown: "Desglose final para el huésped", guestBreakdownHelp: "Edita los conceptos de un día. Su suma se convierte automáticamente en el precio final del día y recalcula la ganancia y el margen. El total puede ser menor que el precio preliminar, pero nunca menor que la cotización del guía.", guestLineLabel: "Concepto para el huésped", addGuestLine: "Agregar línea", buildGuestBreakdown: "Restablecer distribución proporcional", resetGuestBreakdownConfirm: "Esto reemplazará los valores personalizados de este día con una distribución proporcional desde la cotización del guía. ¿Continuar?", prepareGuestItinerary: "Preparar itinerario para huésped", guestBreakdownMismatch: "El desglose para el huésped debe sumar el precio final del día.", guestBreakdownTotal: "Total desglosado", guideFloor: "Mínimo del guía", guestBreakdownBalanced: "Precio final actualizado", guestBreakdownRemaining: "Falta asignar", guestBreakdownOver: "Excede por", guestBelowGuideQuote: "El total para el huésped no puede ser menor que la cotización del guía.", guestAboveGuideQuote: "Ganancia sobre cotización", overnightPricing: "Alojamiento esa noche", savePricingDay: "Guardar día y continuar", pricingDaySaved: "Día listo", pricingDraftHelp: "Se guarda en este borrador. Usa Guardar cambios una sola vez al terminar todos los días.",
+    reviewChecklist: "Revisión antes de enviar", reviewReady: "Todos los campos esenciales están completos.", reviewIssues: "campos requieren atención", jumpToIssue: "Abrir campo", shiftAllEarlier: "Mover todas las fechas −1 día", shiftAllLater: "Mover todas las fechas +1 día", shiftFollowingEarlier: "Mover este día y siguientes −1", shiftFollowingLater: "Mover este día y siguientes +1", dragDay: "Arrastra para organizar", discardDraft: "Descartar cambios", discardDraftConfirm: "¿Descartar todos los cambios no guardados y volver a la última versión guardada?", duplicateDate: "Hay más de un día con esta fecha.", dateGap: "Hay un espacio entre este día y el anterior.", pricingMissing: "Falta el desglose final para el huésped.", pricingBelowGuide: "El precio final está por debajo de la cotización del guía.", verificationPending: "Hay un costo adicional por verificar.",
   },
   en: {
     tourPlans: "Itineraries", assignedPlans: "Assigned itineraries", noPlans: "No custom itineraries are assigned to you.",
@@ -93,6 +94,7 @@ const TERMINOLOGY = {
     moveEarlier: "Move to an earlier day", moveLater: "Move to a later day",
     dayLogistics: "Daily logistics", pickupLocation: "Pickup location", dropoffLocation: "Drop-off location", overnightCity: "Overnight city", logisticsPending: "To be confirmed",
     guestBreakdown: "Final guest breakdown", guestBreakdownHelp: "Edit the items for one day. Their sum automatically becomes the final daily price and recalculates profit and markup. The total may be lower than the preliminary price, but never lower than the guide quote.", guestLineLabel: "Guest-facing item", addGuestLine: "Add line", buildGuestBreakdown: "Reset proportional allocation", resetGuestBreakdownConfirm: "This will replace this day's custom values with a proportional allocation from the guide quote. Continue?", prepareGuestItinerary: "Prepare Guest Itinerary", guestBreakdownMismatch: "The guest breakdown must equal the final daily price.", guestBreakdownTotal: "Itemized total", guideFloor: "Guide minimum", guestBreakdownBalanced: "Final price updated", guestBreakdownRemaining: "Still to allocate", guestBreakdownOver: "Over by", guestBelowGuideQuote: "The guest total cannot be lower than the guide quote.", guestAboveGuideQuote: "Profit above guide quote", overnightPricing: "Lodging that night", savePricingDay: "Save day & continue", pricingDaySaved: "Day complete", pricingDraftHelp: "Saved in this draft. Use Save changes once after finishing every day.",
+    reviewChecklist: "Pre-submit review", reviewReady: "Every essential field is complete.", reviewIssues: "fields need attention", jumpToIssue: "Open field", shiftAllEarlier: "Shift every date −1 day", shiftAllLater: "Shift every date +1 day", shiftFollowingEarlier: "Shift this and later days −1", shiftFollowingLater: "Shift this and later days +1", dragDay: "Drag to organize", discardDraft: "Discard changes", discardDraftConfirm: "Discard all unsaved changes and return to the last saved version?", duplicateDate: "More than one day uses this date.", dateGap: "There is a gap between this day and the previous day.", pricingMissing: "The final guest breakdown is missing.", pricingBelowGuide: "The final guest price is below the guide quote.", verificationPending: "An additional cost still needs verification.",
   },
 };
 
@@ -117,6 +119,7 @@ let planView = "assigned";
 let dirtyPlans = new Set();
 let completedPricingDays = new Set();
 let savingPlans = new Set();
+let draggedPlanDay = null;
 let adminWorkspaceMode = new URLSearchParams(location.search).get("mode") === "admin" ? "admin" : "guide";
 const t = key => TERMINOLOGY[language]?.[key] || COPY[language][key] || key;
 const localized = value => value && typeof value === "object" ? (value[language] || value.es || value.en || "") : String(value ?? "");
@@ -395,6 +398,8 @@ function updatePlanSaveState(planId, savedAt = "") {
   else if (savedAt) state.textContent = `${t("savedAt")} ${new Date(savedAt).toLocaleTimeString(language === "es" ? "es-EC" : "en-US", { hour: "numeric", minute: "2-digit" })}`;
   else state.textContent = "";
   workspace.classList.toggle("planWorkspace--dirty", dirtyPlans.has(planId));
+  const discard = workspace.querySelector("[data-discard-plan]");
+  if (discard) discard.disabled = !dirtyPlans.has(planId) || savingPlans.has(planId);
 }
 
 function planValidationErrors(plan) {
@@ -412,6 +417,39 @@ function planValidationErrors(plan) {
     if (!costs.length && Number(day.originalCost || 0) > 0 && !localized(day.costNote).trim()) errors.push({ dayId: day.id, field: "costNote" });
   }
   return errors;
+}
+
+function planReviewIssues(plan) {
+  const labels = {
+    date: t("date"), title: t("dayTitle"), details: t("dayDetails"), pickupLocation: t("pickupLocation"),
+    dropoffLocation: t("dropoffLocation"), overnightCity: t("overnightCity"), costs: t("costBreakdown"), costNote: t("costNote"),
+  };
+  const issues = planValidationErrors(plan).map(error => ({ ...error, message: labels[error.field] || error.field }));
+  const dateCounts = new Map();
+  (plan.days || []).forEach(day => dateCounts.set(day.date, (dateCounts.get(day.date) || 0) + 1));
+  (plan.days || []).forEach((day, index) => {
+    if (day.date && dateCounts.get(day.date) > 1) issues.push({ dayId: day.id, field: "date", message: t("duplicateDate") });
+    const previous = plan.days[index - 1];
+    if (previous?.date && day.date && addDays(previous.date, 1) !== day.date) issues.push({ dayId: day.id, field: "date", message: t("dateGap") });
+    if ((plan.adjustments || []).some(item => item.dayId === day.id && item.verification === "needs_verification")) {
+      issues.push({ dayId: day.id, field: "adjustments", message: t("verificationPending") });
+    }
+    if (isAdminReview()) {
+      const pricing = plan.mbwPricing?.days?.find(item => item.dayId === day.id) || {};
+      const guestTotal = (pricing.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0);
+      if (!(pricing.guestLines || []).length) issues.push({ dayId: day.id, field: "pricing", message: t("pricingMissing") });
+      else if (guestTotal + 0.009 < guideDayCost(plan, day.id)) issues.push({ dayId: day.id, field: "pricing", message: t("pricingBelowGuide") });
+    }
+  });
+  return issues;
+}
+
+function renderPlanChecklist(plan) {
+  const issues = planReviewIssues(plan);
+  return `<aside class="planChecklist ${issues.length ? "planChecklist--attention" : "planChecklist--ready"}" aria-label="${esc(t("reviewChecklist"))}"><div><span aria-hidden="true">${issues.length ? "!" : "✓"}</span><div><h4>${esc(t("reviewChecklist"))}</h4><p>${esc(issues.length ? `${issues.length} ${t("reviewIssues")}` : t("reviewReady"))}</p></div></div>${issues.length ? `<ol>${issues.slice(0, 12).map((issue, index) => {
+    const dayIndex = plan.days.findIndex(day => day.id === issue.dayId) + 1;
+    return `<li><button type="button" data-jump-plan-issue data-plan-id="${esc(plan.planId)}" data-day-id="${esc(issue.dayId)}" data-field="${esc(issue.field)}"><b>${esc(`${language === "es" ? "Día" : "Day"} ${dayIndex}`)}</b><span>${esc(issue.message)}</span><em>${esc(t("jumpToIssue"))}</em></button></li>`;
+  }).join("")}</ol>` : ""}</aside>`;
 }
 
 function showPlanValidation(planId, errors) {
@@ -669,8 +707,8 @@ function renderPlanDay(plan, day, index) {
   const overnight = localized(day.overnightCity) || t("logisticsPending");
   const logisticsPending = [day.pickupLocation, day.dropoffLocation, day.overnightCity].some(value => !localized(value));
   const logistics = `<dl class="planDayLogistics${logisticsPending ? " planDayLogistics--pending" : ""}" aria-label="${esc(t("dayLogistics"))}"><div><dt>${esc(t("pickupLocation"))}</dt><dd>${esc(pickup)}</dd></div><div><dt>${esc(t("dropoffLocation"))}</dt><dd>${esc(dropoff)}</dd></div><div><dt>${esc(t("overnightCity"))}</dt><dd>${esc(overnight)}</dd></div></dl>`;
-  const orderControls = readOnly ? "" : `<div class="planDayOrder" aria-label="${esc(language === "es" ? "Organizar día" : "Organize day")}"><button type="button" data-move-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-direction="-1" aria-label="${esc(t("moveEarlier"))}" title="${esc(t("moveEarlier"))}" ${index === 0 ? "disabled" : ""}>↑</button><button type="button" data-move-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-direction="1" aria-label="${esc(t("moveLater"))}" title="${esc(t("moveLater"))}" ${index === plan.days.length - 1 ? "disabled" : ""}>↓</button></div>`;
-  return `<article data-plan-day="${esc(day.id)}"><time>${index + 1}<small>${esc(dateLabel(day.date))}</small></time><div>${orderControls}<strong>${esc(localized(day.title))}</strong><p>${esc(localized(day.details))}</p>${logistics}${readCosts}${note ? `<small class="sourceCostNote">${esc(note)}</small>` : ""}${mismatch ? `<small class="sourceCostWarning">${esc(t("breakdownMismatch"))}</small>` : ""}${isGuidePreview() ? "" : `<details class="planDayEditor"><summary>${t("editDay")}</summary><div data-plan-day-editor data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}"><div class="planDayFields"><label><span>${t("date")}</span><input name="date" type="date" value="${esc(day.date)}" required ${readOnly ? "disabled" : ""}></label><label><span>${t("dayTotal")}</span><input name="originalCost" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(day.originalCost || 0)}" ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("dayTitle")}</span><input name="title" maxlength="240" value="${esc(localized(day.title))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("dayDetails")}</span><textarea name="details" maxlength="1800" ${readOnly ? "disabled" : ""}>${esc(localized(day.details))}</textarea></label><label><span>${t("pickupLocation")}</span><input name="pickupLocation" maxlength="300" value="${esc(localized(day.pickupLocation))}" required ${readOnly ? "disabled" : ""}></label><label><span>${t("dropoffLocation")}</span><input name="dropoffLocation" maxlength="300" value="${esc(localized(day.dropoffLocation))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("overnightCity")}</span><input name="overnightCity" maxlength="160" value="${esc(localized(day.overnightCity))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("costNote")}</span><textarea name="costNote" maxlength="500" ${readOnly ? "disabled" : ""}>${esc(note)}</textarea></label></div><h4>${t("costBreakdown")}</h4><div class="sourceCostEditor">${editCosts}</div>${readOnly ? "" : `<div class="planDayTools"><button class="addSourceCost" type="button" data-add-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("addCostLine")}</button><button type="button" data-duplicate-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("duplicateDay")}</button><button class="danger" type="button" data-delete-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("deleteDay")}</button><button class="primary savePlanDay" type="button" data-finish-plan-day data-plan-id="${esc(plan.planId)}">${t("finishDay")}</button></div>`}</div></details>`}</div><b>${day.originalCost ? esc(money(day.originalCost)) : "—"}</b></article>`;
+  const orderControls = readOnly ? "" : `<div class="planDayOrder" aria-label="${esc(language === "es" ? "Organizar día" : "Organize day")}"><button class="planDayDrag" type="button" draggable="true" data-drag-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" aria-label="${esc(t("dragDay"))}" title="${esc(t("dragDay"))}">⋮⋮</button><button type="button" data-move-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-direction="-1" aria-label="${esc(t("moveEarlier"))}" title="${esc(t("moveEarlier"))}" ${index === 0 ? "disabled" : ""}>↑</button><button type="button" data-move-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-direction="1" aria-label="${esc(t("moveLater"))}" title="${esc(t("moveLater"))}" ${index === plan.days.length - 1 ? "disabled" : ""}>↓</button></div>`;
+  return `<article data-plan-day="${esc(day.id)}" data-plan-id="${esc(plan.planId)}" ${readOnly ? "" : "data-plan-day-dropzone"}><time>${index + 1}<small>${esc(dateLabel(day.date))}</small></time><div>${orderControls}<strong>${esc(localized(day.title))}</strong><p>${esc(localized(day.details))}</p>${logistics}${readCosts}${note ? `<small class="sourceCostNote">${esc(note)}</small>` : ""}${mismatch ? `<small class="sourceCostWarning">${esc(t("breakdownMismatch"))}</small>` : ""}${isGuidePreview() ? "" : `<details class="planDayEditor"><summary>${t("editDay")}</summary><div data-plan-day-editor data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}"><div class="planDayFields"><label><span>${t("date")}</span><input name="date" type="date" value="${esc(day.date)}" required ${readOnly ? "disabled" : ""}></label><label><span>${t("dayTotal")}</span><input name="originalCost" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${esc(day.originalCost || 0)}" ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("dayTitle")}</span><input name="title" maxlength="240" value="${esc(localized(day.title))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("dayDetails")}</span><textarea name="details" maxlength="1800" ${readOnly ? "disabled" : ""}>${esc(localized(day.details))}</textarea></label><label><span>${t("pickupLocation")}</span><input name="pickupLocation" maxlength="300" value="${esc(localized(day.pickupLocation))}" required ${readOnly ? "disabled" : ""}></label><label><span>${t("dropoffLocation")}</span><input name="dropoffLocation" maxlength="300" value="${esc(localized(day.dropoffLocation))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("overnightCity")}</span><input name="overnightCity" maxlength="160" value="${esc(localized(day.overnightCity))}" required ${readOnly ? "disabled" : ""}></label><label class="wide"><span>${t("costNote")}</span><textarea name="costNote" maxlength="500" ${readOnly ? "disabled" : ""}>${esc(note)}</textarea></label></div><div class="planDateShift"><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-delta="-1">${esc(t("shiftFollowingEarlier"))}</button><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}" data-delta="1">${esc(t("shiftFollowingLater"))}</button></div><h4>${t("costBreakdown")}</h4><div class="sourceCostEditor">${editCosts}</div>${readOnly ? "" : `<div class="planDayTools"><button class="addSourceCost" type="button" data-add-source-cost data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("addCostLine")}</button><button type="button" data-duplicate-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("duplicateDay")}</button><button class="danger" type="button" data-delete-plan-day data-plan-id="${esc(plan.planId)}" data-day-id="${esc(day.id)}">${t("deleteDay")}</button><button class="primary savePlanDay" type="button" data-finish-plan-day data-plan-id="${esc(plan.planId)}">${t("finishDay")}</button></div>`}</div></details>`}</div><b>${day.originalCost ? esc(money(day.originalCost)) : "—"}</b></article>`;
 }
 
 function renderPlans() {
@@ -702,12 +740,12 @@ function renderPlans() {
     return `<details class="planWorkspace" data-plan="${esc(plan.planId)}" ${plans.length === 1 || planIndex === 0 || initialPlanId === plan.planId ? "open" : ""}><summary class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(localized(plan.title))}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></summary>
       ${renderPlanWorkflow(plan)}
       <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${localized(brief.traveler)}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${localized(brief.pickup)} → ${localized(brief.dropoff)}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(localized(brief.lodging))}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(localized(brief.request))}</strong></div><div class="wide"><small>${language === "es" ? "Intereses" : "Interests"}</small><strong>${esc(localized(brief.interests))}</strong></div></div></section>
-      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span>${isAdminReview() ? `<button type="button" data-copy-guide-whatsapp="${esc(plan.planId)}">${esc(t("copyGuideWhatsApp"))}</button>` : ""}</div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}${language === "en" && !englishTranslationNeeded(plan) ? ` · ${esc(t("translationCurrent"))}` : ""}</p>${isAdminReview() && language === "en" && !locked && englishTranslationNeeded(plan) ? `<div class="planTranslation"><p>${esc(t("translationAutomatic"))}</p></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
+      <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span>${isAdminReview() ? `<button type="button" data-copy-guide-whatsapp="${esc(plan.planId)}">${esc(t("copyGuideWhatsApp"))}</button>` : ""}</div>${readOnly ? "" : `<div class="planOrganizer" aria-label="${esc(language === "es" ? "Herramientas de fechas" : "Date tools")}"><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-delta="-1">${esc(t("shiftAllEarlier"))}</button><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-delta="1">${esc(t("shiftAllLater"))}</button></div>`}<p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}${language === "en" && !englishTranslationNeeded(plan) ? ` · ${esc(t("translationCurrent"))}` : ""}</p>${isAdminReview() && language === "en" && !locked && englishTranslationNeeded(plan) ? `<div class="planTranslation"><p>${esc(t("translationAutomatic"))}</p></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}${renderPlanChecklist(plan)}</section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div>${readOnly ? "" : `<form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category">${costCategories.map(category => `<option value="${category}">${esc(costCategoryLabel(category))}</option>`).join("")}</select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form>`}</section>
       ${renderAdminPricing(plan, locked)}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
       <details class="planHistory planSection"><summary>${t("activityHistory")}</summary><ol>${history}</ol></details>
-      <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? (plan.status === "admin_review" ? t("adminActionHelp") : t("externalConfirmationHelp")) : t("handoffHelp")}</p>${actions}</div></details>`;
+      <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? (plan.status === "admin_review" ? t("adminActionHelp") : t("externalConfirmationHelp")) : t("handoffHelp")}</p>${!readOnly ? `<button class="actionDiscard" type="button" data-discard-plan="${esc(plan.planId)}" ${dirtyPlans.has(plan.planId) ? "" : "disabled"}>${esc(t("discardDraft"))}</button>` : ""}${actions}</div></details>`;
   }).join("");
   document.querySelectorAll("[data-plan]").forEach(workspace => {
     const plan = planFor(workspace.dataset.plan);
@@ -866,6 +904,7 @@ async function loadReports() {
 
 function renderPreview() {
   const panel = $("#adminPreview");
+  document.body.classList.toggle("adminReviewWorkspace", Boolean(data?.preview && isAdminReview()));
   panel.hidden = !data.preview;
   if (!data.preview) return;
   const options = data.providerOptions?.length ? data.providerOptions : (data.providers || []).map(name => ({ providerId: "", name }));
@@ -1051,6 +1090,34 @@ document.addEventListener("click", event => {
   if (offerResponse) { const bid = document.querySelector(`[data-bid="${CSS.escape(offerResponse.dataset.id)}"]`)?.value || ""; offerResponse.disabled = true; mutate(`/api/guide/offers/${encodeURIComponent(offerResponse.dataset.id)}/respond`, "POST", { response: offerResponse.dataset.offerResponse, bidAmount: bid }).then(refreshCurrent).catch(error => { offerResponse.disabled = false; alert(error.message); }); }
   const removeSourceCost = event.target.closest("[data-remove-source-cost]");
   if (removeSourceCost) { const planId = removeSourceCost.dataset.planId; removeSourceCost.closest("[data-source-cost-row]")?.remove(); syncPlanDayEditors(planId); markPlanDirty(planId); return; }
+  const jumpPlanIssue = event.target.closest("[data-jump-plan-issue]");
+  if (jumpPlanIssue) {
+    const workspace = jumpPlanIssue.closest("[data-plan]"), dayId = jumpPlanIssue.dataset.dayId, field = jumpPlanIssue.dataset.field;
+    if (field === "pricing" || field === "adjustments") {
+      const target = field === "pricing" ? workspace?.querySelector(`[data-pricing-day="${CSS.escape(dayId)}"]`) : workspace?.querySelector(".planCostForm");
+      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+      target?.querySelector?.("input,select,button")?.focus();
+    } else {
+      const editor = workspace?.querySelector(`[data-plan-day-editor][data-day-id="${CSS.escape(dayId)}"]`), details = editor?.closest("details");
+      if (details) details.open = true;
+      const target = field === "costs" ? editor?.querySelector(".sourceCostEditor") : editor?.querySelector(`[name="${CSS.escape(field)}"]`);
+      target?.scrollIntoView({ behavior: "smooth", block: "center" }); target?.focus?.();
+    }
+    return;
+  }
+  const shiftPlanDates = event.target.closest("[data-shift-plan-dates]");
+  if (shiftPlanDates) {
+    const planId = shiftPlanDates.dataset.planId, plan = planFor(planId), delta = Number(shiftPlanDates.dataset.delta || 0), fromDayId = shiftPlanDates.dataset.dayId || "";
+    syncPlanDayEditors(planId);
+    const fromIndex = fromDayId ? plan?.days.findIndex(day => day.id === fromDayId) ?? 0 : 0;
+    if (plan && delta && fromIndex >= 0) {
+      plan.days.forEach((day, index) => { if (index >= fromIndex && day.date) day.date = addDays(day.date, delta); });
+      plan.startDate = plan.days[0]?.date || plan.startDate; plan.endDate = plan.days.at(-1)?.date || plan.endDate;
+      markPlanDirty(planId); renderPlans();
+      document.querySelector(`[data-plan="${CSS.escape(planId)}"] [data-plan-day="${CSS.escape(fromDayId || plan.days[0]?.id || "")}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return;
+  }
   const movePlanDay = event.target.closest("[data-move-plan-day]");
   if (movePlanDay) {
     const planId = movePlanDay.dataset.planId, plan = planFor(planId), direction = Number(movePlanDay.dataset.direction || 0);
@@ -1075,7 +1142,27 @@ document.addEventListener("click", event => {
   const removePlanCost = event.target.closest("[data-remove-plan-cost]");
   if (removePlanCost) { const planId = removePlanCost.dataset.planId, plan = planFor(planId); syncPlanDayEditors(planId); plan.adjustments = plan.adjustments.filter(item => item.id !== removePlanCost.dataset.removePlanCost); markPlanDirty(planId); renderPlans(); }
   const finishPlanDay = event.target.closest("[data-finish-plan-day]");
-  if (finishPlanDay) { const planId = finishPlanDay.dataset.planId; syncPlanDayEditors(planId); markPlanDirty(planId); renderPlans(); return; }
+  if (finishPlanDay) {
+    const planId = finishPlanDay.dataset.planId, currentDayId = finishPlanDay.closest("[data-plan-day]")?.dataset.planDay;
+    syncPlanDayEditors(planId); markPlanDirty(planId);
+    const plan = planFor(planId), currentIndex = plan?.days.findIndex(day => day.id === currentDayId) ?? -1, nextDayId = currentIndex >= 0 ? plan?.days[currentIndex + 1]?.id : "";
+    renderPlans();
+    const next = nextDayId ? document.querySelector(`[data-plan="${CSS.escape(planId)}"] [data-plan-day="${CSS.escape(nextDayId)}"]`) : null;
+    const nextDetails = next?.querySelector(".planDayEditor");
+    if (nextDetails) { nextDetails.open = true; next.scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(() => nextDetails.querySelector("input,textarea,select")?.focus(), 300); }
+    else document.querySelector(`[data-plan="${CSS.escape(planId)}"] .planActions`)?.scrollIntoView({ behavior: "smooth", block: "end" });
+    return;
+  }
+  const discardPlan = event.target.closest("[data-discard-plan]");
+  if (discardPlan) {
+    const planId = discardPlan.dataset.discardPlan, source = data?.plans?.find(item => item.planId === planId);
+    if (source && confirm(t("discardDraftConfirm"))) {
+      planDrafts.set(planId, structuredClone(source)); dirtyPlans.delete(planId); savingPlans.delete(planId);
+      for (const key of [...completedPricingDays]) if (key.startsWith(`${planId}:`)) completedPricingDays.delete(key);
+      renderPlans(); document.querySelector(`[data-plan="${CSS.escape(planId)}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    return;
+  }
   const savePlanButton = event.target.closest("[data-save-plan]");
   if (savePlanButton) { savePlanButton.disabled = true; const planId = savePlanButton.dataset.savePlan; savePlan(planId, savePlanButton.dataset.planStatus).catch(error => { savingPlans.delete(planId); updatePlanSaveState(planId); savePlanButton.disabled = false; alert(error.message); }); }
 });
@@ -1095,6 +1182,37 @@ document.addEventListener("submit", event => {
   if (costForm) { event.preventDefault(); const planId = costForm.dataset.planCostForm, plan = planFor(planId), values = Object.fromEntries(new FormData(costForm)); syncPlanDayEditors(planId); plan.adjustments.push({ id: crypto.randomUUID(), dayId: values.dayId, category: values.category, description: values.description.trim(), amount: Number(values.amount), verification: values.verification }); markPlanDirty(planId); renderPlans(); return; }
   const commentForm = event.target.closest("[data-plan-comment-form]");
   if (commentForm) { event.preventDefault(); const planId = commentForm.dataset.planCommentForm, plan = planFor(planId), values = Object.fromEntries(new FormData(commentForm)); syncPlanDayEditors(planId); plan.comments.push({ id: crypto.randomUUID(), message: values.message.trim() }); markPlanDirty(planId); renderPlans(); }
+});
+document.addEventListener("dragstart", event => {
+  const handle = event.target.closest?.("[data-drag-plan-day]");
+  if (!handle) return;
+  draggedPlanDay = { planId: handle.dataset.planId, dayId: handle.dataset.dayId };
+  event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", handle.dataset.dayId);
+  handle.closest("[data-plan-day]")?.classList.add("planDay--dragging");
+});
+document.addEventListener("dragover", event => {
+  const target = event.target.closest?.("[data-plan-day-dropzone]");
+  if (!target || !draggedPlanDay || target.dataset.planId !== draggedPlanDay.planId) return;
+  event.preventDefault(); event.dataTransfer.dropEffect = "move";
+  document.querySelectorAll(".planDay--dropTarget").forEach(node => node.classList.remove("planDay--dropTarget"));
+  target.classList.add("planDay--dropTarget");
+});
+document.addEventListener("drop", event => {
+  const target = event.target.closest?.("[data-plan-day-dropzone]");
+  if (!target || !draggedPlanDay || target.dataset.planId !== draggedPlanDay.planId || target.dataset.planDay === draggedPlanDay.dayId) return;
+  event.preventDefault();
+  const plan = planFor(draggedPlanDay.planId); syncPlanDayEditors(draggedPlanDay.planId);
+  const source = plan?.days.find(day => day.id === draggedPlanDay.dayId), destination = plan?.days.find(day => day.id === target.dataset.planDay);
+  if (source && destination) {
+    const sourceDate = source.date; source.date = destination.date; destination.date = sourceDate;
+    plan.days.sort((left, right) => String(left.date).localeCompare(String(right.date)));
+    markPlanDirty(plan.planId); renderPlans();
+    document.querySelector(`[data-plan="${CSS.escape(plan.planId)}"] [data-plan-day="${CSS.escape(source.id)}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+});
+document.addEventListener("dragend", () => {
+  draggedPlanDay = null;
+  document.querySelectorAll(".planDay--dragging,.planDay--dropTarget").forEach(node => node.classList.remove("planDay--dragging", "planDay--dropTarget"));
 });
 $("#availabilityForm").addEventListener("submit", event => { event.preventDefault(); const form = event.currentTarget, button = form.querySelector("button"), values = Object.fromEntries(new FormData(form)); button.disabled = true; mutate("/api/guide/availability", "POST", values).then(() => { form.reset(); return refreshCurrent(); }).catch(error => { button.disabled = false; alert(error.message); }); });
 $("#providerSelect").addEventListener("change", event => { if (!dirtyPlans.size || confirm(language === "es" ? "Hay cambios sin guardar. ¿Cambiar de guía y descartarlos?" : "You have unsaved changes. Switch guides and discard them?")) load(event.target.value); else event.target.value = data.providerId || data.providerName; });

@@ -100,7 +100,12 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /guestBelowGuideQuote/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
-  assert.match(guideHtml, /guide-20261031-v43/);
+  assert.match(guideHtml, /guide-20261031-v44/);
+  assert.match(guide, /function renderPlanChecklist/);
+  assert.match(guide, /data-shift-plan-dates/);
+  assert.match(guide, /data-discard-plan/);
+  assert.match(guide, /data-drag-plan-day/);
+  assert.match(guide, /adminReviewWorkspace/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
   assert.match(studioJs, /Prepare Guest Itinerary/);
@@ -121,6 +126,9 @@ test("large collaborative plans remain bounded but saveable and CRM uses the lin
   assert.match(crm, /guidePlanForRecord/);
   assert.match(crm, /guidePlanTitle/);
   assert.match(crm, /source:\s*"guide_plan"/);
+  const app = fs.readFileSync(new URL("../admin/app/app.mjs", import.meta.url), "utf8");
+  assert.match(app, /planAttentionMeta/);
+  assert.match(app, /Last activity:/);
 });
 
 test("stored plans remain complete while staying below the guarded n8n form limit", async () => {
