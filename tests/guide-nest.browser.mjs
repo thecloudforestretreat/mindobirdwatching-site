@@ -200,6 +200,8 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.doesNotMatch(await page.locator("#planList").innerText(), /Revisión de precios MBW|Precio MBW|Margen sobre costo/);
     assert.equal(await page.getByRole("button", { name: "Guardar borrador", exact: true }).count(), 1);
     assert.equal(await page.getByRole("button", { name: "Enviar itinerario preliminar a MBW", exact: true }).count(), 1);
+    assert.equal(await page.locator(".planWorkflow").count(), 1);
+    assert.match(await page.locator(".planWorkflow").innerText(), /Asignado[\s\S]*Borrador del guía[\s\S]*Revisión MBW[\s\S]*Aprobado[\s\S]*Versión del huésped/);
     assert.equal(await page.locator(".planActions--guide").evaluate(element => getComputedStyle(element).position), "static");
     assert.equal(await page.locator("[data-move-plan-day]").count(), 12);
     await page.locator('[data-move-plan-day][data-day-id="day-1"][data-direction="1"]').click();
@@ -210,7 +212,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.deepEqual(await page.locator("[data-plan-day]").evaluateAll(days => days.slice(0, 2).map(day => day.dataset.planDay)), ["day-1", "day-2"]);
     assert.equal(await page.getByRole("button", { name: "Solicitar cambios", exact: true }).count(), 0);
     assert.equal(await page.getByRole("button", { name: "Aprobar plan", exact: true }).count(), 0);
-    assert.match(await page.locator("#planList").innerText(), /\$795[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /\$515[.,]00/);
     assert.match(await page.locator("#planList").innerText(), /Salida del hotel hacia Mindo/);
     assert.match(await page.locator("#planList").innerText(), /Hotel cerca del aeropuerto de Quito/);
     assert.match(await page.locator("#planList").innerText(), /Ciudad donde se hospeda\s+Mindo/i);
@@ -261,7 +263,7 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     await page.locator('[data-plan-cost-form="robert-2027"] select[name="category"]').selectOption("lodging");
     await page.locator('[data-plan-cost-form="robert-2027"] button[type="submit"]').click();
     await page.getByText("Alojamiento · Intag lodging", { exact: true }).waitFor();
-    assert.match(await page.locator("#planList").innerText(), /\$880[.,]00/);
+    assert.match(await page.locator("#planList").innerText(), /\$600[.,]00/);
     assert.match(await page.locator("#planList").innerText(), /Comentarios y preguntas/);
     await page.locator('[data-plan-comment-form="robert-2027"] textarea').fill("¿Puede MBW confirmar el alojamiento?");
     await page.getByRole("button", { name: "Agregar comentario", exact: true }).click();
@@ -334,11 +336,13 @@ test("Guide Nest keeps booked tour actions, calendar, sightings, and sharing usa
     assert.equal(await page.locator("[data-lodging-price]").count(), 7);
     assert.equal(await page.locator("[data-markup-percent]").count(), 7);
     const firstMarkup = page.locator("[data-markup-percent]").first(), firstFinalPrice = page.locator("[data-mbw-price]").first();
-    await firstMarkup.fill("33");
-    assert.equal(await firstFinalPrice.inputValue(), "359.10");
-    await firstFinalPrice.fill("400");
-    assert.equal(await firstMarkup.inputValue(), "48.1");
-    assert.match(await page.locator("[data-profit-for]").first().innerText(), /130[.,]00/);
+    assert.equal(await firstMarkup.isEditable(), false);
+    assert.equal(await firstFinalPrice.isEditable(), false);
+    const firstGuestAmount = page.locator('[data-guest-lines-for="day-1"] input[name="guestAmount"]').first();
+    await firstGuestAmount.fill("125");
+    assert.equal(await firstFinalPrice.inputValue(), "315.00");
+    assert.equal(await firstMarkup.inputValue(), "16.7");
+    assert.match(await page.locator("[data-profit-for]").first().innerText(), /45[.,]00/);
     assert.match(await page.locator(".planActions").first().innerText(), /controles de administrador/i);
     await page.locator("#newPlanButton").click();
     await page.locator('#newPlanForm [name="guestName"]').fill("Alice Rivera");

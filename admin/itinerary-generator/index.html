@@ -831,8 +831,26 @@
       function productDisplayName(item, language='en'){
         const preset = inferProductPreset(item);
         if(preset !== 'Other') return productOptionLabel(preset,language);
-        return translateKnownText(item && item.name,language);
+        return itemText(item,'name',language) || translateKnownText(item && item.name,language);
       }
+
+      function itemText(item,key,language='en'){
+        if(!item) return '';
+        const spanishKey = key + 'Es';
+        return String(language === 'es' ? (item[spanishKey] || item[key] || '') : (item[key] || item[spanishKey] || ''));
+      }
+      function groupMeta(items,language='en'){
+        const source = (items || []).find(item => item.dayTitle || item.dayTitleEs) || (items || [])[0] || {};
+        return {
+          title:itemText(source,'dayTitle',language),
+          details:itemText(source,'dayDetails',language),
+          pickup:itemText(source,'pickupLocation',language),
+          dropoff:itemText(source,'dropoffLocation',language),
+          overnight:itemText(source,'overnightCity',language)
+        };
+      }
+      function groupTotal(items){return (items || []).reduce((sum,item)=>sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);}
+      function itemPriceIsVisible(item){return Boolean(item?.showZeroPrice) || Number(item?.quantity || 0) * Number(item?.unitPrice || 0) !== 0;}
 
       const $ = (id) => document.getElementById(id);
       const state = { items: [], inquiryId:'', itineraryVersion:0, itineraryStatus:'draft', crmRecord:null, sourcePlanId:'', sourcePlanUpdatedAt:'' };
@@ -956,7 +974,7 @@
       }
       function defaultItem(overrides = {}){
         const item = Object.assign({
-          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Custom', productPreset:'Other', name:'', note:'', quantity:1, unitPrice:0, catalogUnitPrice:0, pricingModel:'custom', minimumGuests:0
+          id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Custom', productPreset:'Other', name:'', nameEs:'', note:'', noteEs:'', dayTitle:'', dayTitleEs:'', dayDetails:'', dayDetailsEs:'', pickupLocation:'', pickupLocationEs:'', dropoffLocation:'', dropoffLocationEs:'', overnightCity:'', overnightCityEs:'', showZeroPrice:false, quantity:1, unitPrice:0, catalogUnitPrice:0, pricingModel:'custom', minimumGuests:0
         },overrides);
         const parts = timeParts(item.startTime);
         item.startHour = item.startHour || parts.hour;
@@ -1202,9 +1220,15 @@
         const stage = itineraryStage(data);
         const sum = totals(data);
         const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
-        const dayMarkup = groupedItems(validItems).map(([date,items]) => `
+        const dayMarkup = groupedItems(validItems).map(([date,items],groupIndex) => {
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
+          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
+          return `
           <section class="dayBlock">
-            <h3 class="dayTitle">${escapeHtml(formatDate(date,data.language))}</h3>
+            <h3 class="dayTitle">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h3>
+            ${meta.title ? `<h4 style="margin:-8px 0 8px;color:#071923;font-size:18px;line-height:24px;">${escapeHtml(meta.title)}</h4>` : ''}
+            ${meta.details ? `<p class="serviceNote" style="margin:0 0 8px;">${escapeHtml(meta.details)}</p>` : ''}
+            ${logistics ? `<p class="serviceNote" style="margin:0 0 12px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}
             <div class="timeline">
               ${items.map(item => {
                 const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
@@ -1214,18 +1238,22 @@
                     <div>
                       <span class="serviceType">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
                       <div class="serviceName">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
-                      ${item.note ? `<p class="serviceNote">${escapeHtml(translateKnownText(item.note,data.language))}</p>` : ''}
+                      ${itemText(item,'note',data.language) ? `<p class="serviceNote">${escapeHtml(itemText(item,'note',data.language))}</p>` : ''}
                     </div>
-                    ${data.showItemPrices && lineTotal ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
+                    ${data.showItemPrices && itemPriceIsVisible(item) ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
                   </div>`;
               }).join('')}
             </div>
-          </section>`).join('');
+            ${data.showItemPrices ? `<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</span><strong>${money(dayTotal,data.language)}</strong></div>` : ''}
+          </section>`;
+        }).join('');
 
-        const pricingLines = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0) !== 0).map(item => {
-          const total = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-          const qty = Number(item.quantity || 0);
-          return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
+        const pricingLines = groupedItems(validItems.filter(itemPriceIsVisible)).map(([date,items],groupIndex) => {
+          const lines=items.map(item => {
+            const total = Number(item.quantity || 0) * Number(item.unitPrice || 0), qty = Number(item.quantity || 0);
+            return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
+          }).join('');
+          return `<h4 style="margin:14px 0 4px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</h4>${lines}<div class="priceLine total"><span>${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</span><strong>${money(groupTotal(items),data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -1313,7 +1341,9 @@
           </table>`
         ));
 
-        groupedItems(validItems).forEach(([date,items]) => {
+        groupedItems(validItems).forEach(([date,items],groupIndex) => {
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
+          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
           const itemRows = items.map(item => {
             const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
             return `<tr><td style="padding:0 0 10px;">
@@ -1324,27 +1354,30 @@
                   <td valign="top" style="padding:13px 8px;">
                     <span style="display:inline-block;padding:4px 7px;border-radius:999px;background:#EAF6DF;color:#0D5925;font-size:10px;line-height:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:900;">${escapeHtml(serviceTypeLabel(item.type,data.language))}</span>
                     <strong style="display:block;margin-top:6px;color:#071923;font-size:15px;line-height:20px;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}</strong>
-                    ${item.note ? `<span style="display:block;margin-top:2px;color:#536067;font-size:12px;line-height:17px;font-weight:700;">${escapeHtml(translateKnownText(item.note,data.language))}</span>` : ''}
+                    ${itemText(item,'note',data.language) ? `<span style="display:block;margin-top:2px;color:#536067;font-size:12px;line-height:17px;font-weight:700;">${escapeHtml(itemText(item,'note',data.language))}</span>` : ''}
                   </td>
-                  <td width="86" valign="top" align="right" style="padding:14px 13px 13px 6px;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;white-space:nowrap;">${data.showItemPrices && lineTotal ? money(lineTotal,data.language) : ''}</td>
+                  <td width="86" valign="top" align="right" style="padding:14px 13px 13px 6px;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;white-space:nowrap;">${data.showItemPrices && itemPriceIsVisible(item) ? money(lineTotal,data.language) : ''}</td>
                 </tr>
               </table>
             </td></tr>`;
           }).join('');
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-              <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(formatDate(date,data.language))}</h2></td></tr>
+              <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h2>${meta.title ? `<strong style="display:block;margin-top:6px;color:#071923;font-size:17px;line-height:23px;">${escapeHtml(meta.title)}</strong>` : ''}${meta.details ? `<p style="margin:8px 0 0;color:#536067;font-size:13px;line-height:20px;">${escapeHtml(meta.details)}</p>` : ''}${logistics ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}</td></tr>
               <tr><td style="padding:0 14px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemRows}</table></td></tr>
+              ${data.showItemPrices ? `<tr><td style="padding:0 22px 18px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(dayTotal,data.language)}</td></tr></table></td></tr>` : ''}
             </table>`
           ));
         });
 
-        const priced = validItems.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
+        const priced = validItems.filter(itemPriceIsVisible);
         if(priced.length){
-          const priceRows = priced.map(item => {
-            const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0);
-            const qty = Number(item.quantity || 0);
-            return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
+          const priceRows = groupedItems(priced).map(([date,items],groupIndex) => {
+            const rows=items.map(item => {
+              const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0), qty = Number(item.quantity || 0);
+              return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
+            }).join('');
+            return `<tr><td colspan="2" style="padding:14px 0 4px;color:#0D5925;font-size:14px;line-height:19px;font-weight:900;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</td></tr>${rows}<tr><td style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</td><td align="right" style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${money(groupTotal(items),data.language)}</td></tr>`;
           }).join('');
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;">
@@ -1414,19 +1447,26 @@
         const sum = totals(data);
         const lines = [`${c.hi} ${guestFirstName(data.guestName) || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
         groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
-          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(formatShortDate(date,data.language));
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
+          if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`);
+          if(meta.title) lines.push(`*${meta.title}*`);
           items.forEach(item => {
             const time = formatTime(item.startTime,data.language);
             const durationText = translateKnownText(item.duration,data.language);
             const duration = durationText ? ` (${durationText})` : '';
             lines.push(`${time} - ${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
           });
+          if(data.showItemPrices) lines.push(`${data.language==='es'?'Total del día':'Daily total'}: ${money(dayTotal,data.language)}`);
           lines.push('');
         });
-        const priced = data.items.filter(item => Number(item.quantity || 0) * Number(item.unitPrice || 0));
+        const priced = data.items.filter(itemPriceIsVisible);
         if(priced.length){
           lines.push(`${c.pricingLabel}:`);
-          priced.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
+          groupedItems(priced).forEach(([date,items],groupIndex)=>{
+            lines.push(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`);
+            items.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
+            lines.push(`Subtotal: ${money(groupTotal(items),data.language)}`);
+          });
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`);
           if(sum.received) lines.push(`${c.depositReceived}: -${money(sum.received,data.language)}`,`${c.balanceDue}: ${money(sum.balance,data.language)}`);
@@ -1588,14 +1628,27 @@
           const hasQuantity = raw.quantity !== undefined && raw.quantity !== null && raw.quantity !== '';
           const hasUnitPrice = raw.unitPrice !== undefined && raw.unitPrice !== null && raw.unitPrice !== '';
           return defaultItem({
-            id:uid(),
+            id:raw.id || uid(),
             date:raw.date || draft.startDate || '',
             startTime:raw.startTime || '',
             duration:raw.duration || '',
             type:SERVICE_TYPES.includes(raw.type) ? raw.type : 'Custom',
             productPreset:knownProduct ? requestedProduct : 'Other',
             name:knownProduct ? requestedProduct : String(raw.name || requestedProduct),
+            nameEs:String(raw.nameEs || raw.name || requestedProduct),
             note:raw.note || raw.description || '',
+            noteEs:raw.noteEs || raw.note || raw.description || '',
+            dayTitle:raw.dayTitle || '',
+            dayTitleEs:raw.dayTitleEs || raw.dayTitle || '',
+            dayDetails:raw.dayDetails || '',
+            dayDetailsEs:raw.dayDetailsEs || raw.dayDetails || '',
+            pickupLocation:raw.pickupLocation || '',
+            pickupLocationEs:raw.pickupLocationEs || raw.pickupLocation || '',
+            dropoffLocation:raw.dropoffLocation || '',
+            dropoffLocationEs:raw.dropoffLocationEs || raw.dropoffLocation || '',
+            overnightCity:raw.overnightCity || '',
+            overnightCityEs:raw.overnightCityEs || raw.overnightCity || '',
+            showZeroPrice:raw.showZeroPrice === true,
             quantity:hasQuantity ? Number(raw.quantity) : (rule?.model === 'per_person' ? Math.max(1,Number(draft.guestCount || 1)) : 1),
             unitPrice:hasUnitPrice ? Number(raw.unitPrice) : ''
           });
@@ -1768,10 +1821,10 @@
         applyLanguageDefaults(language,true);
         state.items = state.items.map(item => ({
           ...item,
-          name:inferProductPreset(item) === 'Other' ? translateKnownText(item.name,language) : inferProductPreset(item),
+          name:item.nameEs ? item.name : (inferProductPreset(item) === 'Other' ? translateKnownText(item.name,language) : inferProductPreset(item)),
           productPreset:inferProductPreset(item),
           duration:normalizeDurationChoice(item.duration,item.type),
-          note:translateKnownText(item.note,language)
+          note:item.noteEs ? item.note : translateKnownText(item.note,language)
         }));
         renderEditors();
         updateAll(false);

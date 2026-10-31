@@ -83,6 +83,13 @@ export async function onRequestPost({ request, env, params }) {
     })) {
       return json(400, { ok: false, code: "PLAN_GUEST_BREAKDOWN", error: "Complete the guest-facing price breakdown for every day. Each breakdown must equal that day's final price." });
     }
+    if (requestedStatus === "approved" && plan.days.some(day => {
+      const guideQuote = Number(day.originalCost || 0) + (plan.adjustments || []).filter(item => item.dayId === day.id).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const guestTotal = (plan.mbwPricing?.days?.find(item => item.dayId === day.id)?.guestLines || []).reduce((sum, line) => sum + Number(line.amount || 0), 0);
+      return guestTotal + 0.009 < guideQuote;
+    })) {
+      return json(400, { ok: false, code: "PLAN_PRICING_FLOOR", error: "A guest-facing daily total cannot be lower than the guide's quote." });
+    }
     if (!plan.providerId && !plan.providerName) return json(400, { ok: false, error: "The plan needs an assigned guide." });
     const changed = JSON.stringify(current.days) !== JSON.stringify(plan.days) || JSON.stringify(current.adjustments) !== JSON.stringify(plan.adjustments) || JSON.stringify(current.mbwPricing || {}) !== JSON.stringify(plan.mbwPricing || {}) || comments.length !== (current.comments || []).length || current.status !== plan.status;
     if (changed) {

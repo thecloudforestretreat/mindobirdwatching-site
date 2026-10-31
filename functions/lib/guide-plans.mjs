@@ -361,17 +361,25 @@ export function sanitizePlan(input, current = robertPlan()) {
   const pricingByDay = new Map(Array.isArray(pricingInput.days) ? pricingInput.days.map(item => [String(item?.dayId || ""), item]) : []);
   const mbwPricing = {
     currency: "USD",
-    days: normalizedDays.map(day => ({
-      dayId: day.id,
-      sellPrice: number(pricingByDay.get(day.id)?.sellPrice),
-      lodgingPrice: number(pricingByDay.get(day.id)?.lodgingPrice),
-      guestLines: sortPlanCosts((Array.isArray(pricingByDay.get(day.id)?.guestLines) ? pricingByDay.get(day.id).guestLines : []).slice(0, 20).map((line, lineIndex) => ({
+    days: normalizedDays.map(day => {
+      const submittedPricing = pricingByDay.get(day.id) || {};
+      const guestLines = sortPlanCosts((Array.isArray(submittedPricing.guestLines) ? submittedPricing.guestLines : []).slice(0, 20).map((line, lineIndex) => ({
         id: text(line.id || `${day.id}-guest-${lineIndex + 1}`, 80),
         category: GUEST_LINE_CATEGORIES.has(line.category) ? line.category : "other",
         label: bilingual(line.label, {}, 160),
         amount: number(line.amount),
-      })).filter(line => (line.label.es || line.label.en) && line.amount >= 0)),
-    })),
+      })).filter(line => (line.label.es || line.label.en) && line.amount >= 0));
+      // Guest lines are the pricing source of truth. Keep legacy totals only
+      // until an itemized breakdown exists, then derive both totals so stale
+      // hidden fields can never disagree with the itinerary sent to a guest.
+      const sellPrice = guestLines.length
+        ? guestLines.reduce((sum, line) => sum + number(line.amount), 0)
+        : number(submittedPricing.sellPrice);
+      const lodgingPrice = guestLines.length
+        ? guestLines.filter(line => line.category === "lodging").reduce((sum, line) => sum + number(line.amount), 0)
+        : number(submittedPricing.lodgingPrice);
+      return { dayId: day.id, sellPrice, lodgingPrice, guestLines };
+    }),
     notes: text(pricingInput.notes, 1000),
     approvedAt: text(pricingInput.approvedAt, 80),
     approvedBy: text(pricingInput.approvedBy, 120),
@@ -426,12 +434,15 @@ export function guestItineraryDraft(plan) {
       productPreset: "Other",
       name: line.label.en || line.label.es,
       nameEs: line.label.es || line.label.en,
-      note: lineIndex === 0 ? [day.details?.en || day.details?.es || "", `Pickup: ${day.pickupLocation?.en || day.pickupLocation?.es || "To be confirmed"}`, `Drop-off: ${day.dropoffLocation?.en || day.dropoffLocation?.es || "To be confirmed"}`, `Overnight: ${day.overnightCity?.en || day.overnightCity?.es || "To be confirmed"}`].filter(Boolean).join("\n") : "",
-      noteEs: lineIndex === 0 ? [day.details?.es || day.details?.en || "", `Recogida: ${day.pickupLocation?.es || day.pickupLocation?.en || "Por confirmar"}`, `Llegada: ${day.dropoffLocation?.es || day.dropoffLocation?.en || "Por confirmar"}`, `Noche: ${day.overnightCity?.es || day.overnightCity?.en || "Por confirmar"}`].filter(Boolean).join("\n") : "",
+      note: "",
+      noteEs: "",
       quantity: 1,
       unitPrice: number(line.amount),
+      showZeroPrice: true,
       dayTitle: day.title?.en || day.title?.es || "",
       dayTitleEs: day.title?.es || day.title?.en || "",
+      dayDetails: day.details?.en || day.details?.es || "",
+      dayDetailsEs: day.details?.es || day.details?.en || "",
       pickupLocation: day.pickupLocation?.en || day.pickupLocation?.es || "",
       pickupLocationEs: day.pickupLocation?.es || day.pickupLocation?.en || "",
       dropoffLocation: day.dropoffLocation?.en || day.dropoffLocation?.es || "",
@@ -454,6 +465,7 @@ export function guestItineraryDraft(plan) {
     language: "en",
     brandId: "mbw",
     itineraryStage: "preliminary",
+    showItemPrices: true,
     items,
   };
 }

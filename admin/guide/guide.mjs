@@ -1,4 +1,4 @@
-import { summarizeGuestDay, summarizeGuestItinerary } from "./pricing.mjs?v=guide-20261030-v42";
+import { summarizeGuestDay, summarizeGuestItinerary } from "./pricing.mjs?v=guide-20261031-v43";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -347,6 +347,18 @@ function renderOffers() {
 
 const money = value => new Intl.NumberFormat(language === "es" ? "es-EC" : "en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
 const planStatusLabel = value => t({ guide_drafting: "guideDrafting", admin_review: "adminReview", changes_requested: "changesRequested", approved: "approved" }[value] || "guideDrafting");
+
+function renderPlanWorkflow(plan) {
+  const labels = language === "es"
+    ? ["Asignado", "Borrador del guía", "Revisión MBW", "Aprobado", "Versión del huésped"]
+    : ["Assigned", "Guide draft", "MBW review", "Approved", "Guest version"];
+  const activeIndex = plan.status === "approved" ? 4 : plan.status === "admin_review" ? 2 : 1;
+  const attention = plan.status === "changes_requested";
+  return `<nav class="planWorkflow${attention ? " planWorkflow--attention" : ""}" aria-label="${esc(language === "es" ? "Progreso del itinerario" : "Itinerary progress")}">${labels.map((label, index) => {
+    const state = index < activeIndex ? "complete" : index === activeIndex ? "active" : "pending";
+    return `<span class="${state}"><i>${index < activeIndex ? "✓" : index + 1}</i><b>${esc(label)}</b></span>`;
+  }).join("")}${attention ? `<small>${esc(language === "es" ? "MBW solicitó cambios; vuelve a enviar el borrador cuando esté listo." : "MBW requested changes; resubmit the draft when it is ready.")}</small>` : ""}</nav>`;
+}
 const costCategoryLabel = value => t({ transportation: "transportation", guide: "guideCost", food: "food", lodging: "lodging", entrance: "entrance", reserve: "reserve", activity: "activity", other: "other" }[value] || "other");
 const verificationLabel = value => t({ needs_verification: "needsVerification", estimated: "estimated", confirmed: "confirmedCost" }[value] || "needsVerification");
 
@@ -519,12 +531,23 @@ function rebuildGuestBreakdown(planId, dayId) {
 }
 
 function backfillMissingGuestBreakdowns(plan) {
-  if (!isAdminReview() || !Array.isArray(plan?.mbwPricing?.days)) return false;
+  if (!isAdminReview() || !plan) return false;
+  if (!plan.mbwPricing || typeof plan.mbwPricing !== "object") plan.mbwPricing = { currency: "USD", days: [] };
+  if (!Array.isArray(plan.mbwPricing.days)) plan.mbwPricing.days = [];
   let changed = false;
   plan.days.forEach(day => {
-    const pricing = plan.mbwPricing.days.find(item => item.dayId === day.id);
-    if (!pricing || Number(pricing.sellPrice || 0) <= 0 || pricing.guestLines?.length) return;
-    pricing.guestLines = suggestedGuestLines(plan, day.id, Number(pricing.sellPrice), Number(pricing.lodgingPrice || 0));
+    let pricing = plan.mbwPricing.days.find(item => item.dayId === day.id);
+    if (!pricing) {
+      pricing = { dayId: day.id, sellPrice: 0, lodgingPrice: 0, guestLines: [] };
+      plan.mbwPricing.days.push(pricing);
+    }
+    if (!pricing || pricing.guestLines?.length) return;
+    const guideQuote = guideDayCost(plan, day.id);
+    const startingPrice = Number(pricing.sellPrice || 0) || guideQuote;
+    if (startingPrice <= 0) return;
+    pricing.guestLines = suggestedGuestLines(plan, day.id, startingPrice, Number(pricing.lodgingPrice || 0));
+    pricing.sellPrice = pricing.guestLines.reduce((sum, line) => sum + Number(line.amount || 0), 0);
+    pricing.lodgingPrice = pricing.guestLines.filter(line => line.category === "lodging").reduce((sum, line) => sum + Number(line.amount || 0), 0);
     if (pricing.guestLines.length) changed = true;
   });
   return changed;
@@ -677,6 +700,7 @@ function renderPlans() {
     const actions = locked ? `<span class="planLocked">${t("approvedLocked")}</span>${isAdminReview() ? `<button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("reopenPlan")}</button>` : ""}` : isAdminReview() ? `<button class="actionNeutral" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="${esc(plan.status)}">${t("saveChanges")}</button><button class="actionWarning" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="changes_requested">${t("requestChanges")}</button>${plan.status === "admin_review" ? `<button class="actionSuccess" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="approved">${t("approvePlan")}</button>` : `<button class="actionSuccess" type="button" data-save-plan="${esc(plan.planId)}" data-plan-status="admin_review">${t("recordGuideConfirmation")}</button>`}` : guideActions;
     const localeStamp = plan.localeUpdatedAt?.[language];
     return `<details class="planWorkspace" data-plan="${esc(plan.planId)}" ${plans.length === 1 || planIndex === 0 || initialPlanId === plan.planId ? "open" : ""}><summary class="planHero"><div><span>${esc(planStatusLabel(plan.status))}</span><h2>${esc(localized(plan.title))}</h2><p>${esc(dateLabel(plan.startDate))} – ${esc(dateLabel(plan.endDate))} · ${esc(plan.providerName)}</p></div><img src="/assets/images/app/mbw-app-gold-transparent-180.png" alt=""></summary>
+      ${renderPlanWorkflow(plan)}
       <section class="planSection"><h3>${t("guestBrief")}</h3><div class="planBrief"><div><small>${t("travelerNeeds")}</small><strong>${esc(`${brief.guestCount || "1"} · ${localized(brief.traveler)}`)}</strong></div><div><small>${t("pickupDropoff")}</small><strong>${esc(`${localized(brief.pickup)} → ${localized(brief.dropoff)}`)}</strong></div><div><small>${t("lodging")}</small><strong>${esc(localized(brief.lodging))}</strong></div><div class="wide"><small>${t("originalRequest")}</small><strong>${esc(localized(brief.request))}</strong></div><div class="wide"><small>${language === "es" ? "Intereses" : "Interests"}</small><strong>${esc(localized(brief.interests))}</strong></div></div></section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span>${isAdminReview() ? `<button type="button" data-copy-guide-whatsapp="${esc(plan.planId)}">${esc(t("copyGuideWhatsApp"))}</button>` : ""}</div><p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}${language === "en" && !englishTranslationNeeded(plan) ? ` · ${esc(t("translationCurrent"))}` : ""}</p>${isAdminReview() && language === "en" && !locked && englishTranslationNeeded(plan) ? `<div class="planTranslation"><p>${esc(t("translationAutomatic"))}</p></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}</section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div>${readOnly ? "" : `<form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category">${costCategories.map(category => `<option value="${category}">${esc(costCategoryLabel(category))}</option>`).join("")}</select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form>`}</section>
@@ -707,6 +731,10 @@ async function savePlan(planId, status) {
     const pricing = plan.mbwPricing?.days?.find(item => item.dayId === day.id) || {}, lines = pricing.guestLines || [];
     return !lines.length || Math.abs(lines.reduce((sum, line) => sum + Number(line.amount || 0), 0) - Number(pricing.sellPrice || 0)) > 0.009;
   })) throw new Error(t("guestBreakdownMismatch"));
+  if (status === "approved" && isAdmin() && plan.days.some(day => {
+    const lines = plan.mbwPricing?.days?.find(item => item.dayId === day.id)?.guestLines || [];
+    return lines.reduce((sum, line) => sum + Number(line.amount || 0), 0) + 0.009 < guideDayCost(plan, day.id);
+  })) throw new Error(t("guestBelowGuideQuote"));
   if (["admin_review", "approved"].includes(status)) {
     const errors = planValidationErrors(plan);
     if (errors.length) { showPlanValidation(planId, errors); throw new Error(t("reviewIncomplete")); }

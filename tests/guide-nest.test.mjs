@@ -135,13 +135,13 @@ test("guide bootstrap returns only booked assignments for the selected guide and
       const body = JSON.parse(new URLSearchParams(options.body).get("payload"));
       const records = {
         list_assignments: [
-          { assignment_id: "A-1", inquiry_id: "I-1", service_date: "2026-10-23", start_time: "05:00", provider_id: "PROV-007", provider_name: "Neycer renamed", service_type: "Birdwatching", product_selected: "Five Toucans", pickup_location: "Mindo Lodge", assignment_status: "confirmed", internal_note: "PRIVATE NOTE" },
-          { assignment_id: "A-2", inquiry_id: "I-2", service_date: "2026-10-24", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "pending" },
-          { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2026-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
-          { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2026-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
-          { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2026-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
-          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2026-11-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
-          { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2026-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
+          { assignment_id: "A-1", inquiry_id: "I-1", service_date: "2099-10-23", start_time: "05:00", provider_id: "PROV-007", provider_name: "Neycer renamed", service_type: "Birdwatching", product_selected: "Five Toucans", pickup_location: "Mindo Lodge", assignment_status: "confirmed", internal_note: "PRIVATE NOTE" },
+          { assignment_id: "A-2", inquiry_id: "I-2", service_date: "2099-10-24", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "pending" },
+          { assignment_id: "A-3", inquiry_id: "I-3", service_date: "2099-10-24", provider_name: "Other Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
+          { assignment_id: "A-OLD", inquiry_id: "I-1", service_date: "2099-09-01", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "confirmed" },
+          { assignment_id: "AV-1", assignment_group_id: "AVAIL-1", assignment_kind: "availability", service_date: "2099-10-23", start_time: "04:00", end_time: "07:00", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Guide Unavailable", assignment_status: "confirmed" },
+          { assignment_id: "O-1", assignment_group_id: "OFFER-1", service_date: "2099-11-25", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", product_selected: "Custom birding package", assignment_status: "pending" },
+          { assignment_id: "A-4", inquiry_id: "I-4", service_date: "2099-10-24", provider_id: "PROV-007", provider_name: "Neycer · Night Walk Guide", service_type: "Birdwatching", assignment_status: "completed" },
         ],
         list_inquiries: [
           { inquiry_id: "I-1", guest_id: "G-1", full_name: "Booked Guest", phone_raw: "+1 (555) 123-4567", email: "private@example.test", country: "Luxembourg", status: "booked", guest_count: "2", pickup_location: "Mindo Lodge", notes: "PRIVATE" },
@@ -183,7 +183,7 @@ test("guide bootstrap returns only booked assignments for the selected guide and
     assert.equal(bookedTour.email, undefined);
     assert.match(bookedTour.guestMessage, /Mindo Lodge/);
     assert.match(bookedTour.guestMessage, /^Hello Booked, I’m Neycer from Mindo Bird Watching\./);
-    assert.match(bookedTour.guestMessage, /October 23, 2026 at 5:00 AM/);
+    assert.match(bookedTour.guestMessage, /October 23, 2099 at 5:00 AM/);
     assert.match(bookedTour.guestMessage, /\n\nPlease message me here/);
     assert.match(bookedTour.guestMessage, /\n\nThank you\.$/);
     assert.equal(completedTour.contactAvailable, false);

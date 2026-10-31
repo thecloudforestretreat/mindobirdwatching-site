@@ -31,6 +31,23 @@ test("explicit zero-dollar guide and guest cost lines remain visible", () => {
   assert.equal(plan.mbwPricing.days[0].guestLines.find(item => item.id === "guest-no-reserve-fee")?.amount, 0);
 });
 
+test("itemized guest lines are the authoritative final and lodging totals", () => {
+  const base = robertPlan();
+  const plan = sanitizePlan({ ...base, mbwPricing: { days: [{
+    dayId: base.days[0].id,
+    sellPrice: 999,
+    lodgingPrice: 999,
+    guestLines: [
+      { category: "guide", label: { en: "Private guiding" }, amount: 125 },
+      { category: "reserve", label: { en: "Reserve fee" }, amount: 0 },
+      { category: "transportation", label: { en: "Private transportation" }, amount: 130 },
+      { category: "lodging", label: { en: "Lodging" }, amount: 150 },
+    ],
+  }] } }, base);
+  assert.equal(plan.mbwPricing.days[0].sellPrice, 405);
+  assert.equal(plan.mbwPricing.days[0].lodgingPrice, 150);
+});
+
 test("Robert plan carries the dated lodging and route review without exposing MBW pricing to guides", () => {
   const plan = robertPlan({ providerId: "PROV-NEICER", name: "Neicer" });
   assert.match(plan.comments[0].message, /primeros 3 días en Mindo/);
@@ -79,9 +96,11 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /pricing\.sellPrice = guestTotal/);
   assert.match(guide, /savePricingDay: "Save day & continue"/);
   assert.match(guide, /data-finish-pricing-day/);
+  assert.match(guide, /function renderPlanWorkflow/);
+  assert.match(guide, /guestBelowGuideQuote/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
-  assert.match(guideHtml, /guide-20261030-v42/);
+  assert.match(guideHtml, /guide-20261031-v43/);
   assert.match(studio, /Custom itinerary reviews/);
   assert.match(studioJs, /\/api\/mobile\/plans/);
   assert.match(studioJs, /Prepare Guest Itinerary/);
@@ -130,14 +149,22 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
   const plan = sanitizePlan({ ...base, status: "approved", comments: [{ message: "PRIVATE COMMENT", author: "Juan", role: "admin" }], mbwPricing: {
     notes: "PRIVATE MARKUP NOTE",
     days: base.days.map(day => ({ dayId: day.id, sellPrice: 100, lodgingPrice: 25, guestLines: [
+      { category: "reserve", label: { en: "Reserve fee", es: "Tarifa de reserva" }, amount: 0 },
       { category: "activity", label: { en: "Private daily activities", es: "Actividades privadas del día" }, amount: 60 },
       { category: "transportation", label: { en: "Private transportation", es: "Transporte privado" }, amount: 20 },
       { category: "lodging", label: { en: "Lodging allowance", es: "Alojamiento provisional" }, amount: 20 },
     ] })),
   } }, base);
   const draft = guestItineraryDraft(plan);
-  assert.equal(draft.items.length, base.days.length * 3);
-  assert.deepEqual(draft.items.slice(0, 3).map(item => item.name), ["Private daily activities", "Private transportation", "Lodging allowance"]);
+  assert.equal(draft.showItemPrices, true);
+  assert.equal(draft.items.length, base.days.length * 4);
+  assert.deepEqual(draft.items.slice(0, 4).map(item => item.name), ["Reserve fee", "Private daily activities", "Private transportation", "Lodging allowance"]);
+  assert.equal(draft.items[0].showZeroPrice, true);
+  assert.equal(draft.items[0].dayTitle, base.days[0].title.en);
+  assert.equal(draft.items[0].dayDetails, base.days[0].details.en);
+  assert.equal(draft.items[0].pickupLocation, base.days[0].pickupLocation.en);
+  assert.equal(draft.items[0].dropoffLocation, base.days[0].dropoffLocation.en);
+  assert.equal(draft.items[0].overnightCity, base.days[0].overnightCity.en);
   const serialized = JSON.stringify(draft);
   assert.equal(serialized.includes("PRIVATE COMMENT"), false);
   assert.equal(serialized.includes("PRIVATE MARKUP NOTE"), false);
@@ -151,4 +178,14 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
     const denied = await getGuestItineraryDraft({ request: new Request("http://localhost/api/mobile/plans/robert-2027/itinerary-draft"), env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(denied.status, 403);
   } finally { globalThis.fetch = savedFetch; }
+});
+
+test("itinerary generator preserves approved daily structure and itemized subtotals", () => {
+  const generator = fs.readFileSync(new URL("../admin/itinerary-generator/index.html", import.meta.url), "utf8");
+  assert.match(generator, /function groupMeta/);
+  assert.match(generator, /function itemPriceIsVisible/);
+  assert.match(generator, /dayTitleEs/);
+  assert.match(generator, /dayDetailsEs/);
+  assert.match(generator, /Daily subtotal/);
+  assert.match(generator, /showZeroPrice/);
 });
