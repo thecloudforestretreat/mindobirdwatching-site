@@ -14,15 +14,16 @@ export async function onRequestGet(context) {
     );
   }
 
-  // Ignore cache-busting query parameters so every consumer shares one
-  // 30-minute edge-cached Google Places response.
+  // Use one canonical cache key for every visitor. Query parameters must
+  // never trigger another billable Google Places request.
   const cacheUrl = new URL(request.url);
-  cacheUrl.searchParams.delete("ts");
+  cacheUrl.search = "";
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cache = caches.default;
 
-  // 30 minutes
-  const TTL_SECONDS = 60 * 30;
+  // One refresh opportunity per day at each active edge region. Reviews do
+  // not need hourly freshness, and this keeps monthly API usage very low.
+  const TTL_SECONDS = 60 * 60 * 24;
 
   const cached = await cache.match(cacheKey);
   if (cached) return withCors(cached, cors);
@@ -87,7 +88,7 @@ export async function onRequestGet(context) {
   const normalized = normalizePlacesNew(body);
 
   const response = json(normalized, 200, {
-    "Cache-Control": `public, max-age=0, s-maxage=${TTL_SECONDS}`
+    "Cache-Control": `public, max-age=300, s-maxage=${TTL_SECONDS}, stale-while-revalidate=86400`
   });
 
   await cache.put(cacheKey, response.clone());
