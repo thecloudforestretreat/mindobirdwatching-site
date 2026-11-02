@@ -379,7 +379,9 @@
         var empty = byId("reviewsEmpty");
         if(hint) hint.textContent = "Loading…";
 
-        var url = "/api/reviews?ts=" + Date.now();
+        // The API owns its refresh interval. A unique query string would
+        // bypass shared caching and increase Google Places usage.
+        var url = "/api/reviews";
 
         fetchJson(url).then(function(data){
           applyData(data, "/api/reviews");
