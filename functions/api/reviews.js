@@ -18,6 +18,9 @@ export async function onRequestGet(context) {
   // never trigger another billable Google Places request.
   const cacheUrl = new URL(request.url);
   cacheUrl.search = "";
+  // Version the internal key so a cache-policy deployment cannot keep serving
+  // an older entry until its previous TTL expires.
+  cacheUrl.searchParams.set("__cache_version", "reviews-v2");
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cache = caches.default;
 
