@@ -12,6 +12,7 @@
   var progress = document.getElementById("guestStoryProgress");
   var progressBar = progress ? progress.querySelector("span") : null;
   var selected = [];
+  var nextPhotoId = 1;
   var maxFiles = 10;
   var maxFileBytes = 15 * 1024 * 1024;
   var maxTotalBytes = 75 * 1024 * 1024;
@@ -30,6 +31,9 @@
       failed: "The upload did not complete. Please try again.",
       submit: "Send my story and photos",
       remove: "Remove",
+      previewAlt: "Preview of selected photo",
+      captionLabel: "Caption, species and location",
+      captionPlaceholder: "Example: Plate-billed Mountain Toucan — Mindo, September 2026. Add what was happening or why this image matters.",
     },
     es: {
       empty: "Aún no has seleccionado imágenes.",
@@ -43,6 +47,9 @@
       failed: "La carga no se completó. Inténtalo de nuevo.",
       submit: "Enviar mi historia y fotografías",
       remove: "Eliminar",
+      previewAlt: "Vista previa de la fotografía seleccionada",
+      captionLabel: "Pie de foto, especie y lugar",
+      captionPlaceholder: "Ejemplo: Tucán Andino Piquilaminado — Mindo, septiembre de 2026. Cuenta qué ocurría o por qué esta imagen es especial.",
     },
   }[lang];
 
@@ -56,13 +63,18 @@
     status.hidden = !message;
   }
 
-  function validateFiles(files) {
-    if (files.length > maxFiles) return copy.tooMany;
+  function fileFrom(entry) {
+    return entry && entry.file ? entry.file : entry;
+  }
+
+  function validateFiles(entries) {
+    if (entries.length > maxFiles) return copy.tooMany;
     var total = 0;
-    for (var i = 0; i < files.length; i += 1) {
-      if (allowed.indexOf(files[i].type) < 0) return copy.badType;
-      if (files[i].size > maxFileBytes) return copy.tooLarge;
-      total += files[i].size;
+    for (var i = 0; i < entries.length; i += 1) {
+      var file = fileFrom(entries[i]);
+      if (allowed.indexOf(file.type) < 0) return copy.badType;
+      if (file.size > maxFileBytes) return copy.tooLarge;
+      total += file.size;
     }
     if (total > maxTotalBytes) return copy.total;
     return "";
@@ -77,32 +89,71 @@
       list.appendChild(empty);
       return;
     }
-    selected.forEach(function (file, index) {
+    selected.forEach(function (photo, index) {
       var item = document.createElement("li");
+      var preview = document.createElement("img");
+      var body = document.createElement("div");
+      var heading = document.createElement("div");
       var details = document.createElement("span");
       var name = document.createElement("strong");
       var size = document.createElement("small");
       var remove = document.createElement("button");
-      name.textContent = file.name;
-      size.textContent = bytes(file.size);
+      var captionLabel = document.createElement("label");
+      var captionTitle = document.createElement("span");
+      var caption = document.createElement("textarea");
+      item.className = "photo-caption-card";
+      preview.className = "photo-caption-preview";
+      preview.src = photo.previewUrl;
+      preview.alt = copy.previewAlt + " " + (index + 1);
+      body.className = "photo-caption-body";
+      heading.className = "photo-caption-heading";
+      details.className = "photo-caption-details";
+      name.textContent = photo.file.name;
+      size.textContent = bytes(photo.file.size);
       details.appendChild(name);
       details.appendChild(size);
       remove.type = "button";
+      remove.className = "photo-remove";
       remove.textContent = copy.remove;
       remove.addEventListener("click", function () {
+        URL.revokeObjectURL(selected[index].previewUrl);
         selected.splice(index, 1);
         renderFiles();
       });
-      item.appendChild(details);
-      item.appendChild(remove);
+      heading.appendChild(details);
+      heading.appendChild(remove);
+      captionLabel.className = "photo-caption-field";
+      captionTitle.textContent = (index + 1) + ". " + copy.captionLabel;
+      caption.id = photo.id;
+      caption.maxLength = 1000;
+      caption.rows = 3;
+      caption.placeholder = copy.captionPlaceholder;
+      caption.value = photo.caption;
+      caption.setAttribute("aria-label", copy.captionLabel + " " + (index + 1));
+      caption.addEventListener("input", function () { photo.caption = caption.value; });
+      captionLabel.appendChild(captionTitle);
+      captionLabel.appendChild(caption);
+      body.appendChild(heading);
+      body.appendChild(captionLabel);
+      item.appendChild(preview);
+      item.appendChild(body);
       list.appendChild(item);
     });
   }
 
   function addFiles(fileList) {
-    var candidates = selected.concat(Array.prototype.slice.call(fileList || []));
+    var newPhotos = Array.prototype.slice.call(fileList || []).map(function (file) {
+      return {
+        file: file,
+        caption: "",
+        previewUrl: URL.createObjectURL(file),
+        id: "guestPhotoCaption" + nextPhotoId++,
+      };
+    });
+    var candidates = selected.concat(newPhotos);
     var error = validateFiles(candidates);
     if (error) {
+      newPhotos.forEach(function (photo) { URL.revokeObjectURL(photo.previewUrl); });
       setStatus(error, "error");
       return;
     }
@@ -149,7 +200,10 @@
 
     var data = new FormData(form);
     data.delete("photos");
-    selected.forEach(function (file) { data.append("photos", file, file.name); });
+    data.set("photo_captions_json", JSON.stringify(selected.map(function (photo, index) {
+      return { index: index, original_name: photo.file.name, caption: photo.caption.trim() };
+    })));
+    selected.forEach(function (photo) { data.append("photos", photo.file, photo.file.name); });
     data.set("source_page", window.location.href);
 
     var xhr = new XMLHttpRequest();
@@ -172,6 +226,7 @@
         progressBar.style.width = "100%";
         setStatus(copy.success + response.submission_id, "success");
         form.reset();
+        selected.forEach(function (photo) { URL.revokeObjectURL(photo.previewUrl); });
         selected = [];
         renderFiles();
         if (window.turnstile) window.turnstile.reset();

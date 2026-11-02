@@ -32,6 +32,19 @@ function safeBaseName(name) {
     .slice(0, 80) || "photo";
 }
 
+function parsePhotoCaptions(value) {
+  try {
+    const parsed = JSON.parse(clean(value, 20000));
+    if (!Array.isArray(parsed)) return [];
+    return parsed.slice(0, MAX_FILES).map((entry, index) => ({
+      index,
+      caption: clean(entry && entry.caption, 1000),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 function isFile(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function" && Number.isFinite(value.size);
 }
@@ -105,6 +118,7 @@ export async function onRequestPost({ request, env }) {
   const rightsConfirmed = clean(form.get("rights_confirmed"), 20) === "yes";
   const publicationPermission = clean(form.get("publication_permission"), 20) === "yes";
   const finalReview = clean(form.get("final_review"), 40);
+  const photoCaptions = parsePhotoCaptions(form.get("photo_captions_json"));
 
   if (!ALLOWED_STORIES.has(storyId)) return json({ ok: false, message: "This story invitation is not valid." }, 400);
   if (!guestName || !/^\S+@\S+\.\S+$/.test(guestEmail)) return json({ ok: false, message: "Your name and a valid email address are required." }, 400);
@@ -136,10 +150,11 @@ export async function onRequestPost({ request, env }) {
     original_name: clean(file.name, 180),
     content_type: file.type,
     bytes: file.size,
+    caption: photoCaptions[index]?.caption || "",
   }));
 
   const manifest = {
-    schema_version: 2,
+    schema_version: 3,
     submission_id: submissionId,
     story_id: storyId,
     submitted_at: submittedAt,
@@ -167,6 +182,12 @@ export async function onRequestPost({ request, env }) {
       corrections: clean(form.get("corrections"), 2400),
       guided_checklists: clean(form.get("guided_checklists"), 2000),
       captions: clean(form.get("captions"), 5000),
+      photo_captions: storedFiles.map((file, index) => ({
+        index,
+        original_name: file.original_name,
+        drive_name: file.drive_name,
+        caption: file.caption,
+      })),
     },
     permissions: {
       credit_line: creditLine,
