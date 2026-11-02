@@ -73,6 +73,12 @@ body[data-css-cluster="guest_stories"] .hero-image.shannon-barbet-hero .image-no
   bottom:78px;
 }
 
+body[data-css-cluster="guest_stories"] .hero-image.kristi-toucan-hero{
+  background:
+    linear-gradient(90deg,rgba(5,30,22,.02),rgba(5,30,22,.22)),
+    url('/assets/images/pages/guests/kristi-haverkamp/toucan-feeding-scene.jpg') center 42%/cover no-repeat;
+}
+
 body[data-css-cluster="guest_stories"] .image-note{
   position:absolute;
   left:26px;
@@ -95,6 +101,9 @@ body[data-css-cluster="guest_stories"] .hero-copy{
   display:flex;
   flex-direction:column;
   justify-content:center;
+  box-sizing:border-box;
+  min-width:0;
+  width:100%;
   padding:58px 42px;
 }
 
@@ -282,6 +291,34 @@ body[data-css-cluster="guest_stories"] .review-card p{display:grid;margin:0;colo
 body[data-css-cluster="guest_stories"] .review-card p span,
 body[data-css-cluster="guest_stories"] .review-card small{color:var(--muted)}
 
+body[data-css-cluster="guest_stories"] .guest-quote-card{
+  padding:30px;
+  border:1px solid rgba(11,60,45,.12);
+  border-radius:var(--r);
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+
+body[data-css-cluster="guest_stories"] .guest-quote-card blockquote{
+  margin:0 0 20px;
+  color:var(--gs-dark);
+  font-family:var(--font-head);
+  font-size:clamp(22px,3vw,30px);
+  line-height:1.32;
+}
+
+body[data-css-cluster="guest_stories"] .guest-quote-card p{
+  display:grid;
+  gap:3px;
+  margin:0;
+  color:var(--gs-dark);
+}
+
+body[data-css-cluster="guest_stories"] .guest-quote-card span{color:var(--muted);font-size:13px}
+
+body[data-css-cluster="guest_stories"] .story-copy{display:grid;gap:18px}
+body[data-css-cluster="guest_stories"] .story-copy p{margin:0;color:rgba(7,25,35,.82);font-size:17px;line-height:1.72}
+
 body[data-css-cluster="guest_stories"] .soft{
   width:100%;
   max-width:none;
@@ -362,6 +399,9 @@ body[data-css-cluster="guest_stories"] .full-day .tour-photo{background-image:ur
 body[data-css-cluster="guest_stories"] .bear .tour-photo{background-image:url('/assets/images/pages/tours/osos/mbw_osos_hero_01.jpg')}
 body[data-css-cluster="guest_stories"] .custom .tour-photo{background-image:url('/assets/images/birds/mbw_golden_tanager_01.jpg')}
 body[data-css-cluster="guest_stories"] .night .tour-photo{background-image:url('/assets/images/pages/activities/frog-concert/act_frog_01.jpg')}
+body[data-css-cluster="guest_stories"] .kristi-night .tour-photo{background-image:url('/assets/images/pages/guests/kristi-haverkamp/night-walk-frog.jpg')}
+body[data-css-cluster="guest_stories"] .kristi-toucans .tour-photo{background-image:url('/assets/images/pages/guests/kristi-haverkamp/plate-billed-mountain-toucan.jpg')}
+body[data-css-cluster="guest_stories"] .kristi-paramo .tour-photo{background-image:url('/assets/images/pages/guests/kristi-haverkamp/paramo-bird.jpg')}
 
 body[data-css-cluster="guest_stories"] .text-link{
   margin-bottom:20px;
@@ -415,6 +455,49 @@ body[data-css-cluster="guest_stories"] .photo-slot span{font-family:var(--font-h
 body[data-css-cluster="guest_stories"] .photo-slot small{color:var(--muted)}
 body[data-css-cluster="guest_stories"] .photo-slot.wide{grid-column:span 2;grid-row:span 2}
 body[data-css-cluster="guest_stories"] .photo-slot.tall{grid-row:span 2}
+
+body[data-css-cluster="guest_stories"] .guest-photo-grid{
+  columns:2 320px;
+  column-gap:18px;
+}
+
+body[data-css-cluster="guest_stories"] .guest-photo-grid figure{
+  break-inside:avoid;
+  margin:0 0 18px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 10px 30px rgba(20,55,44,.08);
+}
+
+body[data-css-cluster="guest_stories"] .guest-photo-grid img{
+  display:block;
+  width:100%;
+  height:auto;
+  background:var(--gs-soft);
+}
+
+body[data-css-cluster="guest_stories"] .guest-photo-grid figcaption{
+  padding:15px 17px 17px;
+  color:rgba(7,25,35,.78);
+  font-size:13px;
+  line-height:1.55;
+}
+
+body[data-css-cluster="guest_stories"] .guest-photo-grid figcaption strong{
+  display:block;
+  margin-bottom:4px;
+  color:var(--gs-dark);
+  font-size:14px;
+}
+
+body[data-css-cluster="guest_stories"] .photo-credit{
+  margin:18px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  text-align:right;
+}
 
 body[data-css-cluster="guest_stories"] .review-panel{
   width:min(980px,calc(100% - 42px));
@@ -580,11 +663,11 @@ body[data-css-cluster="guest_stories"] .previewFooter{
 }
 
 @media(max-width:640px){
-  body[data-css-cluster="guest_stories"] .container{width:100%;padding:12px}
+  body[data-css-cluster="guest_stories"] .container{box-sizing:border-box;width:100%;padding:12px}
   body[data-css-cluster="guest_stories"] .draftbar{align-items:flex-start;flex-direction:column;gap:2px}
   body[data-css-cluster="guest_stories"] .hero-image{min-height:380px}
   body[data-css-cluster="guest_stories"] .hero-copy{padding:45px 24px}
-  body[data-css-cluster="guest_stories"] .hero h1{max-width:none;font-size:42px}
+  body[data-css-cluster="guest_stories"] .hero h1{max-width:none;font-size:clamp(36px,10vw,42px);overflow-wrap:break-word}
   body[data-css-cluster="guest_stories"] .hero-actions .btn,
   body[data-css-cluster="guest_stories"] .review-actions .btn{width:100%}
   body[data-css-cluster="guest_stories"] .stats{width:calc(100% - 22px);grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px}
