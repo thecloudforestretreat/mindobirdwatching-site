@@ -212,6 +212,34 @@ body[data-css-cluster="guest_stories"] .stats article:last-child{border-right:0}
 body[data-css-cluster="guest_stories"] .stats strong{display:block;color:var(--forest);font-family:var(--font-head);font-size:29px;line-height:1.1}
 body[data-css-cluster="guest_stories"] .stats span{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.35}
 
+body[data-css-cluster="guest_stories"] .trip-snapshot{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.45fr);
+  width:min(940px,calc(100% - 42px));
+  margin:-45px auto 0;
+  padding:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.97);
+  box-shadow:var(--shadow);
+}
+
+body[data-css-cluster="guest_stories"] .trip-snapshot div{
+  display:grid;
+  gap:5px;
+  align-content:center;
+  min-width:0;
+  padding:21px 18px;
+  border-right:1px solid var(--line);
+}
+
+body[data-css-cluster="guest_stories"] .trip-snapshot div:last-child{border-right:0}
+body[data-css-cluster="guest_stories"] .trip-snapshot dt{color:var(--gs-moss);text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:900}
+body[data-css-cluster="guest_stories"] .trip-snapshot dd{margin:0;color:var(--gs-dark);font-family:var(--font-head);font-size:17px;font-weight:700;line-height:1.25}
+
 body[data-css-cluster="guest_stories"] .section{
   width:min(940px,calc(100% - 42px));
   margin:0 auto;
@@ -318,6 +346,36 @@ body[data-css-cluster="guest_stories"] .guest-quote-card span{color:var(--muted)
 
 body[data-css-cluster="guest_stories"] .story-copy{display:grid;gap:18px}
 body[data-css-cluster="guest_stories"] .story-copy p{margin:0;color:rgba(7,25,35,.82);font-size:17px;line-height:1.72}
+
+body[data-css-cluster="guest_stories"] .field-notes-inner{
+  width:min(940px,100%);
+  margin:0 auto;
+}
+
+body[data-css-cluster="guest_stories"] .field-notes-stack{display:grid;gap:22px}
+
+body[data-css-cluster="guest_stories"] .field-note-chapter{
+  display:grid;
+  grid-template-columns:minmax(280px,.88fr) minmax(0,1.12fr);
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:#fff;
+  box-shadow:0 12px 34px rgba(20,55,44,.08);
+}
+
+body[data-css-cluster="guest_stories"] .field-note-chapter.is-reverse{
+  grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);
+}
+
+body[data-css-cluster="guest_stories"] .field-note-chapter.is-reverse figure{order:2}
+body[data-css-cluster="guest_stories"] .field-note-chapter figure{position:relative;min-height:420px;margin:0;background:var(--gs-soft)}
+body[data-css-cluster="guest_stories"] .field-note-chapter img{display:block;width:100%;height:100%;object-fit:cover}
+body[data-css-cluster="guest_stories"] .field-note-chapter figcaption{position:absolute;right:14px;bottom:14px;left:14px;padding:9px 11px;border-radius:10px;color:#fff;background:rgba(8,45,35,.8);font-size:11px;font-weight:800;backdrop-filter:blur(8px)}
+body[data-css-cluster="guest_stories"] .field-note-copy{display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,4vw,44px)}
+body[data-css-cluster="guest_stories"] .field-note-copy h3{margin:0 0 15px;color:var(--gs-dark);font-size:clamp(27px,3vw,37px);line-height:1.12}
+body[data-css-cluster="guest_stories"] .field-note-copy p:not(.tag){margin:0 0 14px;color:rgba(7,25,35,.8);font-size:16px;line-height:1.7}
+body[data-css-cluster="guest_stories"] .field-note-copy p:last-child{margin-bottom:0}
 
 body[data-css-cluster="guest_stories"] .soft{
   width:100%;
@@ -457,13 +515,13 @@ body[data-css-cluster="guest_stories"] .photo-slot.wide{grid-column:span 2;grid-
 body[data-css-cluster="guest_stories"] .photo-slot.tall{grid-row:span 2}
 
 body[data-css-cluster="guest_stories"] .guest-photo-grid{
-  columns:2 320px;
-  column-gap:18px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
 }
 
 body[data-css-cluster="guest_stories"] .guest-photo-grid figure{
-  break-inside:avoid;
-  margin:0 0 18px;
+  margin:0;
   overflow:hidden;
   border:1px solid var(--line);
   border-radius:16px;
@@ -474,7 +532,9 @@ body[data-css-cluster="guest_stories"] .guest-photo-grid figure{
 body[data-css-cluster="guest_stories"] .guest-photo-grid img{
   display:block;
   width:100%;
+  aspect-ratio:4/5;
   height:auto;
+  object-fit:cover;
   background:var(--gs-soft);
 }
 
@@ -660,6 +720,14 @@ body[data-css-cluster="guest_stories"] .previewFooter{
   body[data-css-cluster="guest_stories"] .photo-slot.wide{grid-row:span 1}
   body[data-css-cluster="guest_stories"] .photo-slot.tall{grid-row:span 2}
   body[data-css-cluster="guest_stories"] .section-heading{align-items:flex-start;flex-direction:column;gap:7px}
+  body[data-css-cluster="guest_stories"] .trip-snapshot{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:-32px}
+  body[data-css-cluster="guest_stories"] .trip-snapshot div:nth-child(2n){border-right:0}
+  body[data-css-cluster="guest_stories"] .trip-snapshot div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  body[data-css-cluster="guest_stories"] .field-note-chapter,
+  body[data-css-cluster="guest_stories"] .field-note-chapter.is-reverse{grid-template-columns:1fr}
+  body[data-css-cluster="guest_stories"] .field-note-chapter.is-reverse figure{order:0}
+  body[data-css-cluster="guest_stories"] .field-note-chapter figure{min-height:0;aspect-ratio:4/3}
+  body[data-css-cluster="guest_stories"] .guest-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 @media(max-width:640px){
@@ -674,6 +742,9 @@ body[data-css-cluster="guest_stories"] .previewFooter{
   body[data-css-cluster="guest_stories"] .stats article{padding:17px 8px}
   body[data-css-cluster="guest_stories"] .stats article:nth-child(2n){border-right:0}
   body[data-css-cluster="guest_stories"] .stats article:nth-child(5){grid-column:span 2;border-top:1px solid var(--line)}
+  body[data-css-cluster="guest_stories"] .trip-snapshot{width:calc(100% - 22px);margin-top:12px}
+  body[data-css-cluster="guest_stories"] .trip-snapshot div{padding:16px 12px}
+  body[data-css-cluster="guest_stories"] .trip-snapshot dd{font-size:15px}
   body[data-css-cluster="guest_stories"] .section{width:calc(100% - 28px);padding:66px 0}
   body[data-css-cluster="guest_stories"] .soft{width:100%;padding:66px 14px}
   body[data-css-cluster="guest_stories"] .tour-card{grid-template-columns:1fr}
@@ -684,6 +755,10 @@ body[data-css-cluster="guest_stories"] .previewFooter{
   body[data-css-cluster="guest_stories"] .review-panel{width:calc(100% - 20px);gap:32px;padding:34px 22px}
   body[data-css-cluster="guest_stories"] .prompt-strip{width:calc(100% - 28px)}
   body[data-css-cluster="guest_stories"] .previewFooter{align-items:flex-start;flex-direction:column}
+  body[data-css-cluster="guest_stories"] .field-note-copy{padding:27px 22px}
+  body[data-css-cluster="guest_stories"] .guest-photo-grid{gap:10px}
+  body[data-css-cluster="guest_stories"] .guest-photo-grid figcaption{padding:11px 10px 13px;font-size:12px}
+  body[data-css-cluster="guest_stories"] .guest-photo-grid figcaption strong{font-size:13px}
 }
 
 @media(prefers-reduced-motion:reduce){
