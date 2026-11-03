@@ -1,0 +1,34 @@
+import {normalizeInquiry} from './mobile-domain.mjs';
+const error=m=>{throw Object.assign(Error(m),{status:400})};
+export function validDate(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+'T12:00:00Z'))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value}
+function bounded(changes,limits){if(!changes||typeof changes!=='object'||Array.isArray(changes)||!Object.keys(changes).length)error('No supported changes supplied.');for(const[k,v]of Object.entries(changes))if(!Object.hasOwn(limits,k)||typeof v!=='string'||v.length>limits[k])error(`Unsupported or invalid field: ${k}`)}
+export function serviceList(raw){
+ const source=raw.tour_items_json||raw.tour_items;let rows=[];
+ if(source){try{rows=Array.isArray(source)?source:JSON.parse(source);if(!Array.isArray(rows))throw Error()}catch{throw Object.assign(Error('Legacy service list needs review in the working CRM before editing.'),{status:409})}}
+ if(!rows.length){if(raw.tour_type||raw.product_selected)rows.push({id:'primary',tour:raw.product_selected||raw.tour_type,product_selected:raw.product_selected||'',service_type:raw.service_type||'Birdwatching',date:String(raw.requested_date_start||raw.requested_date||'').slice(0,10),guests:String(raw.guest_count||''),status:raw.status||'new',pickup_location:raw.pickup_location||''});
+ const addons=String(raw.tour_add_ons||raw.optional_additions||raw.add_ons||'').split(/\s*\|\s*/).filter(Boolean);addons.forEach((text,i)=>{const lower=text.toLowerCase();if(lower.startsWith('tour format:'))return;const map={'night walk':['Night Walk','Activity','MBW016'],'additional birding day':['Additional Birding Day','Birdwatching',''],'transportation':['Transportation Requested','Transportation',''],'accommodation assistance':['Accommodation Assistance','Accommodation','ACCOM01']};const [tour,type,product]=map[lower]||[text.replace(/^other:\s*/i,''),'Custom','Other'];rows.push({id:`addon-${i+1}`,tour,service_type:type,product_selected:product,status:'new',date:'',guests:'',notes:'Requested on website'})})}
+ return rows.map((r,i)=>({...r,id:String(r.id||`legacy-${i}`)}));
+}
+export function editable(raw){return !['yes','true','1'].includes(String(raw.is_archived||'').toLowerCase())&&!['duplicate','spam'].includes(raw.status)}
+export function prepareEdit(raw,body){const updated={...raw},changes=[];const record=(field,from,to)=>{if(JSON.stringify(from??'')!==JSON.stringify(to??''))changes.push({field,from:from??'',to:to??''})};
+ if(body.type==='contact'){
+ const patch=body.changes;bounded(patch,{first_name:80,last_name:80,email:254,phone_number:60,country:120,assigned_to:20,pickup_location:500});
+ if(patch.first_name!==undefined&&!patch.first_name.trim())error('First name cannot be blank.');if(patch.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email))error('Enter a valid email.');if(patch.phone_number&&(!/^[+()\d .x-]+$/i.test(patch.phone_number)||patch.phone_number.replace(/\D/g,'').length<6))error('Enter a valid phone number.');if(patch.assigned_to!==undefined&&!['','JPG','SS'].includes(patch.assigned_to))error('Choose JPG, SS or Unassigned.');
+ for(const[k,v]of Object.entries(patch)){record(k,raw[k],v);updated[k]=v}
+ if(patch.first_name!==undefined||patch.last_name!==undefined)updated.full_name=[updated.first_name||String(raw.full_name||'').trim().split(/\s+/)[0],updated.last_name].filter(Boolean).join(' ').trim();
+ if(patch.email!==undefined)updated.email_normalized=patch.email.trim().toLowerCase();if(patch.phone_number!==undefined){updated.phone_raw=patch.phone_number;updated.phone_normalized=patch.phone_number.replace(/\D/g,'')}if(patch.country!==undefined)updated.home_country=patch.country;
+ }else if(['service','add_service'].includes(body.type)){
+ const items=serviceList(raw);if(items.length>=40&&body.type==='add_service')error('Review the itinerary before adding more than 40 services.');
+ const patch=body.changes;bounded(patch,{tour:300,product_selected:240,service_type:120,date:10,guests:3,pickup_location:500,dropoff_location:500,start_time:5,end_time:5,duration:120,notes:1000});
+ if(patch.tour!==undefined&&!patch.tour.trim())error('Enter the service name.');if(patch.service_type!==undefined&&!['Birdwatching','Night Walk','Activity','Specialty Wildlife','Transportation','Accommodation','Meal','Free Time','Pickup','Drop-off','Custom'].includes(patch.service_type))error('Choose a valid service type.');
+ if(patch.date&&!validDate(patch.date))error('Enter a valid service date.');if(patch.guests!==undefined&&!/^[1-9]\d?$/.test(patch.guests))error('Guest count must be 1–99.');for(const k of ['start_time','end_time'])if(patch[k]&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(patch[k]))error('Use 24-hour times.');
+ let index=items.findIndex(r=>r.id===body.serviceId),current=index>=0?items[index]:null;
+ if(body.type==='service'&&!current)throw Object.assign(Error('Service not found. Reload the editor.'),{status:404});
+ if(body.type==='add_service'){if(!patch.tour||!patch.service_type||!patch.guests)error('New services require name, type and guest count.');current={id:`LAB-${crypto.randomUUID()}`,status:'planning'};index=items.length}
+ const item={...current,...patch};if(['booked','deposit_paid'].includes(item.status)&&!item.date)error('Booked services require a date.');if((patch.start_time!==undefined||patch.end_time!==undefined)&&item.start_time&&item.end_time&&(!/^([01]\d|2[0-3]):[0-5]\d$/.test(item.start_time)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(item.end_time)||item.end_time<=item.start_time))error('Review services that cross midnight in the working CRM.');if(patch.date!==undefined)item.tour_date=patch.date;
+ if(body.type==='add_service')record(`services.${item.id}`,null,item);else for(const[k,v]of Object.entries(patch))record(`services.${item.id}.${k}`,current[k],v);
+ items[index]=item;updated.tour_items=updated.tour_items_json=JSON.stringify(items);updated.tour_count=updated.tour_content=String(items.length);
+ if(index===0){if(patch.date!==undefined){const oldStart=raw.requested_date_start||raw.requested_date||'';if(raw.requested_date_end&&raw.requested_date_end!==oldStart&&patch.date>raw.requested_date_end)error('Adjust the multi-day date range in the working CRM first.');updated.requested_date=updated.requested_date_start=patch.date;if(!raw.requested_date_end||raw.requested_date_end===oldStart)updated.requested_date_end=patch.date}if(patch.guests!==undefined)updated.guest_count=updated.guest_count_text=patch.guests;if(patch.pickup_location!==undefined)updated.pickup_location=patch.pickup_location;if(patch.product_selected!==undefined)updated.product_selected=patch.product_selected;if(patch.service_type!==undefined)updated.service_type=patch.service_type;}
+ }else error('Choose contact or service editing.');
+ if(!changes.length)error('No changes to save.');return {updated,changes};
+}
