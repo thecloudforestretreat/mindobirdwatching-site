@@ -1,3 +1,11 @@
+# Current mode: Live data, read only
+
+The Lab loads the production CRM through protected read endpoints. It refreshes every five minutes while visible and retains a manual Refresh CRM button. The freshness banner distinguishes cached records from a successful live sync. Incoming live records replace the Lab cache instead of merging local changes.
+
+Customer-record editing is disabled in the UI and browser network gate. Server PATCH handlers additionally require the separate CRM_LAB_WRITE_ENABLED opt-in, which is absent in production; defaults reject writes before reaching the CRM. Account saved-view preferences remain available and never change guest records. Existing CRM and Nest interfaces retain their own editing capabilities.
+
+The following describes the controlled-editing implementation retained for possible future evaluation; it is not enabled in the review Lab.
+
 # Guest CRM Lab Beta
 
 Independent authenticated workspace at `/guest-crm-lab/`. The working `/guest-crm/` and `/app/` interfaces are unchanged.

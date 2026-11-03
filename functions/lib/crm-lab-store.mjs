@@ -3,3 +3,6 @@ export async function identityKey(identity){const bytes=await crypto.subtle.dige
 export async function beginAudit(env,identity,inquiryId,changes,version){const store=labStore(env),now=new Date().toISOString(),id=crypto.randomUUID(),key=`audit:${inquiryId}:${String(9999999999999-Date.now()).padStart(13,'0')}:${id}`,entry={id,inquiryId,at:now,by:identity.staffCode||identity.name,kind:'record_edit',status:'submitted',expectedUpdatedAt:version,changes};await store.put(key,JSON.stringify(entry));return {key,entry}}
 export async function finishAudit(env,audit,status,extra={}){await labStore(env).put(audit.key,JSON.stringify({...audit.entry,status,...extra}))}
 export const sameValue=(a,b)=>JSON.stringify(a??'')===JSON.stringify(b??'');
+
+export const labWritesEnabled=env=>String(env.CRM_LAB_WRITE_ENABLED||'').toLowerCase()==='true';
+export function assertLabWriteEnabled(env){if(!labWritesEnabled(env))throw Object.assign(Error('Guest CRM Lab is read-only. Use the working CRM to edit records.'),{status:403});}
