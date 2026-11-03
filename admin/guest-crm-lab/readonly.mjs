@@ -9,3 +9,4 @@ const mobile=matchMedia('(max-width:720px)'),nav=document.querySelector('.lab-si
 const presets=document.querySelector('.lab-view-presets'),presetMenu=document.createElement('details');presetMenu.className='lab-mobile-presets';presetMenu.innerHTML='<summary>Priority filters</summary>';presets.before(presetMenu);presetMenu.append(presets);
 function layout(){navMenu.open=presetMenu.open=!mobile.matches;}
 layout();mobile.addEventListener('change',layout);nav.addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b){navMenu.querySelector('summary').textContent='Sections · '+b.textContent;if(mobile.matches)navMenu.open=false}});
+let mobileCalendarOpened=false;nav.addEventListener('click',e=>{if(mobile.matches&&!mobileCalendarOpened&&e.target.closest('[data-view="calendar"]')){mobileCalendarOpened=true;document.getElementById('labDayView')?.click()}});
