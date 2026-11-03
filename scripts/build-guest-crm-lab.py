@@ -43,7 +43,7 @@ change('sum+calendarEntriesForRecord(record).length', 'sum+calendarEntriesForRec
 change('function render(){ renderPreparationOverview();', 'function render(){ labEmit();renderPreparationOverview();')
 change('function renderBalances(){', 'function renderBalances(){ labEmit();')
 engine=engine.replace('    })();', (root/'scripts/crm-lab-bridge.js').read_text()+'\n    })();')
-html=html.replace('<style>'+styles[0]+'</style>','<link rel="stylesheet" href="./workflow-base.css?v=1"><link rel="stylesheet" href="./workflow.css?v=2">')
+html=html.replace('<style>'+styles[0]+'</style>','<link rel="stylesheet" href="./workflow-base.css?v=1"><link rel="stylesheet" href="./workflow.css?v=3">')
 html=html.replace('<script>'+scripts[0]+'</script>','<script src="./review-guard.js?v=2"></script><script src="./workflow-engine.js?v=2"></script><script defer src="./workflow-ui.js?v=2"></script><script type="module" src="./workspace.mjs?v=3"></script><script type="module" src="./daily-workflows.mjs?v=1"></script>')
 html=re.sub(r'<script defer src="/assets/js/admin-nav\.js[^"]*"></script>','',html)
 html=html.replace('<div class="view active" id="calendarView">','<div class="view" id="calendarView">').replace('<div class="view" id="dashboardView">','<div class="view active" id="dashboardView">')
