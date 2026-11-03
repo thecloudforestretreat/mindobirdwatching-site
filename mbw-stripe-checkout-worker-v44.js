@@ -2245,6 +2245,13 @@ async function syncRevenueAttribution(env, payload) {
         quote_id: String(payload.quote_id || "").trim(),
         invoice_id: invoiceId,
         payment_method: "stripe",
+        booking_status: String(payload.booking_status || "").trim(),
+        payment_status: String(payload.payment_status || "").trim(),
+        amount_received: Number(payload.amount_received || 0),
+        currency: String(payload.currency || "USD").trim().toUpperCase(),
+        email: String(payload.email || "").trim(),
+        phone_number: String(payload.phone_number || "").trim(),
+        product_selected: String(payload.product_selected || "").trim(),
       }),
     });
 
@@ -4680,6 +4687,24 @@ export default {
 
             await postToSheetsLogger(env, { fields });
 
+            if (!isGuideTip && inquiryId && session.payment_status === "paid") {
+              const attributionResult = await syncRevenueAttribution(env, {
+                inquiry_id: inquiryId,
+                guest_id: checkoutGuestId,
+                booking_id: String(md.booking_id || "").trim() || `B-${inquiryId.replace(/^INQ-/, "")}`,
+                quote_id: String(md.quote_id || "").trim(),
+                invoice_id: String(session.payment_intent || session.id || "").trim(),
+                booking_status: "confirmed",
+                payment_status: "paid",
+                amount_received: amountTotalCents != null ? Number(amountTotalCents) / 100 : 0,
+                currency: session.currency ? String(session.currency).toUpperCase() : "USD",
+                email: guestEmail,
+                phone_number: guestPhone,
+                product_selected: String(md.tour_code || "").trim(),
+              });
+              console.log("Checkout conversion attribution synchronized", JSON.stringify(attributionResult));
+            }
+
             try {
               if (isGuideTip) {
                 const tipNotificationResult = await postGuideTipNotification(env, {
@@ -5217,6 +5242,21 @@ export default {
               if (!paidCrmLedgerResult.ok && (hasCrmIdentity || !paidCrmLedgerResult.skipped)) {
                 throw new Error("CRM paid invoice ledger sync failed; retry required");
               }
+              const invoiceAttributionResult = await syncRevenueAttribution(env, {
+                inquiry_id: firstServiceMetadata.inquiry_id || invMd.inquiry_id || "",
+                guest_id: firstServiceMetadata.guest_id || invMd.guest_id || "",
+                booking_id: firstServiceMetadata.booking_id || invMd.booking_id || "",
+                quote_id: firstServiceMetadata.quote_id || invMd.quote_id || "",
+                invoice_id: inv.id || "",
+                booking_status: "confirmed",
+                payment_status: "paid",
+                amount_received: invoiceDepositTotals(inv).total / 100,
+                currency: inv.currency ? String(inv.currency).toUpperCase() : "USD",
+                email: guestEmail,
+                phone_number: guestPhone,
+                product_selected: serviceLines.map(line => String((line.metadata || {}).tour_code || "")).filter(Boolean).join(" | ") || firstServiceMetadata.tour_code || "",
+              });
+              console.log("Invoice conversion attribution synchronized", JSON.stringify(invoiceAttributionResult));
             } catch (err) {
               console.log("Invoice sheets logging failed", {
                 stripe_event_id: event.id || "",

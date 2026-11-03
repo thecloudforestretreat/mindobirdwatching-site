@@ -1424,7 +1424,7 @@
             upsert(saved);
 
             if(attribution){try{
-              const linked=await api("link_reference",{inquiry_id:payload.record.inquiry_id,guest_id:payload.record.guest_id,contact_intent_id:attribution.contact_intent_id});
+              const linked=await api("link_reference",{inquiry_id:payload.record.inquiry_id,guest_id:payload.record.guest_id,contact_intent_id:attribution.contact_intent_id,email:payload.record.email||"",phone_number:payload.record.phone_number||"",tour_type:payload.record.tour_type||"",product_selected:payload.record.product_selected||"",meta_fbp:payload.record.meta_fbp||payload.record.fbp||"",meta_fbc:payload.record.meta_fbc||payload.record.fbc||""});
               if(!linked.ok)throw new Error(linked.error||"Link failed");
               referenceStatus("Reference matched and linked to this inquiry.");showToast("Saved to live Google Sheet; reference linked.");
             }catch(error){referenceStatus("Inquiry saved. Reference link failed; save again to retry.");showToast("Inquiry saved; reference link needs retry.");}}
@@ -2568,7 +2568,7 @@
         const total=rows.reduce((sum,row)=>sum+Number(row.amount_received||0),0);
         if(!window.confirm(`Post ${rows.length} Zelle service row${rows.length===1?"":"s"} for ${record.invoice_no} totaling $${total.toFixed(2)} to accounting?`)) return;
         const button=els.zelleToAcctBtn; button.disabled=true; const original=button.textContent; button.textContent="Posting…";
-        try{ const result=await api("post_zelle_accounting",{record,accounting_rows:rows}); const count=Number(result.posted_count||rows.length); showToast(`${count} Zelle accounting row${count===1?"":"s"} posted. Invoice and guide expenses will sync automatically.`); }
+        try{ const result=await api("post_zelle_accounting",{record,accounting_rows:rows}); let attributionOk=false; try{const attributionResponse=await fetch("https://mindobirdwatching.com/api/attribution/zelle-link",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({inquiry_id:record.inquiry_id,guest_id:record.guest_id,booking_id:record.booking_id||"",invoice_id:["zelle",record.invoice_no,record.inquiry_id].join("_").replace(/[^A-Za-z0-9_.-]/g,"_").slice(0,128),booking_status:["booked","completed"].includes(normalizeStatus(record.status))?normalizeStatus(record.status):"confirmed",payment_status:"paid",amount_received:total,currency:"USD",email:record.email||"",phone_number:record.phone_number||"",product_selected:record.product_selected||record.tour_type||"",meta_fbp:record.meta_fbp||record.fbp||"",meta_fbc:record.meta_fbc||record.fbc||""})});attributionOk=attributionResponse.ok;}catch(error){console.warn("Zelle conversion attribution failed",error);} const count=Number(result.posted_count||rows.length); showToast(attributionOk?`${count} Zelle accounting row${count===1?"":"s"} posted. Invoice and guide expenses will sync automatically.`:`${count} Zelle accounting row${count===1?"":"s"} posted; conversion attribution needs review.`); }
         catch(error){ showToast("Zelle accounting post failed: "+error.message); }
         finally{ button.textContent=original; toggleInvoiceActions(formRecord()); }
       }

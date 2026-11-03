@@ -64,6 +64,15 @@ export async function onRequestPost({ request, env }) {
       quote_id: validId(input.quote_id),
       invoice_id: validId(input.invoice_id),
       payment_method: "zelle",
+      booking_status: clean(input.booking_status || input.status, 32),
+      payment_status: clean(input.payment_status, 32),
+      amount_received: Number(input.amount_received || input.amount_paid || 0),
+      currency: clean(input.currency, 3) || "USD",
+      email: clean(input.email, 320),
+      phone_number: clean(input.phone_number || input.phone, 64),
+      product_selected: clean(input.product_selected || input.tour_type, 255),
+      meta_fbp: clean(input.meta_fbp || input.fbp, 255),
+      meta_fbc: clean(input.meta_fbc || input.fbc, 255),
     };
 
     if (!payload.inquiry_id) {
