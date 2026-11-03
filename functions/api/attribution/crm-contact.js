@@ -1,3 +1,5 @@
+import { sendMetaConversion } from "../../../lib/meta-capi.js";
+
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -99,7 +101,7 @@ export async function onRequestPost({ request, env }) {
     const requestedChannel = cleanString(payload.contact_channel, 32);
 
     const contactIntent = await env.MBW_ATTRIBUTION_DB.prepare(`
-      SELECT contact_intent_id, visitor_id, session_id, channel, attribution_quality
+      SELECT contact_intent_id, visitor_id, session_id, channel, attribution_quality, page_url, tour_interest
       FROM contact_intents
       WHERE contact_intent_id = ?
       LIMIT 1
@@ -110,7 +112,7 @@ export async function onRequestPost({ request, env }) {
     }
 
 
-    const session = await env.MBW_ATTRIBUTION_DB.prepare("SELECT * FROM sessions WHERE session_id = ? AND visitor_id = ? LIMIT 1").bind(contactIntent.session_id, contactIntent.visitor_id).first();
+    const session = await env.MBW_ATTRIBUTION_DB.prepare("SELECT s.*, v.consent_status FROM sessions s JOIN visitors v ON v.visitor_id = s.visitor_id WHERE s.session_id = ? AND s.visitor_id = ? LIMIT 1").bind(contactIntent.session_id, contactIntent.visitor_id).first();
     if (!session) return reply(409,{ok:false,error:"reference_session_not_found"});
     const attribution = {contact_intent_id:contactIntentId,website_visitor_id:contactIntent.visitor_id,website_session_id:contactIntent.session_id,attribution_status:session.attribution_status||"unavailable",attribution_quality:session.attribution_status==="captured"?"verified":"partial"};
     ["first_touch_source","first_touch_medium","first_touch_campaign","first_touch_content","first_touch_term","first_touch_landing_page","first_touch_referrer","first_touch_date","last_touch_source","last_touch_medium","last_touch_campaign","last_touch_content","last_touch_term","last_touch_landing_page","last_touch_referrer","last_touch_date","utm_source","utm_medium","utm_campaign","utm_content","utm_term","gclid","gbraid","wbraid","fbclid","meta_campaign_id","meta_adset_id","meta_ad_id"].forEach(key=>{attribution[key]=session[key]||"";});
@@ -224,6 +226,45 @@ export async function onRequestPost({ request, env }) {
       eventStatement,
     ]);
 
+    let metaCapi = { ok: false, skipped: true, reason: "browser_lead_owns_email_form" };
+    if (contactChannel !== "email_form") {
+      const metaAuditId = `evt_meta_lead_${contactIntentId}`.slice(0, 128);
+      const previousMetaEvent = await env.MBW_ATTRIBUTION_DB.prepare(`SELECT event_id FROM attribution_events WHERE event_id = ? LIMIT 1`).bind(metaAuditId).first();
+      if (previousMetaEvent) {
+        metaCapi = { ok: true, skipped: true, reason: "already_sent" };
+      } else {
+        metaCapi = await sendMetaConversion({
+          env,
+          request,
+          event: {
+            name: "Lead",
+            id: `lead_${contactIntentId}`,
+            consent_status: session.consent_status,
+            source_url: contactIntent.page_url || session.last_touch_landing_page || session.first_touch_landing_page,
+            external_id: inquiryId,
+            fbclid: session.fbclid,
+            fbp: payload.meta_fbp || payload.fbp,
+            fbc: payload.meta_fbc || payload.fbc,
+            email: payload.email,
+            phone: payload.phone || payload.phone_number,
+            content_name: payload.tour_type || payload.product_selected || contactIntent.tour_interest || "Mindo tour inquiry",
+          },
+        });
+        if (metaCapi.ok) {
+          await env.MBW_ATTRIBUTION_DB.prepare(`
+            INSERT OR IGNORE INTO attribution_events (
+              event_id, visitor_id, session_id, contact_intent_id, crm_contact_id,
+              event_name, event_source, page_url, event_data, occurred_at
+            ) VALUES (?, ?, ?, ?, ?, 'meta_capi_lead_sent', 'cloudflare_pages', ?, ?, ?)
+          `).bind(
+            metaAuditId, contactIntent.visitor_id, contactIntent.session_id, contactIntentId, crmContactId,
+            contactIntent.page_url || session.last_touch_landing_page || session.first_touch_landing_page || null,
+            JSON.stringify({ meta_event_id: `lead_${contactIntentId}`, events_received: metaCapi.events_received, test_event: metaCapi.test_event }), now,
+          ).run();
+        }
+      }
+    }
+
     return reply(200, {
       ok: true,
       crm_contact_id: crmContactId,
@@ -231,6 +272,7 @@ export async function onRequestPost({ request, env }) {
       inquiry_id: inquiryId,
       guest_id: guestId,
       match_status: "matched",
+      meta_capi: metaCapi,
       attribution: hasSnapshot || contactIntent.channel !== "email_form" ? attribution : {
         contact_intent_id:contactIntentId,
         website_visitor_id:contactIntent.visitor_id,

@@ -102,6 +102,16 @@
     return cleaned ? cleaned.slice(0, maxLength || 255) : null;
   }
 
+  function readCookie(name) {
+    var prefix = String(name || "") + "=";
+    var parts = String(document.cookie || "").split(";");
+    for (var i = 0; i < parts.length; i += 1) {
+      var part = parts[i].trim();
+      if (part.indexOf(prefix) === 0) return cleanValue(decodeURIComponent(part.slice(prefix.length)), 512);
+    }
+    return null;
+  }
+
   function trackingParameters() {
     var input = new URLSearchParams(window.location.search || "");
     var values = {};
@@ -526,8 +536,10 @@
     var utm = currentUtm(state);
     var fields = {
       contact_intent_id: contactIntentId,
+      meta_event_id: "lead_" + contactIntentId,
       website_visitor_id: state.visitor_id,
       website_session_id: state.session_id,
+      consent_status: state.consent_status || "unknown",
       attribution_status: statusFor(state),
       attribution_quality: statusFor(state) === "captured" ? "verified" : "partial",
       utm_source: utm.source,
@@ -539,6 +551,8 @@
       gbraid: state.click_ids && state.click_ids.gbraid,
       wbraid: state.click_ids && state.click_ids.wbraid,
       fbclid: state.click_ids && state.click_ids.fbclid,
+      meta_fbp: readCookie("_fbp"),
+      meta_fbc: readCookie("_fbc"),
       meta_campaign_id: state.meta && state.meta.meta_campaign_id,
       meta_adset_id: state.meta && state.meta.meta_adset_id,
       meta_ad_id: state.meta && state.meta.meta_ad_id

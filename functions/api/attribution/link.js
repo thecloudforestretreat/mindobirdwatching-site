@@ -1,3 +1,5 @@
+import { sendMetaConversion } from "../../../lib/meta-capi.js";
+
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
@@ -82,6 +84,10 @@ export async function onRequestPost({ request, env }) {
     const bookingId = cleanId(payload.booking_id);
     const quoteId = cleanId(payload.quote_id);
     const invoiceId = cleanId(payload.invoice_id);
+    const bookingStatus = cleanString(payload.booking_status || payload.status, 32);
+    const paymentStatus = cleanString(payload.payment_status, 32);
+    const value = Number(payload.value ?? payload.amount_received ?? payload.amount_paid);
+    const currency = cleanString(payload.currency, 3) || "USD";
 
     if (!inquiryId) {
       return reply(400, { ok: false, error: "valid_inquiry_id_required" });
@@ -123,6 +129,15 @@ export async function onRequestPost({ request, env }) {
     if (!crmContact) {
       return reply(409, { ok: false, error: "crm_contact_not_found" });
     }
+
+    const session = await env.MBW_ATTRIBUTION_DB.prepare(`
+      SELECT s.*, v.consent_status, ci.page_url, ci.tour_interest
+      FROM sessions s
+      JOIN visitors v ON v.visitor_id = s.visitor_id
+      LEFT JOIN contact_intents ci ON ci.contact_intent_id = ?
+      WHERE s.session_id = ? AND s.visitor_id = ?
+      LIMIT 1
+    `).bind(crmContact.contact_intent_id, crmContact.session_id, crmContact.visitor_id).first();
 
     if (guestId && crmContact.guest_id && guestId !== crmContact.guest_id) {
       return reply(409, { ok: false, error: "guest_inquiry_mismatch" });
@@ -204,6 +219,54 @@ export async function onRequestPost({ request, env }) {
       eventStatement,
     ]);
 
+    const metaCapi = [];
+    const sendOnce = async (eventName, externalKey, event) => {
+      if (!session || !externalKey) return;
+      const auditId = `evt_meta_${eventName.toLowerCase()}_${externalKey}`.slice(0, 128);
+      const previous = await env.MBW_ATTRIBUTION_DB.prepare(`SELECT event_id FROM attribution_events WHERE event_id = ? LIMIT 1`).bind(auditId).first();
+      if (previous) {
+        metaCapi.push({ event_name: eventName, ok: true, skipped: true, reason: "already_sent" });
+        return;
+      }
+      const result = await sendMetaConversion({
+        env,
+        request,
+        event: {
+          ...event,
+          name: eventName,
+          consent_status: session.consent_status,
+          source_url: session.page_url || session.last_touch_landing_page || session.first_touch_landing_page,
+          external_id: crmContact.inquiry_id,
+          fbclid: session.fbclid,
+          fbp: payload.meta_fbp || payload.fbp,
+          fbc: payload.meta_fbc || payload.fbc,
+          email: payload.email,
+          phone: payload.phone || payload.phone_number,
+          content_name: payload.tour_type || payload.product_selected || session.tour_interest || "Mindo tour",
+        },
+      });
+      metaCapi.push({ event_name: eventName, ...result });
+      if (!result.ok) return;
+      await env.MBW_ATTRIBUTION_DB.prepare(`
+        INSERT OR IGNORE INTO attribution_events (
+          event_id, visitor_id, session_id, contact_intent_id, crm_contact_id,
+          attribution_link_id, event_name, event_source, page_url, event_data, occurred_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'cloudflare_pages', ?, ?, ?)
+      `).bind(
+        auditId, crmContact.visitor_id, crmContact.session_id, crmContact.contact_intent_id,
+        crmContact.crm_contact_id, attributionLinkId, `meta_capi_${eventName.toLowerCase()}_sent`,
+        session.page_url || session.last_touch_landing_page || session.first_touch_landing_page || null,
+        JSON.stringify({ meta_event_id: event.id, events_received: result.events_received, test_event: result.test_event }), now,
+      ).run();
+    };
+
+    if (bookingId && new Set(["booked", "confirmed", "completed"]).has(String(bookingStatus || "").toLowerCase())) {
+      await sendOnce("Schedule", bookingId, { id: `schedule_${bookingId}`, order_id: bookingId });
+    }
+    if (invoiceId && String(paymentStatus || "").toLowerCase() === "paid" && Number.isFinite(value) && value > 0) {
+      await sendOnce("Purchase", invoiceId, { id: `purchase_${invoiceId}`, order_id: invoiceId, value, currency });
+    }
+
     return reply(200, {
       ok: true,
       attribution_link_id: attributionLinkId,
@@ -214,6 +277,7 @@ export async function onRequestPost({ request, env }) {
       quote_id: quoteId,
       invoice_id: invoiceId,
       payment_method: paymentMethod,
+      meta_capi: metaCapi,
     });
   } catch (error) {
     console.error("Revenue attribution link write failed", error);
