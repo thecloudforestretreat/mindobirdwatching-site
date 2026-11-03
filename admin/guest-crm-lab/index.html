@@ -1,3 +1,474 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#10251e"><title>Guest CRM Lab | MBW</title><link rel="icon" href="/app/brand-mark.png"><link rel="stylesheet" href="./lab.css?v=1"></head>
-<body><div class="shell"><aside class="sidebar"><a class="brand" href="./"><img src="/app/brand-mark.png" alt="Mindo Bird Watching"><span>MBW<small>Guest CRM Lab</small></span></a><p class="eyebrow">Experimental workspace</p><nav aria-label="Workspace"><a class="active" href="./" aria-current="page">Guest CRM Lab</a><a href="/app/">Current Nest ↗</a><a href="/guest-crm/">Current Guest CRM ↗</a><a href="/">Admin Hub ↗</a></nav><div class="side-note"><strong>Separate by design</strong><p>Your current CRM stays intact. This version reads the same records; it cannot save changes, send messages or mark payments.</p></div></aside><main><header><div><p class="eyebrow">MBW Nest Lab / Guest relationships</p><h1>Guest CRM</h1><p class="subtitle">Every guest. One clear next step.</p></div><div class="header-actions"><span class="badge">Experimental · Read only</span><button id="refresh">Refresh records</button><button id="demo">Try sample data</button></div></header><p id="connection" class="connection" role="status">Connecting to your existing guest records…</p><div id="metrics" class="metrics" aria-label="Portfolio summary"></div><div class="workspace"><section class="list-panel" aria-label="Guest list"><div class="toolbar"><label class="search">Search guests, inquiry or tour<input id="search" type="search" placeholder="Name, country, tour or inquiry ID"></label><label>Scope<select id="scope"><option value="active">Active journeys</option><option value="all">All records</option><option value="followup">Follow-up due</option><option value="upcoming">Upcoming tours</option></select></label><label>Representative<select id="rep"><option value="">All representatives</option></select></label></div><div class="list-heading"><h2>Guest journeys</h2><span id="count"></span></div><div id="guest-list" class="guest-list"><p class="empty">Loading records…</p></div></section><section id="profile" class="profile" aria-label="Guest profile"><div class="empty-profile"><span class="profile-symbol">◉</span><h2>Keep the guest in view</h2><p>Select a journey to review its itinerary, recorded payment state, readiness and communication history.</p><p>Nothing you do here changes the working record.</p></div></section></div><footer>Private staff workspace · Dates use Ecuador time · No automatic polling · Current Nest and Guest CRM remain available</footer></main></div><script type="module" src="./lab.mjs?v=1"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guest CRM Lab Beta | MBW</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/guest-crm-lab/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=5" />
+  <link rel="stylesheet" href="./workflow-base.css?v=1"><link rel="stylesheet" href="./workflow.css?v=1">
+</head>
+<body class="crm-lab"><aside class="lab-sidebar"><a class="lab-brand" href="/guest-crm-lab/"><img src="/app/brand-mark.png" alt="Mindo Bird Watching"><span>MBW<small>Guest CRM Lab</small></span></a><span class="lab-beta">Beta · Review only</span><p>Full workflow foundation</p><nav aria-label="Lab sections"><button class="tab active" data-view="dashboard">Dashboard</button><button class="tab" data-view="records">Guest records</button><button class="tab" data-view="calendar">Calendar & pipeline</button><button class="tab" data-view="preparation">Reminder preparation</button><button class="tab" data-view="balances">Upcoming balances</button><button class="tab" data-view="reports">Tour reports</button><button class="tab" data-view="intake">Guest workspace</button></nav><div class="lab-backlinks"><a href="/guest-crm/" target="_blank" rel="noopener noreferrer">Current Guest CRM ↗</a><a href="/app/" target="_blank" rel="noopener noreferrer">Current Nest ↗</a><a href="/guest-crm-lab/explorer/">Profile explorer</a><a href="/">Admin Hub</a></div></aside><div class="lab-banner"><strong>Guest CRM Lab <span class="lab-beta">Beta</span></strong><span>Same CRM rules and records · Review-only testing · Saves remain in the current CRM</span><a href="/guest-crm/" target="_blank" rel="noopener noreferrer">Open working CRM ↗</a></div>
+  <div data-admin-nav data-admin-page="guest-crm" data-admin-nav-ready="true">
+    <nav class="adminGlobalNav" aria-label="Admin pages">
+      <div class="adminGlobalNav__inner">
+        <span class="adminGlobalNav__label">
+          <img class="adminGlobalNav__logo" src="/app/brand-mark.png" alt="" />
+          <span>MBW Admin</span>
+        </span>
+        <div class="adminGlobalNav__links">
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" aria-current="page">Guest CRM</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" target="_blank" rel="noopener noreferrer">Email Generator</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" target="_blank" rel="noopener noreferrer">Staff Info</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" target="_blank" rel="noopener noreferrer">Itinerary</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" target="_blank" rel="noopener noreferrer">Zelle Invoice</a>
+          <a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" target="_blank" rel="noopener noreferrer">Stripe Invoice</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" target="_blank" rel="noopener noreferrer">Tour Confirmation</a>
+          <a class="adminGlobalNav__link" href="/marketing/">Marketing</a>
+          <a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" target="_blank" rel="noopener noreferrer">Reports</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <main class="shell">
+    <section class="card">
+      <header class="top">
+        <div class="brand">
+          <img src="/app/brand-mark.png" alt="Mindo Bird Watching" />
+          <div><h1>Guest CRM Lab <span class="lab-beta">Beta</span></h1><p>Review the full workflow in a separate glass workspace. Your current Guest CRM is unchanged.</p></div>
+        </div>
+        <div class="actions">
+          <button class="yellow" id="addNewBtn" type="button">Add New</button>
+          <button class="primary" id="refreshBtn" type="button">Refresh CRM</button>
+          <button class="primary" id="saveBtn" type="button">Save Record</button>
+          <button id="advancedBtn" type="button">Advanced</button>
+        </div>
+      </header>
+      <nav class="tabs" aria-label="CRM views">
+        <button class="tab active" data-view="dashboard" type="button">Dashboard</button>
+        <button class="tab" data-view="records" type="button">Records</button>
+        <button class="tab" data-view="preparation" type="button">Reminder preparation</button>
+        <button class="tab" data-view="calendar" type="button">Calendar</button>
+        <button class="tab" data-view="balances" type="button">Upcoming balances</button>
+        <button class="tab" data-view="reports" type="button">Reports</button>
+        <button class="tab" data-view="intake" type="button">Create / Edit</button>
+        <button class="tab" data-view="settings" type="button">Settings</button>
+      </nav>
+      <div class="grid">
+        <aside class="panel sticky quickFiltersPanel" id="quickFiltersPanel">
+          <div class="quickFiltersHeader">
+            <h2 class="panelTitle">Quick Filters</h2>
+            <button class="quickFiltersToggle" id="quickFiltersToggle" type="button" aria-expanded="false" aria-controls="quickFiltersContent">Show filters</button>
+          </div>
+          <div class="quickFiltersContent" id="quickFiltersContent">
+          <div class="field"><label for="searchInput">Search</label><input id="searchInput" type="search" placeholder="Name, phone, email, tour, inquiry ID" /></div>
+          <div class="two">
+            <div class="field"><label for="viewFilter">View</label><select id="viewFilter"><option value="all">View All</option><option value="new">New</option><option value="contacted">Contacted</option><option value="planning">Planning</option><option value="qualified">Qualified</option><option value="followUp">Follow Up</option><option value="activePipeline">Active Pipeline</option><option value="quoted">Quoted</option><option value="depositPending">Deposit Pending</option><option value="depositPaid">Deposit Paid</option><option value="paymentPending">Payment Pending</option><option value="booked">Booked</option><option value="upcoming7">Upcoming 7 Days</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="didNotBook">Did Not Book</option><option value="followups">Follow-ups Due</option><option value="urgent">Urgent</option><option value="spam">Spam</option><option value="duplicate">Duplicate</option></select></div>
+            <div class="field"><label for="statusFilter">Status</label><select id="statusFilter"><option value="">Any status</option><option value="new">New</option><option value="contacted">Contacted</option><option value="planning">Planning</option><option value="qualified">Qualified</option><option value="quoted">Quoted</option><option value="follow_up">Follow Up</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="did_not_book">Did Not Book</option><option value="spam">Spam</option><option value="duplicate">Duplicate</option></select></div>
+          </div>
+          <div class="field followupFilter"><label for="followupFilter">Follow-up</label><select id="followupFilter"><option value="">Any</option><option value="today">Due today</option><option value="overdue">Overdue</option><option value="upcoming">Upcoming</option><option value="none">None</option></select></div>
+          <div class="two">
+            <div class="field"><label for="quoteFilter">Quote</label><select id="quoteFilter"><option value="">Any quote</option><option value="not_sent">Not Sent</option><option value="sent">Sent</option><option value="accepted">Accepted</option><option value="declined">Declined</option></select></div>
+            <div class="field"><label for="paymentFilter">Payment</label><select id="paymentFilter"><option value="">Any payment</option><option value="unpaid">Unpaid</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="paid">Paid</option><option value="no_payment_required">No Payment Required</option><option value="refunded">Refunded</option></select></div>
+            <div class="field"><label for="repFilter">Assigned Rep</label><select id="repFilter"><option value="">All reps</option><option value="JPG">Juan</option><option value="SS">Susana</option><option value="unassigned">Unassigned</option></select></div>
+          </div>
+          <div class="divider">
+            <div class="selectedRecordHeader"><h2 class="panelTitle">Selected Record</h2><button id="selectedActionsToggle" type="button" aria-expanded="false">Show actions</button></div>
+            <div id="selectedActionsBody" hidden>
+            <div class="recordActions">
+              <button id="emailToolBtn" type="button">Generate Email</button>
+              <button id="zelleToolBtn" type="button">Create Zelle Invoice</button>
+              <button id="stripeToolBtn" type="button">Create Stripe Invoice</button>
+              <button id="confirmationToolBtn" type="button">Create Tour Confirmation</button>
+              <button id="copyInvoiceTsvBtn" type="button">Copy Invoice TSV</button>
+              <button id="copyInvoiceBackendTsvBtn" type="button">Copy Invoice Backend TSV</button>
+              <button id="copyDepositLinkBtn" type="button">Copy $100 Deposit Link</button>
+              <button id="markSpamBtn" class="dangerBtn" type="button">Mark Spam</button>
+              <button id="markDuplicateBtn" class="dangerBtn" type="button">Mark Duplicate</button>
+              <button id="whatsAppBtn" type="button">Open WhatsApp</button>
+            </div>
+            <p class="hint">These buttons save the selected record to localStorage as <strong>mbwSelectedCrmRecord</strong>, then open the related tool.</p>
+            </div>
+          </div>
+          </div>
+        </aside>
+        <section class="panel">
+          <div class="view" id="preparationView">
+            <h2 class="panelTitle">Reminder preparation</h2>
+            <p class="hint">Confirmed / deposit-paid bookings · Payment shown separately · No sending.</p>
+            <p id="preparationWarning" class="prepMissing" role="status"></p>
+            <p id="preparationSummary"></p>
+            <div class="prepFilters"><label>Show<select id="preparationShow"><option value="all">All bookings</option><option value="needs_details">Needs details</option><option value="overdue">Follow-up overdue</option><option value="today">Follow-up today</option><option value="missing">Follow-up missing</option></select></label><label>Preparation rep<select id="preparationRep"><option value="all">All reps</option><option value="JPG">Juan</option><option value="SS">Susana</option><option value="unassigned">Unassigned</option></select></label></div>
+            <p id="preparationCount" aria-live="polite"></p>
+            <div id="preparationCards"></div>
+          </div>
+          <div class="view active" id="dashboardView">
+            <div class="panelHeader"><h2 class="panelTitle">Status dashboard</h2><p class="lastRefresh" id="lastRefreshText">Last refreshed: Not yet</p></div>
+            <div class="stats">
+              <button class="stat queue-new" data-queue="new" type="button"><span>New</span><strong id="statNew">0</strong></button>
+              <button class="stat queue-contacted" data-queue="contacted" type="button"><span>Contacted</span><strong id="statContacted">0</strong></button>
+              <button class="stat queue-planning" data-queue="planning" type="button"><span>Planning</span><strong id="statPlanning">0</strong></button>
+              <button class="stat queue-qualified" data-queue="qualified" type="button"><span>Qualified</span><strong id="statQualified">0</strong></button>
+              <button class="stat queue-follow-up" data-queue="followups" type="button"><span>Follow-up due</span><strong id="statFollowUp">0</strong></button>
+              <button class="stat queue-quoted" data-queue="quoted" type="button"><span>Quoted</span><strong id="statQuoted">0</strong></button>
+              <button class="stat queue-deposit-pending" data-queue="depositPending" type="button"><span>Deposit Pending</span><strong id="statDepositPending">0</strong></button>
+              <button class="stat queue-deposit-paid" data-queue="depositPaid" type="button"><span>Deposit Paid</span><strong id="statDepositPaid">0</strong></button>
+              <button class="stat queue-payment-pending" data-queue="paymentPending" type="button"><span>Payment Pending</span><strong id="statPaymentPending">0</strong></button>
+              <button class="stat queue-booked" data-queue="booked" type="button"><span>Booked</span><strong id="statBooked">0</strong></button>
+
+              <button class="stat queue-upcoming" data-queue="upcoming7" type="button"><span>Upcoming 7</span><strong id="statUpcoming">0</strong></button>
+              <button class="stat queue-completed" data-queue="completed" type="button"><span>Completed</span><strong id="statCompleted">0</strong></button>
+              <button class="stat queue-cancelled" data-queue="cancelled" type="button"><span>Cancelled</span><strong id="statCancelled">0</strong></button>
+              <button class="stat queue-did-not-book" data-queue="didNotBook" type="button"><span>Did Not Book</span><strong id="statDidNotBook">0</strong></button>
+              <button class="stat" data-queue="spam" type="button"><span>Spam</span><strong id="statSpam">0</strong></button>
+              <button class="stat" data-queue="all" type="button" title="All records except archived duplicates"><span>All Records</span><strong id="statTotal">0</strong></button>
+            </div>
+            <h2 class="panelTitle">Priority Records</h2>
+            <div class="records" id="priorityRecords"></div>
+          </div>
+          <div class="view" id="recordsView">
+            <h2 class="panelTitle">Records</h2>
+            <div class="stats queueStrip">
+              <button class="stat queue-new" data-queue="new" type="button"><span>New</span><strong data-stat-key="new">0</strong></button>
+              <button class="stat queue-contacted" data-queue="contacted" type="button"><span>Contacted</span><strong data-stat-key="contacted">0</strong></button>
+              <button class="stat queue-planning" data-queue="planning" type="button"><span>Planning</span><strong data-stat-key="planning">0</strong></button>
+              <button class="stat queue-qualified" data-queue="qualified" type="button"><span>Qualified</span><strong data-stat-key="qualified">0</strong></button>
+              <button class="stat queue-follow-up" data-queue="followups" type="button"><span>Follow-up due</span><strong data-stat-key="followUp">0</strong></button>
+              <button class="stat queue-quoted" data-queue="quoted" type="button"><span>Quoted</span><strong data-stat-key="quoted">0</strong></button>
+              <button class="stat queue-deposit-pending" data-queue="depositPending" type="button"><span>Deposit Pending</span><strong data-stat-key="depositPending">0</strong></button>
+              <button class="stat queue-deposit-paid" data-queue="depositPaid" type="button"><span>Deposit Paid</span><strong data-stat-key="depositPaid">0</strong></button>
+              <button class="stat queue-payment-pending" data-queue="paymentPending" type="button"><span>Payment Pending</span><strong data-stat-key="paymentPending">0</strong></button>
+              <button class="stat queue-booked" data-queue="booked" type="button"><span>Booked</span><strong data-stat-key="booked">0</strong></button>
+
+              <button class="stat queue-upcoming" data-queue="upcoming7" type="button"><span>Upcoming 7</span><strong data-stat-key="upcoming7">0</strong></button>
+              <button class="stat queue-completed" data-queue="completed" type="button"><span>Completed</span><strong data-stat-key="completed">0</strong></button>
+              <button class="stat queue-cancelled" data-queue="cancelled" type="button"><span>Cancelled</span><strong data-stat-key="cancelled">0</strong></button>
+              <button class="stat queue-did-not-book" data-queue="didNotBook" type="button"><span>Did Not Book</span><strong data-stat-key="didNotBook">0</strong></button>
+              <button class="stat" data-queue="spam" type="button"><span>Spam</span><strong data-stat-key="spam">0</strong></button>
+              <button class="stat" data-queue="all" type="button"><span>Total</span><strong data-stat-key="total">0</strong></button>
+            </div>
+            <div class="toolbar">
+              <input id="inlineSearchInput" type="search" placeholder="Search records" />
+              <select id="inlineStatusFilter"><option value="">Any status</option><option value="new">New</option><option value="contacted">Contacted</option><option value="planning">Planning</option><option value="qualified">Qualified</option><option value="quoted">Quoted</option><option value="follow_up">Follow Up</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="did_not_book">Did Not Book</option><option value="spam">Spam</option><option value="duplicate">Duplicate</option></select>
+              <select id="inlineRepFilter"><option value="">All reps</option><option value="JPG">Juan</option><option value="SS">Susana</option><option value="unassigned">Unassigned</option></select>
+              <select id="sortInput"><option value="created_at" selected>Sort by created</option><option value="updated_at">Sort by updated</option><option value="priority">Sort by priority</option><option value="requested_date">Sort by tour date</option><option value="assigned_to">Sort by rep</option><option value="full_name">Sort by name</option><option value="status">Sort by status</option></select>
+              <select id="sortDirectionInput"><option value="desc" selected>Descending</option><option value="asc">Ascending</option></select>
+              <button id="clearFiltersBtn" type="button">Clear</button>
+            </div>
+            <div class="records" id="recordList"></div>
+          </div>
+          <div class="view" id="calendarView">
+            <div class="calendarTop">
+              <h2 class="calendarTitle" id="calendarTitle">Calendar</h2><p class="lab-calendar-note">Quick filters apply · Tour dates and follow-ups are distinct events · Guest totals deduplicate multi-service parties · Space and provider availability require confirmation</p>
+              <div class="calendarControls">
+                <div class="calendarControlTop">
+                  <span class="calendarViewSwitch" aria-label="Calendar display">
+                    <button class="active" id="calendarMonthViewBtn" type="button">Calendar</button>
+                    <button id="calendarListViewBtn" type="button">Pipeline List (<span id="calendarPipelineCount">0</span>)</button>
+                  </span>
+                </div>
+                <div class="calendarControlNav" id="calendarNavigationRow">
+                  <select id="calendarModeInput" aria-label="Calendar mode"><option value="tour">Tour dates</option><option value="followups">Follow-ups</option><option value="all">All activity</option></select>
+                  <button id="calendarPrevBtn" type="button" aria-label="Previous month" title="Previous month">‹</button>
+                  <button id="calendarTodayBtn" type="button">Today</button>
+                  <button id="calendarNextBtn" type="button" aria-label="Next month" title="Next month">›</button>
+                </div>
+              </div>
+            </div>
+            <div class="calendarMonthPanel" id="calendarMonthPanel">
+            <button id="calendarLegendToggle" type="button" aria-expanded="false">Show legend</button>
+            <div class="calendarLegends" id="calendarLegends" aria-label="Calendar legend" hidden>
+              <div class="legend">
+                <span class="legendLabel">Status</span>
+                <button class="pill status-booked" data-legend-kind="status" data-legend-value="booked" type="button">Booked</button>
+                <button class="pill status-deposit-paid" data-legend-kind="status" data-legend-value="deposit" type="button">Deposit paid</button>
+                <button class="pill status-deposit-pending" data-legend-kind="status" data-legend-value="pending" type="button">Deposit pending</button>
+                <button class="pill status-quoted" data-legend-kind="status" data-legend-value="quoted" type="button">Quoted</button>
+                <button class="pill status-contacted" data-legend-kind="status" data-legend-value="pipeline" type="button">Pipeline</button>
+                <button class="pill status-follow-up" data-legend-kind="status" data-legend-value="follow" type="button">Follow-up</button>
+              </div>
+              <div class="legend">
+                <span class="legendLabel">Tour type</span>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Birding" type="button"><span aria-hidden="true">🐦</span>Birding</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Night walk" type="button"><span aria-hidden="true">🌙</span>Night walk</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Transport" type="button"><span aria-hidden="true">🚐</span>Transport</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Waterfall" type="button"><span aria-hidden="true">🥾</span>Waterfall</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Chocolate" type="button"><span aria-hidden="true">🍫</span>Chocolate</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Lodging" type="button"><span aria-hidden="true">🏨</span>Lodging</button>
+                <button class="serviceKey" data-legend-kind="service" data-legend-value="Other" type="button"><span aria-hidden="true">✦</span>Other</button>
+              </div>
+            </div>
+            <div class="calendarGrid" id="calendarGrid"></div>
+            <div class="dayAgenda">
+              <h3 class="agendaDate" id="agendaDate">Select a day</h3>
+              <div class="records" id="agendaRecords"></div>
+            </div>
+            </div>
+            <div class="pipelineListPanel" id="calendarPipelineListPanel" hidden>
+              <p class="pipelineListHint">All active pipeline services in chronological order. Select any entry to open its full CRM record.</p>
+              <div class="pipelineListTools">
+                <select id="pipelineStatusFilter" aria-label="Filter pipeline list by status"><option value="">All active statuses</option><option value="new">New</option><option value="contacted">Contacted</option><option value="planning">Planning</option><option value="qualified">Qualified</option><option value="quoted">Quoted</option><option value="follow_up">Follow Up</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="booked">Booked</option></select>
+                <select id="pipelineSortInput" aria-label="Sort pipeline list"><option value="upcoming">Upcoming first</option><option value="updated">Recently updated</option></select>
+              </div>
+              <div class="records" id="calendarPipelineRecords"></div>
+            </div>
+          </div>
+          <div class="view" id="reportsView">
+            <div class="reportHeader">
+              <div>
+                <h2 class="calendarTitle">Tour Reports</h2>
+                <p class="hint">Sidebar filters select guest inquiries. Use the filters below to select their services, then review totals or export the results.</p>
+              </div>
+              <div class="reportActions">
+                <button id="copyReportBtn" type="button">Copy Report</button>
+                <button id="downloadReportBtn" type="button">Download CSV</button>
+                <button id="printReportBtn" type="button">Print</button>
+                <button class="primary" id="copyGuideReportBtn" type="button">Copy Guide WhatsApp</button>
+              </div>
+            </div>
+            <div class="reportPresets" aria-label="Report presets">
+              <button type="button" data-report-preset="birding">Upcoming Birding</button>
+              <button type="button" data-report-preset="night_walk">Upcoming Night Walks</button>
+              <button type="button" data-report-preset="confirmed">Confirmed Tours</button>
+              <button type="button" data-report-preset="deposit_pending">Deposits Pending</button>
+              <button type="button" data-report-preset="transportation">Transportation Schedule</button>
+              <button type="button" data-report-preset="guides">Guide Assignment List</button>
+            </div>
+            <div class="reportFilters">
+              <div class="field"><label for="reportRangeInput">Date range</label><select id="reportRangeInput"><option value="7">Upcoming 7 days</option><option value="30" selected>Upcoming 30 days</option><option value="90">Upcoming 90 days</option><option value="month">This month</option><option value="custom">Custom dates</option><option value="all">All dates</option></select></div>
+              <div class="field"><label for="reportStartInput">Start date</label><input id="reportStartInput" type="date"></div>
+              <div class="field"><label for="reportEndInput">End date</label><input id="reportEndInput" type="date"></div>
+              <div class="field"><label for="reportTypeInput">Tour type</label><select id="reportTypeInput"><option value="all">All tour types</option><option value="birding">Birding</option><option value="night_walk">Night walk</option><option value="transportation">Transportation</option><option value="waterfall">Waterfall / hike</option><option value="chocolate">Chocolate</option><option value="lodging">Lodging</option><option value="other">Other / custom</option></select></div>
+              <div class="field"><label for="reportStatusInput">Status</label><select id="reportStatusInput"><option value="active">Any Active Status</option><option value="pipeline">Pipeline</option><option value="quoted">Quoted</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="booked">Booked</option><option value="confirmed">Booked / Paid</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="did_not_book">Did Not Book</option><option value="spam">Spam</option><option value="all">All Statuses</option></select></div>
+            </div>
+            <p class="reportRangeHint" id="reportRangeHint"></p>
+            <div class="reportSummary">
+              <div class="reportMetric"><span>Tours / services</span><strong id="reportActivityCount">0</strong></div>
+              <div class="reportMetric"><span title="Each guest party is counted once across the selected services and dates, using its largest recorded party size. + indicates a minimum or incomplete count.">Unique guests</span><strong id="reportGuestCount">0</strong></div>
+              <div class="reportMetric"><span>Booked / paid</span><strong id="reportBookedCount">0</strong></div>
+              <div class="reportMetric"><span>Needs action</span><strong id="reportActionCount">0</strong></div>
+            </div>
+            <div class="reportTableWrap">
+              <table class="reportTable">
+                <thead><tr><th>Date</th><th>Type</th><th>Guest</th><th>Guests</th><th>Status</th><th>Payment</th><th>Pickup</th><th>Phone</th></tr></thead>
+                <tbody id="reportTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="view" id="intakeView">
+            <h2 class="panelTitle">Create / Edit Record</h2>
+            <div class="detailActions">
+              <div class="actionGroup"><span class="actionGroupTitle">Record actions</span><button id="detailWhatsAppBtn" type="button">Open WhatsApp</button><button id="markContactedBtn" type="button">Mark Contacted Now</button><button id="detailMarkSpamBtn" class="dangerBtn" type="button">Mark Spam</button><button id="detailMarkDuplicateBtn" class="dangerBtn" type="button">Mark Duplicate</button><button id="detailTopSaveBtn" class="primary" type="button">Save Record</button></div>
+              <div class="actionGroup"><span class="actionGroupTitle">Guest documents</span><button id="detailEmailToolBtn" type="button">Generate Email</button><button id="generateItineraryBtn" type="button">Generate Itinerary</button><button id="editSavedItineraryBtn" type="button" disabled>Edit Saved Itinerary</button></div>
+              <div class="actionGroup guidePlanWorkflow" id="guidePlanWorkflow" hidden><span class="actionGroupTitle">Custom itinerary workflow</span><div class="guidePlanSummary" id="guidePlanSummary"></div><button id="reviewGuidePlanBtn" type="button">Review Guide Itinerary</button><button id="openGuidePlanGeneratorBtn" class="primary" type="button">Open Itinerary Generator</button></div>
+              <div class="actionGroup"><span class="actionGroupTitle">Payments and confirmation</span><button id="detailZelleToolBtn" type="button">Create Zelle Invoice</button><button id="detailStripeToolBtn" type="button">Create Stripe Invoice</button><button id="detailCopyDepositLinkBtn" type="button">Copy $100 Deposit Link</button><button id="detailConfirmationToolBtn" type="button">Create Tour Confirmation</button></div>
+              <div class="actionGroup"><span class="actionGroupTitle">Copy and share</span><button id="detailCopyInvoiceTsvBtn" type="button">Copy Invoice TSV</button><button id="detailCopyInvoiceBackendTsvBtn" type="button">Copy Invoice Backend TSV</button><button id="copyGuideMessageBtn" type="button">Copy Guide Message</button><button id="copyStatusMessageBtn" type="button">Copy Booked Follow-up</button><button id="copyReviewWhatsAppBtn" type="button">Copy Review WhatsApp</button><button id="copyReviewEmailBtn" type="button">Copy Review Email</button><button id="zelleToAcctBtn" class="primary" type="button" disabled>Post Zelle to Accounting</button><button id="collaborationToAcctBtn" type="button" disabled>Collab to Acct</button></div>
+            </div>
+            <div class="queueNav" id="queueNav">
+              <div class="queueNavInfo">
+                <span class="queueNavEyebrow" id="queueNavEyebrow">Queue position</span>
+                <span class="queueNavText" id="queueNavText">Select a record to start reviewing a queue.</span>
+              </div>
+              <div class="queueNavButtons">
+                <button id="queuePrevBtn" type="button">Previous</button>
+                <button id="queueNextBtn" type="button">Next</button>
+              </div>
+            </div>
+            <div class="duplicateNotice" id="duplicateNotice" hidden></div>
+            <section class="guestHistory" id="guestHistory" hidden aria-live="polite"></section>
+            <section class="guestHistory" id="conversationAssistant" hidden aria-label="Conversation assistant"></section>
+            <details class="attributionPanel" id="attributionPanel"><summary><span>Marketing Attribution</span><small id="attributionSummary">No attribution available</small></summary><div class="attributionPanelBody" id="attributionPanelBody"></div></details>
+            <section class="formSection" aria-labelledby="guestInquiryTitle">
+            <h3 class="formSectionTitle" id="guestInquiryTitle">Guest &amp; Inquiry</h3>
+            <div class="referenceIdentityRow">
+              <div class="field"><label for="modeInput">Mode</label><select id="modeInput"><option value="create">Create New Guest + Inquiry</option><option value="returning">Create Returning Inquiry</option><option value="update">Update Selected Inquiry</option></select></div>
+              <div class="field"><label for="inquiryIdDisplay">Inquiry ID</label><input id="inquiryIdDisplay" readonly placeholder="Save record to generate" /></div>
+              <div class="field"><label for="guestIdInput">Guest ID</label><input id="guestIdInput" placeholder="Auto or existing G-..." /></div>
+              <div class="field"><label for="referenceIdInput">Reference ID</label><input id="referenceIdInput" placeholder="ID, Reference or Referencia: ci_..." autocomplete="off" spellcheck="false" aria-describedby="referenceStatus" /><small id="referenceStatus" role="status" aria-live="polite">Paste an ID or a guest message containing one Reference / Referencia.</small></div>
+            </div>
+            <div class="statusWorkflowRow">
+              <div class="field statusField status-new" id="statusField"><label for="recordStatusInput">Status</label><select id="recordStatusInput"><option value="new">New</option><option value="contacted">Contacted</option><option value="planning">Planning</option><option value="qualified">Qualified</option><option value="quoted">Quoted</option><option value="follow_up">Follow Up</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="did_not_book">Did Not Book</option><option value="spam">Spam</option><option value="duplicate">Duplicate</option></select></div>
+              <div class="field"><label for="sourceInput">Lead Source</label><select id="sourceInput"><option value="manual_email">Manual Email</option><option value="manual_whatsapp" selected>Manual WhatsApp</option><option value="site_book_tour">Site Book Tour</option><option value="site_contact">Site Contact</option><option value="telegram">Telegram</option><option value="other">Other</option></select></div>
+              <div class="field"><label for="assignedToInput">Assigned Rep</label><select id="assignedToInput"><option value="">Unassigned</option><option value="JPG">Juan</option><option value="SS">Susana</option></select></div>
+              <div class="field followupField"><div class="followupFieldHeader"><label for="followupInput">Follow-up</label><div class="followupFieldState" id="followupFieldState"></div></div><input id="followupInput" type="date" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="firstNameInput">First Name</label><input id="firstNameInput" /></div>
+              <div class="field"><label for="lastNameInput">Last Name</label><input id="lastNameInput" /></div>
+              <div class="field"><label for="fullNameInput">Full Name</label><input id="fullNameInput" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="phoneInput">Phone</label><input id="phoneInput" /></div>
+              <div class="field"><label for="emailInput">Email</label><input id="emailInput" type="email" /></div>
+              <div class="field"><label for="countryInput">Country</label><input id="countryInput" list="countryList" placeholder="Type or choose country" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="tourInput">Tour Interest</label><select id="tourInput"><option></option><option>Birdwatching</option><option>Activity</option><option>Tour + Activity</option><option>Multi Day</option><option>Transportation</option><option>Accommodation</option><option>Other</option></select></div>
+              <div class="field"><label for="guestCountInput">Guests</label><select id="guestCountInput"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></div>
+              <div class="field"><label for="dateInput">Tour Date</label><input id="dateInput" type="date" /></div>
+            </div>
+            </section>
+            <section class="formSection" aria-labelledby="tourPlanningTitle">
+            <h3 class="formSectionTitle" id="tourPlanningTitle">Tour Planning &amp; Quote</h3>
+            <div class="two">
+              <div class="field"><label for="serviceTypeInput">Service Type</label><select id="serviceTypeInput"><option></option><option>Birdwatching</option><option>Activity</option><option>Specialty Wildlife</option><option>Transportation</option><option>Accommodation</option><option>Custom</option></select></div>
+              <div class="field"><label for="productSelectedInput">Product / Service</label><select id="productSelectedInput"><option></option><option value="MBW002 - Cloud Forest Icons Tour">MBW002 - Cloud Forest Icons Tour</option><option value="MBW004 - Jewels of the Morning Forest">MBW004 - Jewels of the Morning Forest</option><option value="MBW005 - Dance of the Andean Cock-of-the-Rock">MBW005 - Dance of the Andean Cock-of-the-Rock</option><option value="MBW006 - Quest for Five Toucans &amp; the Andean Cock-of-the-Rock">MBW006 - Quest for Five Toucans &amp; the Andean Cock-of-the-Rock</option><option value="MBW007 - Custom Half Day">MBW007 - Custom Half Day</option><option value="MBW008 - Custom Full Day">MBW008 - Custom Full Day</option><option value="MBW009 - Flora Excursion">MBW009 - Flora Excursion</option><option value="MBW010 - Solo Birdwatching Experience">MBW010 - Solo Birdwatching Experience</option><option value="MBW011 - Chocolate Tour">MBW011 - Chocolate Tour</option><option value="MBW012 - Coffee Tour">MBW012 - Coffee Tour</option><option value="MBW013 - Waterfall Hike">MBW013 - Waterfall Hike</option><option value="MBW014 - Canopy/Ziplining">MBW014 - Canopy/Ziplining</option><option value="MBW015 - Butterfly Garden">MBW015 - Butterfly Garden</option><option value="MBW019 - Hummingbird Tour">MBW019 - Hummingbird Tour</option><option value="MBW016 - Night Walk">MBW016 - Night Walk</option><option value="MBW017 - Half-Day to Full-Day Extension">MBW017 - Half-Day to Full-Day Extension</option><option value="TRANS01 - Quito -&gt; Mindo">TRANS01 - Quito -&gt; Mindo</option><option value="TRANS02 - Mindo -&gt; Quito">TRANS02 - Mindo -&gt; Quito</option><option value="TRANS03 - Quito -&gt; Mindo -&gt; Quito">TRANS03 - Quito -&gt; Mindo -&gt; Quito</option><option value="TRANS04 - Airport Pick Up">TRANS04 - Airport Pick Up</option><option value="TRANS05 - Custom">TRANS05 - Custom</option><option value="TRANS06 - Quito -&gt; Mindo -&gt; Quito">TRANS06 - Quito -&gt; Mindo -&gt; Quito</option><option value="DEP001 - Reservation Deposit">DEP001 - Reservation Deposit</option><option value="ACT002 - Waterfalls">ACT002 - Waterfalls</option><option value="ACT003 - Nambillo Waterfall">ACT003 - Nambillo Waterfall</option><option value="ACT004 - Quad Tour">ACT004 - Quad Tour</option><option value="ACT009 - Orchid Garden Tour">ACT009 - Orchid Garden Tour</option><option value="ACT010 - Frog Concert">ACT010 - Frog Concert</option><option value="ACT011 - Mindo River Tubing">ACT011 - Mindo River Tubing</option><option value="ACT013 - Canyoning">ACT013 - Canyoning</option><option value="ACT015 - Paintball">ACT015 - Paintball</option><option value="ACT016 - Horseback Riding">ACT016 - Horseback Riding</option><option value="ACT017 - Mountain Biking">ACT017 - Mountain Biking</option><option value="ACT018 - Double Extreme Swing">ACT018 - Double Extreme Swing</option><option value="ACT019 - Extreme Bike – Sky Bike">ACT019 - Extreme Bike – Sky Bike</option><option value="ACT020 - Sky Ride">ACT020 - Sky Ride</option><option value="ACT021 - Private Insect &amp; Macro Wildlife Search">ACT021 - Private Insect &amp; Macro Wildlife Search</option><option value="OSO001 - Extended Half-Day Spectacled Bear Tour">OSO001 - Extended Half-Day Spectacled Bear Tour</option><option value="OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour">OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour</option><option value="ACCOM01 - Accommodation Booking">ACCOM01 - Accommodation Booking</option><option value="Other">Other</option></select></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="durationInput">Duration</label><select id="durationInput"><option></option><option>Half Day</option><option>Full Day</option><option>Evening</option><option>Flexible</option><option>Transportation</option></select></div>
+              <div class="field"><label for="transportInput">Transportation Needed</label><select id="transportInput"><option>Unknown</option><option>Yes</option><option>No</option></select></div>
+              <div class="field"><label for="pickupLocationInput">Pickup Location</label><input id="pickupLocationInput" /></div>
+            </div>
+            <div class="three">
+              <div class="field"><label for="priorityInput">Priority</label><select id="priorityInput"><option value="">None / closed record</option><option value="auto">Auto by tour date</option><option>urgent</option><option>high</option><option>normal</option></select></div>
+              <div class="field"><label for="availabilityInput">Availability</label><select id="availabilityInput"><option>pending</option><option>available</option><option>unavailable</option><option>needs_check</option></select></div>
+              <div class="field"><label for="groupingPreferenceInput">Grouping Preference</label><select id="groupingPreferenceInput"><option>unknown</option><option>private_only</option><option>open_to_group</option></select></div>
+            </div>
+            <div class="two">
+              <div class="field"><label for="groupingStatusInput">Grouping Status</label><select id="groupingStatusInput"><option>unmatched</option><option>candidate</option><option>invited</option><option>accepted</option></select></div>
+              <div class="field"><label for="quotedAmountInput">Accepted Quote Total</label><input id="quotedAmountInput" type="number" min="0" step="0.01" placeholder="Enter only after the guest selects an option" /></div>
+            </div>
+            <section class="tourItemsPanel" aria-label="Request summary"><h3>Requested services</h3><div id="requestedServicesSummary" class="hint"></div><p class="hint">This summarizes the request, not an accepted itinerary. Verify dates, party size and transport coverage before quoting.</p></section>
+            <section class="tourItemsPanel" aria-labelledby="tourItemsTitle">
+              <div class="tourItemsHeader">
+                <div><h3 id="tourItemsTitle">Additional Tours / Activities</h3><p>The main form above is Tour 1. Keep unselected birding alternatives in Tour Quotes Sent below. Requested activities may remain here as New or Planning; they are not booked until confirmed.</p></div>
+                <button id="addTourItemBtn" type="button">Add Tour</button>
+              </div>
+              <div class="tourItemsList" id="tourItemsList"></div>
+            </section>
+            <details class="quoteOptionsPanel" id="quoteOptionsPanel">
+              <summary><span>Tour Quotes Sent</span><small>Alternatives and optional services; not confirmed tours</small></summary>
+              <div class="quoteOptionsBody"><p class="hint">Enter each birding alternative separately, plus Night Walk and transportation when requested. Do not add alternative prices together. Describe dates, guest count, pickup/return coverage and inclusions in Quote notes. Leave Accepted Quote Total blank until the guest selects their services. Quoting does not create or confirm tours.</p>
+                <div class="quoteOptionsGrid" id="quoteOptionsList">
+                  <div class="quoteOptionRow" data-quote-code="MBW004" data-quote-name="Jewels of the Morning Forest"><span class="quoteOptionName">Jewels</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                  <div class="quoteOptionRow" data-quote-code="MBW005" data-quote-name="Dance of the Cock-of-the-Rock"><span class="quoteOptionName">Dance</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                  <div class="quoteOptionRow" data-quote-code="MBW006" data-quote-name="Quest for Five Toucans"><span class="quoteOptionName">Quest</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                  <div class="quoteOptionRow" data-quote-code="MBW016" data-quote-name="Night Walk"><span class="quoteOptionName">Night Walk</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                  <div class="quoteOptionRow" data-quote-code="OSO001" data-quote-name="Spectacled Bear Tour"><span class="quoteOptionName">Spectacled Bear</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                  <div class="quoteOptionRow" data-quote-code="TRANSPORT" data-quote-name="Transportation"><span class="quoteOptionName">Transportation</span><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="total">Per vehicle</option></select></div></div>
+                  <div class="quoteOptionRow quoteOptionRow--other" data-quote-code="OTHER" data-quote-name="Other"><div class="field"><label>Other option</label><input data-quote-field="description" placeholder="Tour, transportation, activity…" /></div><div class="field"><label>Price</label><input data-quote-field="price" type="number" min="0" step="0.01" placeholder="USD" /></div><div class="field"><label>Pricing</label><select data-quote-field="basis"><option value="per_person">Per person</option><option value="total">Total</option></select></div></div>
+                </div>
+                <div class="quoteMetaGrid">
+                  <div class="field"><label for="quoteSentAtInput">Quote sent</label><input id="quoteSentAtInput" type="datetime-local" /></div>
+                  <div class="field"><label for="quoteSentChannelInput">Sent through</label><select id="quoteSentChannelInput"><option value=""></option><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="in_person">In person</option><option value="other">Other</option></select></div>
+                  <div class="field quoteNotesField"><label for="quoteNotesInput">Quote notes</label><textarea id="quoteNotesInput" placeholder="Optional context, package details, or conditions shared with the guest"></textarea></div>
+                </div>
+                <div class="quoteOptionActions"><button id="markQuotesSentBtn" type="button">Record Sent Quote &amp; Save</button></div>
+              </div>
+            </details>
+            </section>
+            <section class="formSection" aria-labelledby="invoicePaymentTitle">
+              <h3 class="formSectionTitle" id="invoicePaymentTitle">Invoice &amp; Payment</h3><div id="bookingBalanceSummary" aria-live="polite"></div>
+              <p class="hint">These fields summarize the latest payment. Use Edit in the invoice ledger to correct one invoice without replacing another payment.</p>
+              <div class="two">
+                <div class="field"><label for="quoteStatusInput">Quote Status</label><select id="quoteStatusInput"><option value="not_sent">Not Sent</option><option value="sent">Sent</option><option value="accepted">Accepted</option><option value="declined">Declined</option></select></div>
+                <div class="field"><label for="paymentStatusInput">Payment Status</label><select id="paymentStatusInput"><option value="unpaid">Unpaid</option><option value="deposit_pending">Deposit Pending</option><option value="deposit_paid">Deposit Paid</option><option value="payment_pending">Payment Pending</option><option value="paid">Paid</option><option value="no_payment_required">No Payment Required</option><option value="refunded">Refunded</option></select></div>
+              </div>
+              <div class="three">
+                <div class="field"><label for="invoiceNoInput">Invoice #</label><input id="invoiceNoInput" placeholder="Optional" /></div>
+                <div class="field"><label for="datePaidInput">Date Paid</label><input id="datePaidInput" type="date" /></div>
+                <div class="field"><label for="paymentMethodInput">Payment Method</label><select id="paymentMethodInput"><option></option><option>Stripe</option><option>Zelle</option><option>Bank Transfer EC</option><option>Bank Transfer US</option><option>Cash</option><option>Venmo</option><option>PayPal</option><option>Marketing Collaboration</option><option>Other</option></select></div>
+              </div>
+              <div class="paymentLedger" id="stripeDepositPanel">
+                <div class="paymentLedgerHead"><strong>Stripe deposits · this inquiry</strong><button id="checkStripeDeposits" type="button">Check Stripe deposits</button></div>
+                <p class="hint">Live Stripe records, separate from invoice totals. A deposit is credited once when applied to an invoice.</p>
+                <div id="stripeDepositResults" aria-live="polite" class="paymentLedgerList">Select an inquiry, then check its deposits.</div>
+              </div>
+              <div class="paymentLedger" id="paymentLedger" aria-live="polite">
+                <div class="paymentLedgerHead"><strong>Invoice &amp; payment history</strong><button id="refreshStripeInvoices" type="button">Refresh Stripe invoices</button><span id="paymentLedgerSummary">No ledger entries</span></div>
+                <div class="paymentLedgerList" id="paymentLedgerList"><div class="paymentLedgerEmpty">Save or select an inquiry to load its invoices.</div></div>
+                <div class="ledgerWarning" id="paymentLedgerWarning" hidden></div>
+              </div>
+            </section>
+            <datalist id="countryList"><option value="United States"></option><option value="Canada"></option><option value="United Kingdom"></option><option value="Germany"></option><option value="France"></option><option value="Spain"></option><option value="Netherlands"></option><option value="Switzerland"></option><option value="Denmark"></option><option value="Australia"></option><option value="New Zealand"></option><option value="Ecuador"></option><option value="Colombia"></option><option value="Peru"></option><option value="Chile"></option><option value="Argentina"></option><option value="Brazil"></option><option value="Mexico"></option></datalist>
+
+            <section class="crmWorkflowSection" id="communicationSection">
+              <button class="workflowSectionToggle" type="button" aria-expanded="true" aria-controls="communicationSectionBody"><span><strong>Communication History</strong><small>Log messages, emails and calls without overwriting notes.</small></span><span class="workflowSectionMeta" id="communicationSectionMeta">0 interactions</span></button>
+              <div class="workflowSectionBody" id="communicationSectionBody"><div id="activityWorkspace" class="workspaceGrid">
+              <section class="workspaceCard stickyCard" aria-labelledby="logInteractionTitle">
+                <h3 id="logInteractionTitle">Log an interaction</h3><p class="workspaceCardLead">Record what happened. The current time is used unless you choose another.</p>
+                <div class="compactGrid">
+                  <div class="field"><label for="interactionDirection">Direction</label><select id="interactionDirection"><option value="incoming">Incoming</option><option value="outgoing">Outgoing</option><option value="internal">Internal note</option></select></div>
+                  <div class="field"><label for="interactionChannel">Channel</label><select id="interactionChannel"><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="phone">Phone</option><option value="website">Website</option><option value="in_person">In person</option><option value="other">Other</option></select></div>
+                  <div class="field"><label for="interactionType">Type</label><select id="interactionType"><option value="guest_message">Guest message</option><option value="staff_reply">Staff reply</option><option value="quote_sent">Quote sent</option><option value="itinerary_sent">Itinerary sent</option><option value="invoice_sent">Invoice sent</option><option value="deposit_link_sent">Deposit link sent</option><option value="payment_received">Payment received</option><option value="confirmation_sent">Confirmation sent</option><option value="follow_up">Follow-up</option><option value="internal_note">Internal note</option><option value="other">Other</option></select></div>
+                  <div class="field"><label for="interactionStaff">Staff</label><select id="interactionStaff"><option>JPG</option><option>SS</option></select></div>
+                  <div class="field fullSpan"><label for="interactionOccurredAt">Date and time</label><input id="interactionOccurredAt" type="datetime-local" /></div>
+                  <div class="field fullSpan"><label for="interactionNote">Communication note</label><textarea id="interactionNote" placeholder="Example: Guest confirmed pickup at Dann Carlton Quito."></textarea></div>
+                  <label class="inlineCheck fullSpan"><input id="interactionFollowup" type="checkbox" /> Follow-up required</label>
+                  <div class="field fullSpan followupFields" id="interactionFollowupFields" hidden><label for="interactionFollowupAt">Follow-up date</label><input id="interactionFollowupAt" type="datetime-local" /></div>
+                </div>
+                <p id="interactionSaveStatus" class="hint" role="status" aria-live="polite"></p>
+                <div class="workspaceActions"><button id="clearInteractionBtn" type="button">Clear</button><button id="saveInteractionBtn" class="primary" type="button">Save Interaction</button></div>
+              </section>
+              <section class="workspaceCard"><h3>Communication timeline</h3><p class="workspaceCardLead" id="interactionCount">No interactions recorded.</p><div id="interactionTimeline" class="timeline"></div></section></div></div>
+            </section>
+            <section class="crmWorkflowSection" id="assignmentsSection">
+              <button class="workflowSectionToggle" type="button" aria-expanded="false" aria-controls="assignmentsSectionBody"><span><strong>Guides, Drivers & Assignments</strong><small>Click to assign a guide or driver, schedule transportation, and record whether they were informed.</small></span><span class="workflowSectionMeta" id="assignmentsSectionMeta">0 assignments</span></button>
+              <div class="workflowSectionBody" id="assignmentsSectionBody" hidden><div id="operationsWorkspace" class="workspaceGrid">
+              <section class="workspaceCard stickyCard"><h3>Guide or driver assignment</h3><p class="workspaceCardLead">Schedule one service or transportation leg at a time.</p>
+                <input id="assignmentId" type="hidden" />
+                <div class="compactGrid">
+                  <div class="field fullSpan"><label for="assignmentTourItem">Itinerary service</label><select id="assignmentTourItem"><option value="">Unlinked / custom assignment</option></select><p class="hint">This list uses saved services. After editing activities above, use Save Record to update these options.</p></div>
+                  <div class="field"><label for="assignmentService">Service</label><select id="assignmentService"><option>Birdwatching</option><option>Night Walk</option><option>Activity</option><option>Specialty Wildlife</option><option>Transportation</option><option>Accommodation</option><option>Meal</option><option>Free Time</option><option>Pickup</option><option>Drop-off</option><option>Custom</option></select></div>
+                  <div class="field"><label for="assignmentStatus">Status</label><select id="assignmentStatus"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div>
+                  <div class="field"><label for="assignmentDate">Date</label><input id="assignmentDate" type="date" /></div>
+                  <input id="assignmentGroupId" type="hidden" />
+                  <div class="field"><label for="assignmentProvider">Guide / Driver</label><select id="assignmentProvider"></select></div>
+                  <div class="field"><label for="assignmentTime">Start Time - Mindo Time</label><select id="assignmentTime"></select></div>
+                  <div class="field"><label for="assignmentEndTime">End Time - Mindo Time</label><select id="assignmentEndTime"></select></div>
+                  <div class="field providerOther" id="assignmentProviderOtherWrap" hidden><label for="assignmentProviderOther">Name</label><input id="assignmentProviderOther" placeholder="Provider name" /></div>
+                  <div class="field"><label for="assignmentDirection">Direction</label><select id="assignmentDirection"><option value="">Not applicable</option><option value="outbound">Outbound / Ida</option><option value="return">Return / Regreso</option></select></div>
+                  <div class="field"><label for="assignmentPickup">Pickup location</label><input id="assignmentPickup" placeholder="Hotel, airport, Mindo…" /></div>
+                  <div class="field"><label for="assignmentDropoff">Drop-off location</label><input id="assignmentDropoff" /></div>
+                  <div class="field"><label for="assignmentCost">Provider cost</label><input id="assignmentCost" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+                  <div class="field"><label for="assignmentExtraCost">Extra cost</label><input id="assignmentExtraCost" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+                  <div class="field"><label for="assignmentStaff">Staff</label><select id="assignmentStaff"><option>JPG</option><option>SS</option></select></div>
+                  <label class="inlineCheck fullSpan"><input id="assignmentInformed" type="checkbox" /> Guide/driver has been informed</label>
+                  <div class="field fullSpan"><label for="assignmentNote">Internal note</label><textarea id="assignmentNote" placeholder="Meeting instructions, rate details, or confirmation notes"></textarea></div>
+                </div>
+                <div class="workspaceActions"><button id="clearAssignmentBtn" type="button">Clear</button><button id="saveAssignmentBtn" class="primary" type="button">Save Assignment</button></div>
+              </section>
+              <div>
+                <section class="workspaceCard"><h3>Scheduled services</h3><p class="workspaceCardLead" id="assignmentCount">No assignments recorded.</p><div id="assignmentList" class="assignmentList"></div></section>
+                <section class="workspaceCard" style="margin-top:14px"><h3>Provider message</h3><p class="workspaceCardLead">Create ready-to-send guide, driver, or activity-provider messages from scheduled services.</p><div class="operationsToolbar"><select id="messageServiceFilter"><option value="">All scheduled services</option><option>Birdwatching</option><option>Night Walk</option><option>Activity</option><option>Specialty Wildlife</option><option>Transportation</option><option>Accommodation</option><option>Meal</option><option>Free Time</option><option>Pickup</option><option>Drop-off</option><option>Custom</option></select><label class="inlineCheck"><input id="messageIncludeCosts" type="checkbox" checked /> Include costs</label><button id="generateMessageBtn" type="button">Generate preview</button><button id="copyOperationsMessageBtn" class="primary" type="button">Copy message</button></div><textarea id="operationsMessage" class="messageOutput" spellcheck="false" placeholder="Your ready-to-send provider message will appear here"></textarea></section>
+              </div></div></div>
+            </section>
+            <div class="field"><label for="notesInput">Guest Notes</label><textarea id="notesInput"></textarea></div>
+            <div class="field"><label for="internalInput">Internal Notes</label><textarea id="internalInput"></textarea></div>
+            <div class="saveBar"><button id="bottomSaveBtn" class="primary" type="button">Save Record</button></div>
+          </div>
+          <div class="view" id="balancesView">
+            <h2>Upcoming balances</h2><p class="hint">USD · Accounting deposits and CRM invoices. Reminders are manual. Missing amounts and deadlines require review.</p>
+            <div class="two"><div class="field"><label for="balanceFilter">Show</label><select id="balanceFilter"><option value="outstanding">Outstanding</option><option value="due_soon">Due within 7 days</option><option value="overdue">Overdue</option><option value="paid">Fully paid</option><option value="review">Needs details / review</option><option value="all">All</option></select></div><div class="field"><label for="balanceSearch">Search guest or rep</label><input id="balanceSearch" type="search" /></div></div>
+            <label><input type="checkbox" id="balanceCompleted" /> Include completed tours</label> <button id="balanceRefresh" type="button">Refresh balances</button>
+            <p id="balanceFeedStatus" role="status"></p><div id="balanceRows"></div>
+          </div>
+          <div class="view" id="settingsView">
+            <h2 class="panelTitle">n8n CRM API Settings</h2>
+            <div class="field"><label for="apiUrlInput">CRM API Webhook URL</label><input id="apiUrlInput" type="url" placeholder="https://.../webhook/mbw-crm-admin-api" /></div>
+            <p class="hint">Use the Production URL from the n8n workflow. <strong>Refresh CRM</strong> reads the live Google Sheet through n8n, and <strong>Save Record</strong> writes back to that same sheet. CSV import is only a fallback for offline review or troubleshooting.</p>
+            <div class="recordActions"><button id="saveSettingsBtn" class="primary" type="button">Save Settings</button><button id="importCsvBtn" type="button">Import CRM CSV</button><button id="loadDemoBtn" type="button">Load Demo Records</button><button id="clearLocalBtn" type="button">Clear Local Records</button></div>
+            <input id="csvInput" type="file" accept=".csv,text/csv" hidden />
+            <div class="divider"><h2 class="panelTitle">Record Detail</h2><div class="detailGrid"><table class="table"><tbody id="detailTable"></tbody></table><table class="table"><tbody id="actionTable"></tbody></table></div></div>
+          </div>
+          <div class="advanced" id="advancedPanel">
+            <div class="divider"><h2 class="panelTitle">Advanced Payload</h2><pre class="code" id="payloadOutput"></pre></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/assets/js/crm-preparation.js?v=20261027"></script>
+  <script src="./review-guard.js?v=1"></script><script src="./workflow-engine.js?v=1"></script><script defer src="./workflow-ui.js?v=1"></script>
+
+</body>
+</html>
