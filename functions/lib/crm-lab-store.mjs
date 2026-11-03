@@ -1,0 +1,5 @@
+export function labStore(env){if(!env.CRM_LAB_STORE)throw Object.assign(Error('Private Lab storage is unavailable. Retry later.'),{status:503});return env.CRM_LAB_STORE}
+export async function identityKey(identity){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(identity.email.toLowerCase()));return [...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+export async function beginAudit(env,identity,inquiryId,changes,version){const store=labStore(env),now=new Date().toISOString(),id=crypto.randomUUID(),key=`audit:${inquiryId}:${String(9999999999999-Date.now()).padStart(13,'0')}:${id}`,entry={id,inquiryId,at:now,by:identity.staffCode||identity.name,kind:'record_edit',status:'submitted',expectedUpdatedAt:version,changes};await store.put(key,JSON.stringify(entry));return {key,entry}}
+export async function finishAudit(env,audit,status,extra={}){await labStore(env).put(audit.key,JSON.stringify({...audit.entry,status,...extra}))}
+export const sameValue=(a,b)=>JSON.stringify(a??'')===JSON.stringify(b??'');
