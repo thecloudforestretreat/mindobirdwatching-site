@@ -18,7 +18,7 @@ test('Untrusted CRM text is escaped; country flags require a valid code',()=>{
 });
 test('Lab is an additive read-only client under existing admin protection',async()=>{
  const js=await readFile(new URL('../admin/guest-crm-lab/lab.mjs',import.meta.url),'utf8');
- const html=await readFile(new URL('../admin/guest-crm-lab/index.html',import.meta.url),'utf8');
+ const html=await readFile(new URL('../admin/guest-crm-lab/explorer/index.html',import.meta.url),'utf8');
  const headers=await readFile(new URL('../admin/_headers',import.meta.url),'utf8');
  assert.match(js,/method:'GET'/);assert.doesNotMatch(js,/method:\s*['"](?:POST|PATCH|PUT|DELETE)/);assert.doesNotMatch(js,/localStorage|sessionStorage|setInterval/);
  assert.match(html,/href="\/guest-crm\/"/);assert.match(html,/Experimental · Read only/);assert.match(headers,/\/guest-crm-lab\/\*/);

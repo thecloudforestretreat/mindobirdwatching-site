@@ -1,0 +1,2377 @@
+
+    (function(){
+      "use strict";
+      const CRM_API_DEFAULT = "/api/crm-lab/read";
+      const els = {};
+      const state = { records: [], selectedId: "", view: "dashboard", activeQueue: "all", lastRefresh: localStorage.getItem("mbwCrmLabLastRefresh") || "", forceContactedAt: false, queueCursorIndex: 0, calendarDate: new Date(), selectedCalendarDate: datePlusDays(0), calendarMode: "tour", calendarDisplay: localStorage.getItem("mbwLabCalendarDisplay")==="list"?"list":"month", calendarLegendFilter:null, tourItems: [], interactions:[], assignments:[], allAssignments:[], providers:[], bookings:[], payments:[], guidePlans:[], guidePlansLoaded:false, editingPaymentId:"", workspaceLoading:false, workspaceGeneration:0, communicationGeneration:0, communicationContextKey:"", interactionRetryRecord:null, workspaceError:"", operationsStatus:"loading", operationsError:"" };
+      let operationsLoadPromise=null;
+      let refreshInFlight=false;
+      let recordSaveInFlight=false;
+      let recordSaveGeneration=0;
+      let refreshRetryTimer=0;
+      let refreshRetryAttempt=0;
+      const STATUS_FOLLOW_UP_MESSAGES = {
+        default: "We are just following up to see if you have any questions in reference to our tour options."
+      };
+      const fields = ["referenceIdInput","apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
+      document.addEventListener("DOMContentLoaded", init);
+      function init(){cache();els.zelleToAcctBtn=document.getElementById("zelleToAcctBtn");["assignmentEndTime","repFilter","inlineRepFilter","assignedToInput","statPaymentPending"].forEach(id=>els[id]=document.getElementById(id));renderPrimaryProductOptions();populateAssignmentTimeOptions();bind();clearInteractionForm();clearAssignmentForm();initQuickFilters();loadSettings();loadLocalRecords();els.sortInput.value=localStorage.getItem("mbwCrmLabSort")||"created_at";els.sortDirectionInput.value=localStorage.getItem("mbwCrmLabSortDirection")||"desc";render();loadGuidePlans();window.addEventListener("online",()=>{refreshRetryAttempt=0;scheduleRefreshRetry(500);});window.addEventListener("storage",event=>{if(event.key==="mbwCrmLabItinerarySaved"&&event.newValue)syncSavedItineraryFromOtherTab();});window.addEventListener("focus",()=>{if(localStorage.getItem("mbwCrmLabItinerarySaved"))syncSavedItineraryFromOtherTab();loadGuidePlans();});if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)refreshCrm();}
+      function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","calendarMonthViewBtn","calendarListViewBtn","calendarMonthPanel","calendarPipelineListPanel","calendarPipelineRecords","calendarPipelineCount","calendarNavigationRow","calendarLegendToggle","calendarLegends","pipelineStatusFilter","pipelineSortInput","selectedActionsToggle","selectedActionsBody","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","quoteOptionsPanel","quoteOptionsList","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","markQuotesSentBtn","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","copyInvoiceTsvBtn","copyInvoiceBackendTsvBtn","copyDepositLinkBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailCopyInvoiceBackendTsvBtn","detailCopyDepositLinkBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","guidePlanWorkflow","guidePlanSummary","reviewGuidePlanBtn","openGuidePlanGeneratorBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","collaborationToAcctBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast","inquiryIdDisplay","activityContext","activityEmpty","activityWorkspace","interactionDirection","interactionChannel","interactionType","interactionStaff","interactionOccurredAt","interactionNote","interactionFollowup","interactionFollowupFields","interactionFollowupAt","clearInteractionBtn","saveInteractionBtn","interactionSaveStatus","interactionCount","interactionTimeline","operationsContext","operationsEmpty","operationsWorkspace","assignmentId","assignmentGroupId","assignmentService","assignmentStatus","assignmentDate","assignmentTime","assignmentProvider","assignmentProviderOtherWrap","assignmentProviderOther","assignmentPickup","assignmentDropoff","assignmentDirection","assignmentCost","assignmentExtraCost","assignmentStaff","assignmentInformed","assignmentNote","clearAssignmentBtn","saveAssignmentBtn","assignmentCount","assignmentList","messageServiceFilter","messageIncludeCosts","generateMessageBtn","copyOperationsMessageBtn","operationsMessage","communicationSectionMeta","assignmentsSectionMeta","communicationSectionBody","assignmentsSectionBody"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
+      ["followupFilter","attributionPanel","attributionPanelBody","attributionSummary","followupFieldState","paymentLedger","paymentLedgerSummary","paymentLedgerList","paymentLedgerWarning"].forEach(id=>els[id]=document.getElementById(id));
+      els.assignmentTourItem=document.getElementById("assignmentTourItem");
+      function bind(){
+        document.getElementById("preparationShow").addEventListener("change",event=>{preparationShow=event.target.value;renderPreparationOverview();});
+        document.getElementById("preparationRep").addEventListener("change",event=>{preparationRep=event.target.value;renderPreparationOverview();});
+        document.getElementById("preparationCards").addEventListener("click",event=>{
+          const open=event.target.closest("[data-preparation-open]"),copy=event.target.closest("[data-preparation-copy]");
+          if(open){if(hasUnsavedTourChanges()){showToast("Save Record before reviewing another booking.");return;}selectRecord(open.dataset.preparationOpen);}
+          if(copy){const model=preparationRows.find(row=>row.id===copy.dataset.preparationCopy);if(!preparationCanCopy(model)){showToast("Refresh CRM and resolve missing details before copying the message.");return;}copyPlainText(MbwCrmPreparation.message(model)).then(()=>showToast("Message copied · Nothing sent")).catch(()=>showToast("Could not copy message"));}
+        });
+        document.getElementById("conversationAssistant").addEventListener("click",event=>{if(event.target.closest("#summarizeConversationBtn"))summarizeConversation();});
+        ["balanceFilter","balanceSearch","balanceCompleted"].forEach(id=>document.getElementById(id).addEventListener("input",renderBalances));
+        document.getElementById("balanceRefresh").addEventListener("click",()=>loadBalances(true));
+        document.getElementById("balanceRows").addEventListener("click",event=>{const button=event.target.closest("[data-balance-inquiry]");if(button)selectRecord(button.dataset.balanceInquiry);});
+        document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>setView(btn.dataset.view)));
+        ["searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput"].forEach(id=>els[id].addEventListener("input",()=>{if(id==="sortInput")localStorage.setItem("mbwCrmLabSort",els.sortInput.value);if(id==="sortDirectionInput")localStorage.setItem("mbwCrmLabSortDirection",els.sortDirectionInput.value);render();}));
+        els.viewFilter.addEventListener("change",()=>{ state.activeQueue=els.viewFilter.value||"all"; render(); });
+        els.followupFilter.addEventListener("change",render);
+        els.followupInput.addEventListener("input",()=>{renderFollowupFieldState();renderPayload();});
+        ["firstNameInput","lastNameInput"].forEach(id=>els[id].addEventListener("input",event=>{ capitalizeNameField(event.target); syncFullName(); }));
+        els.phoneInput.addEventListener("input",syncCountry);
+        els.recordStatusInput.addEventListener("change",()=>{ if(isClosedStatus(els.recordStatusInput.value)) els.priorityInput.value=""; updateStatusField(); updateStatusMessageButton(); toggleInvoiceActions(formRecord()); renderFollowupFieldState(); renderPayload(); });
+        els.paymentStatusInput.addEventListener("change",()=>{ if(normalizePayment(els.paymentStatusInput.value)==="no_payment_required"){ els.datePaidInput.value=""; els.paymentMethodInput.value="Marketing Collaboration"; } toggleInvoiceActions(formRecord()); renderPayload(); });
+        els.addNewBtn.addEventListener("click", startNewRecord);
+        els.paymentLedgerList.addEventListener("click",handlePaymentLedgerAction);
+        document.getElementById("checkStripeDeposits").addEventListener("click",checkStripeDeposits);
+        document.getElementById("refreshStripeInvoices").addEventListener("click",refreshStripeInvoices);
+        els.zelleToAcctBtn.addEventListener("click",postZelleToAccounting);
+        els.refreshBtn.addEventListener("click", refreshCrm);
+        els.saveBtn.addEventListener("click", saveRecord);
+        els.bottomSaveBtn.addEventListener("click", saveRecord);
+        els.detailTopSaveBtn.addEventListener("click", saveRecord);
+        els.advancedBtn.addEventListener("click",()=>{els.advancedPanel.classList.toggle("open"); renderPayload();});
+        if(els.quickFiltersToggle) els.quickFiltersToggle.addEventListener("click",toggleQuickFilters);
+        els.clearFiltersBtn.addEventListener("click", clearFilters);
+        els.saveSettingsBtn.addEventListener("click", saveSettings);
+        els.importCsvBtn.addEventListener("click",()=>els.csvInput.click());
+        els.csvInput.addEventListener("change", importCsvFile);
+        els.loadDemoBtn.addEventListener("click",()=>loadDemoRecords(true));
+        els.clearLocalBtn.addEventListener("click",()=>{state.records=[]; saveLocalRecords(); render(); showToast("Local records cleared");});
+        els.emailToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/custom-email-generator/"));
+        els.zelleToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/zelle-invoice-generator/"));
+        els.stripeToolBtn.addEventListener("click",()=>openTool("https://mindobirdwatching.com/book-tour/create/"));
+        els.confirmationToolBtn.addEventListener("click",openConfirmationTool);
+        els.copyInvoiceTsvBtn.addEventListener("click",copyInvoiceTsv);
+        els.copyInvoiceBackendTsvBtn.addEventListener("click",copyInvoiceBackendTsv);
+        els.copyDepositLinkBtn.addEventListener("click",copyDepositLink);
+        els.whatsAppBtn.addEventListener("click",openWhatsApp);
+        els.detailEmailToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/custom-email-generator/"));
+        els.detailZelleToolBtn.addEventListener("click",()=>openTool("https://admin.mindobirdwatching.com/zelle-invoice-generator/"));
+        els.detailStripeToolBtn.addEventListener("click",()=>openTool("https://mindobirdwatching.com/book-tour/create/"));
+        els.detailConfirmationToolBtn.addEventListener("click",openConfirmationTool);
+        els.detailCopyInvoiceTsvBtn.addEventListener("click",copyInvoiceTsv);
+        els.detailCopyInvoiceBackendTsvBtn.addEventListener("click",copyInvoiceBackendTsv);
+        els.detailCopyDepositLinkBtn.addEventListener("click",copyDepositLink);
+        els.detailWhatsAppBtn.addEventListener("click",openWhatsApp);
+        els.markContactedBtn.addEventListener("click",markContactedNow);
+        els.markDuplicateBtn.addEventListener("click",handleDuplicateAction);
+        els.detailMarkDuplicateBtn.addEventListener("click",handleDuplicateAction);
+        document.getElementById("markSpamBtn").addEventListener("click",markSpamRecord);
+        document.getElementById("detailMarkSpamBtn").addEventListener("click",markSpamRecord);
+        els.copyGuideMessageBtn.addEventListener("click",copyGuideMessage);
+        els.copyStatusMessageBtn.addEventListener("click",copyStatusMessage);
+        els.generateItineraryBtn.addEventListener("click",openItineraryTool);
+        els.editSavedItineraryBtn.addEventListener("click",openSavedItinerary);
+        els.reviewGuidePlanBtn.addEventListener("click",openGuidePlanReview);
+        els.openGuidePlanGeneratorBtn.addEventListener("click",openGuidePlanGenerator);
+        els.copyReviewWhatsAppBtn.addEventListener("click",()=>copyReviewMessage("whatsapp"));
+        els.copyReviewEmailBtn.addEventListener("click",()=>copyReviewMessage("email"));
+        els.collaborationToAcctBtn.addEventListener("click",postCollaborationToAccounting);
+        [els.invoiceNoInput,els.paymentMethodInput].forEach(input=>input.addEventListener("input",()=>toggleInvoiceActions(formRecord())));
+        els.calendarPrevBtn.addEventListener("click",()=>moveCalendar(-1));
+        els.calendarNextBtn.addEventListener("click",()=>moveCalendar(1));
+        els.calendarTodayBtn.addEventListener("click",()=>{state.calendarDate=new Date(); state.selectedCalendarDate=datePlusDays(0); render();});
+        els.calendarModeInput.addEventListener("change",()=>{state.calendarMode=els.calendarModeInput.value||"tour"; renderCalendar();});
+        els.calendarMonthViewBtn.addEventListener("click",()=>{state.calendarDisplay="month";localStorage.setItem("mbwLabCalendarDisplay","month");renderCalendar();});
+        els.calendarListViewBtn.addEventListener("click",()=>{state.calendarDisplay="list";localStorage.setItem("mbwLabCalendarDisplay","list");renderCalendar();});
+        els.pipelineStatusFilter.addEventListener("change",renderActivePipelineCalendarList);
+        els.pipelineSortInput.addEventListener("change",renderActivePipelineCalendarList);
+        els.calendarLegendToggle.addEventListener("click",()=>{const open=els.calendarLegends.hidden;els.calendarLegends.hidden=!open;els.calendarLegendToggle.textContent=open?"Hide legend":"Show legend";els.calendarLegendToggle.setAttribute("aria-expanded",String(open));});
+        els.calendarLegends.querySelectorAll("[data-legend-kind]").forEach(button=>button.addEventListener("click",()=>{const next={kind:button.dataset.legendKind,value:button.dataset.legendValue};state.calendarLegendFilter=state.calendarLegendFilter&&state.calendarLegendFilter.kind===next.kind&&state.calendarLegendFilter.value===next.value?null:next;renderCalendar();}));
+        els.selectedActionsToggle.addEventListener("click",()=>{const open=els.selectedActionsBody.hidden;els.selectedActionsBody.hidden=!open;els.selectedActionsToggle.textContent=open?"Hide actions":"Show actions";els.selectedActionsToggle.setAttribute("aria-expanded",String(open));});
+        ["reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput"].forEach(id=>els[id].addEventListener("change",()=>{ if((id==="reportStartInput"||id==="reportEndInput")&&els[id].value) els.reportRangeInput.value="custom"; renderReports(); }));
+        document.querySelectorAll("[data-report-preset]").forEach(btn=>btn.addEventListener("click",()=>applyReportPreset(btn.dataset.reportPreset)));
+        els.reportTableBody.addEventListener("click",handleReportGuestClick);
+        els.copyReportBtn.addEventListener("click",copyReportText);
+        els.downloadReportBtn.addEventListener("click",downloadReportCsv);
+        els.printReportBtn.addEventListener("click",()=>window.print());
+        els.copyGuideReportBtn.addEventListener("click",copyGuideReport);
+        els.queuePrevBtn.addEventListener("click",()=>navigateQueue(-1));
+        els.queueNextBtn.addEventListener("click",()=>navigateQueue(1));
+        if(els.addTourItemBtn) els.addTourItemBtn.addEventListener("click",()=>addTourItem());
+        if(els.tourItemsList){ els.tourItemsList.addEventListener("input",handleTourItemInput); els.tourItemsList.addEventListener("change",handleTourItemInput); els.tourItemsList.addEventListener("click",handleTourItemClick); }
+        if(els.markQuotesSentBtn) els.markQuotesSentBtn.addEventListener("click",markQuotesSent);
+        els.interactionFollowup.addEventListener("change",()=>{els.interactionFollowupFields.hidden=!els.interactionFollowup.checked;});
+        els.saveInteractionBtn.addEventListener("click",saveInteraction);
+        els.clearInteractionBtn.addEventListener("click",clearInteractionForm);
+        els.interactionOccurredAt.addEventListener("focus",()=>{if(!els.saveInteractionBtn.dataset.id&&!clean(els.interactionNote.value))els.interactionOccurredAt.value=localDateTimeValue();});
+        els.interactionTimeline.addEventListener("click",handleInteractionAction);
+        els.assignmentTourItem.addEventListener("change",applySelectedAssignmentTourItem);
+        els.assignmentService.addEventListener("change",()=>{renderProviderOptions(true);applyAssignmentServiceDefaults();});
+        els.assignmentProvider.addEventListener("change",()=>{els.assignmentProviderOtherWrap.hidden=els.assignmentProvider.value!=="Other";});
+        els.saveAssignmentBtn.addEventListener("click",saveAssignment);
+        els.clearAssignmentBtn.addEventListener("click",clearAssignmentForm);
+        els.assignmentList.addEventListener("click",handleAssignmentAction);
+        els.generateMessageBtn.addEventListener("click",generateOperationsMessage);
+        els.copyOperationsMessageBtn.addEventListener("click",copyOperationsMessage);
+        document.querySelectorAll(".workflowSectionToggle").forEach(button=>button.addEventListener("click",()=>{const body=document.getElementById(button.getAttribute("aria-controls"));const open=body.hidden;body.hidden=!open;button.setAttribute("aria-expanded",String(open));if(open&&getSelected())loadGuestWorkspace();}));
+        [els.interactionStaff,els.assignmentStaff].forEach(control=>control.addEventListener("change",()=>{localStorage.setItem("mbwCrmLabStaff",control.value);els.interactionStaff.value=control.value;els.assignmentStaff.value=control.value;}));
+        document.querySelectorAll("[data-queue]").forEach(btn=>btn.addEventListener("click",()=>applyQueue(btn.dataset.queue)));
+        fields.forEach(id=>{ if(els[id]) els[id].addEventListener("input",()=>{ renderPayload(); renderDuplicateNotice(); }); });
+      }
+      function initQuickFilters(){
+        if(!els.quickFiltersPanel||!els.quickFiltersToggle) return;
+        const mobile=window.matchMedia("(max-width:760px)").matches;
+        const saved=localStorage.getItem("mbwCrmLabQuickFiltersCollapsed");
+        setQuickFiltersCollapsed(mobile&&(saved===null||saved==="1"));
+      }
+      function setQuickFiltersCollapsed(collapsed){
+        if(!els.quickFiltersPanel||!els.quickFiltersToggle) return;
+        els.quickFiltersPanel.classList.toggle("is-collapsed",!!collapsed);
+        els.quickFiltersToggle.setAttribute("aria-expanded",collapsed?"false":"true");
+        els.quickFiltersToggle.textContent=collapsed?"Show filters":"Hide filters";
+      }
+      function toggleQuickFilters(){
+        const collapsed=!els.quickFiltersPanel.classList.contains("is-collapsed");
+        setQuickFiltersCollapsed(collapsed);
+        localStorage.setItem("mbwCrmLabQuickFiltersCollapsed",collapsed?"1":"0");
+      }
+
+      async function syncSavedItineraryFromOtherTab(){
+        const raw=localStorage.getItem("mbwCrmLabItinerarySaved");
+        if(!raw) return;
+        try{
+          const signal=JSON.parse(raw);
+          if(!signal||!signal.inquiry_id) return;
+          if(state.selectedId===signal.inquiry_id && signal.record){
+            const idx=state.records.findIndex(r=>r.inquiry_id===signal.inquiry_id);
+            if(idx>=0) state.records[idx]=mergeRecordPreservingLocal(normalizeCrmRecord(signal.record),state.records[idx]);
+          }
+          localStorage.removeItem("mbwCrmLabItinerarySaved");
+          await refreshCrm(true);
+        }catch(error){ console.warn("Could not sync saved itinerary signal",error); }
+      }
+      const balanceFeed={data:null,error:"",loading:false,checked:0};
+      const balanceLabels={paid:"Fully paid",overdue:"Overdue",due_soon:"Due within 7 days",upcoming:"Upcoming",undated:"Due date not recorded",unknown:"Amounts not recorded",review:"Needs review"};
+      function balanceMoney(value){return value===null||value===undefined?"Not recorded":new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(value);}
+      async function loadBalances(force=false){
+        if(balanceFeed.loading||(!force&&Date.now()-balanceFeed.checked<300000))return;
+        balanceFeed.loading=true;balanceFeed.error="";renderBalances();
+        try{const response=await fetch("/api/crm/balances",{cache:"no-store"});const data=await response.json();if(!response.ok||data.ok!==true||!Array.isArray(data.records))throw Error();balanceFeed.data=data;balanceFeed.checked=Date.now();}
+        catch{balanceFeed.error="Accounting balances are unavailable. Use Refresh balances to retry. No records were changed.";}
+        finally{balanceFeed.loading=false;renderBalances();}
+      }
+      function balanceCard(row){return `<div class="balanceMetrics">${[["Booking total",row.total],["Deposit received",row.deposit],["Total received",row.paid],["Remaining",row.balance]].map(([label,value])=>`<div><span class="hint">${label}</span><br><strong>${esc(balanceMoney(value))}</strong></div>`).join("")}</div><p class="hint">${esc(balanceLabels[row.status]||row.status)} · Due: ${esc(row.dueDate||"Not recorded")}${row.issues.length?" · "+esc(row.issues.join("; ")):""}</p>`;}
+      function renderBalances(){
+        const status=document.getElementById("balanceFeedStatus"),summary=document.getElementById("bookingBalanceSummary");if(!status||!summary)return;
+        status.textContent=balanceFeed.error||(balanceFeed.loading?"Checking accounting and CRM…":balanceFeed.data?"Checked "+new Date(balanceFeed.data.checkedAt).toLocaleString()+" · "+balanceFeed.data.unmatched+" accounting records need a matching inquiry.":"Open this view to load accounting balances.");
+        document.getElementById("balanceRefresh").disabled=balanceFeed.loading;
+        const selected=balanceFeed.data?.records.find(row=>row.inquiryId===state.selectedId);
+        summary.innerHTML=balanceFeed.error?`<p class="hint">${esc(balanceFeed.error)}</p>`:selected?balanceCard(selected):`<p class="hint">${balanceFeed.loading?"Checking booking balance…":"Select a saved inquiry to view its accounting balance."}</p>`;
+        const filter=document.getElementById("balanceFilter").value,query=document.getElementById("balanceSearch").value.toLowerCase(),completed=document.getElementById("balanceCompleted").checked;
+        const rows=(balanceFeed.data?.records||[]).filter(row=>(completed||!row.completed)&&(!query||(row.name+" "+row.rep).toLowerCase().includes(query))&&(filter==="all"||filter==="outstanding"?(filter==="all"||row.balance>0):filter==="review"?["review","unknown","undated"].includes(row.status):row.status===filter)).sort((a,b)=>(a.dueDate||"9999").localeCompare(b.dueDate||"9999")||a.name.localeCompare(b.name));
+        document.getElementById("balanceRows").innerHTML=balanceFeed.error?"":rows.map(row=>`<article class="balanceRow"><div class="balanceHeading"><strong>${esc(row.name)}</strong><button type="button" data-balance-inquiry="${esc(row.inquiryId)}">Open booking</button></div><p class="hint">${esc(row.rep||"Unassigned")} · Tour: ${esc(row.tourDate||"Not recorded")}</p>${balanceCard(row)}</article>`).join("")||(!balanceFeed.loading&&balanceFeed.data?"<p>No bookings match these filters.</p>":"");
+      }
+      function setView(view){ state.view=view;if(view==="balances"||view==="intake")loadBalances(); document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===view)); document.querySelectorAll(".view").forEach(v=>v.classList.remove("active")); document.getElementById(view+"View").classList.add("active"); render(); if(view==="intake"&&getSelected()){ if(!els.saveInteractionBtn.dataset.id&&!clean(els.interactionNote.value)) els.interactionOccurredAt.value=localDateTimeValue(); loadGuestWorkspace(); } }
+      function loadSettings(){ els.apiUrlInput.value=localStorage.getItem("mbwCrmLabApiUrl")||CRM_API_DEFAULT; const staff=localStorage.getItem("mbwCrmLabStaff")||"JPG";els.interactionStaff.value=staff;els.assignmentStaff.value=staff; }
+      function saveSettings(){ localStorage.setItem("mbwCrmLabApiUrl",clean(els.apiUrlInput.value)); showToast("Settings saved"); }
+      function loadLocalRecords(){ try{ const stored=JSON.parse(localStorage.getItem("mbwCrmLabRecords")||"[]"); state.records=applyDuplicateFamilyArchives(dedupeRecords(stored.filter(hasMeaningfulCrmData).map(normalizeCrmRecord))); if(state.selectedId&&!state.records.some(record=>record.inquiry_id===state.selectedId)) state.selectedId=""; saveLocalRecords(); }catch(e){ state.records=[]; } }
+      function saveLocalRecords(){ localStorage.setItem("mbwCrmLabRecords",JSON.stringify(state.records)); }
+      function wait(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+      function uniqueTexts(values){ const seen=new Set(); return values.map(clean).filter(value=>{ if(!value) return false; const key=value.toLowerCase(); if(seen.has(key)) return false; seen.add(key); return true; }); }
+      function dedupeNoteText(value){
+        const seen=new Set();
+        return String(value||"").replace(/\r\n?/g,"\n").split(/\n\s*\n|\n/).map(clean).filter(part=>{
+          if(!part) return false;
+          const key=part.toLowerCase().replace(/\s+/g," ").replace(/[.\s]+$/g,"");
+          if(!key||seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).join("\n\n");
+      }
+      function mergeLiveWithLocal(incoming){ const local=safeLocalRecords(); return incoming.map(record=>mergeRecordPreservingLocal(record,findLocalMatch(record,local))); }
+      function safeLocalRecords(){ try{ return JSON.parse(localStorage.getItem("mbwCrmLabRecords")||"[]").filter(hasMeaningfulCrmData).map(normalizeCrmRecord); }catch(e){ return []; } }
+      function findLocalMatch(record,local){ const id=record.inquiry_id||""; if(id) return local.find(item=>item.inquiry_id===id); const email=clean(record.email).toLowerCase(); const phone=clean(record.phone_normalized||record.phone_number); return local.find(item=>(email&&clean(item.email).toLowerCase()===email)||(phone&&clean(item.phone_normalized||item.phone_number)===phone)); }
+      function mergeRecordPreservingLocal(live,local){ if(!local) return live; const merged=Object.assign({},live); ["country","home_country","tour_items","tour_items_json","tour_count","tour_content","itinerary_json","itinerary_updated_at","itinerary_version","itinerary_status"].forEach(key=>{ if(!clean(merged[key])&&clean(local[key])) merged[key]=local[key]; }); const localCountry=clean(local.country||local.home_country); const liveCountry=clean(merged.country||merged.home_country); if(!liveCountry&&localCountry){ merged.country=localCountry; merged.home_country=localCountry; } else if(liveCountry){ merged.country=clean(merged.country)||liveCountry; merged.home_country=clean(merged.home_country)||liveCountry; } if((!normalizeTourItems(merged).length)&&normalizeTourItems(local).length){ const items=normalizeTourItems(local); merged.tour_items=serializeTourItems(items); merged.tour_items_json=merged.tour_items; merged.tour_count=String(items.length); merged.tour_content=String(items.length); } return merged; }
+      function duplicateFamilyKey(record){
+        const guest=clean(record&&record.guest_id).toLowerCase();
+        const phone=String(record&&(record.phone_normalized||record.phone_number||record.phone_raw)||"").replace(/\D/g,"");
+        const name=clean(record&&record.full_name).toLowerCase();
+        const created=sourceTimestamp(record&&record.created_at);
+        return guest&&phone&&name&&created?[guest,phone,name,created].join("|"):"";
+      }
+      function sameDuplicateFamily(a,b){ const left=duplicateFamilyKey(a); return !!left&&left===duplicateFamilyKey(b); }
+      function sourceTimestamp(value){ return clean(value).replace(" ","T").replace(/Z$/,"").slice(0,19); }
+      function canonicalSourceTab(value){ const tab=clean(value).toLowerCase(); return ({site_book_tour:"book_tour",book_tour:"book_tour",site_contact:"contacts",contact:"contacts",contacts:"contacts"})[tab]||tab; }
+      function sourceIdentityMatch(a,b){
+        const sourceA=clean(a&&a.source_record_id).toLowerCase();
+        const sourceB=clean(b&&b.source_record_id).toLowerCase();
+        if(sourceA&&sourceB&&sourceA===sourceB) return true;
+        const guestA=clean(a&&a.guest_id).toLowerCase();
+        const guestB=clean(b&&b.guest_id).toLowerCase();
+        const createdA=sourceTimestamp(a&&a.created_at);
+        const createdB=sourceTimestamp(b&&b.created_at);
+        if(guestA&&guestB&&guestA===guestB&&createdA&&createdA===createdB) return true;
+        const rowA=clean(a&&(a.source_row_number||a.source_row||a.row_number));
+        const rowB=clean(b&&(b.source_row_number||b.source_row||b.row_number));
+        const tabsA=clean(a&&a.source_tab).split("|").map(canonicalSourceTab).filter(Boolean);
+        const tabsB=clean(b&&b.source_tab).split("|").map(canonicalSourceTab).filter(Boolean);
+        const sameCanonicalSource=tabsA.some(tab=>tabsB.includes(tab));
+        if(rowA&&rowB&&rowA===rowB&&sameCanonicalSource) return true;
+        return Boolean(rowA&&rowB&&rowA===rowB&&createdA&&createdA===createdB&&comparablePhone(a)&&comparablePhone(a)===comparablePhone(b));
+      }
+      function sameSourceSubmissionClone(a,b){
+        const phoneA=comparablePhone(a), phoneB=comparablePhone(b);
+        const createdA=sourceTimestamp(a&&a.created_at), createdB=sourceTimestamp(b&&b.created_at);
+        const rowA=clean(a&&(a.source_row_number||a.source_row||a.row_number));
+        const rowB=clean(b&&(b.source_row_number||b.source_row||b.row_number));
+        if(!phoneA||phoneA!==phoneB||!createdA||createdA!==createdB||!rowA||rowA!==rowB) return false;
+        const dateA=toDateValue(a&&(a.requested_date||a.requested_date_start));
+        const dateB=toDateValue(b&&(b.requested_date||b.requested_date_start));
+        const tourA=normalizeTourCategory(a&&(a.tour_type||a.tour_category));
+        const tourB=normalizeTourCategory(b&&(b.tour_type||b.tour_category));
+        const compatibleDate=!dateA||!dateB||dateA===dateB;
+        const compatibleTour=!tourA||!tourB||tourA===tourB;
+        return compatibleDate&&compatibleTour;
+      }
+      function archiveDuplicateRecord(record,note){
+        const existingNotes=clean(record.internal_notes);
+        return Object.assign({},record,{
+          previous_status:isArchivedStatus(record)?(record.previous_status||""):normalizeStatus(record.status),
+          status:"duplicate",
+          is_archived:"Yes",
+          archived_at:new Date().toISOString(),
+          archive_reason:"duplicate",
+          priority:"",
+          availability_status:"archived",
+          grouping_status:"unmatched",
+          internal_notes:[existingNotes,note,"[MBW_ARCHIVE] "+JSON.stringify({status:normalizeStatus(record.status)})].filter(Boolean).join("\n"),
+          updated_at:new Date().toISOString()
+        });
+      }
+      function applyDuplicateFamilyArchives(records){
+        return records.map(record=>isArchivedStatus(record)
+          ?Object.assign({},record,{status:"duplicate",is_archived:"Yes",archive_reason:record.archive_reason||"duplicate",priority:"",availability_status:"unavailable",grouping_status:"unmatched"})
+          :record);
+      }
+
+      const MBW_PRODUCT_OPTIONS = [
+          "MBW002 - Cloud Forest Icons Tour",
+          "MBW004 - Jewels of the Morning Forest",
+          "MBW005 - Dance of the Andean Cock-of-the-Rock",
+          "MBW006 - Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "MBW007 - Custom Half Day",
+          "MBW008 - Custom Full Day",
+          "MBW009 - Flora Excursion",
+          "MBW010 - Solo Birdwatching Experience",
+          "MBW011 - Chocolate Tour",
+          "MBW012 - Coffee Tour",
+          "MBW013 - Waterfall Hike",
+          "MBW014 - Canopy/Ziplining",
+          "MBW015 - Butterfly Garden",
+          "MBW019 - Hummingbird Tour",
+          "MBW016 - Night Walk",
+          "MBW017 - Half-Day to Full-Day Extension",
+          "TRANS01 - Quito -> Mindo",
+          "TRANS02 - Mindo -> Quito",
+          "TRANS03 - Quito -> Mindo -> Quito",
+          "TRANS04 - Airport Pick Up",
+          "TRANS05 - Custom",
+          "TRANS06 - Quito -> Mindo -> Quito",
+          "DEP001 - Reservation Deposit",
+          "ACT002 - Waterfalls",
+          "ACT003 - Nambillo Waterfall",
+          "ACT004 - Quad Tour",
+          "ACT009 - Orchid Garden Tour",
+          "ACT010 - Frog Concert",
+          "ACT011 - Mindo River Tubing",
+          "ACT013 - Canyoning",
+          "ACT015 - Paintball",
+          "ACT016 - Horseback Riding",
+          "ACT017 - Mountain Biking",
+          "ACT018 - Double Extreme Swing",
+          "ACT019 - Extreme Bike – Sky Bike",
+          "ACT020 - Sky Ride",
+          "ACT021 - Private Insect & Macro Wildlife Search",
+          "OSO001 - Extended Half-Day Spectacled Bear Tour",
+          "OSO002 - Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+          "ACCOM01 - Accommodation Booking",
+          "Other"
+];
+      const POPULAR_PRODUCT_CODES=new Set(["MBW004","MBW005","MBW006","MBW019","MBW016","TRANS06"]);
+      const PRODUCT_EMOJI_BY_CODE={
+        MBW002:"🐦",MBW004:"🐥",MBW005:"🐓",MBW006:"🦜",MBW007:"🐦",MBW008:"🐦",MBW009:"🌿",MBW010:"🐦",MBW011:"🍫",MBW012:"☕",MBW013:"💧",MBW014:"🧗",MBW015:"🦋",MBW016:"🦉",MBW017:"🐦",MBW019:"🪽",
+        TRANS01:"🚘",TRANS02:"🚘",TRANS03:"🚘",TRANS04:"🚘",TRANS05:"🚘",TRANS06:"🚘",DEP001:"🧾",
+        ACT002:"💧",ACT003:"💧",ACT004:"🛞",ACT009:"🪻",ACT010:"🐸",ACT011:"🛟",ACT013:"🧗",ACT015:"🔫",ACT016:"🐎",ACT017:"🚵",ACT018:"🎢",ACT019:"🚵",ACT020:"🚵",ACT021:"🪲",
+        OSO001:"🐻",OSO002:"🐻",ACCOM01:"🏨",OTHER:"✨"
+      };
+      function productCode(value){return clean(value).split(/\s+-\s+/)[0].toUpperCase();}
+      function productOptionLabel(value){const code=productCode(value),emoji=PRODUCT_EMOJI_BY_CODE[code];return emoji?emoji+" "+value:value;}
+      function popularProductLabel(value){return productOptionLabel(value);}
+      function renderPrimaryProductOptions(){if(!els.productSelectedInput)return;const current=clean(els.productSelectedInput.value),popular=MBW_PRODUCT_OPTIONS.filter(item=>POPULAR_PRODUCT_CODES.has(productCode(item))),other=MBW_PRODUCT_OPTIONS.filter(item=>!POPULAR_PRODUCT_CODES.has(productCode(item)));const group=(label,rows)=>`<optgroup label="${esc(label)}">${rows.map(item=>`<option value="${esc(item)}">${esc(productOptionLabel(item))}</option>`).join("")}</optgroup>`;els.productSelectedInput.innerHTML='<option value="">Select product or service</option>'+group("Popular",popular)+group("All products and services",other);if(current)setSelectValue(els.productSelectedInput,current);}
+      const MBW_PRODUCT_NAME_BY_CODE = {
+          "MBW002": "Cloud Forest Icons Tour",
+          "MBW004": "Jewels of the Morning Forest",
+          "MBW005": "Dance of the Andean Cock-of-the-Rock",
+          "MBW006": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "MBW007": "Custom Half Day",
+          "MBW008": "Custom Full Day",
+          "MBW009": "Flora Excursion",
+          "MBW010": "Solo Birdwatching Experience",
+          "MBW011": "Chocolate Tour",
+          "MBW012": "Coffee Tour",
+          "MBW013": "Waterfall Hike",
+          "MBW014": "Canopy/Ziplining",
+          "MBW015": "Butterfly Garden",
+          "MBW019": "Hummingbird Tour",
+          "MBW016": "Night Walk",
+          "MBW017": "Half-Day to Full-Day Extension",
+          "TRANS01": "Quito -> Mindo",
+          "TRANS02": "Mindo -> Quito",
+          "TRANS03": "Quito -> Mindo -> Quito",
+          "TRANS04": "Airport Pick Up",
+          "TRANS05": "Custom",
+          "TRANS06": "Quito -> Mindo -> Quito",
+          "DEP001": "Reservation Deposit",
+          "ACT002": "Waterfalls",
+          "ACT003": "Nambillo Waterfall",
+          "ACT004": "Quad Tour",
+          "ACT009": "Orchid Garden Tour",
+          "ACT010": "Frog Concert",
+          "ACT011": "Mindo River Tubing",
+          "ACT013": "Canyoning",
+          "ACT015": "Paintball",
+          "ACT016": "Horseback Riding",
+          "ACT017": "Mountain Biking",
+          "ACT018": "Double Extreme Swing",
+          "ACT019": "Extreme Bike – Sky Bike",
+          "ACT020": "Sky Ride",
+          "ACT021": "Private Insect & Macro Wildlife Search",
+          "OSO001": "Extended Half-Day Spectacled Bear Tour",
+          "OSO002": "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+          "ACCOM01": "Accommodation Booking",
+};
+      const MBW_PRODUCT_PRICE_BY_CODE = {
+          "MBW002": "70",
+          "MBW004": "60",
+          "MBW005": "85",
+          "MBW006": "115",
+          "MBW007": "90",
+          "MBW008": "135",
+          "MBW009": "30",
+          "MBW010": "80",
+          "MBW011": "15",
+          "MBW012": "15",
+          "MBW013": "20",
+          "MBW014": "35",
+          "MBW015": "15",
+          "MBW019": "60",
+          "MBW016": "30",
+          "MBW017": "25",
+          "TRANS01": "99",
+          "TRANS02": "99",
+          "TRANS03": "190",
+          "TRANS04": "99",
+          "TRANS05": "100",
+          "TRANS06": "180",
+          "DEP001": "100",
+          "ACT002": "10",
+          "ACT003": "10",
+          "ACT004": "30",
+          "ACT009": "10",
+          "ACT010": "10",
+          "ACT011": "40",
+          "ACT013": "25",
+          "ACT015": "20",
+          "ACT016": "25",
+          "ACT017": "10",
+          "ACT018": "25",
+          "ACT019": "20",
+          "ACT020": "15",
+          "ACT021": "110",
+          "OSO001": "125",
+          "OSO002": "175",
+};
+      const MBW_PRODUCT_SERVICE_BY_CODE = {
+          "MBW002": "Birdwatching",
+          "MBW004": "Birdwatching",
+          "MBW005": "Birdwatching",
+          "MBW006": "Birdwatching",
+          "MBW007": "Birdwatching",
+          "MBW008": "Birdwatching",
+          "MBW009": "nature_excursion",
+          "MBW010": "Birdwatching",
+          "MBW011": "Activity",
+          "MBW012": "Activity",
+          "MBW013": "Activity",
+          "MBW014": "Activity",
+          "MBW015": "Activity",
+          "MBW019": "Birdwatching",
+          "MBW016": "Activity",
+          "MBW017": "Tour Upgrade",
+          "TRANS01": "Transportation",
+          "TRANS02": "Transportation",
+          "TRANS03": "Transportation",
+          "TRANS04": "Transportation",
+          "TRANS05": "Transportation",
+          "TRANS06": "Transportation",
+          "DEP001": "Deposit",
+          "ACT002": "Activity",
+          "ACT003": "Activity",
+          "ACT004": "Activity",
+          "ACT009": "Activity",
+          "ACT010": "Activity",
+          "ACT011": "Activity",
+          "ACT013": "Activity",
+          "ACT015": "Activity",
+          "ACT016": "Activity",
+          "ACT017": "Activity",
+          "ACT018": "Activity",
+          "ACT019": "Activity",
+          "ACT020": "Activity",
+          "ACT021": "Specialty Wildlife",
+          "OSO001": "Wildlife",
+          "OSO002": "Wildlife",
+          "ACCOM01": "Accommodation",
+};
+      function productCodeFromValue(value){ const text=clean(value); const direct=text.match(/^([A-Z]+[A-Z0-9-]*)\s+-\s+/); if(direct) return direct[1]; const upper=text.toUpperCase(); if(MBW_PRODUCT_NAME_BY_CODE[upper]) return upper; const low=text.toLowerCase(); return Object.keys(MBW_PRODUCT_NAME_BY_CODE).find(code => low.includes(MBW_PRODUCT_NAME_BY_CODE[code].toLowerCase()) || low.includes(code.toLowerCase())) || ""; }
+      function productLabelFromCode(code){ const key=clean(code).toUpperCase(); return key&&MBW_PRODUCT_NAME_BY_CODE[key] ? key+" - "+MBW_PRODUCT_NAME_BY_CODE[key] : clean(code); }
+      function productTitle(value){ const code=productCodeFromValue(value); if(code&&MBW_PRODUCT_NAME_BY_CODE[code]) return MBW_PRODUCT_NAME_BY_CODE[code]; const product=clean(value); if(product.includes(" - ")) return product.split(" - ").slice(1).join(" - "); return product; }
+      function standardPriceForProduct(value,tour){ const code=productCodeFromValue(value)||productCodeFromValue(tour); if(code&&MBW_PRODUCT_PRICE_BY_CODE[code]) return MBW_PRODUCT_PRICE_BY_CODE[code]; const text=(clean(value)+" "+clean(tour)).toLowerCase(); if(text.includes("transport")) return "99"; return ""; }
+      const SERVICE_TIME_DEFAULTS={MBW004:{start_time:"06:00",end_time:"09:00"},MBW005:{start_time:"05:00",end_time:"10:00"},MBW006:{start_time:"05:00",end_time:"15:00"},MBW016:{start_time:"19:00",end_time:"21:00"}};
+      function productSchedule(product){const preset=SERVICE_TIME_DEFAULTS[productCodeFromValue(product)];return preset?{schedule_mode:"fixed",...preset}:{schedule_mode:"flexible",start_time:"",end_time:""};}
+      function isTransportItem(item){return /^TRANS\d*/i.test(clean(item.product_selected||item.product))||clean(item.service_type||item.type).toLowerCase()==="transportation"||/transportation|transport requested/i.test(clean(item.tour));}
+      function vehicleQuantity(item){return clean(item.vehicle_count||item.quantity||(item.id==="primary"?1:item.guests))||"1";}
+      function updateTransportLabels(card){const item={product_selected:card.querySelector('[data-tour-field="product"]')?.value,service_type:card.querySelector('[data-tour-field="service"]')?.value,tour:card.querySelector('[data-tour-field="tour"]')?.value};const transport=isTransportItem(item);const quantity=card.querySelector('[data-tour-field="guests"]');if(card.dataset.pricingUnit!=="vehicle"&&transport)quantity.value="1";else if(card.dataset.pricingUnit==="vehicle"&&!transport)quantity.value=clean(els.guestCountInput.value);quantity.placeholder=transport?"1":"2";card.dataset.pricingUnit=transport?"vehicle":"person";const heading=card.querySelector(".tourItemTop strong");if(heading)heading.textContent=[item.tour||productTitle(item.product_selected)||"Service",item.service_type].filter(Boolean).join(" · ");card.querySelector('[data-quantity-label]').textContent=transport?"Vehicles":"Guests";card.querySelector('[data-price-label]').textContent=transport?"Price per vehicle":"Price per person";}
+      function primaryTourItemFromForm(){
+        const product=clean(els.productSelectedInput.value);
+        const tour=productTitle(product)||clean(els.tourInput.value);
+        const primary=normalizeTourItem({id:"primary",tour:tour,date:toDateValue(els.dateInput.value),guests:clean(els.guestCountInput.value),product_selected:product||deriveProductCode(tour),duration:clean(els.durationInput.value),status:normalizeStatus(els.recordStatusInput.value||"new"),pickup_location:clean(els.pickupLocationInput.value),price:"",notes:"Primary tour"});
+        const selected=getSelected();
+        const stored=selected&&primaryTourItemFromRecord(selected);
+        // Only reuse a service's own saved rate when the product and date still match.
+        if(stored&&sameTourItem(stored,primary)){
+          primary.price=stored.price;
+          if(stored.vehicle_count) primary.vehicle_count=stored.vehicle_count;
+        }
+        return primary;
+      }
+      function primaryTourItemFromRecord(record){
+        record=record||{};
+        const items=normalizeTourItems(record);
+        const explicitProduct=clean(record.product_selected).split(" - ")[0];
+        const hasStoredItems=Boolean(record.tour_items_json||record.tour_items);
+        const storedPrimary=explicitProduct
+          ? items.find(item=>clean(item.product_selected).split(" - ")[0]===explicitProduct)
+          : hasStoredItems
+            ? items.find(item=>clean(item.id)==="primary")||items.find(item=>!/^addon-/.test(clean(item.id)))
+            : null;
+        if(storedPrimary) return normalizeTourItem(Object.assign({},storedPrimary,{id:"primary"}));
+        const product=clean(record.product_selected);
+        const tour=productTitle(product)||clean(record.tour_type||record.tour_category);
+        return normalizeTourItem({id:"primary",tour:tour,date:toDateValue(record.requested_date||record.requested_date_start),guests:clean(record.guest_count||record.guest_count_text),product_selected:product||deriveProductCode(tour),duration:clean(record.duration_preference),status:normalizeStatus(record.status||"new"),pickup_location:clean(record.pickup_location),price:"",notes:"Primary tour"});
+      }
+      function sameTourItem(a,b){ a=normalizeTourItem(a); b=normalizeTourItem(b); const productA=clean(a.product_selected).split(" - ")[0]; const productB=clean(b.product_selected).split(" - ")[0]; const sameProduct=productA&&productB&&productA===productB; const sameTour=clean(a.tour).toLowerCase()&&clean(a.tour).toLowerCase()===clean(b.tour).toLowerCase(); return a.date===b.date&&(sameProduct||sameTour); }
+      function additionalTourItemsForForm(record){
+        const items=normalizeTourItems(record);
+        if(!items.length) return [];
+        const primary=primaryTourItemFromRecord(record);
+        let primaryRemoved=false;
+        return items.filter(item=>{
+          if(!primaryRemoved&&sameTourItem(item,primary)){ primaryRemoved=true; return false; }
+          if(clean(item.id)==="primary") return false;
+          return !sameTourItem(item,primary);
+        }).flatMap(expandRecognizedAdditionalItem).map(normalizeTourItem);
+      }
+      function itineraryItemsFromForm(additional){
+        const primary=primaryTourItemFromForm();
+        const extras=(additional||collectTourItems()).map(normalizeTourItem).filter(item=>clean(item.id)!=="primary"&&!sameTourItem(item,primary));
+        return [primary].concat(extras).filter(validTourItem);
+      }
+      function recordItineraryItems(record){
+        if(!record) return [];
+        const stored=normalizeTourItems(record);
+        const primary=primaryTourItemFromRecord(record);
+        const items=stored.slice();
+        if(validTourItem(primary)&&!items.some(item=>sameTourItem(item,primary))) items.unshift(primary);
+        return items.filter(validTourItem);
+      }
+      function serviceItemLabel(item){ const visual=serviceVisual({tour_type:item.tour,service_type:item.service_type||item.tour,product_selected:item.product_selected}); return {icon:visual.icon,label:item.tour||productTitle(item.product_selected)||visual.label||"Service"}; }
+      function requestAllocation(tour){
+        const value=clean(tour).toLowerCase();
+        if(value==="night walk") return {tour:"Night Walk",service_type:"Activity",product_selected:"MBW016 - Night Walk",duration:"Evening activity"};
+        if(value==="chocolate tour") return {tour:"Chocolate Tour",service_type:"Activity",product_selected:"MBW011 - Chocolate Tour"};
+        if(value==="orchid garden tour") return {tour:"Orchid Garden Tour",service_type:"Activity",product_selected:"ACT009 - Orchid Garden Tour"};
+        if(value==="coffee tour") return {tour:"Coffee Tour",service_type:"Activity",product_selected:"MBW012 - Coffee Tour"};
+        if(value==="accommodation assistance") return {tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01 - Accommodation Booking"};
+        if(value==="transportation requested") return {tour:"Transportation Requested",service_type:"Transportation",product_selected:""};
+        if(value==="additional birding day") return {tour:"Additional Birding Day",service_type:"Birdwatching",product_selected:"",duration:"Full Day"};
+        return null;
+      }
+      function expandRecognizedAdditionalItem(item){
+        const normalized=normalizeTourItem(item);
+        const text=clean(normalized.tour);
+        const lower=text.toLowerCase();
+        if(productCodeFromValue(normalized.product_selected)!=="OTHER"&&clean(normalized.product_selected)!=="Other") return [normalized];
+        const matches=[];
+        if(/\bchocolate(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Chocolate Tour"));
+        if(/\borchid(?:\s+garden)?(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Orchid Garden Tour"));
+        if(/\bcoffee(?:\s+tour)?\b/.test(lower)) matches.push(requestAllocation("Coffee Tour"));
+        if(!matches.length) return [Object.assign({},normalized,{tour:"Other Activity or Tour",notes:normalized.notes?normalized.notes+" · Guest request: "+text:"Guest request: "+text})];
+        return matches.map((allocation,index)=>normalizeTourItem(Object.assign({},normalized,allocation,{id:normalized.id+"-"+(index+1),notes:[normalized.notes,"Guest request: "+text].filter(Boolean).join(" · ")})));
+      }
+      function legacyAddOnItems(record){const raw=pick(record,"tour_add_ons","optional_additions","add_ons");if(!raw)return[];return raw.split(/\s*\|\s*/).filter(Boolean).flatMap((value,index)=>{const lower=clean(value).toLowerCase();if(lower.startsWith("tour format:"))return[];if(lower==="night walk")return[{id:"addon-"+(index+1),tour:"Night Walk",service_type:"Activity",product_selected:"MBW016",duration:"Evening activity",status:"new",notes:"Requested on website"}];if(lower==="additional birding day")return[{id:"addon-"+(index+1),tour:"Additional Birding Day",service_type:"Birdwatching",status:"new",notes:"Requested on website"}];if(lower==="transportation")return[{id:"addon-"+(index+1),tour:"Transportation Requested",service_type:"Transportation",status:"new",notes:"Requested on website"}];if(lower==="accommodation assistance")return[{id:"addon-"+(index+1),tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01",status:"new",notes:"Requested on website"}];const detail=lower.startsWith("other:")?value.slice(value.indexOf(":")+1).trim():value;return[{id:"addon-"+(index+1),tour:detail||"Other Activity or Tour",service_type:"Custom",product_selected:"Other",status:"new",notes:"Requested on website"}];});}
+      function normalizeTourItems(record){
+        if(!record) return [];
+        const normalizeWithContext=item=>normalizeTourItem(Object.assign({},item,{status:clean(item&&item.status)||clean(record.status)||"new"}));
+        const source=record.tour_items_json||record.tour_items||"";
+        if(Array.isArray(source)) return source.map(normalizeWithContext).filter(validTourItem);
+        if(typeof source==="string"&&source.trim()){
+          try{
+            const parsed=JSON.parse(source);
+            if(Array.isArray(parsed)) return parsed.map(normalizeWithContext).filter(validTourItem);
+          }catch(e){
+            return source.split(/\\s*\\|\\s*/).map(chunk=>{
+              const parts=chunk.split("::");
+              return normalizeWithContext({date:parts[0],tour:parts[1],guests:parts[2],product:parts[3],status:parts[4],pickup_location:parts[5],price:parts[6],notes:parts[7]});
+            }).filter(validTourItem);
+          }
+        }
+        return legacyAddOnItems(record).map(normalizeWithContext).filter(validTourItem);
+      }
+      function normalizeTourItem(item){ item=item||{}; const tour=clean(item.tour||item.tour_type||item.name||item.product_selected); const date=toDateValue(item.date||item.tour_date||item.requested_date); const guests=clean(item.guests||item.guest_count||item.party_size); const product=clean(item.product_selected||item.product||deriveProductCode(tour)); const price=clean(item.price||item.quoted_amount||item.unit_price||item.price_per_person||item.per_person||item.amount); const serviceType=clean(item.service_type)||deriveServiceType(product||tour); return Object.assign({},item,{id:clean(item.id)||"TI-"+stamp()+"-"+Math.random().toString(16).slice(2,6),tour:tour,service_type:serviceType,date:date,tour_date:date,guests:guests,product_selected:product,duration:clean(item.duration||item.duration_preference),status:normalizeStatus(clean(item.status)||"new"),pickup_location:clean(item.pickup_location||item.pickup||""),price:price,notes:clean(item.notes||"")}); }
+      function validTourItem(item){ return Boolean(clean(item.tour)||clean(item.product_selected)||clean(item.notes)||clean(item.price)); }
+      function collectTourItems(){ if(!els.tourItemsList) return []; return Array.from(els.tourItemsList.querySelectorAll(".tourItem")).map(card=>{const original=(state.tourItems||[]).find(item=>clean(item.id)===clean(card.dataset.id))||{};return normalizeTourItem(Object.assign({},original,{id:card.dataset.id,vehicle_count:isTransportItem({product_selected:card.querySelector('[data-tour-field="product"]').value,service_type:card.querySelector('[data-tour-field="service"]')?.value,tour:card.querySelector('[data-tour-field="tour"]').value})?clean(card.querySelector('[data-tour-field="guests"]').value):"",tour:card.querySelector('[data-tour-field="tour"]').value,service_type:card.querySelector('[data-tour-field="service"]')?.value,date:card.querySelector('[data-tour-field="date"]').value,guests:card.querySelector('[data-tour-field="guests"]').value,product_selected:card.querySelector('[data-tour-field="product"]').value,price:card.querySelector('[data-tour-field="price"]').value,duration:card.querySelector('[data-tour-field="duration"]').value,status:card.querySelector('[data-tour-field="status"]').value,pickup_location:card.querySelector('[data-tour-field="pickup"]').value,notes:card.querySelector('[data-tour-field="notes"]').value}));}).filter(validTourItem); }
+      function serializeTourItems(items){ return items&&items.length?JSON.stringify(items.map(item=>normalizeTourItem(item))):""; }
+      function addTourItem(seed){ state.tourItems=collectTourItems(); const merged=Object.assign({tour:"",date:toDateValue(els.dateInput.value),guests:clean(els.guestCountInput.value),product_selected:"",price:"",duration:clean(els.durationInput.value),status:normalizeStatus(els.recordStatusInput.value||"planning"),pickup_location:clean(els.pickupLocationInput.value)},seed||{}); if(!clean(merged.price)) merged.price=standardPriceForProduct(merged.product_selected,merged.tour); state.tourItems.push(normalizeTourItem(merged)); renderTourItems(); renderPayload(); }
+      function renderTourItems(){if(!els.tourItemsList)return;const items=state.tourItems||[];els.tourItemsList.innerHTML=items.length?items.map((item,index)=>tourItemHtml(normalizeTourItem(item),index)).join(""):`<div class="tourItemEmpty">No additional tours yet. The CRM will save the main form above as Tour 1. Add rows here only for Tour 2, Night Walk, activities, transportation, or another date.</div>`;els.tourItemsList.querySelectorAll('[data-tour-field="status"]').forEach(select=>{if(![...select.options].some(option=>option.value==="payment_pending")){const option=new Option("Payment Pending","payment_pending");select.add(option,[...select.options].findIndex(item=>item.value==="booked"));} [...select.options].forEach(option=>{if(option.value)option.textContent=labelStatus(option.value);});});}
+      function parseQuoteOptions(value){if(Array.isArray(value))return value;try{const parsed=JSON.parse(clean(value)||"[]");return Array.isArray(parsed)?parsed:[]}catch(error){return[]}}
+      function collectQuoteOptions(){if(!els.quoteOptionsList)return[];return Array.from(els.quoteOptionsList.querySelectorAll("[data-quote-code]")).map(row=>{const price=clean(row.querySelector('[data-quote-field="price"]')?.value);const description=clean(row.querySelector('[data-quote-field="description"]')?.value);const saved=parseQuoteOptions(getSelected()?.quote_options_json).find(item=>clean(item.code).toUpperCase()===clean(row.dataset.quoteCode).toUpperCase())||{};return Object.assign({},saved,{code:row.dataset.quoteCode,name:description||row.dataset.quoteName,price:price,basis:row.querySelector('[data-quote-field="basis"]')?.value||"per_person",currency:"USD"})}).filter(item=>item.price).concat(unrepresentedQuoteOptions())}
+      function renderRequestedServices(record){
+        const target=document.getElementById("requestedServicesSummary");if(!target)return;
+        const message=clean(record.message_questions),addons=clean(record.tour_add_ons||record.optional_additions||record.add_ons);
+        const parts=[record.tour_type||record.tour_category,addons];
+        if(/birdwatch|birding/i.test(message))parts.push("Birdwatching requested");
+        if(/night[ -]?walk/i.test(message))parts.push("Night Walk requested");
+        if(record.requested_date_text)parts.push("Saved visit dates: "+clean(record.requested_date_text));
+        if(record.guest_count_text)parts.push("Saved guest count: "+clean(record.guest_count_text));
+        if(/transport|quito|pickup|pick.up/i.test(message)||clean(record.transportation_needed).toLowerCase()==="yes")parts.push("Transportation requested or mentioned — verify coverage");
+        target.textContent=parts.filter(Boolean).join(" · ")+(message?" — Guest message: "+message:"")||"No original request details available. Review the guest conversation.";
+      }
+      function unrepresentedQuoteOptions(){const codes=new Set(Array.from(els.quoteOptionsList?.querySelectorAll("[data-quote-code]")||[]).map(row=>clean(row.dataset.quoteCode).toUpperCase()));const seen=new Set();return parseQuoteOptions(getSelected()?.quote_options_json).filter(item=>{const code=clean(item.code).toUpperCase();if(!codes.has(code)||seen.has(code))return true;seen.add(code);return false;});}
+      function fillQuoteOptions(record){renderRequestedServices(record||{});const items=parseQuoteOptions(record&&record.quote_options_json);if(els.quoteOptionsList){els.quoteOptionsList.querySelectorAll("[data-quote-code]").forEach(row=>{const item=items.find(entry=>clean(entry.code).toUpperCase()===clean(row.dataset.quoteCode).toUpperCase())||{};const price=row.querySelector('[data-quote-field="price"]'),basis=row.querySelector('[data-quote-field="basis"]'),description=row.querySelector('[data-quote-field="description"]');if(price)price.value=item.price??"";if(basis)basis.value=row.dataset.quoteCode==="TRANSPORT"?"total":(item.basis||"per_person");if(description)description.value=item.code==="OTHER"?(item.name||""):""})}const retained=unrepresentedQuoteOptions();let notice=document.getElementById("retainedQuoteOptions");if(!notice&&els.quoteOptionsList){notice=document.createElement("p");notice.id="retainedQuoteOptions";notice.className="hint";els.quoteOptionsList.after(notice);}if(notice)notice.textContent=retained.length?"Additional saved quote options retained unchanged: "+retained.map(item=>[item.name||item.code,item.date||item.tour_date,item.price,item.currency,item.basis].filter(Boolean).join(" · ")).join("; ")+". Review these before revising this quote.":"";if(els.quoteSentAtInput)els.quoteSentAtInput.value=clean(record&&record.quote_sent_at)?localDateTimeValue(record.quote_sent_at):"";if(els.quoteSentChannelInput)els.quoteSentChannelInput.value=clean(record&&record.quote_sent_channel);if(els.quoteNotesInput)els.quoteNotesInput.value=clean(record&&record.quote_notes);if(els.quoteOptionsPanel)els.quoteOptionsPanel.open=Boolean(items.length||clean(record&&record.quote_sent_at)||clean(record&&record.quote_notes))}
+      async function markQuotesSent(){
+        if(els.markQuotesSentBtn.disabled)return;
+        const selected=getSelected()||{};
+        if(isArchivedStatus(selected)||isClosedStatus(selected.status)||isClosedStatus(els.recordStatusInput.value)){showToast("Closed or archived inquiries cannot be marked quote sent.");return;}
+        if(["accepted","declined"].includes(clean(els.quoteStatusInput.value))){showToast("Preserve the guest’s decision. Record any revised offer in Quote notes.");return;}
+        const options=collectQuoteOptions();if(!options.length){showToast("Enter at least one quoted price");return;}
+        if(options.some(item=>!Number.isFinite(Number(item.price))||Number(item.price)<0)){showToast("Quote prices must be valid amounts of zero or more.");return;}
+        if(!els.quoteSentChannelInput.value){showToast("Choose how the quote was sent");return;}
+        if(!els.followupInput.value){showToast("Choose the next follow-up date before recording the sent quote.");els.followupInput.focus();return;}
+        const previous={sent:els.quoteSentAtInput.value,quote:els.quoteStatusInput.value,status:els.recordStatusInput.value};
+        if(!els.quoteSentAtInput.value)els.quoteSentAtInput.value=localDateTimeValue(new Date().toISOString());
+        els.quoteStatusInput.value="sent";
+        if(["new","contacted","planning","qualified","quoted","follow_up"].includes(normalizeStatus(els.recordStatusInput.value))&&["","unpaid"].includes(clean(els.paymentStatusInput.value)))els.recordStatusInput.value="quoted";
+        els.markQuotesSentBtn.disabled=true;
+        try{const saved=await saveRecord();if(!saved){els.quoteSentAtInput.value=previous.sent;els.quoteStatusInput.value=previous.quote;els.recordStatusInput.value=previous.status;updateStatusField();}}
+        finally{els.markQuotesSentBtn.disabled=false;}
+      }
+      function tourItemHtml(item,index){ const tourOptions=["","Half-Day Birdwatching","Full-Day Birdwatching","Additional Birding Day","Night Walk","Chocolate Tour","Orchid Garden Tour","Coffee Tour","Transportation Requested","Accommodation Assistance","Specialty Wildlife","Other Activity or Tour","Other"]; const serviceOptions=["","Birdwatching","Activity","Specialty Wildlife","Transportation","Accommodation","Custom"]; const productOptions=[""].concat(MBW_PRODUCT_OPTIONS); const statusOptions=["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","booked","completed","cancelled","did_not_book","duplicate"]; const heading=[item.tour||productTitle(item.product_selected)||`Service ${index+2}`,item.service_type].filter(Boolean).join(" · "); return `<article class="tourItem" data-id="${esc(item.id)}" data-pricing-unit="${isTransportItem(item)?"vehicle":"person"}"><div class="tourItemTop"><strong>${esc(heading)}</strong><button type="button" data-tour-action="remove">Remove</button></div><div class="tourItemGrid"><label class="field">Specific Request<select data-tour-field="tour">${optionsHtml(tourOptions,item.tour)}</select></label><label class="field">Service Type<select data-tour-field="service">${optionsHtml(serviceOptions,item.service_type)}</select></label><label class="field">Product / Service<select data-tour-field="product">${optionsHtml(productOptions,item.product_selected)}</select></label><label class="field">Date<input type="date" data-tour-field="date" value="${esc(item.date||item.tour_date)}"></label><label class="field"><span data-quantity-label>${isTransportItem(item)?"Vehicles":"Guests"}</span><input data-tour-field="guests" value="${esc(isTransportItem(item)?vehicleQuantity(item):item.guests)}" placeholder="${isTransportItem(item)?"1":"2"}"></label><label class="field"><span data-price-label>${isTransportItem(item)?"Price per vehicle":"Price per person"}</span><input data-tour-field="price" inputmode="decimal" value="${esc(item.price)}" placeholder="Optional"></label><label class="field">Duration<select data-tour-field="duration">${optionsHtml(["","Half Day","Full Day","Flexible","Evening activity"],item.duration)}</select></label><label class="field">Calendar status<select data-tour-field="status">${optionsHtml(statusOptions,item.status)}</select></label><label class="field">Pickup<input data-tour-field="pickup" value="${esc(item.pickup_location)}" placeholder="Hotel or meeting point"></label><label class="field tourItemNotes">Notes<input data-tour-field="notes" value="${esc(item.notes)}" placeholder="Optional"></label></div></article>`; }
+      function optionsHtml(options,value){const selected=clean(value),rows=options.slice(),machineLabels=new Set(["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book","duplicate","unpaid","paid","no_payment_required","refunded","not_sent","sent","accepted","declined"]);if(selected&&!rows.some(option=>{const opt=clean(option);return opt===selected||opt.startsWith(selected+" -")||selected.startsWith(opt+" -");}))rows.splice(rows[0]===""?1:0,0,selected);return rows.map(option=>{const opt=clean(option),isSelected=opt===selected||(selected&&opt.startsWith(selected+" -"))||(opt&&selected.startsWith(opt+" -")),label=machineLabels.has(opt)?labelStatus(opt):(option?productOptionLabel(option):"Select");return `<option value="${esc(option)}" ${isSelected?"selected":""}>${esc(label)}</option>`;}).join("");}
+      function handleTourItemInput(event){ const field=event&&event.target&&event.target.closest("[data-tour-field]"); if(field&&(field.dataset.tourField==="product"||field.dataset.tourField==="tour")){ const card=field.closest(".tourItem"); const productField=card&&card.querySelector('[data-tour-field="product"]'); const serviceField=card&&card.querySelector('[data-tour-field="service"]'); const durationField=card&&card.querySelector('[data-tour-field="duration"]'); const tourField=card&&card.querySelector('[data-tour-field="tour"]'); if(field.dataset.tourField==="tour"){ const allocation=requestAllocation(tourField.value); if(allocation){ setSelectValue(serviceField,allocation.service_type); setSelectValue(productField,allocation.product_selected); if(allocation.duration)setSelectValue(durationField,allocation.duration); } }else if(clean(productField.value)){ setSelectValue(serviceField,deriveServiceType(productField.value)); } const priceInput=card&&card.querySelector('[data-tour-field="price"]'); if(priceInput&&!clean(priceInput.value)) priceInput.value=standardPriceForProduct(productField.value,tourField.value); } const changedCard=field&&field.closest(".tourItem");if(changedCard)updateTransportLabels(changedCard);state.tourItems=collectTourItems(); renderPayload(); }
+      function handleTourItemClick(event){ const button=event.target.closest("[data-tour-action]"); if(!button) return; const card=button.closest(".tourItem"); state.tourItems=collectTourItems().filter(item=>item.id!==card.dataset.id); renderTourItems(); renderPayload(); }
+      function comparableEmail(record){ return clean(record.email_normalized||record.email).toLowerCase(); }
+      function comparablePhone(record){ return clean(record.phone_normalized||record.phone_number||record.phone_raw).replace(/\D/g,""); }
+      function activeOtherRecords(record){ return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item)&&!isClosedStatus(item.status)); }
+      function identityRecords(record){ return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item)); }
+      function findExistingGuest(record){
+        const email=comparableEmail(record);
+        const phone=comparablePhone(record);
+        if(!email&&!phone) return null;
+        return identityRecords(record).find(item=>(email&&comparableEmail(item)===email)||(phone&&comparablePhone(item)===phone))||null;
+      }
+      function findBookingDuplicate(record){
+        const sourceDuplicate=activeOtherRecords(record).find(item=>sourceIdentityMatch(item,record));
+        if(sourceDuplicate) return sourceDuplicate;
+        const email=comparableEmail(record);
+        const phone=comparablePhone(record);
+        const name=clean(record.full_name).toLowerCase();
+        const date=toDateValue(record.requested_date||record.requested_date_start);
+        const tour=clean(record.tour_type||record.tour_category).toLowerCase();
+        if(!date) return null;
+        return activeOtherRecords(record).find(item=>{
+          const sameDate=toDateValue(item.requested_date||item.requested_date_start)===date;
+          const sameEmail=email&&comparableEmail(item)===email;
+          const samePhone=phone&&comparablePhone(item)===phone;
+          const sameName=name&&clean(item.full_name).toLowerCase()===name;
+          const sameTour=!tour||!clean(item.tour_type||item.tour_category)||clean(item.tour_type||item.tour_category).toLowerCase()===tour;
+          return sameDate&&(sameEmail||samePhone||(sameName&&sameTour));
+        })||null;
+      }
+      function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
+      function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(duplicates.length?duplicates:matches).slice(0,3); const duplicateMode=duplicates.length>0; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${duplicateMode?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${duplicateMode?"Review the matching record before saving another copy.":"This guest has another trip. Keep each trip as a separate record."}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
+      // Project scheduled work for display only; never rewrite enquiry or pricing data.
+      function calendarAssignmentsForRecord(record){
+        const seen=new Set();
+        return currentAssignmentRows(record).filter(item=>{
+          const inquiry=clean(item.inquiry_id),booking=clean(item.booking_id);
+          // An explicit trip identity takes precedence over a shared guest identity.
+          if(inquiry&&inquiry!==clean(record.inquiry_id)) return false;
+          if(!inquiry&&booking&&booking!==clean(record.booking_id)) return false;
+          if(!inquiry&&!booking){
+            const siblings=state.records.filter(other=>!isArchivedStatus(other)&&guestIdentityMatch(other,record));
+            if(siblings.length!==1) return false;
+          }
+          if(!toDateValue(item.service_date)) return false;
+          const key=clean(item.assignment_id)||JSON.stringify([item.service_item_id,item.service_date,item.start_time,item.end_time,item.service_type,item.product_selected,item.trip_direction]);
+          if(seen.has(key)) return false;
+          seen.add(key); return true;
+        });
+      }
+      function calendarEntriesForRecord(record){
+        const items=normalizeTourItems(record);
+        const base=items.length?items.map(item=>Object.assign({},record,{_calendar_item:item,tour_type:item.tour||productTitle(item.product_selected)||item.service_type,tour_category:item.tour||productTitle(item.product_selected)||item.service_type,service_type:activityServiceDetails(item).service,guest_count:item.guests||record.guest_count,requested_date:item.date||item.tour_date,requested_date_start:item.date||item.tour_date,requested_date_end:item.date||item.tour_date,status:item.status||record.status,product_selected:item.product_selected||record.product_selected,pickup_location:item.pickup_location||record.pickup_location})):[record];
+        const assignments=calendarAssignmentsForRecord(record),replaced=new Set(),scheduled=[];
+        assignments.forEach(assignment=>{
+          const service=clean(assignment.service_type)||"Custom";
+          const reference=clean(assignment.service_item_id)||assignmentReference(assignment.internal_note);
+          const code=productCodeFromValue(assignment.product_selected);
+          const expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
+          const productCompatible=expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"));
+          const product=productCompatible?clean(assignment.product_selected):"";
+          const compatible=base.filter(entry=>assignmentItemService(entry._calendar_item||entry)===service);
+          let matches=reference?compatible.filter(entry=>clean(entry._calendar_item?.id)===reference):[];
+          if(!matches.length){
+            const sameDay=compatible.filter(entry=>toDateValue(entry.requested_date)===toDateValue(assignment.service_date));
+            matches=product?sameDay.filter(entry=>productCodeFromValue((entry._calendar_item||entry).product_selected)===code):[];
+            // Legacy assignments often have no product code or an obsolete service reference.
+            // Match a unique same-day service, but never conflate distinct known products.
+            if(!matches.length&&service!=="Activity"&&service!=="Custom") matches=sameDay.filter(entry=>!product||!productCodeFromValue((entry._calendar_item||entry).product_selected));
+          }
+          if(matches.length===1) replaced.add(matches[0]);
+          const display=assignmentServiceDisplay(assignment,record);
+          const title=display.label,displayProduct=display.product;
+          const status=normalizeStatus(assignment.assignment_status);
+          const item={id:"assignment-"+clean(assignment.assignment_id),tour:title,service_type:service,product_selected:displayProduct,date:toDateValue(assignment.service_date),guests:assignment.guest_count||record.guest_count,status:status==="pending"?(matches.length===1?normalizeStatus(matches[0].status||record.status):"planning"):status,pickup_location:assignment.pickup_location||record.pickup_location};
+          scheduled.push(Object.assign({},record,{_calendar_item:item,_calendar_assignment:assignment,tour_type:title,tour_category:title,service_type:service,product_selected:displayProduct,requested_date:item.date,requested_date_start:item.date,requested_date_end:item.date,guest_count:item.guests,status:item.status,pickup_location:item.pickup_location}));
+        });
+        return base.filter(entry=>!replaced.has(entry)).concat(scheduled);
+      }
+      function loadDemoRecords(show){ state.records=[demo("INQ-DEMO-001","Jeanne Friedman","Full-Day Birdwatching Tour","2026-12-08","new","not_sent","unpaid","Cock-of-the-rock, tanagers, umbrella bird"),demo("INQ-DEMO-002","Jared","Two full days guided birding","2026-11-19","quoted","sent","unpaid","Rental vehicle. Interested in target bird builder."),demo("INQ-DEMO-003","Lauren","Quito to Mindo Day Trip","2026-11-13","booked","accepted","deposit_paid","2 guests, door-to-door Quito pickup")]; state.selectedId=state.records[0].inquiry_id; saveLocalRecords(); fillForm(getSelected()); render(); if(show) showToast("Demo records loaded"); }
+      function demo(id,name,tour,date,status,quote,payment,notes){ return {inquiry_id:id,guest_id:"G-"+id.slice(-3),full_name:name,first_name:name.split(" ")[0]||"",last_name:name.split(" ").slice(1).join(" "),phone_number:"",phone_normalized:"",email:"",country:"",tour_type:tour,interest_category:tour,guest_count:"2",requested_date:date,duration_preference:"",transportation_needed:"",status,quote_status:quote,payment_status:payment,availability_status:"pending",followup_date:"",notes,internal_notes:"",created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; }
+      async function api(action,data){
+        const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmLabApiUrl")||CRM_API_DEFAULT;
+        if(!url) throw new Error("Add CRM API webhook URL in Settings");
+        if(!action.startsWith("list_")) throw new Error("Beta is read-only. Use the current Guest CRM to save this action.");
+        const payload={action,...data};
+        const isRead=action.startsWith("list_");
+        const attempts=isRead?4:1;
+        let lastError=null;
+        for(let attempt=0;attempt<attempts;attempt++){
+          const controller=new AbortController();
+          const timer=setTimeout(()=>controller.abort(),30000);
+          try{
+            let res=await fetch(url,{
+              method:"POST",
+              headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+              body:new URLSearchParams({payload:JSON.stringify(payload)}).toString(),
+              signal:controller.signal,
+              cache:"no-store",
+              credentials:"same-origin"
+            });
+            let text=await res.text();
+            // Backward compatibility while the matching n8n workflow update is being deployed.
+            if(res.ok&&!text){
+              res=await fetch(url,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(payload),
+                signal:controller.signal,
+                cache:"no-store",
+                credentials:"same-origin"
+              });
+              text=await res.text();
+            }
+            if(!res.ok) throw new Error("API returned "+res.status+(text?": "+text.slice(0,160):""));
+            let result;
+            try{result=text?JSON.parse(text):null;}catch(parseError){throw new Error("API returned invalid JSON");}
+            if(!result) throw new Error("API returned an empty response");
+            if(result.ok===false) throw new Error(result.error||"API rejected the request");
+            return result;
+          }catch(error){
+            lastError=error;
+            if(attempt<attempts-1) await wait([1000,2500,5000][attempt]||5000);
+          }finally{clearTimeout(timer);}
+        }
+        const prefix=isRead?"Live CRM load failed":"Live CRM save failed";
+        const detail=lastError&&lastError.name==="AbortError"
+          ?"request timed out"
+          :(lastError&&lastError.message==="Load failed"
+            ?"mobile browser could not reach the CRM API. Check the connection and deploy the mobile-safe n8n workflow."
+            :(lastError&&lastError.message)||"unknown network error");
+        throw new Error(prefix+": "+detail);
+      }
+      function tourFormSnapshot(){
+        return JSON.stringify({primary:["productSelectedInput","serviceTypeInput","dateInput","guestCountInput","durationInput","recordStatusInput"].map(id=>els[id]?.value||""),additional:collectTourItems()});
+      }
+      function hasUnsavedTourChanges(){return els.modeInput?.value==="update"&&Boolean(state.tourFormSnapshot)&&state.tourFormSnapshot!==tourFormSnapshot();}
+      function scheduleRefreshRetry(){ /* Beta refresh is manual; avoid extra background requests. */ }
+      async function refreshCrm(background){
+        if(refreshInFlight||recordSaveInFlight) return;
+        const generation=recordSaveGeneration;
+        const refreshObsolete=()=>generation!==recordSaveGeneration||recordSaveInFlight;
+        const isBackground=background===true;
+        if(hasUnsavedTourChanges()){
+          if(isBackground) scheduleRefreshRetry(30000);
+          else showToast("Activity edits kept. Save Record before refreshing CRM.");
+          return;
+        }
+        refreshInFlight=true;renderPreparationOverview();
+        try{
+          saveSettings();
+          const result=await api("list_inquiries",{filters:{}});
+          const incoming=applyDuplicateFamilyArchives(extractRecords(result).filter(hasMeaningfulCrmData).map(normalizeCrmRecord).filter(r=>r.inquiry_id));
+          const records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
+          if(refreshObsolete()) return;
+          if(hasUnsavedTourChanges()){showToast("Activity edits kept. Save Record before refreshing CRM.");return;}
+          await loadGlobalOperationsData();
+          if(refreshObsolete()) return;
+          if(hasUnsavedTourChanges()){showToast("Activity edits kept. Save Record before refreshing CRM.");return;}
+          state.records=records;
+          state.lastRefresh=new Date().toISOString();
+          localStorage.setItem("mbwCrmLabLastRefresh",state.lastRefresh);
+          if((!state.selectedId||!state.records.some(record=>record.inquiry_id===state.selectedId))&&state.records[0]) state.selectedId=state.records[0].inquiry_id;
+          saveLocalRecords();
+          fillForm(getSelected());
+          render();
+          clearTimeout(refreshRetryTimer);
+          refreshRetryAttempt=0;
+          const archivedCount=state.records.filter(record=>isArchivedStatus(record)).length;
+          const workingCount=state.records.length-archivedCount;
+          showToast((isBackground?"Live CRM connection restored: ":"CRM refreshed: ")+state.records.length+" loaded · "+workingCount+" working · "+archivedCount+" archived");
+          if(state.view==="intake"&&getSelected())loadGuestWorkspace();
+        }catch(e){
+          if(refreshObsolete()||hasUnsavedTourChanges()) return;
+          if(state.operationsStatus==="loading"){
+            state.operationsStatus="error";
+            state.operationsError="CRM refresh failed before assignments loaded. Retry Refresh CRM.";
+          }
+          loadLocalRecords();
+          fillForm(getSelected());
+          render();
+          refreshRetryAttempt+=1;
+          scheduleRefreshRetry();
+          if(!isBackground) showToast((state.records.length?"Live CRM unavailable. Showing this device's saved snapshot; automatic retry is active.":e.message));
+        }finally{ refreshInFlight=false; renderPreparationOverview(); }
+      }
+      async function loadGlobalOperationsData(){
+        if(operationsLoadPromise)return operationsLoadPromise;
+        state.operationsStatus="loading";
+        operationsLoadPromise=(async()=>{
+          const results=await Promise.allSettled([
+            api("list_assignments",{}),
+            state.providers.length?Promise.resolve({records:state.providers}):api("list_providers",{})
+          ]);
+          if(results[0].status==="fulfilled"){
+            state.allAssignments=extractRecords(results[0].value);
+            state.operationsStatus="ready";state.operationsError="";
+          }else{state.operationsStatus="error";state.operationsError="Assignments could not be refreshed. Displayed services may be incomplete. Retry Refresh CRM.";}
+          if(results[1].status==="fulfilled")state.providers=extractRecords(results[1].value);
+          render();
+        }) /* shared operations request */ ();
+        try{await operationsLoadPromise;}finally{operationsLoadPromise=null;}
+      }
+
+      let referenceMatch=null,referenceGeneration=0;
+      function referenceId(value){const raw=String(value||"").trim(),direct=raw.match(/^(?:(?:Reference|Referencia):\s*)?(ci_[A-Za-z0-9_-]{4,120})$/i);if(direct)return direct[1];const ids=[...new Set(Array.from(raw.matchAll(/(?:Reference|Referencia):\s*(ci_[A-Za-z0-9_-]{4,120})(?![A-Za-z0-9_-])/gi),m=>m[1]))];return ids.length===1?ids[0]:"";}
+      function referenceStatus(text){const node=document.getElementById("referenceStatus");if(node)node.textContent=text;}
+      function missingManualWhatsappReference(){return clean(els.sourceInput?.value)==="manual_whatsapp"&&!clean(els.referenceIdInput?.value);}
+      function updateReferenceReminder(){if(missingManualWhatsappReference())referenceStatus("No Reference ID: this WhatsApp inquiry will be saved without attribution.");else if(!clean(els.referenceIdInput?.value))referenceStatus("Optional. Existing attribution is preserved.");}
+      function preservedReferenceList(raw,saved){const value=clean(raw),parts=value.split("|").map(clean);return value===clean(saved)&&parts.length>1&&parts.every(part=>Boolean(referenceId(part)));}
+      async function resolveReference(){
+        const raw=clean(els.referenceIdInput.value);
+        if(!raw){referenceMatch=null;updateReferenceReminder();return null;}
+        if(preservedReferenceList(raw,getSelected()?.contact_intent_id)){referenceMatch=null;referenceStatus("Existing merged references preserved.");return null;}
+        const id=referenceId(raw);
+        if(!id){referenceStatus("Paste one ci_... ID, Reference / Referencia, or a message containing exactly one reference.");throw new Error("Invalid Reference ID");}
+        if(referenceMatch&&referenceMatch.contact_intent_id===id)return referenceMatch;
+        const generation=++referenceGeneration;referenceStatus("Checking reference…");
+        try{const result=await api("lookup_reference",{contact_intent_id:id});
+          if(generation!==referenceGeneration||referenceId(els.referenceIdInput.value)!==id)throw new Error("Reference changed. Please save again.");
+          if(!result.ok||!result.attribution)throw new Error(result.error||"Reference not found");
+          referenceMatch=result.attribution;els.referenceIdInput.value=id;
+          referenceStatus("Reference matched: "+(referenceMatch.last_touch_source||referenceMatch.utm_source||"source unavailable"));return referenceMatch;
+        }catch(error){if(generation===referenceGeneration){referenceMatch=null;referenceStatus("Could not match reference: "+error.message);}throw error;}
+      }
+      document.addEventListener("focusout",event=>{if(event.target.id==="referenceIdInput")resolveReference().catch(()=>{});});
+      document.addEventListener("input",event=>{if(event.target.id==="referenceIdInput"){referenceGeneration++;referenceMatch=null;referenceStatus("Reference will be checked before saving.");}});
+      document.addEventListener("change",event=>{if(event.target.id==="sourceInput")updateReferenceReminder();});
+      function savedInquiryFromResponse(response,requested){
+        const saved=extractRecords(response).find(row=>clean(row.inquiry_id)===clean(requested.inquiry_id));
+        if(!saved) throw new Error("Save not verified. Your edits are kept; the CRM did not return the saved inquiry.");
+        const fingerprint=row=>serializeTourItems(normalizeTourItems(row));
+        if(fingerprint(saved)!==fingerprint(requested)) throw new Error("Activity save not verified. Your edits are kept; the CRM returned different services. Do not refresh before reviewing.");
+        return {...requested,...saved};
+      }
+      function canPreserveUnavailableReference(error){
+        return els.modeInput.value==="update"&&/contact_intent_not_found/i.test(clean(error&&error.message));
+      }
+      async function saveRecord(){
+        let payload=buildSavePayload();
+        const saveButtons=[els.saveBtn,els.bottomSaveBtn,els.detailTopSaveBtn].filter(Boolean);
+        if(recordSaveInFlight||saveButtons.some(button=>button.disabled)) return;
+        recordSaveInFlight=true;
+        recordSaveGeneration+=1;
+        saveButtons.forEach(button=>{ button.disabled=true; button.dataset.originalText=button.textContent; button.textContent="Saving…"; });
+        try{
+          const isCreate=els.modeInput.value==="create"||els.modeInput.value==="returning";
+          if(isCreate&&clean(payload.record.quote_sent_at)&&["","not_sent"].includes(clean(payload.record.quote_status).toLowerCase())){
+            if(els.quoteOptionsPanel)els.quoteOptionsPanel.open=true;
+            if(els.quoteSentAtInput)els.quoteSentAtInput.focus();
+            throw new Error("Not saved: this new inquiry is marked Not Sent but has a quote-sent date. Clear the date, or record the quote as Sent only if it was actually sent.");
+          }
+          if(isCreate&&(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)){
+            const latest=await api("list_inquiries",{filters:{}});
+            const incoming=applyDuplicateFamilyArchives(extractRecords(latest).filter(hasMeaningfulCrmData).map(normalizeCrmRecord).filter(r=>r.inquiry_id));
+            state.records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
+            payload=buildSavePayload();
+          }
+          let attribution=null,attributionWarning="";
+          try{attribution=await resolveReference();}
+          catch(error){
+            if(!canPreserveUnavailableReference(error))throw error;
+            const preservedReference=referenceId(els.referenceIdInput.value);
+            attributionWarning="Attribution reference preserved, but it is unavailable in the attribution database.";
+            referenceMatch=null;
+            referenceStatus(`Reference ${preservedReference} is preserved but could not be verified. Record changes can still be saved.`);
+          }
+          if(attribution){Object.assign(payload.record,attribution);Object.assign(payload.inquiry_row,attribution);}
+          const duplicate=findBookingDuplicate(payload.record);
+          if(isCreate&&duplicate){
+            state.selectedId=duplicate.inquiry_id;
+            fillForm(duplicate);
+            saveLocalRecords();
+            render();
+            showToast("Not saved: this guest already has a booking for that date. The existing record is now open.");
+            return;
+          }
+          const reusedGuest=els.modeInput.value==="create"&&payload.action==="create_returning_inquiry";
+          if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT){
+            const response=await api(payload.action,payload);
+            const saved=savedInquiryFromResponse(response,payload.record);
+            upsert(saved);
+
+            if(attribution){try{
+              const linked=await api("link_reference",{inquiry_id:payload.record.inquiry_id,guest_id:payload.record.guest_id,contact_intent_id:attribution.contact_intent_id,email:payload.record.email||"",phone_number:payload.record.phone_number||"",tour_type:payload.record.tour_type||"",product_selected:payload.record.product_selected||"",meta_fbp:payload.record.meta_fbp||payload.record.fbp||"",meta_fbc:payload.record.meta_fbc||payload.record.fbc||""});
+              if(!linked.ok)throw new Error(linked.error||"Link failed");
+              referenceStatus("Reference matched and linked to this inquiry.");showToast("Saved to live Google Sheet; reference linked.");
+            }catch(error){referenceStatus("Inquiry saved. Reference link failed; save again to retry.");showToast("Inquiry saved; reference link needs retry.");}}
+            else showToast(attributionWarning?"Guest saved successfully. Tracking reference kept for later repair.":(missingManualWhatsappReference()?"Saved without a Reference ID; attribution is unavailable.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet")));
+          } else {
+            upsert(payload.record);
+            showToast(reusedGuest?"Saved locally under the existing guest.":"Saved locally");
+          }
+          saveLocalRecords();
+          render();
+          return true;
+        }catch(e){ showToast(e.message); return false; }
+        finally {
+          recordSaveInFlight=false;
+          state.forceContactedAt=false;
+          saveButtons.forEach(button=>{ button.disabled=false; button.textContent=button.dataset.originalText||"Save Record"; });
+        }
+      }
+      function startNewRecord(){ resetCommunicationContext(null); resetStripeDeposits(); renderRequestedServices({}); referenceMatch=null; referenceGeneration++; referenceStatus("Paste an ID or a guest message containing one Reference / Referencia."); state.selectedId=""; state.tourItems=[]; fillQuoteOptions({}); state.interactions=[]; state.assignments=[]; state.bookings=[]; state.payments=[]; state.editingPaymentId=""; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=""; els.modeInput.value="create"; els.sourceInput.value="manual_whatsapp"; updateReferenceReminder(); els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); renderPaymentLedger(); updateStatusField(); updateStatusMessageButton(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
+      function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; if(mode==="create"){ const existing=findExistingGuest(record); if(existing&&existing.guest_id){ record.guest_id=existing.guest_id; action="create_returning_inquiry"; } } return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
+      function formRecord(){
+        const now=new Date().toISOString();
+        const selected=Object.assign({},getSelected()||{});
+        selected.assigned_to=normalizeRep(els.assignedToInput.value);
+        const additionalTourItems=collectTourItems();
+        const tourItems=itineraryItemsFromForm(additionalTourItems);
+        const primary=tourItems[0]||primaryTourItemFromForm();
+        const full=clean(els.fullNameInput.value)||[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" ");
+        const phone=cleanPhoneText(els.phoneInput.value);
+        const selectedCountry=clean(els.countryInput.value)||clean(selected.country||selected.home_country);
+        const norm=normalizePhone(phone,selectedCountry);
+        const sheetPhone=norm||phone;
+        const inquiry=state.selectedId&&els.modeInput.value==="update"?state.selectedId:"INQ-"+stamp()+"-"+lastFour(norm||phone);
+        const date=toDateValue(els.dateInput.value)||primary.tour_date||"";
+        const savedStart=toDateValue(selected.requested_date_start||selected.requested_date);
+        const savedEnd=toDateValue(selected.requested_date_end);
+        const requestedEnd=savedStart&&savedStart===date&&savedEnd?savedEnd:date;
+        const requestedText=date&&requestedEnd&&date!==requestedEnd?date+" to "+requestedEnd:date;
+        const status=normalizeStatus(els.recordStatusInput.value);
+        const closed=isClosedStatus(status);
+        const priority=closed?"":(els.priorityInput.value==="auto"?autoPriority(date):clean(els.priorityInput.value));
+        const tour=clean(els.tourInput.value)||primary.tour||"";
+        const source=clean(els.sourceInput.value)||selected.source_type||"manual_whatsapp";
+        const statusChanged=selected.status&&normalizeStatus(selected.status)!==status;
+        const lastContacted=state.forceContactedAt||shouldAutoContact(selected,status)?now:(selected.last_contacted_at||"");
+        const serviceType=clean(els.serviceTypeInput.value)||deriveServiceType(tour);
+        const product=clean(els.productSelectedInput.value)||primary.product_selected||deriveProductCode(tour);
+        const country=selectedCountry||inferCountry(norm);
+        const notes=dedupeNoteText(els.notesInput.value);
+        const tourCompleted=selected.tour_completed||(status==="completed"?"Yes":"No");
+        return {inquiry_id:inquiry,guest_id:clean(els.guestIdInput.value)||selected.guest_id||"G-"+stamp()+"-"+lastFour(norm||phone),first_name:clean(els.firstNameInput.value),last_name:clean(els.lastNameInput.value),full_name:full,phone_number:sheetPhone,phone_raw:sheetPhone,phone_normalized:norm,email:clean(els.emailInput.value),email_normalized:clean(els.emailInput.value).toLowerCase(),country:country,home_country:country,source_type:source,source_tab:source,source_page:selected.source_page||"",source_row:selected.source_row||"",assigned_to:selected.assigned_to||"",stage_changed_at:statusChanged?now:(selected.stage_changed_at||""),last_contacted_at:lastContacted,next_action:selected.next_action||"",tour_type:tour,tour_category:tour,interest_category:tour,guest_count:clean(els.guestCountInput.value),guest_count_text:clean(els.guestCountInput.value),requested_date:date,requested_date_start:date,requested_date_end:requestedEnd,requested_date_text:requestedText,duration_preference:clean(els.durationInput.value),transportation_needed:clean(els.transportInput.value),pickup_location:clean(els.pickupLocationInput.value),priority:priority,status:status,quote_status:clean(els.quoteStatusInput.value),payment_status:clean(els.paymentStatusInput.value),invoice_no:clean(els.invoiceNoInput.value),date_paid:toDateValue(els.datePaidInput.value),payment_method:clean(els.paymentMethodInput.value),service_type:serviceType,product_selected:product,tour_completed:tourCompleted,completed_date:status==="completed"?(selected.completed_date||date||toDateValue(now)):"",is_archived:selected.is_archived||"No",archived_at:selected.archived_at||"",archive_reason:selected.archive_reason||"",superseded_by_inquiry_id:selected.superseded_by_inquiry_id||"",return_sequence:selected.return_sequence||"",availability_status:clean(els.availabilityInput.value)||"pending",grouping_preference:clean(els.groupingPreferenceInput.value)||"unknown",grouping_status:clean(els.groupingStatusInput.value)||"unmatched",quoted_amount:clean(els.quotedAmountInput.value),quoted_currency:clean(els.quotedAmountInput.value)?"USD":"",quote_options_json:JSON.stringify(collectQuoteOptions()),quote_sent_at:els.quoteSentAtInput.value?new Date(els.quoteSentAtInput.value).toISOString():"",quote_sent_channel:clean(els.quoteSentChannelInput.value),quote_notes:clean(els.quoteNotesInput.value),followup_date:toDateValue(els.followupInput.value),notes:notes,message_questions:dedupeNoteText(selected.message_questions||""),internal_notes:clean(els.internalInput.value),tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):"",tour_content:tourItems.length?String(tourItems.length):"",itinerary_json:selected.itinerary_json||"",itinerary_updated_at:selected.itinerary_updated_at||"",itinerary_version:selected.itinerary_version||"",itinerary_status:selected.itinerary_status||"",updated_at:now,created_at:selected.created_at||now};
+      }
+      const formRecordBase=formRecord;
+      formRecord=function(){ const r=Object.assign({},getSelected()||{},formRecordBase()); const raw=clean(els.referenceIdInput&&els.referenceIdInput.value); if(raw)r.contact_intent_id=referenceId(raw)||raw; if(referenceMatch&&referenceMatch.contact_intent_id===r.contact_intent_id)Object.assign(r,referenceMatch); return r; };
+      function buildGuestRow(r){ return {guest_id:r.guest_id,phone_number:r.phone_number,phone_raw:r.phone_number,phone_normalized:r.phone_normalized,first_name:r.first_name,last_name:r.last_name,full_name:r.full_name,country:r.country,home_country:r.country,email:r.email,guest_email:r.email,notes:r.notes,status:"active",guest_type:"WhatsApp Inquiry",total_inquiries:"1",total_confirmed_bookings:"0",created_at:r.created_at,updated_at:r.updated_at}; }
+      function upsert(record){ const existing=state.records.find(r=>r.inquiry_id===record.inquiry_id)||{}; record=mergeRecordPreservingLocal(normalizeCrmRecord(record),existing); const idx=state.records.findIndex(r=>r.inquiry_id===record.inquiry_id); if(idx>=0) state.records[idx]=record; else state.records.unshift(record); state.selectedId=record.inquiry_id; fillForm(record); }
+      function extractRecords(result){ if(!result) return []; if(result.body) return extractRecords(result.body); if(Array.isArray(result)) return result.map(item=>item&&item.json?item.json:item); if(Array.isArray(result.records)) return result.records; if(Array.isArray(result.data)) return result.data; if(Array.isArray(result.rows)) return result.rows; if(Array.isArray(result.items)) return result.items; if(result.record) return [result.record]; if(result.inquiry_id||result.guest_id||result.full_name||result.first_name||result.source_row) return [result]; return []; }
+      function hasMeaningfulCrmData(row){
+        row=row&&row.json?row.json:(row||{});
+        const first=pick(row,"first_name","guest_first_name","First Name");
+        const last=pick(row,"last_name","guest_last_name","Last Name");
+        const full=pick(row,"full_name","guest_name","name","Name");
+        const meaningfulName=clean([first,last].filter(Boolean).join(" ")||full);
+        const hasRealName=!!meaningfulName&&!["guest","unknown","n/a"].includes(meaningfulName.toLowerCase());
+        const hasContact=!!pick(row,"email","guest_email","Email","phone_number","phone_raw","phone","Phone","guest_phone","phone_normalized");
+        const hasTripData=!!pick(row,"tour_type","tour_category","preferred_tour_type","interest_category","tour_interest","requested_date","requested_date_start","preferred_date","tour_date","requested_date_text","dates_of_visit","product_selected","tour_items","tour_items_json","notes","message_questions","special_interests");
+        const stableId=pick(row,"inquiry_id","id","source_record_id");
+        const generatedPlaceholderId=/^(?:INQ|G)-\d{14}-\d{4}$/i.test(stableId);
+        return hasRealName||hasContact||hasTripData||Boolean(stableId&&!generatedPlaceholderId);
+      }
+      function normalizeCrmRecord(row){
+        row=row&&row.json?row.json:(row||{});
+        const first=pick(row,"first_name","guest_first_name","First Name","Name");
+        const last=pick(row,"last_name","guest_last_name","Last Name");
+        const full=pick(row,"full_name","guest_name","name","Name")||[first,last].filter(Boolean).join(" ");
+        const rawPhone=cleanPhoneText(pick(row,"phone_number","phone_raw","phone","Phone","guest_phone"));
+        const rawNorm=cleanPhoneText(pick(row,"phone_normalized"));
+        const country=pick(row,"country","home_country","home country","Home Country","Country","country_of_residence","home_country_text");
+        const norm=normalizePhone(rawNorm||rawPhone,country);
+        const phone=norm||rawPhone;
+        const tour=normalizeTourCategory(pick(row,"tour_type","tour_category","preferred_tour_type","interest_category","tour_interest"));
+        const requestedText=pick(row,"requested_date_text","dates_of_visit","requested_date","requested_date_start","preferred_date","tour_date");
+        const range=parseDateRange(requestedText);
+        const requested=toDateValue(pick(row,"requested_date_start","requested_date","preferred_date","tour_date"))||range.start;
+        const requestedEnd=toDateValue(pick(row,"requested_date_end"))||range.end||requested;
+        const notes=dedupeNoteText(uniqueTexts([pick(row,"notes"),pick(row,"message_questions"),pick(row,"special_interests")]).join("\n\n"));
+        const internalNotes=pick(row,"internal_notes");
+        const status=normalizeStatus(pick(row,"status")||"new");
+        const priority=isClosedStatus(status)?"":normalizePriority(pick(row,"priority")||autoPriority(requested));
+        const source=pick(row,"source_type","source_tab")||"manual_whatsapp";
+        const existingCompleted=pick(row,"tour_completed");
+        const tourItems=normalizeTourItems(row);
+        const storedPrimary=primaryTourItemFromRecord(row);
+        const explicitProduct=pick(row,"product_selected")||clean(storedPrimary.product_selected).split(" - ")[0];
+        const explicitDuration=normalizeDuration(pick(row,"duration_preference")||storedPrimary.duration);
+        const explicitService=pick(row,"service_type")||deriveServiceType(storedPrimary.tour||tour);
+        return Object.assign({},row,{inquiry_id:pick(row,"inquiry_id","id","source_record_id")||("INQ-"+stamp()+"-"+lastFour(norm||phone)),guest_id:pick(row,"guest_id")||("G-"+stamp()+"-"+lastFour(norm||phone)),first_name:first,last_name:last,full_name:full||"Guest",phone_number:phone,phone_raw:phone,phone_normalized:norm,email:pick(row,"email","guest_email","Email"),email_normalized:pick(row,"email_normalized")||pick(row,"email","guest_email","Email").toLowerCase(),country:country,home_country:country,source_type:source,source_tab:pick(row,"source_tab")||source,source_page:pick(row,"source_page"),source_row:pick(row,"source_row"),assigned_to:pick(row,"assigned_to"),tour_type:tour,tour_category:tour,interest_category:pick(row,"interest_category","tour_category")||tour,guest_count:pick(row,"guest_count","guest_count_text","number_of_guests"),guest_count_text:pick(row,"guest_count_text","guest_count","number_of_guests"),requested_date:requested,requested_date_start:requested,requested_date_end:requestedEnd,requested_date_text:requestedText||requested,duration_preference:explicitDuration,transportation_needed:normalizeTransportation(pick(row,"transportation_needed")),accommodation_needed:pick(row,"accommodation_needed","accommodation_needs"),pickup_location:pick(row,"pickup_location"),priority:priority,status:status,_source_status:normalizeStatus(pick(row,"status")||"new"),quote_status:pick(row,"quote_status")||"not_sent",payment_status:normalizePayment(pick(row,"payment_status")||"unpaid"),invoice_no:pick(row,"invoice_no","invoice_number"),date_paid:toDateValue(pick(row,"date_paid","payment_received_at")),payment_method:pick(row,"payment_method"),service_type:explicitService,product_selected:explicitProduct||deriveProductCode(storedPrimary.tour),tour_completed:existingCompleted||(status==="completed"?"Yes":"No"),availability_status:pick(row,"availability_status")||"pending",grouping_preference:pick(row,"grouping_preference")||"unknown",grouping_status:pick(row,"grouping_status")||"unmatched",quoted_amount:pick(row,"quoted_amount"),quoted_currency:pick(row,"quoted_currency"),followup_date:toDateValue(pick(row,"followup_date")),notes:notes,internal_notes:internalNotes,tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):pick(row,"tour_count","tour_content"),tour_content:tourItems.length?String(tourItems.length):pick(row,"tour_content","tour_count"),stage_changed_at:pick(row,"stage_changed_at"),last_contacted_at:pick(row,"last_contacted_at"),next_action:pick(row,"next_action"),created_at:pick(row,"created_at"),updated_at:pick(row,"updated_at")});
+      }
+      function dedupeRecords(records){ const seen=new Set(); return records.filter(record=>{ const key=record.inquiry_id; if(!key||seen.has(key)) return false; seen.add(key); return true; }); }
+      function pick(row,...keys){ for(const key of keys){ const value=row[key]; if(value!==undefined&&value!==null&&String(value).trim()!=="") return String(value).trim(); } return ""; }
+      function toDateValue(value){ value=clean(value); if(!value) return ""; const iso=value.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/); if(iso) return iso[1]+"-"+iso[2].padStart(2,"0")+"-"+iso[3].padStart(2,"0"); const us=value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(us) return us[3]+"-"+us[1].padStart(2,"0")+"-"+us[2].padStart(2,"0"); return ""; }
+      function parseDateRange(value){ const text=clean(value); const matches=[...text.matchAll(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/g)].map(m=>m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")); if(matches.length) return {start:matches[0],end:matches[1]||matches[0]}; const us=[...text.matchAll(/(\d{1,2})\/(\d{1,2})\/(\d{4})/g)].map(m=>m[3]+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0")); return {start:us[0]||"",end:us[1]||us[0]||""}; }
+      function importCsvFile(event){ const file=event.target.files&&event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ const rows=parseCsv(String(reader.result||"")); state.records=applyDuplicateFamilyArchives(dedupeRecords(rows.filter(hasMeaningfulCrmData).map(normalizeCrmRecord))); state.selectedId=state.records[0]?state.records[0].inquiry_id:""; saveLocalRecords(); fillForm(getSelected()); render(); showToast("Imported "+state.records.length+" CRM records"); event.target.value=""; }; reader.readAsText(file); }
+      function parseCsv(text){ const rows=[]; let row=[],cell="",quote=false; for(let i=0;i<text.length;i++){ const ch=text[i],next=text[i+1]; if(ch==='"'&&quote&&next==='"'){ cell+='"'; i++; } else if(ch==='"'){ quote=!quote; } else if(ch===","&&!quote){ row.push(cell); cell=""; } else if((ch==="\n"||ch==="\r")&&!quote){ if(ch==="\r"&&next==="\n") i++; row.push(cell); if(row.some(v=>v!=="")) rows.push(row); row=[]; cell=""; } else { cell+=ch; } } row.push(cell); if(row.some(v=>v!=="")) rows.push(row); const headers=(rows.shift()||[]).map(h=>h.trim().replace(/^\ufeff/,"")); return rows.map(values=>Object.fromEntries(headers.map((h,i)=>[h,values[i]||""]))); }
+      function render(){ renderPreparationOverview(); renderBalances();const filtered=getFiltered(); renderGuestHistory(); renderConversationAssistant(); renderPaymentLedger(); renderAttribution(); renderFollowupFieldState(); renderStats(); renderFollowupSummary(); renderQueueState(); renderRecords(els.priorityRecords, getPriorityRecords(filtered).slice(0,6)); renderRecords(els.recordList, filtered); renderQueueNavigator(filtered); renderCalendar(); renderReports(); renderDetail(); renderWorkspaces(); updateItineraryActions(getSelected()); renderPayload(); }
+      let preparationShow="all",preparationRep="all",preparationRows=[];
+      function preparationCanCopy(model){return Boolean(model?.ready)&&state.operationsStatus==="ready"&&!refreshInFlight&&refreshRetryAttempt===0;}
+      function preparationDate(value){const date=toDateValue(value);return date?new Date(date+"T12:00:00Z").toLocaleDateString("en-US",{timeZone:"America/Guayaquil",month:"short",day:"numeric",year:"numeric"}):"Not set";}
+      function preparationServices(record){
+        const saved=normalizeTourItems(record);
+        return calendarEntriesForRecord(record).map(row=>{
+          const item=row._calendar_item||primaryTourItemFromRecord(record),assignment=row._calendar_assignment;
+          const match=assignment&&assignmentMatchedTourItem(assignment,record),savedLinked=saved.find(service=>clean(service.id)===clean(match?.id)),linked=savedLinked||item;
+          const product=clean(item.product_selected||row.product_selected),code=productCodeFromValue(product),type=clean(item.service_type||row.service_type);
+          const provider=assignment&&assignmentCalendarProvider(assignment);
+          const status=normalizeStatus(item.status||row.status);
+          const name=productTitle(product)||clean(item.tour||row.tour_type)||"Service";
+          return {id:item.id,label:name,date:toDateValue(item.date||row.requested_date),itineraryDate:assignment&&savedLinked?toDateValue(savedLinked.date||savedLinked.tour_date):"",status,selected:isBookedCalendarService(row)||(["booked","deposit_paid"].includes(normalizeStatus(record.status))&&!!assignment&&!isClosedStatus(status)),guests:clean(item.guests||record.guest_count),start:clean(assignment?.start_time||linked.start_time),end:clean(assignment?.end_time||linked.end_time),pickup:clean(assignment?.pickup_location||item.pickup_location||record.pickup_location),dropoff:clean(assignment?.dropoff_location||linked.dropoff_location),transport:isTransportItem(item),flexible:!assignment&&(linked.schedule_mode||linked.schedule_type)==="flexible"&&!/^(MBW004|MBW005|MBW006|MBW016)$/.test(code),requiresProvider:!!assignment||/birdwatching|specialty wildlife|wildlife|night walk|transportation/i.test(type)||/^(MBW00[2-9]|MBW010|MBW016|MBW017|OSO|TRANS)/.test(code)||/bird|custom half|custom full/i.test(name),providerName:assignment?(assignment.provider_name==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name)):"",providerPhone:clean(provider?.phone_number||provider?.phone||provider?.whatsapp_number||assignment?.provider_phone),providerInformed:clean(assignment?.provider_informed).toLowerCase()==="yes",providerStatus:clean(assignment?.assignment_status).toLowerCase()};
+        });
+      }
+      function preparationCard(model){
+        const serviceList=items=>`<ul class="prepServices">${items.map(item=>`<li><b>${esc(preparationDate(item.date))} · ${esc(item.start|| (item.flexible?"Flexible":"Time needed"))}</b> — ${esc(item.label)} · ${esc(item.guests||"?")} ${clean(item.guests)==="1"?"guest":"guests"}</li>`).join("")}</ul>`;
+        const rep=normalizeRep(model.rep)==="JPG"?"Juan":normalizeRep(model.rep)==="SS"?"Susana":"Unassigned";
+        return `<article class="prepCard"><div><h3>${esc(model.guest)}</h3><p>${esc(rep)}</p><p>Last contact: ${esc(preparationDate(model.lastContact))}</p><details><summary>Quote & payment</summary><p>Quote: ${esc(labelStatus(model.quote))}<br>Payment: ${esc(labelStatus(model.payment))}<br>Invoice: ${esc(model.invoice||"Not recorded")}</p></details></div><div>${serviceList(model.remaining)}${model.earlier.length?`<details><summary>Earlier services · ${model.earlier.length}</summary>${serviceList(model.earlier)}</details>`:""}${model.missing.length?`<div class="prepMissing"><strong>Missing details · ${model.missing.length}</strong><ul>${model.missing.map(issue=>`<li>${esc(issue)}</li>`).join("")}</ul></div>`:""}<details><summary>WhatsApp draft</summary><textarea readonly aria-label="Confirmation preview for ${esc(model.guest)}">${esc(MbwCrmPreparation.message(model))}</textarea><button type="button" data-preparation-copy="${esc(model.id)}"${model.ready?"":" disabled"}>Copy message</button><p class="prepDraftHint">Review before use · Nothing sent.${model.ready?"":" Resolve missing details before copying."}</p></details></div><div><span class="prepState${model.ready?"":" needs"}">${model.ready?"Details complete":"Needs review"}</span><p class="prepFollowup ${esc(model.urgency)}">Follow-up: ${esc(preparationDate(model.followupDate))}${model.urgency==="overdue"?" · Overdue":model.urgency==="today"?" · Today":""}</p><p>Pre-tour check: ${esc(preparationDate(model.reminderDate))}</p><button type="button" data-preparation-open="${esc(model.id)}">Review booking</button></div></article>`;
+      }
+      function renderPreparationOverview(){
+        if(state.view!=="preparation")return;
+        const cards=document.getElementById("preparationCards");
+        try{
+          if(typeof MbwCrmPreparation==="undefined")throw Error("Preparation overview unavailable. Refresh CRM.");
+          const verified=state.operationsStatus==="ready"&&!refreshInFlight&&refreshRetryAttempt===0;
+          const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Guayaquil",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+          preparationRows=MbwCrmPreparation.queue(state.records.filter(record=>!isArchivedStatus(record)).map(record=>MbwCrmPreparation.build({record:Object.assign({},record,{assigned_to:normalizeRep(record.assigned_to),status:normalizeStatus(record.status)}),services:preparationServices(record),today,verified})));
+          const rows=MbwCrmPreparation.filter(preparationRows,preparationShow,preparationRep);
+          document.getElementById("preparationWarning").textContent=verified?"":"Provider data not verified. Refresh CRM before using a draft.";
+          document.getElementById("preparationSummary").textContent=`${preparationRows.length} bookings · ${preparationRows.filter(row=>row.ready).length} details complete · ${preparationRows.filter(row=>!row.ready).length} need review`;
+          document.getElementById("preparationCount").textContent=`Showing ${rows.length} of ${preparationRows.length} bookings`;
+          document.getElementById("preparationShow").value=preparationShow;document.getElementById("preparationRep").value=preparationRep;
+          cards.innerHTML=rows.map(preparationCard).join("")||`<p>${preparationRows.length?"No bookings match these filters.":"No upcoming confirmed bookings."}</p>`;
+        }catch(error){preparationRows=[];document.getElementById("preparationSummary").textContent="";document.getElementById("preparationCount").textContent="";document.getElementById("preparationWarning").textContent="Preparation data unavailable.";cards.textContent="Preparation overview unavailable. Refresh CRM; other CRM views remain available.";}
+      }
+      const assistantState={key:"",request:0,controller:null,loading:false,result:null,error:""};
+      function assistantRecordKey(){const record=getSelected();return record?JSON.stringify([clean(record.guest_id),clean(record.inquiry_id),clean(record.updated_at)]):"";}
+      function renderConversationAssistant(){
+        const panel=document.getElementById("conversationAssistant"),key=assistantRecordKey();
+        if(key!==assistantState.key){
+          assistantState.controller?.abort();
+          Object.assign(assistantState,{key,request:assistantState.request+1,controller:null,loading:false,result:null,error:""});
+        }
+        panel.hidden=!key;
+        if(!key){panel.innerHTML="";return;}
+        const open=panel.querySelector("details")?.open,result=assistantState.result;
+        panel.innerHTML=`<details${open?" open":""}><summary><strong>Conversation assistant</strong></summary><p class="hint">Summarize recorded messages and draft a reply with your local AI. Review before use; nothing is saved or sent.</p><button type="button" id="summarizeConversationBtn"${assistantState.loading?" disabled":""}>${assistantState.loading?"Summarizing…":"Summarize conversation"}</button><div id="conversationSummaryResult" aria-live="polite">${assistantState.error?`<p role="alert">${esc(assistantState.error)}</p>`:result?`<h3>Conversation summary</h3><p>${esc(result.summary)}</p><h3>Missing information</h3><ul>${result.missing_details.map(item=>`<li>${esc(item)}</li>`).join("")||"<li>None identified; verify against the booking.</li>"}</ul><h3>Suggested reply · Review required</h3><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(result.suggested_reply)}</p><p class="hint">AI suggestions may be incomplete. Nothing has been saved or sent.</p>`:""}</div></details>`;
+      }
+      async function summarizeConversation(){
+        const record=getSelected();if(!record||assistantState.loading)return;
+        const key=assistantRecordKey(),request=++assistantState.request,controller=new AbortController();
+        Object.assign(assistantState,{key,controller,loading:true,result:null,error:""});renderConversationAssistant();
+        const timer=setTimeout(()=>controller.abort(),65000);
+        try{
+          const response=await fetch("/api/crm/summary",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({inquiryId:record.inquiry_id}),signal:controller.signal});
+          if(!response.headers.get("Content-Type")?.includes("application/json"))throw Error("Summary connection returned a page instead of data. Refresh CRM and retry.");
+          const result=await response.json();
+          if(!response.ok)throw Error(result.error||"Summary unavailable. Retry later.");
+          if(typeof result.summary!=="string"||typeof result.suggested_reply!=="string"||!Array.isArray(result.missing_details)||!result.missing_details.every(item=>typeof item==="string"))throw Error("Invalid summary response. Retry later.");
+          if(assistantState.request===request&&assistantRecordKey()===key)assistantState.result=result;
+        }catch(error){
+          if(assistantState.request===request&&assistantRecordKey()===key)assistantState.error=error.name==="AbortError"?"Summary timed out. Retry later; nothing was changed.":error.message;
+        }finally{
+          clearTimeout(timer);
+          if(assistantState.request===request){assistantState.loading=false;assistantState.controller=null;renderConversationAssistant();}
+        }
+      }
+      function getFiltered(){const q=(clean(els.searchInput.value)||clean(els.inlineSearchInput.value)).toLowerCase(),vf=els.viewFilter.value;let arr=state.records.slice();if(q)arr=arr.filter(r=>JSON.stringify(r).toLowerCase().includes(q));const status=clean(els.statusFilter.value)||clean(els.inlineStatusFilter.value),rep=clean(els.repFilter.value)||clean(els.inlineRepFilter.value);if(status)arr=arr.filter(r=>normalizeStatus(r.status)===status);if(rep)arr=arr.filter(r=>rep==="unassigned"?!clean(r.assigned_to):normalizeRep(r.assigned_to)===rep);if(els.quoteFilter.value)arr=arr.filter(r=>r.quote_status===els.quoteFilter.value);if(els.paymentFilter.value)arr=arr.filter(r=>normalizePayment(r.payment_status)===els.paymentFilter.value);const direct={new:"new",contacted:"contacted",planning:"planning",qualified:"qualified",followUp:"follow_up",paymentPending:"payment_pending",completed:"completed",cancelled:"cancelled",didNotBook:"did_not_book",spam:"spam",duplicate:"duplicate"};if(direct[vf])arr=arr.filter(r=>normalizeStatus(r.status)===direct[vf]);if(vf==="upcoming7")arr=arr.filter(r=>!isClosedStatus(r.status)&&isUpcoming7(r));if(vf==="followups")arr=arr.filter(r=>!isClosedStatus(r.status)&&isFollowupDue(r));if(vf==="urgent")arr=arr.filter(r=>!isClosedStatus(r.status)&&normalizePriority(r.priority||autoPriority(r.requested_date))==="urgent");if(vf==="activePipeline")arr=arr.filter(r=>["contacted","planning","qualified","follow_up"].includes(normalizeStatus(r.status)));if(vf==="quoted")arr=arr.filter(r=>!isClosedStatus(r.status)&&(r.quote_status==="sent"||normalizeStatus(r.status)==="quoted"));if(vf==="depositPending")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending"));if(vf==="depositPaid")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid"));if(vf==="booked")arr=arr.filter(r=>normalizeStatus(r.status)==="booked");if(["upcoming7","followups","urgent","new","contacted","planning","qualified","followUp","activePipeline","quoted","depositPending","depositPaid","paymentPending","booked"].includes(vf))arr=arr.filter(r=>!isPastTourRecord(r));if(!q&&vf!=="duplicate"&&status!=="duplicate")arr=arr.filter(r=>!isArchivedStatus(r));const sort=els.sortInput.value||"created_at",dir=els.sortDirectionInput.value==="asc"?1:-1;arr.sort((a,b)=>compareRecords(a,b,sort,dir));return arr;}
+      const getFilteredBase=getFiltered;
+      getFiltered=function(){ let arr=getFilteredBase(); const filter=clean(els.followupFilter&&els.followupFilter.value); if(filter) arr=arr.filter(record=>followupState(record).kind===filter); if((els.viewFilter.value||state.activeQueue)==="followups") arr.sort(compareFollowups); return arr; };
+      function renderStats(){const records=state.records.filter(r=>!isArchivedStatus(r)),operational=records.filter(r=>!isPastTourRecord(r)),active=operational.filter(r=>!isClosedStatus(r.status));const stats={total:records.length,upcoming7:active.filter(isUpcoming7).length,new:operational.filter(r=>normalizeStatus(r.status)==="new").length,contacted:operational.filter(r=>normalizeStatus(r.status)==="contacted").length,planning:operational.filter(r=>normalizeStatus(r.status)==="planning").length,qualified:operational.filter(r=>normalizeStatus(r.status)==="qualified").length,followUp:operational.filter(r=>normalizeStatus(r.status)==="follow_up").length,quoted:active.filter(r=>r.quote_status==="sent"||normalizeStatus(r.status)==="quoted").length,depositPending:active.filter(r=>normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending").length,depositPaid:active.filter(r=>normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid").length,paymentPending:active.filter(r=>normalizePayment(r.payment_status)==="payment_pending"||normalizeStatus(r.status)==="payment_pending").length,booked:operational.filter(r=>normalizeStatus(r.status)==="booked").length,completed:records.filter(r=>normalizeStatus(r.status)==="completed").length,cancelled:records.filter(r=>normalizeStatus(r.status)==="cancelled").length,didNotBook:records.filter(r=>normalizeStatus(r.status)==="did_not_book").length,spam:records.filter(r=>normalizeStatus(r.status)==="spam").length};els.statTotal.textContent=stats.total;els.statUpcoming.textContent=stats.upcoming7;els.statNew.textContent=stats.new;els.statContacted.textContent=stats.contacted;els.statPlanning.textContent=stats.planning;els.statQualified.textContent=stats.qualified;els.statFollowUp.textContent=stats.followUp;els.statPaymentPending.textContent=stats.paymentPending;els.statQuoted.textContent=stats.quoted;els.statDepositPending.textContent=stats.depositPending;els.statDepositPaid.textContent=stats.depositPaid;els.statBooked.textContent=stats.booked;els.statCompleted.textContent=stats.completed;els.statCancelled.textContent=stats.cancelled;els.statDidNotBook.textContent=stats.didNotBook;document.getElementById("statSpam").textContent=stats.spam;document.querySelectorAll("[data-stat-key]").forEach(el=>{el.textContent=stats[el.dataset.statKey]??0;});}
+      function newYorkDate(){ const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()); const map=Object.fromEntries(parts.map(part=>[part.type,part.value])); return map.year+"-"+map.month+"-"+map.day; }
+      function isoDayNumber(value){ const iso=toDateValue(value); if(!iso) return null; const parts=iso.split("-").map(Number); return Date.UTC(parts[0],parts[1]-1,parts[2])/86400000; }
+      function followupState(record){ const status=normalizeStatus(record&&record.status); if(isClosedStatus(status)) return {kind:"suppressed",label:""}; const date=toDateValue(record&&record.followup_date); if(!date) return {kind:"none",label:"No follow-up"}; const diff=isoDayNumber(date)-isoDayNumber(newYorkDate()); const display=parseDateOnly(date).toLocaleDateString("en-US",{month:"short",day:"numeric"}); if(diff<0) return {kind:"overdue",label:"Overdue · "+Math.abs(diff)+" day"+(Math.abs(diff)===1?"":"s"),date}; if(diff===0) return {kind:"today",label:"Follow up today",date}; return {kind:"upcoming",label:"Follow up "+display,date}; }
+      function compareFollowups(a,b){ const left=followupState(a),right=followupState(b),rank={overdue:0,today:1,upcoming:2,none:3,suppressed:4}; return (rank[left.kind]-rank[right.kind])||(isoDayNumber(left.date)||Number.MAX_SAFE_INTEGER)-(isoDayNumber(right.date)||Number.MAX_SAFE_INTEGER)||String(a.full_name||"").localeCompare(String(b.full_name||"")); }
+      function followupBadgeHtml(record,interactive){ const item=followupState(record); if(["none","suppressed"].includes(item.kind)) return ""; return `<span class="followupBadge ${item.kind}" ${interactive?'role="button" tabindex="0"':''} title="Open this record">${esc(item.label)}</span>`; }
+      function attributionValue(record,...keys){ for(const key of keys){ const value=record&&record[key]; if(value!==undefined&&value!==null&&clean(value)) return clean(value); } return ""; }
+      function attributionTone(value,type){ const key=clean(value).toLowerCase(); if(type==="quality"){if(key.includes("verified"))return"verified";if(key.includes("partial"))return"partial";return"unavailable";} if(key.includes("google"))return"google";if(/facebook|instagram|meta|fb/.test(key))return"meta";if(key.includes("tiktok"))return"tiktok";if(key.includes("whatsapp"))return"whatsapp";if(/chatgpt|openai/.test(key))return"openai";if(key.includes("direct"))return"direct";return"unknown"; }
+      function brandSourceCode(record){
+        const explicit=attributionValue(record,"brand_source","lead_brand_code","source_brand","lead_brand","site_context","source_site").toLowerCase();
+        const sourcePage=attributionValue(record,"source_page","first_touch_landing_page","last_touch_landing_page").toLowerCase();
+        const product=attributionValue(record,"product_selected").toUpperCase();
+        const tour=[record&&record.tour_type,record&&record.tour_category,record&&record.interest_category,record&&record.service_type].map(clean).join(" ").toLowerCase();
+        const signal=[explicit,sourcePage,tour].join(" ");
+        if(/\bcat\b|chocoandinotours|choc[oó] andino/.test(signal)||product.startsWith("CAT-")) return "CAT";
+        if(/\bmt\b|mindotours/.test(signal)||product.startsWith("MT-")) return "MT";
+        if(/\bmbw\b|mindobirdwatching|mindo bird watching/.test(signal)||product.startsWith("MBW")) return "MBW";
+        return "";
+      }
+      function brandBadgeHtml(record){ const code=brandSourceCode(record); const names={MT:"Mindo Tours",CAT:"Chocó Andino Tours"}; return code&&code!=="MBW"?`<span class="brandBadge brandBadge--${code.toLowerCase()}" title="Originating brand: ${esc(names[code])}">${code}</span>`:""; }
+      function attributionBadgesHtml(record){ const source=attributionValue(record,"last_touch_source","utm_source","first_touch_source"); const medium=attributionValue(record,"last_touch_medium","utm_medium","first_touch_medium"); const quality=attributionValue(record,"attribution_quality","attribution_status","attribution_quality_status"); const badges=[[source,"Source",attributionTone(source,"source")],[medium,"Medium",attributionTone(source,"source")],[quality,"Quality",attributionTone(quality,"quality")]].filter(item=>item[0]).slice(0,3); const attribution=badges.map(item=>`<span class="attributionBadge sourceBadge--${item[2]}" title="${esc(item[1])}">${esc(item[0])}</span>`).join(""); return attribution?`<div class="attributionBadges">${attribution}</div>`:""; }
+      function renderFollowupFieldState(){ if(!els.followupFieldState) return; const record=Object.assign({},getSelected()||{},{followup_date:els.followupInput.value,status:els.recordStatusInput.value}); const item=followupState(record); els.followupFieldState.innerHTML=["none","suppressed"].includes(item.kind)?(item.kind==="suppressed"?'<span class="attributionEmpty">No urgency for closed records</span>':'<span class="attributionEmpty">No follow-up scheduled</span>'):followupBadgeHtml(record,false); }
+      function renderFollowupSummary(){ if(!els.statFollowUp) return; const active=state.records.filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)&&!isPastTourRecord(record)); const due=active.filter(record=>followupState(record).kind==="today").length; const overdue=active.filter(record=>followupState(record).kind==="overdue").length; els.statFollowUp.innerHTML=String(due+overdue)+(due||overdue?`<small>${due} due · ${overdue} overdue</small>`:""); document.querySelectorAll("[data-stat-key=followUp]").forEach(el=>el.textContent=String(due+overdue)); }
+      function renderAttribution(){ if(!els.attributionPanelBody) return; const record=getSelected(); if(!record){els.attributionSummary.textContent="Select a record";els.attributionPanelBody.innerHTML='<p class="attributionEmpty">Select a CRM record to review its attribution.</p>';return;} const groups=[
+        ["Attribution quality",["attribution_quality","attribution_status","attribution_quality_status"]],["Contact intent ID",["contact_intent_id"]],["Visitor ID",["website_visitor_id","visitor_id"]],["Session ID",["website_session_id","session_id"]],
+        ["First source",["first_touch_source"]],["First medium",["first_touch_medium"]],["First campaign",["first_touch_campaign"]],["First content",["first_touch_content"]],["First term",["first_touch_term"]],["First landing page",["first_touch_landing_page","first_landing_page"]],["First referrer",["first_touch_referrer","first_referrer"]],["First date",["first_touch_date","first_touch_at"]],
+        ["Last source",["last_touch_source"]],["Last medium",["last_touch_medium"]],["Last campaign",["last_touch_campaign"]],["Last content",["last_touch_content"]],["Last term",["last_touch_term"]],["Last landing page",["last_touch_landing_page","last_landing_page"]],["Last referrer",["last_touch_referrer","last_referrer"]],["Last date",["last_touch_date","last_touch_at"]],
+        ["UTM source",["utm_source"]],["UTM medium",["utm_medium"]],["UTM campaign",["utm_campaign"]],["UTM content",["utm_content"]],["UTM term",["utm_term"]],["gclid",["gclid"]],["gbraid",["gbraid"]],["wbraid",["wbraid"]],["fbclid",["fbclid"]]
+      ]; const rows=groups.map(([label,keys])=>({label,value:attributionValue(record,...keys)})).filter(item=>item.value); els.attributionSummary.textContent=rows.length?rows.length+" fields available":"No attribution available"; els.attributionPanelBody.innerHTML=rows.length?`<div class="attributionGrid">${rows.map(item=>{const isQuality=item.label==="Attribution quality",isSource=/source$/i.test(item.label),tone=isQuality?attributionTone(item.value,"quality"):(isSource?attributionTone(item.value,"source"):"");return`<div class="attributionItem"><b>${esc(item.label)}</b><span class="${tone?`sourceBadge sourceBadge--${tone}`:""}">${esc(item.value)}</span></div>`}).join("")}</div>`:'<p class="attributionEmpty">No attribution values are available for this record.</p>'; }
+      function renderRecords(target, records){
+        target.innerHTML=records.length?records.map(r=>{
+          const status=normalizeStatus(r.status||"new");
+          const priority=normalizePriority(r.priority||autoPriority(r.requested_date));
+          const date=r.requested_date?(r._pipeline_list?`<span class="pipelineDateShort" title="${esc(r.requested_date)}">${esc(formatPipelineDate(r.requested_date))}</span>`:urgentDateHtml(r.requested_date)):"<span class=\"missingDate\">No date</span>";
+          const priorityPill=!isClosedStatus(status)&&priority?`<span class="pill priority-${esc(priority)}">${esc(priority)}</span>`:"";
+          const service=serviceVisual(r);
+          const itinerary=recordItineraryItems(r);
+          const chips=itinerary.slice(0,3).map(item=>{ const label=serviceItemLabel(item); return `<span class="recordServiceChip"><b aria-hidden="true">${label.icon}</b><span>${esc(label.label)}</span></span>`; }).join("");
+          const extra=itinerary.length>3?`<span class="recordServiceCount">+${itinerary.length-3}</span>`:"";
+          const services=itinerary.length>1?`<div class="recordServices"><span class="recordServiceCount">${itinerary.length} services</span>${chips}${extra}</div><details class="recordServiceDetails"><summary>View itinerary</summary><div class="recordServiceRows">${itinerary.map(item=>{ const label=serviceItemLabel(item); return `<div class="recordServiceRow"><strong>${label.icon} ${esc(item.tour||label.label)}</strong><span>${urgentDateHtml(item.date||item.tour_date||r.requested_date||"No date")}</span><span>${esc(item.guests||r.guest_count||"?")} guests</span></div>`; }).join("")}</div></details>`:"";
+          const attribution=attributionBadgesHtml(r);
+          const brand=brandBadgeHtml(r);
+          const followup=followupBadgeHtml(r,true);
+          return `<article class="record ${r.inquiry_id===state.selectedId?"active":""}" data-id="${esc(r.inquiry_id)}"><div><h3><span>${esc(r.full_name||"Guest")} ${esc(reportCountryFlag(r.country||r.home_country))}</span>${brand}${repBadgeHtml(r.assigned_to)}</h3><p><span class="serviceInline" title="${esc(service.fullLabel)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span>${esc(service.label)}</span> | ${date} | ${esc(r.guest_count||"?")} guest${String(r.guest_count)==="1"?"":"s"}${clean(r.country||r.home_country)?" · "+esc(r.country||r.home_country):""}</p>${services}${attribution}${readinessChipsHtml(r,"compact")}<span class="recordMeta">Created ${esc(formatDateTime(r.created_at))} · Updated ${esc(formatDateTime(r.updated_at||r.created_at))}</span></div><div class="recordBadges">${followup}${priorityPill}<span class="pill ${statusClass(status)}">${esc(labelStatus(status))}</span></div></article>`;
+        }).join(""):"<p class='hint'>No matching records.</p>";
+        target.querySelectorAll(".record").forEach(el=>el.addEventListener("click",event=>{ if(event.target.closest("details")) return; selectRecord(el.dataset.id); }));
+        target.querySelectorAll(".followupBadge[tabindex]").forEach(badge=>badge.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectRecord(badge.closest(".record").dataset.id);}}));
+      }
+      function selectRecord(id){resetStripeDeposits();state.selectedId=id;resetCommunicationContext(getSelected());state.interactions=[];state.assignments=[];state.bookings=[];state.payments=[];state.editingPaymentId="";updateQueueCursor();fillForm(getSelected());clearAssignmentForm();els.assignedToInput.value=normalizeRep(getSelected()?.assigned_to);renderPaymentLedger();setView("intake");window.scrollTo({top:0,behavior:"smooth"});}
+      function countStatus(status){ return state.records.filter(r=>normalizeStatus(r.status)===status).length; }
+      function normalizeStatus(value){ const status=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(status==="confirmed") return "booked"; if(status==="closed") return "did_not_book"; if(status==="active") return "contacted"; return status||"new"; }
+      function normalizeRep(value){const rep=clean(value).toUpperCase();if(["J","JUAN","JPG"].includes(rep))return"JPG";if(["S","SUSANA","SS"].includes(rep))return"SS";return"";}
+      function repBadgeHtml(value,showName=false){const rep=normalizeRep(value),name=rep==="JPG"?"Juan":rep==="SS"?"Susana":"Unassigned",kind=rep==="JPG"?"juan":rep==="SS"?"susana":"unassigned";return `<span class="repBadge ${kind}" title="Assigned to ${name}" role="img" aria-label="Assigned to ${name}"></span>${showName?`<span class="repName">${name}</span>`:""}`;}
+      function yesValue(value){ return ["1","true","yes","y"].includes(clean(value).toLowerCase()); }
+      function isArchivedStatus(value){ return value&&typeof value==="object"?(yesValue(value.is_archived)||normalizeStatus(value.status)==="duplicate"):normalizeStatus(value)==="duplicate"; }
+      function guestIdentityMatch(a,b){ const guestA=clean(a&&a.guest_id),guestB=clean(b&&b.guest_id); if(guestA&&guestB) return guestA===guestB; const emailA=comparableEmail(a||{}),emailB=comparableEmail(b||{}); if(emailA&&emailB) return emailA===emailB; const phoneA=comparablePhone(a||{}),phoneB=comparablePhone(b||{}); return !!phoneA&&phoneA===phoneB; }
+      function interactionMatchesRecord(item,record){ if(!item||!record) return false; const guestA=clean(item.guest_id),guestB=clean(record.guest_id); if(guestA&&guestB&&guestA!==guestB)return false; const inquiryA=clean(item.inquiry_id),inquiryB=clean(record.inquiry_id); if(inquiryA&&inquiryB&&inquiryA===inquiryB) return true; if(guestA&&guestB&&guestA===guestB) return true; const bookingA=clean(item.booking_id),bookingB=clean(record.booking_id); return !!bookingA&&bookingA===bookingB; }
+      function assignmentBelongsToRecord(item,record){ if(!item||!record) return false; const inquiryA=clean(item.inquiry_id),inquiryB=clean(record.inquiry_id); if(inquiryA&&inquiryB&&inquiryA===inquiryB) return true; const guestA=clean(item.guest_id),guestB=clean(record.guest_id); if(guestA&&guestB&&guestA===guestB) return true; const bookingA=clean(item.booking_id),bookingB=clean(record.booking_id); if(bookingA&&bookingB&&bookingA===bookingB) return true; return !inquiryA&&!guestA&&clean(item.guest_name)&&clean(record.full_name)&&clean(item.guest_name).toLowerCase()===clean(record.full_name).toLowerCase(); }
+      function currentInteractionRows(record){ const seen=new Set(),merged=[]; (state.interactions||[]).forEach(item=>{ const key=clean(item.interaction_id)||[item.inquiry_id,item.guest_id,item.occurred_at,item.interaction_type,item.note].map(clean).join("|"); if(seen.has(key)) return; seen.add(key); merged.push(item); }); return merged.filter(item=>interactionMatchesRecord(item,record)).filter(item=>clean(item.is_deleted).toLowerCase()!=="yes"); }
+      function assignmentTimeMinutes(value,fallback=1440){const match=clean(value).toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)?/);if(!match)return fallback;let hour=Number(match[1]);if(match[3]==="am"&&hour===12)hour=0;if(match[3]==="pm"&&hour<12)hour+=12;return hour*60+Number(match[2]);}
+      function assignmentSortKey(item){ return [clean(item.service_date),String(assignmentTimeMinutes(item.start_time)).padStart(4,"0"),String(assignmentTimeMinutes(item.end_time)).padStart(4,"0"),clean(item.assignment_id)].join(" "); }
+      function sortAssignmentsAscending(rows){ return rows.slice().sort((a,b)=>assignmentSortKey(a).localeCompare(assignmentSortKey(b))); }
+      function sortAssignmentsDescending(rows){ return rows.slice().sort((a,b)=>assignmentSortKey(b).localeCompare(assignmentSortKey(a))); }
+      function currentAssignmentRows(record){ const seen=new Set(),merged=[]; [...(state.assignments||[]),...(state.allAssignments||[])].forEach(item=>{ const key=clean(item.assignment_id)||[item.inquiry_id,item.guest_id,item.service_date,item.start_time,item.service_type,item.provider_name,item.pickup_location].map(clean).join("|"); if(seen.has(key)) return; seen.add(key); merged.push(item); }); return sortAssignmentsAscending(merged.filter(item=>assignmentBelongsToRecord(item,record)).filter(item=>clean(item.is_deleted).toLowerCase()!=="yes").filter(item=>normalizeStatus(item.assignment_status)!=="cancelled")); }
+      function daysUntilTour(record){ const d=parseDateOnly(record.requested_date||record.requested_date_start); if(!d) return Number.POSITIVE_INFINITY; const today=parseDateOnly(datePlusDays(0)); return Math.floor((d-today)/86400000); }
+      function isUrgentReadiness(record){ const days=daysUntilTour(record); return days>=0&&days<=1; }
+      function hasConfirmationInteraction(record){ return currentInteractionRows(record).some(item=>/confirmation|confirmaci[oó]n|confirmed tour|tour confirmed|confirmaci[oó]n enviada|sent confirmation/i.test([item.interaction_type,item.note].map(clean).join(" "))); }
+      function hasConfirmationSignal(record,assignments,informed){ const status=normalizeStatus(record.status),payment=normalizePayment(record.payment_status); const financiallyCleared=["paid","deposit_paid","no_payment_required"].includes(payment); const booked=["booked","completed"].includes(status); const referenced=Boolean(clean(record.invoice_no)); const coverage=upcomingProviderReadiness(record); const providersDone=assignments.length&&informed>=assignments.length&&!coverage.missing&&!coverage.incomplete; return hasConfirmationInteraction(record)||Boolean(clean(record.itinerary_status).match(/sent|generated|complete|completed|confirmed/i))||(booked&&financiallyCleared&&referenced&&providersDone); }
+      function readinessChipHtml(item){ return `<span class="readinessChip readinessChip--${esc(item.state)}" title="${esc(item.title||item.label)}">${esc(item.label)}</span>`; }
+      function readinessChipsHtml(record,mode){ if(!record) return ""; const items=readinessItems(record); const chosen=mode==="compact"?items.filter(item=>item.compact).slice(0,4):items; if(!chosen.length) return ""; return `<div class="${mode==="compact"?"recordReadinessCompact":"recordReadiness"}">${chosen.map(readinessChipHtml).join("")}</div>`; }
+      function upcomingProviderReadiness(record){
+        if(isClosedStatus(record.status))return {total:0,missing:0,incomplete:0,informed:0};
+        const today=datePlusDays(0),booked=["booked","deposit_paid"].includes(normalizeStatus(record.status));
+        const rows=calendarEntriesForRecord(record).filter(row=>!isClosedStatus(row.status)&&(!toDateValue(row.requested_date)||toDateValue(row.requested_date)>=today)&&(isBookedCalendarService(row)||(booked&&row._calendar_assignment)));
+        let missing=0,incomplete=0,informed=0;
+        rows.forEach(row=>{
+          const assignment=row._calendar_assignment;
+          const provider=assignment&&clean(assignment.provider_name==="Other"?assignment.provider_name_other:assignment.provider_name);
+          if(!assignment||!provider||/^(unassigned|pending|tbd)$/i.test(provider)){missing++;return;}
+          if(normalizeStatus(assignment.assignment_status)==="pending"||!toDateValue(assignment.service_date)||!clean(assignment.start_time)||!clean(assignment.end_time)||!clean(assignment.pickup_location))incomplete++;
+          if(clean(assignment.provider_informed).toLowerCase()==="yes")informed++;
+        });
+        return {total:rows.length,missing,incomplete,informed};
+      }
+      function readinessItems(record){
+        const status=normalizeStatus(record.status);
+        const quote=clean(record.quote_status).toLowerCase();
+        const payment=normalizePayment(record.payment_status);
+        const urgent=isUrgentReadiness(record);
+        const closed=isClosedStatus(status);
+        const accepted=quote==="accepted"||["deposit_pending","deposit_paid","payment_pending","booked","completed"].includes(status)||["deposit_pending","deposit_paid","payment_pending","paid"].includes(payment);
+        const quoteSent=quote==="sent"||quote==="accepted"||status==="quoted"||accepted;
+        const noPaymentRequired=payment==="no_payment_required";
+        const invoiceSent=Boolean(clean(record.invoice_no));
+        const bookedish=["deposit_pending","deposit_paid","payment_pending","booked","completed"].includes(status)||["deposit_pending","deposit_paid","payment_pending","paid"].includes(payment);
+        const assignments=currentAssignmentRows(record);
+        const informed=assignments.filter(item=>String(item.provider_informed).toLowerCase()==="yes").length;
+        let paymentLabel="Payment later",paymentState="muted";
+        if(noPaymentRequired){ paymentLabel="No payment required"; paymentState="complete"; }
+        else if(payment==="paid"){ paymentLabel="Paid"; paymentState="complete"; }
+        else if(payment==="deposit_paid"){ paymentLabel="Deposit paid"; paymentState="complete"; }
+        else if(payment==="deposit_pending"||status==="deposit_pending"){ paymentLabel="Deposit pending"; paymentState=urgent?"urgent":"pending"; }
+        else if(accepted||bookedish){ paymentLabel="Payment pending"; paymentState=urgent?"urgent":"pending"; }
+        const coverage=upcomingProviderReadiness(record);
+        const providerState=closed?"muted":coverage.total?(!coverage.missing&&!coverage.incomplete&&coverage.informed===coverage.total?"complete":(urgent?"urgent":"pending")):!assignments.length?(bookedish&&urgent?"urgent":"muted"):(informed>=assignments.length?"complete":(urgent?"urgent":"pending"));
+        const providerLabel=coverage.missing?`Providers missing: ${coverage.missing}`:coverage.incomplete?`Schedule incomplete: ${coverage.incomplete}`:coverage.total?`Providers informed ${coverage.informed}/${coverage.total}`:!assignments.length?(bookedish?"Providers needed":"Providers later"):`Providers ${informed}/${assignments.length}`;
+        const confirmationSent=hasConfirmationSignal(record,assignments,informed);
+        const operationsPending=state.operationsStatus&&state.operationsStatus!=="ready";
+        if(operationsPending)return [
+          {key:"providers",label:state.operationsStatus==="loading"?"Loading provider coverage…":"Provider coverage unavailable",state:"pending",compact:true,title:state.operationsError||"Waiting for assignment data"}
+        ];
+        const confirmationState=confirmationSent?"complete":(bookedish?(urgent?"urgent":"pending"):"muted");
+        return [
+          {key:"quote",label:quoteSent?"Quote sent":"Quote not sent",state:quoteSent?"complete":(status==="new"||closed?"muted":"pending"),compact:false,title:"Guest quote / proposal status"},
+          {key:"accepted",label:accepted?"Accepted":"Not accepted",state:accepted?"complete":(quoteSent?"pending":"muted"),compact:accepted||quoteSent,title:"Guest accepted the quoted plan"},
+          {key:"invoice",label:noPaymentRequired?(invoiceSent?"Collab reference":"Collab reference needed"):(invoiceSent?"Invoice sent":(accepted?"Invoice needed":"Invoice later")),state:invoiceSent?"complete":(accepted?(urgent?"urgent":"pending"):"muted"),compact:accepted||invoiceSent,title:noPaymentRequired?"Internal collaboration reference":"Invoice number exists on the record"},
+          {key:"payment",label:paymentLabel,state:paymentState,compact:paymentState!=="muted",title:"Payment or deposit status"},
+          {key:"providers",label:providerLabel,state:providerState,compact:coverage.total>0||assignments.length>0||(bookedish&&urgent),title:"Upcoming confirmed services: provider, schedule, pickup and informed status"},
+          {key:"confirmation",label:confirmationSent?"Confirmation ready":"Confirmation pending",state:confirmationState,compact:confirmationSent||(bookedish&&urgent),title:"Detected from confirmation interaction notes or completed booking operations"}
+        ].filter(item=>!(closed&&item.state==="muted"));
+      }
+      function renderGuestHistory(){
+        if(!els.guestHistory) return;
+        const current=getSelected()||(els.modeInput&&els.modeInput.value!=="create"?formRecord():null);
+        if(!current){ els.guestHistory.hidden=true; els.guestHistory.innerHTML=""; return; }
+        const trips=state.records.filter(row=>guestIdentityMatch(row,current)&&!isArchivedStatus(row)).sort((a,b)=>String(b.requested_date||b.requested_date_start||"").localeCompare(String(a.requested_date||a.requested_date_start||"")));
+        if(!trips.length){ els.guestHistory.hidden=true; els.guestHistory.innerHTML=""; return; }
+        const completed=trips.filter(row=>normalizeStatus(row.status)==="completed").length;
+        els.guestHistory.hidden=false;
+        els.guestHistory.innerHTML=`<div class="guestHistoryHead"><strong>Guest history</strong><span>${trips.length} trip${trips.length===1?"":"s"} · ${completed} completed</span></div><div class="selectedRepSummary">${repBadgeHtml(current.assigned_to,true)}</div>${readinessChipsHtml(current,"full")}<div class="guestHistoryTrips">${trips.slice(0,6).map(row=>{const items=recordItineraryItems(row),summary=items.map(item=>serviceItemLabel(item).icon+" "+(item.tour||serviceItemLabel(item).label)).join(" · ");return `<span class="guestHistoryTrip">${urgentDateHtml(row.requested_date||row.requested_date_start||"No date")} · ${esc(labelStatus(row.status))}<small class="guestHistoryTripServices">${esc(summary||row.tour_type||row.service_type||"Tour")}</small></span>`;}).join("")}</div>`;
+      }
+      function money(value){ const amount=Number(String(value??"").replace(/[^0-9.-]/g,"")); return Number.isFinite(amount)?"$"+amount.toFixed(2):"—"; }
+      let depositLookupGeneration=0;
+      function resetStripeDeposits(){depositLookupGeneration++;const out=document.getElementById("stripeDepositResults");if(out)out.textContent="Select an inquiry, then check its deposits.";const button=document.getElementById("checkStripeDeposits");if(button)button.disabled=false;}
+      async function checkStripeDeposits(){
+        const id=clean(getSelected()?.inquiry_id),out=document.getElementById("stripeDepositResults"),button=document.getElementById("checkStripeDeposits");
+        if(!id){out.textContent="Save or select an inquiry first.";return;}
+        const generation=++depositLookupGeneration;button.disabled=true;out.textContent="Checking live Stripe deposits…";
+        try{
+          const r=await fetch("/api/crm/deposits?inquiry_id="+encodeURIComponent(id),{cache:"no-store"}),data=await r.json();
+          if(!r.ok||!data.ok||!Array.isArray(data.deposits))throw Error(data.error||"Deposit lookup unavailable.");
+          if(generation!==depositLookupGeneration||clean(getSelected()?.inquiry_id)!==id)return;
+          out.innerHTML=data.deposits.length?data.deposits.map(d=>{
+            const receipt=/^https:\/\/(pay|dashboard)\.stripe\.com\//.test(String(d.receipt_url||""))?`<a href="${esc(d.receipt_url)}" target="_blank" rel="noopener noreferrer">Receipt</a>`:"Receipt unavailable";
+            const amount=Number(d.amount);const formatted=Number.isFinite(amount)?"$"+amount.toLocaleString("en-US",{maximumFractionDigits:2}):"—";
+            return `<div class="paymentLedgerRow"><strong>${esc(formatted)} ${esc(d.currency)} · ${esc(labelStatus(d.status))}</strong><span>Paid: ${esc(d.paid_at?displayDate(d.paid_at):"Not recorded")}</span><span>${d.applied_invoice_id?"Applied to "+esc(d.applied_invoice_no||d.applied_invoice_id):"Not applied to an invoice"}${Number(d.refunded_amount)>0?" · Refunded: "+esc(money(d.refunded_amount)):""}</span><span>${receipt}</span><small>${esc(d.payment_intent_id)}</small></div>`;
+          }).join(""):"No linked Stripe deposits found. Historical payments without this inquiry ID require manual reconciliation.";
+          if(data.more)out.insertAdjacentHTML("beforeend",'<p class="hint">Showing the first 100 results. Review the full history in Stripe.</p>');
+        }catch{if(generation===depositLookupGeneration)out.textContent="Unable to verify Stripe deposits. Retry; no payment status was changed.";}
+        finally{if(generation===depositLookupGeneration)button.disabled=false;}
+      }
+      function invoiceIsNonPayable(item){return ["void","voided","cancelled","canceled","uncollectible"].includes(normalizePayment(item.payment_status));}
+      async function refreshStripeInvoices(){
+        const id=clean(getSelected()?.inquiry_id),button=document.getElementById("refreshStripeInvoices");
+        if(!id){showToast("Save or select an inquiry first.");return;}
+        button.disabled=true;button.textContent="Checking Stripe…";
+        try{
+          const response=await fetch("/api/crm/invoices",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({inquiry_id:id})});
+          const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||"Invoice status check failed.");
+          if(clean(getSelected()?.inquiry_id)===id)await loadGuestWorkspace();
+          showToast(result.updates.length?"Invoice statuses updated. No invoice sent.":"Invoice statuses checked. No changes needed.");
+        }catch(error){showToast(error.message||"Invoice status check unavailable. Retry safely.");}
+        finally{button.disabled=false;button.textContent="Refresh Stripe invoices";}
+      }
+      function renderPaymentLedger(){
+        if(!els.paymentLedgerList) return;
+        const record=getSelected();
+        if(!record){ setPaymentSummaryLocked(false); els.paymentLedgerSummary.textContent="No ledger entries"; els.paymentLedgerList.innerHTML='<div class="paymentLedgerEmpty">Save or select an inquiry to load its invoices.</div>'; els.paymentLedgerWarning.hidden=true; return; }
+        const rows=(state.payments||[]).filter(item=>(record.guest_id&&clean(item.guest_id)===clean(record.guest_id))||clean(item.inquiry_id)===clean(record.inquiry_id)).sort(comparePaymentRecency);
+        const total=rows.filter(item=>!invoiceIsNonPayable(item)).reduce((sum,item)=>sum+Number(item.total_amount_paid||item.additional_amount_paid||item.deposit_amount_paid||0),0);
+        els.paymentLedgerSummary.textContent=rows.length?`${rows.length} invoice${rows.length===1?"":"s"} saved · ${money(total)} received`:"No ledger entries";
+        els.paymentLedgerList.innerHTML=rows.length?rows.map(item=>paymentLedgerRowHtml(item,record)).join(""):'<div class="paymentLedgerEmpty">No ledger entry exists yet. Stripe and Zelle payments will appear here without replacing earlier invoices.</div>';
+        const thisInquiry=rows.filter(item=>clean(item.inquiry_id)===clean(record.inquiry_id)&&!invoiceIsNonPayable(item));
+        setPaymentSummaryLocked(thisInquiry.length>0);
+        els.paymentLedgerWarning.hidden=thisInquiry.length<2;
+        els.paymentLedgerWarning.textContent=thisInquiry.length>1?`${thisInquiry.length} separate invoices are safely attached to this booking. Edit the exact invoice row you need; the fields above show only the latest payment.`:"";
+      }
+      function setPaymentSummaryLocked(locked){
+        els.invoiceNoInput.readOnly=locked;
+        els.datePaidInput.readOnly=locked;
+        els.paymentMethodInput.disabled=locked;
+        const title=locked?"Edit the individual invoice in the ledger below.":"No ledger invoice exists yet; this compatibility summary can be entered manually.";
+        [els.invoiceNoInput,els.datePaidInput,els.paymentMethodInput].forEach(field=>field.title=title);
+      }
+      function paymentRowId(item){
+        const existing=clean(item.payment_id);
+        if(existing) return existing;
+        const source=clean(item.invoice_id||item.transaction_id||item.invoice_no||item.created_at||"payment");
+        return "PAY-"+source.replace(/[^A-Za-z0-9_-]/g,"-");
+      }
+      function paymentLedgerRowHtml(item,record){
+        const id=paymentRowId(item);
+        if(invoiceIsNonPayable(item)) return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||id)}</strong><span>${esc(labelStatus(item.payment_status))} · ${normalizePayment(item.payment_status)==="uncollectible"?"Review before collection":"Not payable"}</span><span>Historical invoice retained. Guest booking and deposits are unchanged.</span></div>`;
+        if(state.editingPaymentId===id){
+          const method=clean(item.payment_method),status=normalizePayment(item.payment_status||"unpaid");
+          const methods=["Stripe","Zelle","Bank Transfer EC","Bank Transfer US","Cash","Venmo","PayPal","Marketing Collaboration","Other"];
+          const statuses=["unpaid","deposit_pending","deposit_paid","payment_pending","partial","paid","refunded"];
+          return `<div class="paymentLedgerRow"><div class="paymentLedgerEdit" data-payment-id="${esc(id)}"><div class="field"><label>Invoice number</label><input data-payment-field="invoice_no" value="${esc(item.invoice_no||"")}" /></div><div class="field"><label>Payment date</label><input data-payment-field="payment_date" type="date" value="${esc(toDateValue(item.payment_date||item.created_at))}" /></div><div class="field"><label>Payment method</label><select data-payment-field="payment_method"><option value=""></option>${methods.map(value=>`<option${value===method?" selected":""}>${esc(value)}</option>`).join("")}</select></div><div class="field"><label>Payment status</label><select data-payment-field="payment_status">${statuses.map(value=>`<option value="${esc(value)}"${value===status?" selected":""}>${esc(labelStatus(value))}</option>`).join("")}</select></div><p class="paymentLedgerEditNote">This updates the CRM ledger and latest-payment summary. It does not rename the original Stripe invoice or accounting-sheet row.</p><div class="paymentLedgerEditActions"><button type="button" data-payment-action="cancel">Cancel</button><button class="primary" type="button" data-payment-action="save">Save Invoice Changes</button></div></div></div>`;
+        }
+        return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||item.payment_id||"Payment")}</strong><span>${esc(displayDate(item.payment_date||item.created_at)||"Date pending")}</span><span>${esc(labelStatus(item.payment_status||"unpaid"))} · ${esc(item.payment_method||"Method pending")}</span><span>${esc(money(item.total_amount_paid||item.additional_amount_paid||item.deposit_amount_paid||0))}${clean(item.inquiry_id)===clean(record.inquiry_id)?" · This booking":" · Prior booking"}</span><button type="button" data-payment-action="edit" data-payment-id="${esc(id)}">Edit</button></div>`;
+      }
+      function comparePaymentRecency(a,b){
+        const dateCompare=String(b.payment_date||"").localeCompare(String(a.payment_date||""));
+        if(dateCompare) return dateCompare;
+        const createdCompare=String(b.created_at||b.updated_at||"").localeCompare(String(a.created_at||a.updated_at||""));
+        if(createdCompare) return createdCompare;
+        return String(b.invoice_no||"").localeCompare(String(a.invoice_no||""),undefined,{numeric:true,sensitivity:"base"});
+      }
+      async function handlePaymentLedgerAction(event){
+        const button=event.target.closest("[data-payment-action]");
+        if(!button) return;
+        const action=button.dataset.paymentAction;
+        if(action==="edit"){ state.editingPaymentId=button.dataset.paymentId||""; renderPaymentLedger(); return; }
+        if(action==="cancel"){ state.editingPaymentId=""; renderPaymentLedger(); return; }
+        if(action!=="save") return;
+        const editor=button.closest("[data-payment-id]");
+        const id=clean(editor&&editor.dataset.paymentId);
+        const original=(state.payments||[]).find(item=>paymentRowId(item)===id);
+        if(!original){ showToast("Payment record could not be found"); return; }
+        const value=name=>clean(editor.querySelector(`[data-payment-field="${name}"]`)?.value);
+        const invoiceNo=value("invoice_no"),paymentDate=value("payment_date");
+        if(!invoiceNo){ showToast("Enter an invoice number"); return; }
+        if(!paymentDate){ showToast("Choose the payment date"); return; }
+        if(invoiceNo!==clean(original.invoice_no)&&!confirm("Change this CRM invoice number? This will not rename the original Stripe invoice or its accounting-sheet rows.")) return;
+        const payment={...original,payment_id:clean(original.payment_id)||id,invoice_no:invoiceNo,payment_date:paymentDate,payment_method:value("payment_method"),payment_status:value("payment_status")};
+        button.disabled=true; button.textContent="Saving…";
+        try{
+          const result=await api("upsert_payment",{payment,record:payment});
+          const saved=result.record||result.payment||result;
+          state.payments=(state.payments||[]).map(item=>paymentRowId(item)===id?{...item,...payment,...saved}:item);
+          state.editingPaymentId="";
+          await syncLatestPaymentSummary(payment.inquiry_id);
+          await loadGuestWorkspace();
+          showToast(`${invoiceNo} updated without replacing other invoices`);
+        }catch(error){ showToast(error.message); button.disabled=false; button.textContent="Save Invoice Changes"; }
+      }
+      async function syncLatestPaymentSummary(inquiryId){
+        const id=clean(inquiryId),selected=getSelected();
+        if(!id) return;
+        const record=(state.records||[]).find(item=>clean(item.inquiry_id)===id)||(clean(selected?.inquiry_id)===id?selected:null);
+        if(!record) return;
+        const latest=(state.payments||[]).filter(item=>clean(item.inquiry_id)===clean(record.inquiry_id)&&!invoiceIsNonPayable(item)).sort(comparePaymentRecency)[0];
+        if(!latest) return;
+        // Only patch the payment summary; cached guest and tour fields may be older than the server.
+        const patch={inquiry_id:id,invoice_no:clean(latest.invoice_no),date_paid:toDateValue(latest.payment_date||latest.created_at),payment_method:clean(latest.payment_method),payment_status:normalizePayment(latest.payment_status||record.payment_status)};
+        const result=await api("update_inquiry",{record:patch,inquiry_row:patch});
+        const saved=extractRecords(result).find(item=>clean(item.inquiry_id)===id);
+        if(!saved) throw new Error("Invoice saved, but the inquiry payment summary was not verified. Refresh CRM before continuing.");
+        const updated={...record,...saved};
+        upsert(updated);
+        if(clean(updated.inquiry_id)===clean(state.selectedId)) fillForm(updated);
+        saveLocalRecords();
+      }
+      function isClosedStatus(status){ return ["completed","cancelled","did_not_book","spam","duplicate"].includes(normalizeStatus(status)); }
+      function normalizePayment(value){ const payment=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(payment==="deposit_sent") return "deposit_pending"; return payment||"unpaid"; }
+      function normalizePriority(value){ const priority=clean(value).toLowerCase(); return ["urgent","high","normal"].includes(priority)?priority:""; }
+      function autoPriority(value){ const d=parseDateOnly(value); if(!d) return "normal"; const today=parseDateOnly(datePlusDays(0)); const diff=(d-today)/86400000; if(diff>=0&&diff<=3) return "urgent"; if(diff>=0&&diff<=7) return "high"; return "normal"; }
+      function normalizeTourCategory(value){const original=clean(value),tour=original.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(!tour)return"";if(tour.includes("multi")||tour.includes("varios dias"))return"Multi Day";if(tour.includes("transport"))return"Transportation";if(tour.includes("accommod")||tour.includes("alojamiento"))return"Accommodation";if(tour.includes("tour + activ")||tour.includes("tour and activ")||tour.includes("combination")||tour.includes("combinacion"))return"Tour + Activity";if(tour.includes("activit")||tour.includes("actividades")||tour.includes("night")||tour.includes("nocturna"))return"Activity";if(tour.includes("bird")||tour.includes("half")||tour.includes("full")||tour.includes("medio dia")||tour.includes("dia completo")||tour.includes("quito a mindo")||tour.includes("specialty")||tour.includes("insect")||tour.includes("macro")||tour.includes("bear")||tour.includes("oso")||tour.includes("andean")||tour.includes("jewels"))return"Birdwatching";if(tour.includes("not sure")||tour.includes("no estoy seguro")||tour==="other")return"Other";return original;}
+      function normalizeDuration(value){ const duration=clean(value).toLowerCase(); if(duration.includes("full")) return "Full Day"; if(duration.includes("half")) return "Half Day"; if(duration.includes("flex")) return "Flexible"; return ""; }
+      function normalizeTransportation(value){ const transport=clean(value).toLowerCase(); if(transport==="yes") return "Yes"; if(transport==="no") return "No"; return "Unknown"; }
+      function statusClass(status){ return "status-"+normalizeStatus(status).replace(/_/g,"-"); }
+      function labelStatus(status){const value=normalizeStatus(status),labels={new:"New",contacted:"Contacted",planning:"Planning",qualified:"Qualified",quoted:"Quoted",follow_up:"Follow Up",deposit_pending:"Deposit Pending",deposit_paid:"Deposit Paid",payment_pending:"Payment Pending",booked:"Booked",completed:"Completed",cancelled:"Cancelled",did_not_book:"Did Not Book",spam:"Spam",duplicate:"Duplicate",unpaid:"Unpaid",paid:"Paid",no_payment_required:"No Payment Required",refunded:"Refunded",not_sent:"Not Sent",sent:"Sent",accepted:"Accepted",declined:"Declined"};return labels[value]||value.replace(/_/g," ").replace(/\b\w/g,char=>char.toUpperCase());}
+      function compareRecords(a,b,sort,dir){if(sort==="priority"){const ranked=statusRank(a)-statusRank(b);if(ranked)return dir===-1?-ranked:ranked;return compareCreated(a,b,dir);}if(sort==="requested_date")return compareDates(a,b,dir);if(sort==="created_at"||sort==="updated_at")return compareTimestamp(a[sort],b[sort],dir);if(sort==="assigned_to")return repName(a.assigned_to).localeCompare(repName(b.assigned_to))*dir||compareCreated(a,b,-1);return String(a[sort]||"").localeCompare(String(b[sort]||""),undefined,{numeric:true,sensitivity:"base"})*dir;}
+      function compareTimestamp(a,b,dir){const at=Date.parse(a||"")||0,bt=Date.parse(b||"")||0;return(at-bt)*dir;}
+      function compareCreated(a,b,dir){return compareTimestamp(a.created_at||a.updated_at,b.created_at||b.updated_at,dir);}
+      function repName(value){return normalizeRep(value)==="JPG"?"Juan":normalizeRep(value)==="SS"?"Susana":"Unassigned";}
+      function compareDates(a,b,dir){ const av=dateSortValue(a.requested_date); const bv=dateSortValue(b.requested_date); if(av!==bv) return (av-bv)*dir; return String(a.full_name||"").localeCompare(String(b.full_name||"")); }
+      function dateSortValue(value){ if(!value) return Number.POSITIVE_INFINITY; const d=parseDateOnly(value); return d?d.getTime():Number.POSITIVE_INFINITY; }
+      function statusRank(record){const priorityRanks={urgent:0,high:1,normal:2},status=normalizeStatus(record.status),statusRanks={new:0,contacted:1,follow_up:2,planning:3,qualified:4,quoted:5,deposit_pending:6,deposit_paid:7,payment_pending:8,booked:9,completed:10,cancelled:11,did_not_book:12,duplicate:13},priority=isClosedStatus(status)?"":normalizePriority(record.priority||autoPriority(record.requested_date));return(priorityRanks[priority]??2)*20+(statusRanks[status]??50);}
+      function isPastTourRecord(record){
+        const assignments=currentAssignmentRows(record);
+        const hasUnfinishedAssignment=assignments.some(item=>normalizeStatus(item.assignment_status)!=="completed");
+        if(normalizeStatus(record.status)==="booked"&&hasUnfinishedAssignment) return false;
+        const dates=calendarEntriesForRecord(record).map(entry=>toDateValue(entry.requested_date||entry.requested_date_start)).concat(assignments.map(item=>toDateValue(item.service_date))).filter(Boolean);
+        if(!dates.length) return false;
+        const today=toDateValue(datePlusDays(0));
+        return dates.every(date=>date<today);
+      }
+      function getPriorityRecords(records){
+        if(["completed","cancelled","didNotBook","duplicate"].includes(state.activeQueue)) return records;
+        const eligible=(state.activeQueue==="all"?records.filter(r=>!isClosedStatus(r.status)):records).filter(r=>!isPastTourRecord(r));
+        const newRecords=eligible.filter(r=>normalizeStatus(r.status)==="new");
+        const remaining=eligible.filter(r=>normalizeStatus(r.status)!=="new");
+        return newRecords.concat(remaining);
+      }
+      function renderQueueState(){ document.querySelectorAll("[data-queue]").forEach(btn=>btn.classList.toggle("activeQueue",btn.dataset.queue===state.activeQueue)); if(els.lastRefreshText) els.lastRefreshText.textContent="Last refreshed: "+(state.lastRefresh?formatDateTime(state.lastRefresh):"Not yet"); }
+      function renderQueueNavigator(records){ if(!els.queueNav) return; records=records||getFiltered(); const queue=queueLabel(els.viewFilter.value||state.activeQueue||"all"); const selected=getSelected(); const idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx>=0) state.queueCursorIndex=idx; const total=records.length; const position=idx>=0?idx+1:Math.min(Math.max(state.queueCursorIndex+1,1),Math.max(total,1)); els.queueNavEyebrow.textContent=queue+" queue"; if(!selected){ els.queueNavText.textContent=total?("No record selected · "+total+" in queue"):"No records in this queue"; } else if(idx>=0){ els.queueNavText.textContent=(selected.full_name||"Selected record")+" · "+position+" / "+total; } else { els.queueNavText.textContent=(selected.full_name||"Saved record")+" moved out of "+queue+" · "+total+" remaining"; } els.queuePrevBtn.disabled=!total || (idx>=0?idx<=0:state.queueCursorIndex<=0); els.queueNextBtn.disabled=!total || (idx>=0?idx>=total-1:state.queueCursorIndex>=total); }
+      function navigateQueue(direction){ const records=getFiltered(); if(!records.length){ showToast("No records in this queue"); return; } let idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx<0) idx=Math.min(Math.max(state.queueCursorIndex,0),records.length-1); else idx=idx+direction; idx=Math.min(Math.max(idx,0),records.length-1); state.queueCursorIndex=idx; selectRecord(records[idx].inquiry_id); showToast((idx+1)+" / "+records.length+" in "+queueLabel(els.viewFilter.value||state.activeQueue||"all")); }
+      function updateQueueCursor(){ const records=getFiltered(); const idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx>=0) state.queueCursorIndex=idx; }
+      function queueLabel(value){const labels={all:"All Records",upcoming7:"Upcoming 7",followups:"Follow-ups",urgent:"Urgent",new:"New",contacted:"Contacted",planning:"Planning",qualified:"Qualified",followUp:"Follow Up",activePipeline:"Active Pipeline",quoted:"Quoted",depositPending:"Deposit Pending",depositPaid:"Deposit Paid",paymentPending:"Payment Pending",booked:"Booked",completed:"Completed",cancelled:"Cancelled",didNotBook:"Did Not Book",duplicate:"Duplicate"};return labels[value]||"Current";}
+      function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
+      function fillForm(r){ resetCommunicationContext(r); if(!r)return; referenceMatch=null; referenceGeneration++; if(els.referenceIdInput)els.referenceIdInput.value=r.contact_intent_id||""; referenceStatus(r.contact_intent_id?"Saved reference; checked again on save.":"Paste an ID or a guest message containing one Reference / Referencia."); if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); if(els.assignmentTourItem)renderAssignmentTourItems(els.assignmentTourItem.value); state.tourFormSnapshot=tourFormSnapshot(); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
+      const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);fillQuoteOptions(record);updateItineraryActions(record);state.toolHandoffSnapshot=toolHandoffSnapshot()};
+      function renderDetail(){ const r=getSelected()||{}; renderTable(els.detailTable,r,["inquiry_id","guest_id","is_archived","archive_reason","full_name","phone_number","email","tour_type","guest_count","requested_date","priority","status","quote_status","payment_status","availability_status"]); renderTable(els.actionTable,r,["archived_at","completed_date","invoice_no","date_paid","payment_method","service_type","product_selected","followup_date","last_contacted_at","duration_preference","transportation_needed","pickup_location","grouping_preference","grouping_status","quoted_amount","quote_sent_at","quote_sent_channel","quote_notes","notes","internal_notes","created_at","updated_at"]); }
+      function workspaceContextHtml(record,label){ return `<div class="workspaceContext"><div><h2>${esc(record.full_name||"Guest")}</h2><p>${esc(label)} · ${esc(record.inquiry_id||"")} · ${esc(record.phone_number||record.email||"No contact information")}</p></div><span class="contextBadge">${esc(labelStatus(record.status||"new"))}</span></div>`; }
+      function renderWorkspaces(){
+        const record=getSelected();
+        if(els.activityWorkspace) els.activityWorkspace.hidden=!record;
+        if(els.operationsWorkspace) els.operationsWorkspace.hidden=!record;
+        if(els.communicationSectionMeta) els.communicationSectionMeta.textContent=record?`${state.interactions.length} interaction${state.interactions.length===1?"":"s"}`:"Select guest";
+        if(els.assignmentsSectionMeta) els.assignmentsSectionMeta.textContent=record?`${state.assignments.length} assignment${state.assignments.length===1?"":"s"}`:"Select guest";
+        if(!record) return;
+        renderInteractions(); renderAssignments(); renderProviderOptions();
+        if(state.workspaceLoading||state.workspaceError){
+          const message=state.workspaceLoading?"Refreshing guest details…":state.workspaceError;
+          els.assignmentList.insertAdjacentHTML("afterbegin",`<div class="loadingState" role="status">${esc(message)}</div>`);
+          if(!state.assignments.length){els.assignmentCount.textContent=state.workspaceLoading?"Loading assignments…":"Assignments unavailable — retry Refresh CRM";els.assignmentList.innerHTML=`<div class="loadingState" role="status">${esc(message)}</div>`;}
+        }
+      }
+      async function loadGuestWorkspace(){
+        const record=getSelected();if(!record)return;
+        const requestedId=record.inquiry_id,generation=++state.workspaceGeneration;
+        state.workspaceLoading=true;state.workspaceError="";
+        state.interactions=currentInteractionRows(record);state.assignments=currentAssignmentRows(record);renderWorkspaces();
+        const results=await Promise.allSettled([
+          api("list_interactions",{guest_id:record.guest_id||"",inquiry_id:record.guest_id?"":record.inquiry_id||""}),
+          api("list_assignments",{guest_id:record.guest_id||"",inquiry_id:""}),
+          api("list_bookings",{guest_id:record.guest_id||"",inquiry_id:""}),
+          api("list_payments",{guest_id:record.guest_id||"",inquiry_id:""})
+        ]);
+        if(state.selectedId!==requestedId||generation!==state.workspaceGeneration)return;
+        const keys=["interactions","assignments","bookings","payments"];
+        results.forEach((result,index)=>{if(result.status==="fulfilled")state[keys[index]]=extractRecords(result.value).filter(item=>index!==0||interactionMatchesRecord(item,record));});
+        if(results[1].status==="fulfilled"){
+          const scoped=state.assignments;
+          state.allAssignments=(state.allAssignments||[]).filter(item=>!assignmentBelongsToRecord(item,record)).concat(scoped);
+        }
+        state.workspaceLoading=false;
+        state.workspaceError=results.some(result=>result.status==="rejected")?"Some guest details could not be refreshed. Existing assignments are retained; retry Refresh CRM.":"";
+        render();
+        if(state.workspaceError)showToast(state.workspaceError);
+      }
+      function localDateTimeValue(date){ const d=date?new Date(date):new Date(); if(Number.isNaN(d.getTime())) return ""; const off=d.getTimezoneOffset(); return new Date(d.getTime()-off*60000).toISOString().slice(0,16); }
+      function resetCommunicationContext(record){
+        const key=record?JSON.stringify([clean(record.guest_id),clean(record.inquiry_id)]):"";
+        if(state.communicationContextKey===key)return;
+        state.communicationContextKey=key;state.communicationGeneration++;
+        state.workspaceGeneration++;state.workspaceLoading=false;state.workspaceError="";
+        state.interactions=[];clearInteractionForm();els.saveInteractionBtn.disabled=false;
+        if(els.operationsMessage)els.operationsMessage.value="";
+      }
+      function clearInteractionForm(){ state.interactionRetryRecord=null; els.saveInteractionBtn.dataset.id=""; els.saveInteractionBtn.dataset.pendingFollowupDate=""; if(els.interactionSaveStatus)els.interactionSaveStatus.textContent=""; els.interactionDirection.value="incoming"; els.interactionChannel.value="whatsapp"; els.interactionType.value="guest_message"; els.interactionOccurredAt.value=localDateTimeValue(); els.interactionNote.value=""; els.interactionFollowup.checked=false; els.interactionFollowupAt.value=""; els.interactionFollowupFields.hidden=true; els.saveInteractionBtn.textContent="Save Interaction"; }
+      function renderInteractions(){
+        const rows=currentInteractionRows(getSelected()); els.interactionCount.textContent=rows.length?`${rows.length} interaction${rows.length===1?"":"s"}, newest first.`:"No interactions recorded yet.";
+        els.interactionTimeline.innerHTML=rows.length?rows.map(item=>`<article class="timelineItem ${esc(item.direction||"internal")}"><div class="timelineHead"><span class="timelineTitle">${esc(labelStatus(item.direction||"internal"))} · ${esc(labelStatus(item.channel||"other"))}</span><time class="timelineTime">${esc(formatDateTime(item.occurred_at||item.created_at))}</time></div><p>${esc(item.note||"")}</p><div class="timelineMeta"><div class="timelineTags"><span class="miniTag">${esc(labelStatus(item.interaction_type||"other"))}</span><span class="miniTag">${esc(item.created_by||"")}</span>${String(item.followup_required).toLowerCase()==="yes"?`<span class="miniTag">Follow-up ${esc(displayDate(item.followup_at))}</span>`:""}</div><div class="timelineActions"><button class="miniAction" type="button" data-interaction-action="edit" data-id="${esc(item.interaction_id)}">Edit</button><button class="miniAction danger" type="button" data-interaction-action="delete" data-id="${esc(item.interaction_id)}">Delete</button></div></div></article>`).join(""):'<div class="workspaceEmpty">Log the first email, message, call, or internal note.</div>';
+      }
+      async function saveInteraction(){
+        if(els.saveInteractionBtn.disabled) return;
+        const record=getSelected(); if(!record){showToast("Select a guest first");return;}
+        const generation=state.communicationGeneration,isCurrent=()=>state.communicationGeneration===generation&&state.selectedId===record.inquiry_id;
+        const note=clean(els.interactionNote.value); if(!note){showToast("Enter a communication note");return;}
+        const required=els.interactionFollowup.checked;
+        const followupValue=clean(els.interactionFollowupAt.value);
+        if(required&&(!followupValue||Number.isNaN(new Date(followupValue).getTime()))){showToast("Choose a valid follow-up date before saving");return;}
+        const previous=state.interactions.find(item=>item.interaction_id===els.saveInteractionBtn.dataset.id)||(state.interactionRetryRecord?.interaction_id===els.saveInteractionBtn.dataset.id?state.interactionRetryRecord:null);
+        if(els.saveInteractionBtn.dataset.id&&(!previous||!interactionMatchesRecord(previous,record))){showToast("Select this guest’s communication again before editing; the previous entry is no longer available.");return;}
+        const changed=!previous||String(previous.followup_required).toLowerCase()!=="yes"||localDateTimeValue(previous.followup_at)!==followupValue;
+        const followupDate=required&&(changed||clean(els.saveInteractionBtn.dataset.pendingFollowupDate))?toDateValue(followupValue):"";
+        const interaction={interaction_id:els.saveInteractionBtn.dataset.id||"",guest_id:record.guest_id||"",inquiry_id:record.inquiry_id||"",booking_id:record.booking_id||"",occurred_at:els.interactionOccurredAt.value?new Date(els.interactionOccurredAt.value).toISOString():"",direction:els.interactionDirection.value,channel:els.interactionChannel.value,interaction_type:els.interactionType.value,note,created_by:els.interactionStaff.value,followup_required:required?"Yes":"No",followup_at:required?new Date(followupValue).toISOString():""};
+        let interactionSaved=false,savedId=interaction.interaction_id;
+        const statusMessage=message=>{if(!isCurrent())return;if(els.interactionSaveStatus)els.interactionSaveStatus.textContent=message;showToast(message);};
+        els.saveInteractionBtn.disabled=true;
+        try{
+          const result=await api(interaction.interaction_id?"update_interaction":"create_interaction",{interaction});
+          interactionSaved=true;
+          savedId=clean(result.record?.interaction_id)||savedId;
+          if(isCurrent()){
+            state.interactionRetryRecord={...interaction,interaction_id:savedId};
+            els.saveInteractionBtn.dataset.id=savedId;
+            els.saveInteractionBtn.dataset.pendingFollowupDate=followupDate;
+          }
+          if(followupDate){
+            // Patch only the queue date; do not save unrelated, possibly stale form fields.
+            const patch={inquiry_id:record.inquiry_id,followup_date:followupDate};
+            await api("update_inquiry",{record:patch,inquiry_row:patch});
+            state.records=state.records.map(item=>item.inquiry_id===record.inquiry_id?Object.assign({},item,{followup_date:followupDate}):item);
+            if(isCurrent()&&toDateValue(els.followupInput.value)===toDateValue(record.followup_date))els.followupInput.value=followupDate;
+            saveLocalRecords();render();
+          }
+          if(isCurrent())clearInteractionForm();
+          if(isCurrent())await loadGuestWorkspace();
+          statusMessage(followupDate?"Communication saved; inquiry follow-up updated to "+followupDate:!required&&previous&&String(previous.followup_required).toLowerCase()==="yes"?"Communication follow-up removed. Inquiry follow-up unchanged; review it in Guest & Inquiry if needed.":"Communication saved");
+        }catch(error){
+          if(interactionSaved){
+            if(isCurrent()){
+              if(savedId)els.saveInteractionBtn.textContent="Retry Follow-up Update";
+              else clearInteractionForm();
+            }
+            if(isCurrent())await loadGuestWorkspace();
+            statusMessage(savedId?"Communication saved, but inquiry follow-up was not updated. Retry Follow-up Update to try again.":"Communication saved, but inquiry follow-up was not updated. Set Follow-up in Guest & Inquiry and save the record.");
+          }else statusMessage(error.message);
+        }finally{if(isCurrent())els.saveInteractionBtn.disabled=false;}
+      }
+      async function handleInteractionAction(event){ const button=event.target.closest("[data-interaction-action]");if(!button)return;const item=state.interactions.find(row=>row.interaction_id===button.dataset.id);if(!item||!interactionMatchesRecord(item,getSelected())){showToast("Select a communication entry for the current guest.");return;}if(button.dataset.interactionAction==="edit"){if(els.saveInteractionBtn.dataset.id!==item.interaction_id){state.interactionRetryRecord=null;els.saveInteractionBtn.dataset.pendingFollowupDate="";if(els.interactionSaveStatus)els.interactionSaveStatus.textContent="";}els.saveInteractionBtn.dataset.id=item.interaction_id;els.interactionDirection.value=item.direction||"internal";els.interactionChannel.value=item.channel||"other";els.interactionType.value=item.interaction_type||"other";els.interactionStaff.value=item.created_by||"JPG";els.interactionOccurredAt.value=localDateTimeValue(item.occurred_at);els.interactionNote.value=item.note||"";els.interactionFollowup.checked=String(item.followup_required).toLowerCase()==="yes";els.interactionFollowupFields.hidden=!els.interactionFollowup.checked;els.interactionFollowupAt.value=localDateTimeValue(item.followup_at);els.saveInteractionBtn.textContent="Update Interaction";window.scrollTo({top:els.activityWorkspace.offsetTop-20,behavior:"smooth"});return;}if(!confirm("Remove this interaction from the timeline?"))return;try{await api("delete_interaction",{interaction:{...item}});await loadGuestWorkspace();showToast("Interaction removed");}catch(error){showToast(error.message);} }
+      function providerServiceAliases(service){ const normalized=clean(service).toLowerCase(); if(normalized==="activity"||normalized==="other activities") return ["activity","other activities"]; if(normalized==="accommodation") return ["accommodation"]; return [normalized]; }
+      function providerSortName(name){ const normalized=clean(name).toLowerCase(); return normalized==="niecer"?"neicer":normalized; }
+      function providerDisplayOrder(service){ const normalized=clean(service).toLowerCase(); if(normalized==="birdwatching") return ["chicho","neicer","anderson","javier","other"]; if(normalized==="activity"||normalized==="other activities") return ["chicho","neicer","mindo green","other"]; if(normalized==="accommodation") return ["mindo glambird","other"]; return []; }
+      function normalizeProviderRow(row,service){ const name=clean(row.provider_name); return {...row,provider_name:name==="Niecer"?"Neicer":name,service_type:row.service_type||service}; }
+      function fallbackProvidersForService(service){
+        const normalized=clean(service).toLowerCase();
+        if(normalized==="activity"||normalized==="other activities") return [
+          {provider_name:"Chicho",provider_role:"activity_provider",service_type:service,is_default:"Yes"},
+          {provider_name:"Neicer",provider_role:"activity_provider",service_type:service,is_default:"No"},
+          {provider_name:"Mindo Green",provider_role:"activity_provider",service_type:service,is_default:"No"},
+          {provider_name:"Other",provider_role:"activity_provider",service_type:service,is_default:"No"}
+        ];
+        if(normalized==="birdwatching") return [
+          {provider_name:"Chicho",provider_role:"guide",service_type:service,is_default:"Yes"},
+          {provider_name:"Neicer",provider_role:"guide",service_type:service,is_default:"No"},
+          {provider_name:"Anderson",provider_role:"guide",service_type:service,is_default:"No"},
+          {provider_name:"Other",provider_role:"guide",service_type:service,is_default:"No"}
+        ];
+        if(normalized==="accommodation") return [
+          {provider_name:"Mindo Glambird",provider_role:"accommodation",service_type:service,is_default:"Yes"},
+          {provider_name:"Other",provider_role:"accommodation",service_type:service,is_default:"No"}
+        ];
+        return [{provider_name:"Other",provider_role:service==="Transportation"?"driver":"other",service_type:service,is_default:"No"}];
+      }
+      function providersForService(service){
+        const aliases=providerServiceAliases(service);
+        const source=state.providers.filter(row=>aliases.includes(clean(row.service_type).toLowerCase())).filter(row=>clean(row.is_active).toLowerCase()!=="no").map(row=>normalizeProviderRow(row,service));
+        const fallback=fallbackProvidersForService(service).map(row=>normalizeProviderRow(row,service));
+        const guideServices=["birdwatching","night walk","specialty wildlife","transportation","activity","other activities"];
+        if(guideServices.includes(clean(service).toLowerCase())){fallback.push({provider_name:"Javier",provider_role:service==="Transportation"?"driver":"guide",service_type:service,is_default:"No"});}
+        if(service==="Night Walk"&&!fallback.some(row=>row.provider_name==="Neicer"))fallback.push({provider_name:"Neicer",provider_role:"guide",service_type:service,is_default:"Yes"});
+        if(service==="Specialty Wildlife"&&!fallback.some(row=>row.provider_name==="Pending"))fallback.push({provider_name:"Pending",provider_role:"guide",service_type:service,is_default:"Yes"});
+        const merged=[];
+        [...source,...fallback].forEach(row=>{ const key=providerSortName(row.provider_name); if(!key||merged.some(item=>providerSortName(item.provider_name)===key)) return; merged.push(row); });
+        if(!merged.some(row=>providerSortName(row.provider_name)==="other")) merged.push(...fallback.filter(row=>providerSortName(row.provider_name)==="other"));
+        const order=providerDisplayOrder(service);
+        merged.sort((a,b)=>{
+          if(order.length){ const ai=order.indexOf(providerSortName(a.provider_name)),bi=order.indexOf(providerSortName(b.provider_name)); return (ai<0?999:ai)-(bi<0?999:bi)||clean(a.provider_name).localeCompare(clean(b.provider_name)); }
+          const ao=providerSortName(a.provider_name)==="other"?1:0,bo=providerSortName(b.provider_name)==="other"?1:0; return ao-bo||clean(a.provider_name).localeCompare(clean(b.provider_name));
+        });
+        return merged;
+      }
+      function quarterHourOptions(includeBlank=true){const options=[];if(includeBlank)options.push('<option value="">Not set</option>');for(let minutes=0;minutes<1440;minutes+=15){const hours=Math.floor(minutes/60),minute=minutes%60,value=String(hours).padStart(2,"0")+":"+String(minute).padStart(2,"0"),label=formatTime(value);options.push(`<option value="${value}">${label}</option>`);}return options.join("");}
+      function populateAssignmentTimeOptions(){els.assignmentTime.innerHTML=quarterHourOptions();els.assignmentEndTime.innerHTML=quarterHourOptions();}
+      function defaultAssignmentStart(service){return service==="Birdwatching"?"05:00":service==="Night Walk"?"19:00":"";}
+      function applyAssignmentServiceDefaults(){els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";}
+      function defaultAssignmentProvider(service){return service==="Birdwatching"?"Chicho":service==="Night Walk"?"Neicer":service==="Specialty Wildlife"?"Pending":"";}
+      function assignmentPickupFor(item,record=getSelected()){return clean(item?.pickup_location)||clean(record?.pickup_location)||clean(recordItineraryItems(record).find(service=>clean(service.id)==="primary")?.pickup_location);}
+      function renderProviderOptions(resetDefault=false){ const current=resetDefault?"":els.assignmentProvider.value;const rows=providersForService(els.assignmentService.value);els.assignmentProvider.innerHTML=rows.map(row=>`<option value="${esc(row.provider_name)}" data-id="${esc(row.provider_id||"")}" data-role="${esc(row.provider_role||"")}" ${String(row.is_default).toLowerCase()==="yes"?"data-default=\"1\"":""}>${esc(row.provider_name)}</option>`).join("");const defaultName=defaultAssignmentProvider(els.assignmentService.value);const preferred=rows.find(row=>row.provider_name===defaultName)||rows.find(row=>String(row.is_default).toLowerCase()==="yes");els.assignmentProvider.value=rows.some(row=>row.provider_name===current)?current:(preferred?.provider_name||rows[0]?.provider_name||"Other");els.assignmentProviderOtherWrap.hidden=els.assignmentProvider.value!=="Other"; }
+      function assignmentServiceForRecord(record){const text=(clean(record?.service_type)+" "+clean(record?.product_selected)+" "+clean(record?.tour_type)).toLowerCase();if(text.includes("night"))return "Night Walk";if(text.includes("transport"))return "Transportation";if(/bear|specialty wildlife|\boso\d/.test(text))return "Specialty Wildlife";if(text&&/activity|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|horseback|biking|swing/.test(text))return "Activity";return "Birdwatching";}
+      function assignmentTourItems(record=getSelected()){return recordItineraryItems(record).flatMap(expandRecognizedAdditionalItem).filter(item=>normalizeStatus(item.status)!=="cancelled");}
+      function assignmentItemService(item){const service=assignmentServiceForRecord(item);return service==="Activity"&&/night/i.test(clean(item?.tour)+" "+clean(item?.product_selected))?"Night Walk":service;}
+      function assignmentReference(note){return clean(note).match(/(?:^|\n)Service reference:\s*([^\n]+)/i)?.[1]?.trim()||"";}
+      function assignmentNoteWithReference(note,reference){const base=clean(note).replace(/(?:^|\n)Service reference:\s*[^\n]+/ig,"").trim();return [base,reference?"Service reference: "+reference:""].filter(Boolean).join("\n");}
+      function selectedAssignmentTourItem(){const id=clean(els.assignmentTourItem?.value);return assignmentTourItems().find(item=>clean(item.id)===id)||null;}
+      function renderAssignmentTourItems(selected=""){const items=assignmentTourItems();if(!els.assignmentTourItem)return;els.assignmentTourItem.innerHTML='<option value="">Unlinked / custom assignment</option>'+items.map(item=>{const label=serviceItemLabel(item);return `<option value="${esc(item.id)}">${esc([displayDate(item.date),item.product_selected||label.label].filter(Boolean).join(" · "))}</option>`;}).join("");els.assignmentTourItem.value=items.some(item=>clean(item.id)===clean(selected))?clean(selected):"";}
+      function applySelectedAssignmentTourItem(){const item=selectedAssignmentTourItem();if(!item)return;const schedule=productSchedule(item.product_selected||item.tour);els.assignmentService.value=assignmentItemService(item);renderProviderOptions(true);els.assignmentDate.value=item.date||els.assignmentDate.value;els.assignmentTime.value=nearestQuarterTime(item.start_time)||schedule.start_time||defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value=nearestQuarterTime(item.end_time)||schedule.end_time;els.assignmentPickup.value=assignmentPickupFor(item);els.assignmentDropoff.value=clean(item.dropoff_location);els.assignmentDirection.value=clean(item.trip_direction);}
+      function assignmentProductForService(service,item,savedProduct){
+        const candidate=clean(item?.product_selected||item?.tour||savedProduct);
+        return candidate&&assignmentItemService(item||{product_selected:candidate})===service?candidate:service;
+      }
+      function assignmentMatchedTourItem(item,record=getSelected()){const items=assignmentTourItems(record),reference=clean(item.service_item_id)||assignmentReference(item.internal_note);const linked=reference&&items.find(tour=>clean(tour.id)===reference);if(linked&&assignmentItemService(linked)===item.service_type)return linked;const product=productCodeFromValue(item.product_selected),exact=product&&items.filter(tour=>assignmentItemService(tour)===item.service_type&&productCodeFromValue(tour.product_selected||tour.tour)===product&&(!item.service_date||tour.date===item.service_date));if(exact?.length===1)return exact[0];const compatible=items.filter(tour=>(!item.service_date||tour.date===item.service_date)&&assignmentItemService(tour)===item.service_type);return compatible.length===1?compatible[0]:null;}
+      function assignmentServiceDisplay(item,record=getSelected()){
+        const service=clean(item.service_type)||"Service";
+        const compatible=value=>{
+          const code=productCodeFromValue(value),expected=MBW_PRODUCT_SERVICE_BY_CODE[code];
+          return expected&&(expected===service||(service==="Night Walk"&&code==="MBW016")||(service==="Specialty Wildlife"&&expected==="Wildlife"))?clean(value):"";
+        };
+        const own=compatible(item.product_selected);
+        if(own) return {product:own,label:productTitle(own),source:"assignment"};
+        const raw=clean(item.product_selected);
+        const knownWrong=Boolean(MBW_PRODUCT_SERVICE_BY_CODE[productCodeFromValue(raw)]);
+        const generic=/^(?:activity|custom|other|other activity or tour|service)$/i.test(raw);
+        if(raw&&!knownWrong&&!generic) return {product:"",label:raw,source:"assignment name"};
+        const reference=clean(item.service_item_id)||assignmentReference(item.internal_note);
+        const linked=reference&&assignmentTourItems(record).find(tour=>clean(tour.id)===reference);
+        const linkedProduct=linked&&compatible(linked.product_selected);
+        if(linkedProduct) return {product:linkedProduct,label:productTitle(linkedProduct),source:"linked service"};
+        // A unique saved itinerary product at the exact date AND time can name a generic activity.
+        // Do not guess from guest requests, ordering, rates, or a different day's plan.
+        if(service==="Activity"&&record&&clean(item.service_date)&&clean(item.start_time)){
+          try{
+            const draft=typeof record.itinerary_json==="string"?JSON.parse(record.itinerary_json):record.itinerary_json;
+            const candidates=(Array.isArray(draft?.items)?draft.items:[]).filter(tour=>toDateValue(tour.date)===toDateValue(item.service_date)&&clean(tour.startTime)&&assignmentTimeMinutes(tour.startTime,-1)===assignmentTimeMinutes(item.start_time,-2)&&compatible(tour.productPreset||tour.name));
+            if(candidates.length===1){ const product=compatible(candidates[0].productPreset||candidates[0].name); return {product,label:productTitle(product),source:"saved itinerary date/time"}; }
+          }catch(error){ /* Invalid or missing itinerary leaves an explicit review label. */ }
+        }
+        return {product:"",label:service==="Activity"?"Activity — name needs review":service,source:"needs review"};
+      }
+      function assignmentDisplayProduct(item){return assignmentServiceDisplay(item).label; }
+      function assignmentLifecycle(item,now=new Date()){const status=normalizeStatus(item?.assignment_status||"pending");if(status==="completed")return{key:"completed",label:"✓ Completed"};if(status==="cancelled")return{key:"cancelled",label:"Cancelled"};if(status==="pending")return{key:"pending",label:"● Pending"};const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Guayaquil",year:"numeric",month:"2-digit",day:"2-digit"}).format(now);const time=clean(item?.end_time)||clean(item?.start_time);const key=[clean(item?.service_date),time].filter(Boolean).join(" ");const current=today+" "+new Intl.DateTimeFormat("en-GB",{timeZone:"America/Guayaquil",hour:"2-digit",minute:"2-digit",hour12:false}).format(now);return key&&key<current?{key:"past",label:"! Past — verify"}:{key:"scheduled",label:"✓ Scheduled"};}
+      function clearAssignmentForm(){ const record=getSelected();els.assignmentId.value="";els.assignmentGroupId.value="";renderAssignmentTourItems();els.assignmentTourItem.value="";els.assignmentTourItem.dataset.product="";els.assignmentService.value=assignmentServiceForRecord(record);els.assignmentStatus.value="pending";els.assignmentDate.value=record?.requested_date||"";els.assignmentTime.value=defaultAssignmentStart(els.assignmentService.value);els.assignmentEndTime.value="";els.assignmentPickup.value=assignmentPickupFor(null,record);els.assignmentDropoff.value="";els.assignmentDirection.value="";els.assignmentCost.value="";els.assignmentExtraCost.value="";els.assignmentInformed.checked=false;els.assignmentNote.value="";els.assignmentProviderOther.value="";els.saveAssignmentBtn.textContent="Save Assignment";els.messageServiceFilter.value="";renderProviderOptions(true); }
+      function hasReturnLeg(item,rows){ if(item.service_type!=="Transportation") return false; if(clean(item.trip_direction).toLowerCase()==="return") return true; const group=clean(item.assignment_group_id)||clean(item.assignment_id); const pickup=clean(item.pickup_location).toLowerCase(),dropoff=clean(item.dropoff_location).toLowerCase(),date=clean(item.service_date); return rows.some(row=>row!==item&&row.service_type==="Transportation"&&normalizeStatus(row.assignment_status)!=="cancelled"&&((group&&clean(row.assignment_group_id)===group&&clean(row.trip_direction).toLowerCase()==="return")||(date&&clean(row.service_date)===date&&clean(row.pickup_location).toLowerCase()===dropoff&&clean(row.dropoff_location).toLowerCase()===pickup))); }
+      function assignmentCalendarProvider(item){
+        const target=providerSortName(item.provider_name==="Other"?(item.provider_name_other||""):item.provider_name);
+        return (state.providers||[]).find(row=>providerSortName(row.provider_name)===target)||null;
+      }
+      function assignmentCalendarState(item){
+        const sync=clean(item.calendar_sync_status).toLowerCase();
+        if(["completed","cancelled"].includes(normalizeStatus(item.assignment_status)))return {label:labelStatus(normalizeStatus(item.assignment_status)),tone:"pending",canInvite:false,invited:false,closed:true};
+        const provider=assignmentCalendarProvider(item);
+        const inviteEnabled=provider&&clean(provider.calendar_invites_enabled).toLowerCase()==="yes";
+        const email=provider&&clean(provider.google_calendar_email||provider.provider_email||provider.email);
+        const invitation=sync.replace(/_end_tbd$/,"");
+        const invitationLabels={guide_invited:"Guide Invited",guide_accepted:"Guide Accepted",guide_declined:"Guide Declined",guide_tentative:"Guide Tentative"};
+        if(invitationLabels[invitation])return {label:invitationLabels[invitation]+(sync.endsWith("_end_tbd")?" - End TBD":""),tone:invitation==="guide_declined"?"error":"invited",canInvite:false,invited:true};
+        if(invitation==="guide_invitation_review")return {label:"Review Calendar Guests",tone:"pending",canInvite:false,invited:false};
+        if(sync==="error"||sync==="invite_error") return {label:"Calendar Error",tone:"error",canInvite:false,invited:false};
+        if(sync==="deleted") return {label:"Calendar Deleted",tone:"error",canInvite:false,invited:false};
+        if(sync==="synced"||sync==="synced_end_tbd"){
+          if(inviteEnabled&&email&&!/^pending$/i.test(email)) return {label:sync==="synced_end_tbd"?"Synced - Invite Guide":"Calendar Synced - Invite Guide",tone:"synced",canInvite:true,invited:false};
+          return {label:"Calendar Email Required",tone:"pending",canInvite:false,invited:false};
+        }
+        if(sync) return {label:labelStatus(sync),tone:"pending",canInvite:false,invited:false};
+        return {label:"Calendar Pending",tone:"pending",canInvite:false,invited:false};
+      }
+      function renderAssignments(){ const rows=sortAssignmentsAscending(state.assignments||[]);els.assignmentCount.textContent=rows.length?`${rows.length} scheduled service${rows.length===1?"":"s"}, earliest first.`:"No assignments recorded yet.";els.assignmentList.innerHTML=rows.length?rows.map(item=>{const cost=Number(item.provider_cost||0)+Number(item.extra_cost||0),transport=item.service_type==="Transportation",showReturn=transport&&clean(item.trip_direction).toLowerCase()!=="return"&&!hasReturnLeg(item,rows),calendarState=assignmentCalendarState(item),lifecycle=assignmentLifecycle(item);return `<article class="assignmentItem assignmentItem--${esc(lifecycle.key)}"><div class="assignmentTop"><div><div class="assignmentHeading"><h4>${esc(assignmentDisplayProduct(item))}</h4><span class="assignmentState assignmentState--${esc(lifecycle.key)}">${esc(lifecycle.label)}</span></div><p>${esc(displayDate(item.service_date))}${item.start_time?" · "+esc(formatTime(item.start_time)):""}${item.end_time?"–"+esc(formatTime(item.end_time)):""} · ${esc(item.provider_name==="Other"?(item.provider_name_other||"Other"):item.provider_name||"Unassigned")}</p><p>${esc(item.service_type||"Service")} · ${esc(labelStatus(item.assignment_status||"pending"))}</p></div><span class="assignmentCost">${cost?"$"+cost.toFixed(2):"—"}</span></div><p>${esc([item.pickup_location,item.dropoff_location].filter(Boolean).join(" → ")||item.internal_note||"No route or note")}</p><div class="timelineMeta"><div class="timelineTags"><span class="miniTag">${calendarState.closed?"Service closed":calendarState.invited?"Calendar invite sent":calendarState.canInvite?"Calendar invite required":"Calendar status"}</span><span class="calendarSyncTag ${esc(calendarState.tone)}">${esc(calendarState.label)}</span>${item.trip_direction?`<span class="miniTag">${esc(item.trip_direction==="return"?"Return":"Outbound")}</span>`:""}</div><div class="timelineActions">${calendarState.canInvite?`<button class="miniAction" data-assignment-action="invite" data-id="${esc(item.assignment_id)}" type="button">Invite Guide</button>`:""}${item.calendar_event_url?`<a class="miniAction" href="${esc(item.calendar_event_url)}" target="_blank" rel="noopener noreferrer">Open Event</a>`:""}${showReturn?`<button class="miniAction" data-assignment-action="return" data-id="${esc(item.assignment_id)}" type="button">Add return leg</button>`:""}<button class="miniAction" data-assignment-action="edit" data-id="${esc(item.assignment_id)}" type="button">Edit</button><button class="miniAction danger" data-assignment-action="delete" data-id="${esc(item.assignment_id)}" type="button">Delete</button></div></div></article>`;}).join(""):'<div class="workspaceEmpty">Add the first guide, driver, or activity provider assignment.</div>'; }
+            async function saveAssignment(){ const record=getSelected();if(!record){showToast("Select a guest first");return;}if(!els.assignmentDate.value){showToast("Choose a service date");return;}const selected=els.assignmentProvider.options[els.assignmentProvider.selectedIndex],tourItem=selectedAssignmentTourItem(),serviceItemId=tourItem?.id||"";if(tourItem&&assignmentItemService(tourItem)!==els.assignmentService.value){showToast("Choose an itinerary service that matches the assignment service type.");return;}const assignment={assignment_id:els.assignmentId.value,assignment_group_id:els.assignmentGroupId.value,service_item_id:serviceItemId,guest_id:record.guest_id||"",inquiry_id:record.inquiry_id||"",booking_id:record.booking_id||"",service_date:els.assignmentDate.value,start_time:els.assignmentTime.value,end_time:els.assignmentEndTime.value,service_type:els.assignmentService.value,product_selected:assignmentProductForService(els.assignmentService.value,tourItem,els.assignmentTourItem.dataset.product),guest_name:record.full_name||"",guest_phone:clean(els.phoneInput.value)||clean(record.phone_number)||clean(record.phone_normalized)||clean(record.phone_raw)||"",guest_count:tourItem&&isTransportItem(tourItem)?record.guest_count||"":tourItem?.guests||record.guest_count||"",provider_id:selected?.dataset.id||"",provider_role:selected?.dataset.role||"other",provider_name:els.assignmentProvider.value,provider_name_other:els.assignmentProvider.value==="Other"?clean(els.assignmentProviderOther.value):"",pickup_location:clean(els.assignmentPickup.value),dropoff_location:clean(els.assignmentDropoff.value),trip_direction:els.assignmentDirection.value,round_trip:"No",provider_cost:els.assignmentCost.value,extra_cost:els.assignmentExtraCost.value,currency:"USD",assignment_status:els.assignmentStatus.value,provider_informed:els.assignmentInformed.checked?"Yes":"No",provider_informed_by:els.assignmentInformed.checked?els.assignmentStaff.value:"",internal_note:assignmentNoteWithReference(els.assignmentNote.value,serviceItemId),created_by:els.assignmentStaff.value};if(assignment.provider_name==="Pending"&&assignment.assignment_status!=="pending"){showToast("Choose a guide before confirming this assignment.");return;}if(assignment.provider_name==="Other"&&!assignment.provider_name_other){showToast("Enter the provider name");return;}els.saveAssignmentBtn.disabled=true;try{await api(assignment.assignment_id?"update_assignment":"create_assignment",{guest_phone:assignment.guest_phone||"",assignment});clearAssignmentForm();await loadGuestWorkspace();showToast("Assignment saved");}catch(error){showToast(error.message);}finally{els.saveAssignmentBtn.disabled=false;} }
+      async function handleAssignmentAction(event){
+        const button=event.target.closest("[data-assignment-action]");if(!button)return;
+        const item=state.assignments.find(row=>row.assignment_id===button.dataset.id);if(!item)return;
+        const action=button.dataset.assignmentAction;
+        if(action==="edit"||action==="return"){
+          els.assignmentId.value=action==="edit"?(item.assignment_id||""):"";
+          els.assignmentGroupId.value=item.assignment_group_id||item.assignment_id||"";
+          const matchedTourItem=assignmentMatchedTourItem(item),serviceReference=matchedTourItem?.id||"";renderAssignmentTourItems(serviceReference);els.assignmentTourItem.dataset.product=assignmentProductForService(item.service_type,null,item.product_selected);
+          els.assignmentService.value=item.service_type==="Other Activities"?"Activity":(item.service_type||"Activity");renderProviderOptions();
+          els.assignmentProvider.value=item.provider_name==="Niecer"?"Neicer":(item.provider_name||"Other");els.assignmentProviderOtherWrap.hidden=els.assignmentProvider.value!=="Other";els.assignmentProviderOther.value=item.provider_name_other||"";
+          els.assignmentStatus.value=action==="return"?"pending":(item.assignment_status||"pending");
+          els.assignmentDate.value=action==="return"?"":(item.service_date||"");
+          els.assignmentTime.value=action==="return"?"":nearestQuarterTime(item.start_time);els.assignmentEndTime.value=action==="return"?"":nearestQuarterTime(item.end_time);
+          els.assignmentPickup.value=action==="return"?(item.dropoff_location||""):(clean(item.pickup_location)||assignmentPickupFor(matchedTourItem));
+          els.assignmentDropoff.value=action==="return"?(item.pickup_location||""):(item.dropoff_location||"");
+          els.assignmentDirection.value=action==="return"?"return":(item.trip_direction||"");
+          els.assignmentCost.value=action==="return"?"":(item.provider_cost||"");els.assignmentExtraCost.value=action==="return"?"":(item.extra_cost||"");
+          els.assignmentStaff.value=item.created_by||"JPG";els.assignmentInformed.checked=action==="edit"&&String(item.provider_informed).toLowerCase()==="yes";els.assignmentNote.value=action==="edit"?(item.internal_note||""):"";
+          els.saveAssignmentBtn.textContent=action==="return"?"Save Return Leg":"Update Assignment";
+          window.scrollTo({top:els.operationsWorkspace.offsetTop-20,behavior:"smooth"});return;
+        }
+        if(action==="invite"){
+          const provider=assignmentCalendarProvider(item);
+          const email=provider&&clean(provider.google_calendar_email||provider.provider_email||provider.email);
+          if(!email){showToast("This provider does not have a Google Calendar email");return;}
+          if(!confirm(`Send Google Calendar invitation to ${email}?`)) return;
+          button.disabled=true;
+          try{
+            const result=await api("invite_assignment_provider",{assignment_id:item.assignment_id,created_by:els.assignmentStaff?.value||"JPG",guest_phone:(clean(els.phoneInput.value)||clean(getSelected()?.phone_number)||clean(getSelected()?.phone_normalized)||clean(getSelected()?.phone_raw)||"")});
+            await loadGuestWorkspace();
+            showToast(result&&result.guide_invited?"Guide invitation sent":"Guide invitation completed");
+          }catch(error){showToast(error.message);}
+          finally{button.disabled=false;}
+          return;
+        }
+        if(!confirm("Remove this assignment?"))return;try{await api("delete_assignment",{assignment:{...item}});await loadGuestWorkspace();showToast("Assignment removed");}catch(error){showToast(error.message);}
+      }
+      function displayDate(value){if(!value)return"";const raw=String(value).trim();const date=/^\d{4}-\d{2}-\d{2}$/.test(raw)?new Date(raw+"T12:00:00"):new Date(raw);if(Number.isNaN(date.getTime()))return raw;return date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+      function formatTime(value){if(!value)return"";const parts=String(value).split(":");let hour=Number(parts[0]),minute=parts[1]||"00";const suffix=hour>=12?"pm":"am";hour=hour%12||12;return hour+":"+minute+suffix;}
+      function nearestQuarterTime(value){const raw=clean(value).toLowerCase();if(!raw)return"";const match=raw.match(/^(\d{1,2}):(\d{2})(?:\s*(am|pm))?/);if(!match)return"";let hour=Number(match[1]),minute=Number(match[2]);if(match[3]==="pm"&&hour<12)hour+=12;if(match[3]==="am"&&hour===12)hour=0;let total=hour*60+Math.round(minute/15)*15;total%=1440;return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");}
+      function providerDisplayName(item){ return item.provider_name==="Other"?(item.provider_name_other||"Other"):(item.provider_name||"Unassigned"); }
+      function serviceLabel(item){ return assignmentDisplayProduct(item); }
+      function assignmentCostText(item){ const cost=Number(item.provider_cost||0),extra=Number(item.extra_cost||0),total=cost+extra; if(!els.messageIncludeCosts.checked||!total) return ""; return extra?`Cost: $${cost.toFixed(2)} + $${extra.toFixed(2)} extra = $${total.toFixed(2)}`:`Cost: $${cost.toFixed(2)}`; }
+      function scheduledServiceSummary(rows){ return rows.map(item=>`- ${item.service_type||"Service"}: ${displayDate(item.service_date)||"Date TBD"}${item.start_time?" · "+formatTime(item.start_time):""}${item.end_time?"-"+formatTime(item.end_time):""} · ${providerDisplayName(item)}`).join("\n"); }
+      function generateOperationsMessage(){
+        const service=els.messageServiceFilter.value,record=getSelected()||{};
+        const allRows=currentAssignmentRows(record);
+        const rows=allRows.filter(item=>!service||item.service_type===service);
+        if(!allRows.length){els.operationsMessage.value="No scheduled services found for this guest yet. Save one guide, activity provider, or transportation assignment first.";return;}
+        if(!rows.length){els.operationsMessage.value=`No ${service} assignments found for this guest.\n\nScheduled services currently saved:\n${scheduledServiceSummary(allRows)}\n\nSwitch the filter to “All scheduled services” to generate every provider message.`;return;}
+        const groups=new Map();
+        rows.forEach(item=>{ const provider=providerDisplayName(item),role=item.provider_role||item.service_type||"Provider",key=provider+"|"+role; if(!groups.has(key)) groups.set(key,{provider,role,items:[]}); groups.get(key).items.push(item); });
+        const intro=[`Provider messages for ${record.full_name||rows[0]?.guest_name||"Guest"}`,record.phone_number||record.phone_normalized?`Guest phone: ${record.phone_number||record.phone_normalized}`:"",`Scheduled services included: ${rows.length}${service?" "+service:""}`].filter(Boolean).join("\n");
+        const blocks=[...groups.values()].map(group=>{
+          const lines=group.items.map((item,index)=>[
+            `${group.items.length>1?index+1+". ":""}${serviceLabel(item)}`,
+            `Service type: ${item.service_type||"Service"}`,
+            `Status: ${labelStatus(item.assignment_status||"pending")}`,
+            `Guest(s): ${item.guest_name||record.full_name||""}${item.guest_count?` · ${item.guest_count} guest${Number(item.guest_count)===1?"":"s"}`:(record.guest_count?` · ${record.guest_count} guest${Number(record.guest_count)===1?"":"s"}`:"")}`,
+            `Date: ${displayDate(item.service_date)||"Date TBD"}`,
+            `Time: ${item.start_time?formatTime(item.start_time):"TBD"}${item.end_time?"-"+formatTime(item.end_time):""}`,
+            item.pickup_location||record.pickup_location?`Pickup: ${item.pickup_location||record.pickup_location}`:"",
+            item.dropoff_location?`Drop-off: ${item.dropoff_location}`:"",
+            item.trip_direction?`Direction: ${item.trip_direction==="return"?"Return / regreso":"Outbound / ida"}`:"",
+            assignmentCostText(item),
+            item.internal_note?`Notes: ${item.internal_note}`:"",
+            String(item.provider_informed).toLowerCase()==="yes"?"Already marked informed in CRM":""
+          ].filter(Boolean).join("\n")).join("\n\n");
+          return `MESSAGE FOR ${group.provider.toUpperCase()}\n${lines}`;
+        });
+        els.operationsMessage.value=[intro,...blocks].join("\n\n---\n\n");
+      }
+      async function copyOperationsMessage(){if(!clean(els.operationsMessage.value))generateOperationsMessage();try{await navigator.clipboard.writeText(els.operationsMessage.value);showToast("Operations message copied");}catch(error){prompt("Copy operations message:",els.operationsMessage.value);} }
+      function renderTable(target,row,cols){ target.innerHTML=cols.map(c=>`<tr><th>${esc(c)}</th><td>${esc(row[c]||"")}</td></tr>`).join(""); }
+      function renderPayload(){ if(els.payloadOutput) els.payloadOutput.textContent=JSON.stringify({selected:getSelected(),save_payload:buildSavePayload(),api_url_set:Boolean(clean(els.apiUrlInput.value))},null,2); }
+      function applyQueue(queue){ state.activeQueue=queue||"all"; els.viewFilter.value=queue==="all"?"all":queue; setView("records"); window.scrollTo({top:0,behavior:"smooth"}); showToast(queue==="all"?"Showing all records":"Filtered queue: "+queue); }
+      function shouldAutoContact(selected,status){const oldStatus=normalizeStatus(selected.status||""),contactStatuses=["contacted","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked"];if(!contactStatuses.includes(status))return false;if(els.modeInput.value==="create")return true;return oldStatus&&oldStatus!==status;}
+      function markContactedNow(){ if(!state.selectedId&&els.modeInput.value==="update"){ showToast("Select a record first"); return; } state.forceContactedAt=true; saveRecord(); }
+      function handleDuplicateAction(){ const current=getSelected()||formRecord(); return isArchivedStatus(current)?restoreDuplicateRecord():markDuplicateRecord(); }
+      async function markSpamRecord(){
+        const current=getSelected()||formRecord();
+        if(!current||!clean(current.inquiry_id)){showToast("Select a saved record first");return;}
+        if(normalizeStatus(current.status)==="spam"){showToast("This record is already marked as spam");return;}
+        const previous=els.recordStatusInput.value;
+        els.recordStatusInput.value="spam";
+        els.priorityInput.value="";
+        els.followupInput.value="";
+        els.internalInput.value=(clean(els.internalInput.value)+"\nMarked spam on "+datePlusDays(0)+".").trim();
+        updateStatusField(); renderFollowupFieldState();
+        const saved=await saveRecord();
+        if(!saved){els.recordStatusInput.value=previous;updateStatusField();}
+      }
+      function updateDuplicateActionButtons(record){ const restore=isArchivedStatus(record); [els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean).forEach(button=>{ button.textContent=restore?"Restore Record":"Mark Duplicate"; button.classList.toggle("dangerBtn",!restore); }); }
+      function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
+      function chooseCanonicalRecord(records){ return records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)||String(a.created_at||"").localeCompare(String(b.created_at||"")))[0]||null; }
+      function inferRestoredStatus(record){
+        const valid=value=>{if(!clean(value))return "";const status=normalizeStatus(value);return ["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book"].includes(status)?status:"";};
+        const previous=valid(record.previous_status);if(previous)return previous;
+        const markers=[...clean(record.internal_notes).matchAll(/\[MBW_ARCHIVE\] (\{[^\n]+\})/g)];
+        for(let index=markers.length-1;index>=0;index--){try{const status=valid(JSON.parse(markers[index][1]).status);if(status)return status;}catch(error){}}
+        const primary=valid(primaryTourItemFromRecord(record).status);if(primary)return primary;
+        const payment=normalizePayment(record.payment_status);if(["deposit_pending","deposit_paid","payment_pending"].includes(payment))return payment;
+        const source=valid(record._source_status);if(source)return source;
+        const action=clean(record.next_action).toLowerCase();return clean(record.last_contacted_at)&&(action.includes("itinerary")||action.includes("planning")||action.includes("prepare"))?"planning":"contacted";
+      }
+      async function markDuplicateRecord(){
+        const current=getSelected()||formRecord();
+        if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
+        const name=current.full_name||"this guest";
+        const targets=state.records.filter(record=>record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current));
+        const canonical=targets.length>1?chooseCanonicalRecord(targets):null;
+        const archiveTargets=canonical?targets.filter(record=>record.inquiry_id!==canonical.inquiry_id):targets;
+        const count=Math.max(archiveTargets.length,1);
+        const prompt=canonical
+          ?"Keep the strongest "+name+" record active and archive its "+count+" incomplete source clone"+(count===1?"":"s")+"?"
+          :"Mark only this selected record for "+name+" as a duplicate? Other tours and records for this guest will remain active.";
+        if(!window.confirm(prompt)) return;
+        const today=datePlusDays(0);
+        const note="Marked duplicate on "+today+". Kept for audit trail.";
+        const archivedTargets=(archiveTargets.length?archiveTargets:[current]).map(record=>archiveDuplicateRecord(record,note));
+        const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
+        buttons.forEach(button=>{button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Archiving…";});
+        let saved=0;
+        try{
+          for(const archived of archivedTargets){
+            await api("update_inquiry",{record:archived,inquiry_row:archived});
+            const index=state.records.findIndex(record=>record.inquiry_id===archived.inquiry_id);
+            if(index>=0) state.records[index]=normalizeCrmRecord(archived);
+            saved++;
+          }
+          saveLocalRecords();
+          state.activeQueue="all";
+          els.viewFilter.value="all";
+          const next=(canonical&&state.records.find(record=>record.inquiry_id===canonical.inquiry_id))||state.records.find(record=>!isArchivedStatus(record));
+          state.selectedId=next?next.inquiry_id:"";
+          fillForm(next);
+          render();
+          showToast(saved>1?saved+" source-clone records archived":"Selected record archived; other guest tours remain active");
+        }catch(error){
+          saveLocalRecords();
+          render();
+          showToast((saved?saved+" records archived; ":"")+"duplicate save failed: "+error.message);
+        }finally{
+          buttons.forEach(button=>{button.disabled=false;button.textContent=button.dataset.originalText||"Mark Duplicate";});
+        }
+      }
+      async function restoreDuplicateRecord(){
+        const current=getSelected();
+        if(!current||!current.inquiry_id||!isArchivedStatus(current)){ showToast("Select an archived duplicate first"); return; }
+        const itemStatus=inferRestoredStatus(current);
+        const primary=primaryTourItemFromRecord(current);
+        const items=normalizeTourItems(current).map(item=>clean(item.id)===clean(primary.id)&&normalizeStatus(item.status)==="duplicate"?Object.assign({},item,{status:itemStatus}):item);
+        const restored=Object.assign({},current,{tour_items:serializeTourItems(items),tour_items_json:serializeTourItems(items),status:itemStatus,is_archived:"No",archived_at:"",archive_reason:"",superseded_by_inquiry_id:"",availability_status:"pending",priority:isClosedStatus(itemStatus)?"":normalizePriority(current.priority||autoPriority(current.requested_date)),updated_at:new Date().toISOString(),internal_notes:(clean(current.internal_notes)+"\nRestored from duplicate archive on "+datePlusDays(0)+".").trim()});
+        const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
+        buttons.forEach(button=>{button.disabled=true;button.textContent="Restoring…";});
+        try{
+          const payload=Object.assign({},restored,{lifecycle_override:"Yes"});
+          const response=await api("update_inquiry",{record:payload,inquiry_row:payload});
+          const saved=savedInquiryFromResponse(response,restored);
+          if(isArchivedStatus(saved))throw new Error("The server did not confirm the restore. The record remains archived.");
+          const index=state.records.findIndex(record=>record.inquiry_id===restored.inquiry_id);
+          if(index>=0) state.records[index]=normalizeCrmRecord(saved);
+          saveLocalRecords(); fillForm(saved); render(); showToast("Record restored to active queues");
+        }catch(error){ showToast("Restore failed: "+error.message); }
+        finally{ buttons.forEach(button=>button.disabled=false); updateDuplicateActionButtons(getSelected()); }
+      }
+      function toolHandoffSnapshot(){return JSON.stringify(["firstNameInput","lastNameInput","fullNameInput","emailInput","phoneInput","countryInput","quotedAmountInput","paymentStatusInput","quoteStatusInput","pickupLocationInput","notesInput","internalInput"].map(id=>els[id]?.value||""));}
+      function openTool(url){ if(els.modeInput.value==="update"&&(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot()))){showToast("Save Record before opening this tool so it uses your latest guest and service details.");return;} const r=toolRecord(getSelected()||formRecord()); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(r)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(r)); const first=r.first_name||String(r.full_name||"").split(" ")[0]||""; const last=r.last_name||String(r.full_name||"").split(" ").slice(1).join(" ")||""; const paymentStatus=normalizePayment(r.payment_status||""); const depositMode=paymentStatus!=="paid"&&paymentStatus!=="deposit_paid"; const tourItems=serializeTourItems(normalizeTourItems(r)); const params=new URLSearchParams({inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",booking_id:r.booking_id||"",guest:r.full_name||"",name:r.full_name||"",full_name:r.full_name||"",first_name:first,last_name:last,guest_first_name:first,guest_last_name:last,email:r.email||"",guest_email:r.email||"",phone:r.phone_number||"",guest_phone:r.phone_number||"",whatsapp:r.phone_number||"",whatsapp_number:r.phone_number||"",guests:r.guest_count||"",guest_count:r.guest_count||"",party:r.guest_count||"",date:r.requested_date||"",tour_date:r.requested_date||"",tour:r.tour_type||"",tour_type:r.tour_type||"",duration:r.duration_preference||"",duration_preference:r.duration_preference||"",transportation:r.transportation_needed||"",transportation_needed:r.transportation_needed||"",pickup:r.pickup_location||"",pickup_location:r.pickup_location||"",pickup_address_or_hotel:r.pickup_location||"",invoice_no:r.invoice_no||"",date_paid:r.date_paid||"",payment_method:r.payment_method||"",service_type:r.service_type||"",product_selected:r.product_selected||"",quoted_amount:r.quoted_amount||"",tour_items_json:tourItems,tour_items:tourItems,status:r.status||"",quote_status:r.quote_status||"",payment_status:r.payment_status||"",payment_request:depositMode?"deposit":"full",deposit_amount:"100",notes:r.notes||""}); window.open(url+(url.includes("?")?"&":"?")+params.toString(),"_blank","noopener,noreferrer"); }
+      function toolRecord(r){ return Object.assign({},r,{guest_name:r.full_name||"",guestName:r.full_name||"",guest_email:r.email||"",guestEmail:r.email||"",guest_phone:r.phone_number||"",guestPhone:r.phone_number||"",tour_date:r.requested_date||"",tourDate:r.requested_date||"",tour_interest:r.tour_type||"",guestCount:r.guest_count||"",pickupLocation:r.pickup_location||"",invoiceNo:r.invoice_no||"",datePaid:r.date_paid||"",serviceType:r.service_type||"",productSelected:r.product_selected||""}); }
+      function confirmationHandoffItems(record){
+        const entries=calendarEntriesForRecord(record),today=datePlusDays(0);
+        const active=entries.filter(entry=>!["completed","cancelled","did_not_book","duplicate","spam"].includes(normalizeStatus(entry._calendar_item?.status||entry.status)));
+        const upcoming=active.filter(entry=>{const item=entry._calendar_item||{};return toDateValue(item.date||entry.requested_date||entry.requested_date_start)>=today;});
+        const selected=upcoming.length?upcoming:active.length?active:entries;
+        return selected.slice().sort((a,b)=>String(a._calendar_item?.date||a.requested_date||"").localeCompare(String(b._calendar_item?.date||b.requested_date||""))).map(entry=>{
+          const item=entry._calendar_item||primaryTourItemFromRecord(record),assignment=entry._calendar_assignment;
+          if(!assignment)return Object.assign({},item,{confirmation_assignment:null});
+          const provider=assignmentCalendarProvider(assignment)||{};
+          const matched=assignmentMatchedTourItem(assignment,record);
+          const linked=normalizeTourItems(record).find(saved=>clean(saved.id)===clean(matched?.id))||matched;
+          const duration=clean(linked?.duration||linked?.duration_preference);
+          return Object.assign({},item,{duration,confirmation_assignment:{provider_name:assignment.provider_name==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name),provider_phone:clean(provider.phone_number||provider.phone||provider.whatsapp_number),start_time:clean(assignment.start_time),end_time:clean(assignment.end_time),pickup_location:clean(assignment.pickup_location),dropoff_location:clean(assignment.dropoff_location),trip_direction:clean(assignment.trip_direction),status:clean(assignment.assignment_status)}});
+        });
+      }
+      function openConfirmationTool(){ if(state.workspaceLoading||state.workspaceError||state.operationsStatus!=="ready"){showToast("Wait for assignments to load successfully before opening confirmation; retry Refresh CRM if needed.");return;} if(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot())){showToast("Save Record before opening this tool so it uses your latest guest and service details.");return;} const dateConflict=preparationServices(getSelected()||formRecord()).some(service=>service.itineraryDate&&service.date&&service.itineraryDate!==service.date&&!["completed","cancelled","did_not_book","duplicate","spam"].includes(service.status));if(dateConflict){showToast("Review assignment dates before creating a confirmation: a scheduled date differs from the saved itinerary.");return;} const r=toolRecord(getSelected()||formRecord()); const tourItems=JSON.stringify(confirmationHandoffItems(r)); const draft=Object.assign({},r,{source:"guest_crm",guest_name:r.full_name||"",guest:r.full_name||"",guest_phone:r.phone_number||"",tour_date:r.requested_date||"",tour_date_end:r.requested_date_end||"",tour:r.tour_type||"",tour_type:r.tour_type||"",pickup_location:r.pickup_location||"",transportation:r.transportation_needed||"",duration:r.duration_preference||"",notes:"",tour_items_json:tourItems,tour_items:tourItems}); let handoff;
+        try {
+          handoff=crypto.randomUUID();
+          localStorage.setItem("mbwTourConfirmationHandoff:"+handoff,JSON.stringify({version:1,createdAt:new Date().toISOString(),draft}));
+        } catch(_) { showToast("Could not prepare confirmation. Allow browser storage and reopen from CRM.");return; }
+        const params=new URLSearchParams({source:"guest_crm",inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",handoff}); window.open("https://admin.mindobirdwatching.com/tour-confirmation-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
+      function itineraryProduct(value,tour){ const product=clean(value); const map={MBW002:"MBW002 - Private Birdwatching Tour",MBW004:"MBW004 - Jewels of the Morning Forest",MBW005:"MBW005 - Andean Cock-of-the-Rock Dawn Tour",MBW006:"MBW006 - Quest for Five Toucans Full Day"}; return map[product]||product||clean(tour)||"Other"; }
+      function itineraryServiceType(item){ const text=(clean(item.product_selected)+" "+clean(item.tour)).toLowerCase(); if(text.includes("transport")) return "Transportation"; if(text.includes("insect")||text.includes("macro")||text.includes("bear")||text.includes("oso")) return "Specialty Wildlife"; if(/night|waterfall|chocolate|coffee|butterfly|frog|quad|canopy|orchid|tubing|rafting|canyoning|paintball|horseback|mountain biking|swing|sky bike|sky ride/.test(text)) return "Activity"; return "Birdwatching"; }
+      function guidePlanForRecord(record){ const inquiryId=clean(record?.inquiry_id); return inquiryId?state.guidePlans.find(plan=>clean(plan.inquiryId)===inquiryId):null; }
+      function guidePlanText(value){
+        if(typeof value==="string"||typeof value==="number") return clean(value);
+        if(value&&typeof value==="object"){
+          for(const key of ["en","es","title","value","text"]){ const text=guidePlanText(value[key]); if(text)return text; }
+        }
+        return "";
+      }
+      function guidePlanTitle(plan){ return guidePlanText(plan?.title)||guidePlanText(plan?.guestName)||"Custom itinerary"; }
+      function guidePlanStatusLabel(status){ return ({guide_drafting:"Guide drafting",admin_review:"Ready for admin review",changes_requested:"Changes requested",approved:"Approved for guest itinerary"})[status]||"Planning"; }
+      async function loadGuidePlans(){
+        try{
+          const response=await fetch("/api/mobile/plans",{cache:"no-store",credentials:"same-origin"});
+          const body=await response.json();
+          if(!response.ok) throw new Error(body.error||"Custom itinerary queue unavailable");
+          state.guidePlans=Array.isArray(body.plans)?body.plans:[];state.guidePlansLoaded=true;updateItineraryActions(getSelected());
+        }catch(error){state.guidePlansLoaded=true;state.guidePlans=[];updateItineraryActions(getSelected());}
+      }
+      function guidePlanReviewUrl(plan){ const params=new URLSearchParams({view:"plans",provider:plan.providerId||plan.providerName||"",plan:plan.planId,mode:"admin"}); return "/guide/?"+params.toString(); }
+      function guidePlanGeneratorUrl(plan){ const params=new URLSearchParams({source:"guide_plan",plan:plan.planId}); return "/itinerary-generator/?"+params.toString(); }
+      function openGuidePlanReview(){ const plan=guidePlanForRecord(getSelected()||formRecord()); if(!plan){showToast("No linked guide itinerary was found for this inquiry.");return;} window.open(guidePlanReviewUrl(plan),"_blank","noopener,noreferrer"); }
+      function openGuidePlanGenerator(){ const plan=guidePlanForRecord(getSelected()||formRecord()); if(!plan){showToast("No linked guide itinerary was found for this inquiry.");return;} if(plan.status!=="approved"){showToast("Approve the guide itinerary before preparing the guest version.");openGuidePlanReview();return;} window.open(guidePlanGeneratorUrl(plan),"_blank","noopener,noreferrer"); }
+      function openItineraryTool(){ const linkedPlan=guidePlanForRecord(getSelected()||formRecord()); if(linkedPlan){ if(linkedPlan.status==="approved")openGuidePlanGenerator();else openGuidePlanReview();return;} const record=formRecord(); const sourceItems=itineraryItemsFromForm(collectTourItems()); const items=sourceItems.map((item,index)=>{ const product=itineraryProduct(item.product_selected,item.tour); const pickup=clean(item.pickup_location); const itemNote=dedupeNoteText(item.notes); return {date:toDateValue(item.date||item.tour_date||record.requested_date),startTime:"",duration:clean(item.duration||record.duration_preference),type:itineraryServiceType(item),productPreset:product,name:product,description:itemNote,note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),quantity:Number(String(isTransportItem(item)?vehicleQuantity(item):(item.guests||record.guest_count||1)).match(/\d+/)?.[0]||1),unitPrice:clean(item.price)===""?"":Number(item.price)}; }); const dates=items.map(item=>item.date).filter(Boolean).sort(); const draft={source:"guest_crm",createdAt:new Date().toISOString(),inquiryId:record.inquiry_id||"",guestName:record.full_name||"",whatsappNumber:record.phone_number||"",guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),startDate:dates[0]||record.requested_date||"",endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||"",tripTitle:"Your Mindo Tour Itinerary",openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",items:items}; localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record))); localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft)); const draftJson=JSON.stringify(draft); const params=new URLSearchParams({source:"guest_crm",inquiry_id:draft.inquiryId,draft:draft.createdAt,itinerary_json:draftJson,guest:draft.guestName,phone:draft.whatsappNumber,start_date:draft.startDate,end_date:draft.endDate,guests:String(draft.guestCount)}); window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer"); }
+      function openSavedItinerary(){
+        const record=getSelected();
+        if(!record){ showToast("Select a record first"); return; }
+        if(clean(record.itinerary_json)){
+          try{
+            const draft=JSON.parse(record.itinerary_json);
+            draft.source="guest_crm";
+            draft.inquiryId=record.inquiry_id;
+            draft.itineraryVersion=Number(record.itinerary_version||draft.itineraryVersion||1);
+            draft.itineraryStatus=record.itinerary_status||draft.itineraryStatus||"draft";
+            localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record)));
+            localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft));
+            const params=new URLSearchParams({source:"guest_crm",saved:"1",inquiry_id:record.inquiry_id,draft:record.itinerary_updated_at||Date.now()});
+            window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer");
+            return;
+          }catch(error){
+            showToast("Saved itinerary data is invalid. Rebuilding from CRM record.");
+          }
+        }
+        const sourceItems=itineraryItemsFromForm(normalizeTourItems(record));
+        const items=sourceItems.map((item,index)=>{
+          const product=itineraryProduct(item.product_selected,item.tour);
+          const pickup=clean(item.pickup_location||record.pickup_location);
+          const itemNote=dedupeNoteText(item.notes||item.note||"");
+          return {
+            date:toDateValue(item.date||item.tour_date||record.requested_date||record.requested_date_start),
+            startTime:clean(item.start_time||item.startTime),
+            duration:clean(item.duration||record.duration_preference),
+            type:itineraryServiceType(item),
+            productPreset:product,
+            name:product,
+            description:itemNote,
+            note:[itemNote,pickup?("Pickup: "+pickup):""].filter(Boolean).join(" · "),
+            quantity:Number(String(isTransportItem(item)?vehicleQuantity(item):(item.guests||record.guest_count||1)).match(/\d+/)?.[0]||1),
+            unitPrice:clean(item.price)===""?"":Number(item.price)
+          };
+        });
+        if(!items.length){
+          const product=itineraryProduct(record.product_selected,record.tour_type);
+          items.push({
+            date:toDateValue(record.requested_date||record.requested_date_start),
+            startTime:"",
+            duration:clean(record.duration_preference),
+            type:itineraryServiceType({product_selected:record.product_selected,tour:record.tour_type}),
+            productPreset:product,
+            name:product,
+            description:"",
+            note:clean(record.pickup_location)?("Pickup: "+clean(record.pickup_location)):"",
+            quantity:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),
+            unitPrice:""
+          });
+        }
+        const dates=items.map(item=>item.date).filter(Boolean).sort();
+        const draft={
+          source:"guest_crm",
+          createdAt:new Date().toISOString(),
+          inquiryId:record.inquiry_id||"",
+          itineraryVersion:Number(record.itinerary_version||0),
+          itineraryStatus:"draft",
+          guestName:record.full_name||"",
+          whatsappNumber:record.phone_number||"",
+          guestCount:Number(String(record.guest_count||1).match(/\d+/)?.[0]||1),
+          startDate:dates[0]||record.requested_date||record.requested_date_start||"",
+          endDate:dates[dates.length-1]||record.requested_date_end||record.requested_date||record.requested_date_start||"",
+          tripTitle:"Your Mindo Tour Itinerary",
+          openingText:"Thank you for choosing Mindo Bird Watching. Below is your proposed itinerary.",
+          items:items
+        };
+        localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(toolRecord(record)));
+        localStorage.setItem("mbwItineraryGeneratorDraft",JSON.stringify(draft));
+        const params=new URLSearchParams({source:"guest_crm",rebuild:"1",inquiry_id:record.inquiry_id||"",draft:draft.createdAt});
+        window.open("https://admin.mindobirdwatching.com/itinerary-generator/?"+params.toString(),"_blank","noopener,noreferrer");
+      }
+      function updateItineraryActions(record){
+        const linkedPlan=guidePlanForRecord(record);
+        const hasSaved=Boolean(record&&clean(record.itinerary_json));
+        const canRebuild=Boolean(record&&(normalizeTourItems(record).length||clean(record.tour_type)||clean(record.product_selected)||clean(record.requested_date)||clean(record.requested_date_start)));
+        if(els.guidePlanWorkflow){
+          els.guidePlanWorkflow.hidden=!linkedPlan;
+          if(linkedPlan){
+            els.guidePlanSummary.innerHTML=`<strong>${esc(guidePlanTitle(linkedPlan))}<span class="guidePlanStatus">${esc(guidePlanStatusLabel(linkedPlan.status))}</span></strong><small>${esc(linkedPlan.providerName||"Guide not assigned")} · Updated ${esc(linkedPlan.updatedAt?formatDateTime(linkedPlan.updatedAt):"pending")}</small><small class="guidePlanRoute">1. Review guest breakdown · 2. Approve itinerary · 3. Open generator</small>`;
+            els.openGuidePlanGeneratorBtn.disabled=linkedPlan.status!=="approved";
+            els.openGuidePlanGeneratorBtn.title=linkedPlan.status==="approved"?"Open the guest-safe approved draft":"Approve the itemized guest pricing in Guide Nest first";
+          }
+        }
+        if(els.generateItineraryBtn){
+          els.generateItineraryBtn.textContent=linkedPlan?(linkedPlan.status==="approved"?"Open Itinerary Generator":"Review Guide Itinerary"):"Generate Itinerary";
+          els.generateItineraryBtn.title=linkedPlan?"This inquiry is linked to its Guide Nest plan":"Build from the CRM tour items";
+        }
+        if(els.editSavedItineraryBtn){
+          els.editSavedItineraryBtn.disabled=!(hasSaved||canRebuild);
+          els.editSavedItineraryBtn.textContent=hasSaved?"Edit Saved Itinerary":"Rebuild Itinerary";
+          els.editSavedItineraryBtn.title=hasSaved
+            ?("Saved "+(record.itinerary_updated_at?formatDateTime(record.itinerary_updated_at):"itinerary"))
+            :(canRebuild?"Rebuild an editable itinerary from this CRM record":"No itinerary or tour data available");
+        }
+      }
+      function copyReviewMessage(type){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const name=(r.first_name||r.full_name||"").split(" ")[0]||"there"; const msg="Hi "+name+", hope all is well and Mindo treated you great. When you can, please help us out with a review of your experience with Mindo Bird Watching. Thank you.\\n\\nhttps://g.page/r/CdMlIYMGgBIvEAE"; navigator.clipboard.writeText(msg).then(()=>showToast(type==="email"?"Review email text copied":"Review WhatsApp text copied")).catch(()=>showToast("Could not copy message")); }
+      async function copyGuideMessage(){
+        const selected=getSelected()||{};
+        const names=clean(els.fullNameInput.value)||clean(selected.full_name);
+        const phone=cleanPhoneText(els.phoneInput.value)||clean(selected.phone_number||selected.phone_normalized);
+        const pickup=clean(els.pickupLocationInput.value)||clean(selected.pickup_location);
+        const missing=[];
+        if(!names) missing.push("name");
+        if(!phone) missing.push("phone number");
+        if(!pickup) missing.push("pickup location");
+        if(missing.length){ showToast("Add "+missing.join(", ")+" before copying"); return; }
+        const message=["Name(s): "+names,"Phone Number: "+phone,"Pick Up Location: "+pickup].join("\n");
+        try{
+          await copyPlainText(message);
+          showToast("Guide message copied");
+        }catch(error){
+          showToast("Could not copy guide message");
+        }
+      }
+      function currentStatusMessage(){
+        const status=normalizeStatus(els.recordStatusInput.value||"new");
+        return STATUS_FOLLOW_UP_MESSAGES[status]||STATUS_FOLLOW_UP_MESSAGES.default;
+      }
+      function updateStatusMessageButton(){ if(els.copyStatusMessageBtn) els.copyStatusMessageBtn.textContent="Copy Booked Follow-up"; }
+      async function copyStatusMessage(){
+        try{
+          await copyPlainText(currentStatusMessage());
+          showToast("Status follow-up message copied");
+        }catch(error){
+          showToast("Could not copy follow-up message");
+        }
+      }
+      async function copyPlainText(text){
+        if(navigator.clipboard&&window.isSecureContext){
+          try{ await navigator.clipboard.writeText(text); return; }catch(error){}
+        }
+        const textarea=document.createElement("textarea");
+        textarea.value=text;
+        textarea.setAttribute("readonly","");
+        textarea.style.position="fixed";
+        textarea.style.opacity="0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0,textarea.value.length);
+        const copied=document.execCommand("copy");
+        textarea.remove();
+        if(!copied) throw new Error("Clipboard unavailable");
+      }
+      function toggleReviewActions(r){ const enabled=["booked","completed"].includes(normalizeStatus(r.status)); [els.copyReviewWhatsAppBtn,els.copyReviewEmailBtn].forEach(btn=>{ if(btn){ btn.style.display="inline-flex"; btn.disabled=!enabled; } }); }
+      function toggleInvoiceActions(r){ const record=r||{}; const enabled=canCopyInvoiceTsv(record); const hasInquiry=Boolean(clean(record.inquiry_id)); [els.copyInvoiceTsvBtn,els.detailCopyInvoiceTsvBtn,els.copyInvoiceBackendTsvBtn,els.detailCopyInvoiceBackendTsvBtn].forEach(btn=>{ if(btn) btn.disabled=!enabled; }); [els.copyDepositLinkBtn,els.detailCopyDepositLinkBtn].forEach(btn=>{ if(btn) btn.disabled=!hasInquiry; }); if(els.collaborationToAcctBtn){ const collaboration=hasInquiry&&["booked","completed"].includes(normalizeStatus(record.status))&&normalizePayment(record.payment_status)==="no_payment_required"&&clean(record.payment_method).toLowerCase()==="marketing collaboration"&&Boolean(clean(record.invoice_no)); els.collaborationToAcctBtn.disabled=!collaboration; } if(els.zelleToAcctBtn) els.zelleToAcctBtn.disabled=!(hasInquiry&&normalizePayment(record.payment_status)==="paid"&&clean(record.payment_method).toLowerCase()==="zelle"&&clean(record.invoice_no)&&toDateValue(record.date_paid)); }
+      function accountingNumber(value){ const number=Number(String(value==null?"":value).replace(/[$,\s]/g,"")); return Number.isFinite(number)?number:0; }
+      function accountingServiceType(item,product){
+        if(product==="MBW016") return "Night Walk";
+        if(product==="OSO001") return "Specialty Wildlife";
+        return clean(item.service_type||deriveServiceType(item.product_selected||item.tour));
+      }
+      function assignmentForAccountingItem(record,item){ const date=toDateValue(item.date||item.tour_date); const code=productCodeFromValue(item.product_selected||item.tour); const rows=currentAssignmentRows(record).filter(row=>toDateValue(row.service_date)===date); const exact=rows.find(row=>productCodeFromValue(row.product_selected)===code); if(exact) return exact; const service=clean(item.service_type||deriveServiceType(item.product_selected||item.tour)).toLowerCase(); const matches=rows.filter(row=>clean(row.service_type).toLowerCase()===service); if(matches.length===1) return matches[0]; return rows.length===1?rows[0]:null; }
+      function buildCollaborationAccountingRows(record){
+        const items=normalizeTourItems(record).filter(item=>clean(item.product_selected)&&toDateValue(item.date||item.tour_date));
+        if(!items.length) throw new Error("Add each dated collaboration service before posting to accounting");
+        const createdAt=new Date().toISOString();
+        return items.map((item,index)=>{
+          const date=toDateValue(item.date||item.tour_date);
+          const party=Math.max(1,Number(String(item.guests||record.guest_count||1).match(/\d+/)?.[0]||1));
+          const product=productCodeFromValue(item.product_selected||item.tour);
+          if(!product) throw new Error(`Select the accounting product code for ${date}`);
+          const assignment=assignmentForAccountingItem(record,item);
+          if(!assignment) throw new Error(`Add one provider assignment for ${date} before posting to accounting`);
+          const guide=clean(assignment.provider_name)==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name);
+          if(!guide) throw new Error(`Add the provider name for ${date} before posting to accounting`);
+          const standard=accountingNumber(MBW_PRODUCT_PRICE_BY_CODE[product]);
+          const itemId=clean(item.id)||String(index+1);
+          const tourKey=["collaboration",record.invoice_no,itemId,product,date,party].join("|");
+          return {
+            created_at_iso:createdAt,stripe_environment:"manual",invoice_no:clean(record.invoice_no),invoice_no_txt:clean(record.invoice_no),date_paid:"",tour_date:date,
+            tour_completed:(normalizeStatus(item.status)==="completed"||normalizeStatus(record.status)==="completed")?"Yes":"No",guest_first_name:clean(record.first_name),guest_last_name:clean(record.last_name),guest_email:clean(record.email),guest_phone:clean(record.phone_normalized||record.phone_number),home_country:clean(record.home_country||record.country),party_size:String(party),
+            service_type:accountingServiceType(item,product),product_selected:product,tour_title:productTitle(item.product_selected)||clean(item.tour),tour_guide:guide,payment_method:"Marketing Collaboration",
+            invoice_id:"collaboration|"+clean(record.invoice_no),transaction_id:"collaboration|"+clean(record.inquiry_id),payment_reference_note:"No customer payment required; influencer marketing collaboration.",
+            guest_rate_override:0,standard_price_per_person:standard,price_adjustment_per_person:-standard,final_price_per_person:0,pricing_reason:"Influencer collaboration",pricing_notes:"Complimentary service exchanged for agreed exposure and content.",discount_rate_guest:1,discount_reason:"Collaboration",
+            amount_received:0,transaction_fee_total:0,mbw_fee_pct_override:0,pickup_location:clean(item.pickup_location||record.pickup_location),pickup_address_or_hotel:clean(item.pickup_location||record.pickup_location),notes:[clean(item.notes),"Guide service and transportation contributed; MBW records only actual entrance fees separately."].filter(Boolean).join(" · "),
+            inquiry_id:clean(record.inquiry_id),guest_id:clean(record.guest_id),booking_id:clean(record.booking_id),currency:"USD",gross_payment_amount:0,guide_pay_model:"contributed_service",guide_base_rate:0,guide_base_payout:0,total_amount_owed_to_guide:0,mbw_gross_expected:0,mbw_gross_actual:0,mbw_profit_expected:0,mbw_profit_accrual:0,mbw_cash_expected:0,mbw_cash_actual:0,reconciliation_status:"N/A",guide_paid_actual:"N/A",fees_paid_actual:"N/A",expense_reconciled_flag:"Yes",tour_key:tourKey,source_line_id:tourKey,record_type:"service",fee_allocation_method:"none",exclude_from_invoice_sync:"No",record_status:"no_payment_required"
+          };
+        });
+      }
+      async function postCollaborationToAccounting(){
+        const record=normalizeCrmRecord(formRecord());
+        if(!clean(record.inquiry_id)||!clean(record.guest_id)){ showToast("Save the CRM record first"); return; }
+        if(normalizePayment(record.payment_status)!=="no_payment_required"||clean(record.payment_method).toLowerCase()!=="marketing collaboration"){ showToast("Use No Payment Required and Marketing Collaboration"); return; }
+        if(!["booked","completed"].includes(normalizeStatus(record.status))){ showToast("Set the record to Booked or Completed first"); return; }
+        if(!clean(record.invoice_no)){ showToast("Add the collaboration reference first"); return; }
+        let rows;
+        try{ rows=buildCollaborationAccountingRows(record); }catch(error){ showToast(error.message); return; }
+        if(!window.confirm(`Post ${rows.length} zero-revenue collaboration service row${rows.length===1?"":"s"} for ${record.invoice_no}? No guide payable or Stripe fee will be created.`)) return;
+        const button=els.collaborationToAcctBtn; button.disabled=true; const original=button.textContent; button.textContent="Posting…";
+        try{ const result=await api("post_collaboration_accounting",{record,accounting_rows:rows}); const count=Number(result.posted_count||rows.length); showToast(`${count} collaboration service row${count===1?"":"s"} posted. No guide payable was created.`); }
+        catch(error){ showToast("Collaboration accounting post failed: "+error.message); }
+        finally{ button.textContent=original; toggleInvoiceActions(formRecord()); }
+      }
+      function accountingNumber(value){ const number=Number(String(value==null?"":value).replace(/[$,\s]/g,"")); return Number.isFinite(number)?number:0; }
+      function assignmentForAccountingItem(record,item){ const date=toDateValue(item.date||item.tour_date); const code=productCodeFromValue(item.product_selected||item.tour); const rows=currentAssignmentRows(record).filter(row=>toDateValue(row.service_date)===date); const exact=rows.find(row=>productCodeFromValue(row.product_selected)===code); if(exact) return exact; const service=clean(item.service_type||deriveServiceType(item.product_selected||item.tour)).toLowerCase(); const serviceMatches=rows.filter(row=>{ const candidate=clean(row.service_type).toLowerCase(); return candidate===service||(service==="activity"&&candidate==="night walk")||(service==="night walk"&&candidate==="activity"); }); if(serviceMatches.length===1) return serviceMatches[0]; return rows.length===1?rows[0]:null; }
+      function buildZelleAccountingRows(record){
+        const items=normalizeTourItems(record).filter(item=>clean(item.product_selected)&&toDateValue(item.date||item.tour_date));
+        if(!items.length) throw new Error("Add a dated product/service before posting to accounting");
+        const primaryUnitPrice=accountingNumber(record.quoted_amount);
+        const createdAt=new Date().toISOString();
+        return items.map((item,index)=>{
+          const date=toDateValue(item.date||item.tour_date);
+          const party=Math.max(1,Number(String(item.guests||record.guest_count||1).match(/\d+/)?.[0]||1));
+          const unitPrice=accountingNumber(item.price)||(index===0?primaryUnitPrice:0);
+          if(!(unitPrice>0)) throw new Error(`Add the price per person for ${productTitle(item.product_selected)||item.tour||"service"}`);
+          const assignment=assignmentForAccountingItem(record,item);
+          if(!assignment) throw new Error(`Add one provider assignment for ${productTitle(item.product_selected)||date} before posting to accounting`);
+          const guide=clean(assignment.provider_name)==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name);
+          if(!guide) throw new Error(`Add the provider name for ${date} before posting to accounting`);
+          const product=productCodeFromValue(item.product_selected||item.tour);
+          if(!product) throw new Error(`Select the accounting product code for ${date}`);
+          const accountingServiceType=product==="MBW016"?"Wildlife":clean(item.service_type||deriveServiceType(item.product_selected||item.tour));
+          const standard=accountingNumber(MBW_PRODUCT_PRICE_BY_CODE[product]);
+          const amount=Math.round(unitPrice*party*100)/100;
+          const itemId=clean(item.id)||String(index+1);
+          const tourKey=["crm_zelle",record.inquiry_id,itemId,product,date,party].join("|");
+          return {
+            created_at_iso:createdAt,stripe_environment:"manual",invoice_no:clean(record.invoice_no),invoice_no_txt:clean(record.invoice_no),date_paid:toDateValue(record.date_paid),tour_date:date,
+            tour_completed:(normalizeStatus(item.status)==="completed"||normalizeStatus(record.status)==="completed")?"Yes":"No",guest_first_name:clean(record.first_name),guest_last_name:clean(record.last_name),guest_email:clean(record.email),guest_phone:clean(record.phone_normalized||record.phone_number),home_country:clean(record.home_country||record.country),party_size:String(party),
+            service_type:accountingServiceType,product_selected:product,tour_title:productTitle(item.product_selected)||clean(item.tour),tour_guide:guide,payment_method:"Zelle",
+            invoice_id:"zelle|"+clean(record.invoice_no)+"|"+clean(record.inquiry_id),transaction_id:"zelle|"+clean(record.inquiry_id),payment_reference_note:"Manual Zelle payment posted from CRM "+clean(record.inquiry_id),
+            guest_rate_override:unitPrice,standard_price_per_person:standard||unitPrice,final_price_per_person:unitPrice,pricing_reason:standard&&Math.abs(unitPrice-standard)>.009?"CRM price override":"Catalog price",pricing_notes:"Posted from CRM using Zelle to Accounting",
+            amount_received:amount,transaction_fee_total:0,pickup_location:clean(item.pickup_location||record.pickup_location),pickup_address_or_hotel:clean(item.pickup_location||record.pickup_location),notes:[clean(item.notes),"CRM Zelle payment"].filter(Boolean).join(" · "),
+            inquiry_id:clean(record.inquiry_id),guest_id:clean(record.guest_id),booking_id:clean(record.booking_id),currency:"USD",gross_payment_amount:amount,tour_key:tourKey,source_line_id:tourKey,record_type:"service",fee_allocation_method:"manual_zelle_policy",exclude_from_invoice_sync:"No",record_status:"paid"
+          };
+        });
+      }
+      async function postZelleToAccounting(){
+        const record=normalizeCrmRecord(formRecord());
+        if(!clean(record.inquiry_id)||!clean(record.guest_id)){ showToast("Save the CRM record first"); return; }
+        if(clean(record.payment_method).toLowerCase()!=="zelle"){ showToast("Payment method must be Zelle"); return; }
+        if(normalizePayment(record.payment_status)!=="paid"){ showToast("Payment status must be Paid"); return; }
+        if(!clean(record.invoice_no)||!toDateValue(record.date_paid)){ showToast("Add the invoice number and payment date first"); return; }
+        let rows;
+        try{ rows=buildZelleAccountingRows(record); }catch(error){ showToast(error.message); return; }
+        const total=rows.reduce((sum,row)=>sum+Number(row.amount_received||0),0);
+        if(!window.confirm(`Post ${rows.length} Zelle service row${rows.length===1?"":"s"} for ${record.invoice_no} totaling $${total.toFixed(2)} to accounting?`)) return;
+        const button=els.zelleToAcctBtn; button.disabled=true; const original=button.textContent; button.textContent="Posting…";
+        try{ const result=await api("post_zelle_accounting",{record,accounting_rows:rows}); let attributionOk=false; try{const attributionResponse=await fetch("https://mindobirdwatching.com/api/attribution/zelle-link",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({inquiry_id:record.inquiry_id,guest_id:record.guest_id,booking_id:record.booking_id||"",invoice_id:["zelle",record.invoice_no,record.inquiry_id].join("_").replace(/[^A-Za-z0-9_.-]/g,"_").slice(0,128),booking_status:["booked","completed"].includes(normalizeStatus(record.status))?normalizeStatus(record.status):"confirmed",payment_status:"paid",amount_received:total,currency:"USD",email:record.email||"",phone_number:record.phone_number||"",product_selected:record.product_selected||record.tour_type||"",meta_fbp:record.meta_fbp||record.fbp||"",meta_fbc:record.meta_fbc||record.fbc||""})});attributionOk=attributionResponse.ok;}catch(error){console.warn("Zelle conversion attribution failed",error);} const count=Number(result.posted_count||rows.length); showToast(attributionOk?`${count} Zelle accounting row${count===1?"":"s"} posted. Invoice and guide expenses will sync automatically.`:`${count} Zelle accounting row${count===1?"":"s"} posted; conversion attribution needs review.`); }
+        catch(error){ showToast("Zelle accounting post failed: "+error.message); }
+        finally{ button.textContent=original; toggleInvoiceActions(formRecord()); }
+      }
+      function canCopyInvoiceTsv(r){ const status=normalizeStatus(r.status); const payment=normalizePayment(r.payment_status); if(payment==="no_payment_required") return false; return ["booked","completed"].includes(status)||["deposit_paid","paid"].includes(payment); }
+      function copyInvoiceTsv(){ const r=normalizeCrmRecord(formRecord()); if(!canCopyInvoiceTsv(r)){ showToast("Set status to booked/completed or payment to deposit paid/paid first"); return; } const values=[r.invoice_no||"",r.date_paid||datePlusDays(0),r.requested_date||"",r.tour_completed||"No",r.first_name||"",r.last_name||"",r.email||"",r.phone_normalized||r.phone_number||"",r.home_country||r.country||"",r.guest_count||"",r.service_type||deriveServiceType(r.tour_type),r.product_selected||deriveProductCode(r.tour_type)]; const line=values.map(tsvCell).join("\t"); navigator.clipboard.writeText(line).then(()=>showToast("Invoice TSV copied for accounting")).catch(()=>showToast("Could not copy TSV")); }
+      function copyInvoiceBackendTsv(){ const r=normalizeCrmRecord(formRecord()); if(!canCopyInvoiceTsv(r)){ showToast("Set status to booked/completed or payment to deposit paid/paid first"); return; } if(!clean(r.inquiry_id)||!clean(r.guest_id)){ showToast("Save the CRM record before copying backend IDs"); return; } const values=[r.inquiry_id||"",r.guest_id||"",r.booking_id||"","","","","","",""]; copyPlainText(values.map(tsvCell).join("\t")).then(()=>showToast("Invoice backend TSV copied · paste at column CN")).catch(()=>showToast("Could not copy backend TSV")); }
+      function buildDepositLink(r){ const inquiryId=clean(r&&r.inquiry_id); if(!inquiryId) return ""; const url=new URL("https://mindobirdwatching.com/book-tour/deposit/"); url.searchParams.set("inquiry_id",inquiryId); return url.toString(); }
+      function copyDepositLink(){ const r=normalizeCrmRecord(formRecord()); const link=buildDepositLink(r); if(!link){ showToast("Save the CRM record before copying a deposit link"); return; } copyPlainText(link).then(()=>showToast("Personalized $100 deposit link copied")).catch(()=>showToast("Could not copy deposit link")); }
+      function tsvCell(value){ return String(value||"").replace(/\t/g," ").replace(/\r?\n/g," ").trim(); }
+      function deriveServiceType(tour){ const code=productCodeFromValue(tour); if(code&&MBW_PRODUCT_SERVICE_BY_CODE[code]) return MBW_PRODUCT_SERVICE_BY_CODE[code]; const t=clean(tour).toLowerCase(); if(t.includes("insect")||t.includes("macro")||t.includes("bear")||t.includes("oso")) return "Specialty Wildlife"; if(t.includes("transport")) return "Transportation"; if(t.includes("night")||t.includes("waterfall")||t.includes("chocolate")||t.includes("coffee")||t.includes("butterfly")||t.includes("frog")||t.includes("quad")||t.includes("canopy")||t.includes("tubing")||t.includes("canyoning")||t.includes("paintball")) return "Activity"; if(t.includes("custom")) return "Custom"; return "Birdwatching"; }
+      function deriveProductCode(tour){ const code=productCodeFromValue(tour); return code ? productLabelFromCode(code) : ""; }
+      function moveCalendar(months){ const d=new Date(state.calendarDate); d.setMonth(d.getMonth()+months,1); state.calendarDate=d; render(); }
+      function uniqueGuestSummary(rows){
+        const parties=new Map();
+        rows.forEach((row,index)=>{
+          const parent=state.records.find(record=>record.inquiry_id&&record.inquiry_id===row.inquiry_id)||row;
+          const key=clean(row.guest_id)||clean(row.inquiry_id)||("unidentified-"+index);
+          // Transportation rows may store vehicles; use the passenger party size instead.
+          const value=reportServiceKey(row)==="transportation"?clean(row._calendar_assignment?.guest_count||parent.guest_count):clean(row.guest_count);
+          const count=guestNumber(value),estimated=/\+|\d\s*(?:to|[-–])\s*\d/i.test(value);
+          const previous=parties.get(key);
+          if(!previous||count>previous.count) parties.set(key,{count,estimated});
+          else if(count===previous.count&&estimated) previous.estimated=true;
+        });
+        const values=[...parties.values()],count=values.reduce((sum,party)=>sum+party.count,0);
+        const uncertain=values.some(party=>party.estimated||!party.count);
+        return {count,uncertain,label:count?String(count)+(uncertain?"+":""):values.length?"Unknown":"0"};
+      }
+      function isBookedCalendarService(row){
+        const status=normalizeStatus(row.status);
+        if(["cancelled","did_not_book","duplicate"].includes(status)) return false;
+        if(["booked","completed","deposit_paid"].includes(status)) return true;
+        // A paid enquiry does not automatically confirm its unselected request rows.
+        return !row._calendar_item&&["deposit_paid","paid"].includes(normalizePayment(row.payment_status));
+      }
+      function calendarDaySummary(rows){
+        const services=state.calendarMode==="followups"?[]:rows.filter(row=>!row._calendar_followup);
+        const booked=services.filter(isBookedCalendarService);
+        const guests=uniqueGuestSummary(booked);
+        const openToGroup=booked.some(row=>row.grouping_preference==="open_to_group");
+        return {services:services.length,followups:rows.length-services.length,guests,bookedServices:booked.length,openToGroup};
+      }
+      function renderCalendar(){ if(!els.calendarGrid) return;
+        if(state.operationsStatus&&state.operationsStatus!=="ready"){
+          els.calendarTitle.textContent=state.operationsStatus==="loading"?"Loading calendar services…":"Calendar services unavailable";
+          els.calendarGrid.innerHTML=`<div class="loadingState" role="status">${esc(state.operationsError||"Loading assignment-backed calendar…")}</div>`;
+          els.agendaRecords.innerHTML="";els.calendarPipelineCount.textContent="—";
+          if(els.calendarPipelineRecords)els.calendarPipelineRecords.innerHTML=els.calendarGrid.innerHTML;
+          return;
+        } const activeServiceCount=getFiltered().filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)).reduce((sum,record)=>sum+calendarEntriesForRecord(record).length,0); els.calendarPipelineCount.textContent=activeServiceCount; els.calendarLegends.querySelectorAll("[data-legend-kind]").forEach(button=>button.classList.toggle("selected",Boolean(state.calendarLegendFilter&&state.calendarLegendFilter.kind===button.dataset.legendKind&&state.calendarLegendFilter.value===button.dataset.legendValue))); const listMode=state.calendarDisplay==="list"; els.calendarNavigationRow.hidden=listMode; els.calendarMonthViewBtn.classList.toggle("active",!listMode); els.calendarListViewBtn.classList.toggle("active",listMode); els.calendarMonthPanel.hidden=listMode; els.calendarPipelineListPanel.hidden=!listMode; [els.calendarModeInput,els.calendarPrevBtn,els.calendarTodayBtn,els.calendarNextBtn].forEach(control=>control.hidden=listMode); if(listMode){renderActivePipelineCalendarList();return;} const base=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1); const title=base.toLocaleDateString("en-US",{month:"long",year:"numeric"}); const modeLabel=state.calendarMode==="followups"?"Follow-ups":state.calendarMode==="all"?"All activity":"Tour dates"; els.calendarTitle.textContent=title+" · "+modeLabel; if(els.calendarModeInput) els.calendarModeInput.value=state.calendarMode; const first=new Date(base); first.setDate(1-first.getDay()); const cells=[]; cells.push(...["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<div class="weekday">${day}</div>`)); for(let i=0;i<42;i++){ const day=new Date(first); day.setDate(first.getDate()+i); const iso=toIsoDate(day); const outside=day.getMonth()!==base.getMonth(); const today=iso===datePlusDays(0); const past=iso<datePlusDays(0); const selected=iso===state.selectedCalendarDate; const records=calendarRecordsForDate(iso); const summary=calendarDaySummary(records); const capacity=summary.bookedServices?capacityInfo(summary.guests.count):{className:"open",label:summary.services?"Not booked":"Follow-ups"}; if(summary.bookedServices&&(summary.guests.uncertain||!summary.guests.count)) capacity.label=summary.guests.count?summary.guests.label+" guests booked":"Guest count needed"; const visibleEvents=records.slice(0,3).map(r=>calendarEvent(r,iso)).join(""); const moreEvents=records.length>3?`<span class="moreEvents">+${records.length-3} more</span>`:""; cells.push(`<button class="dayCell ${outside?"outside":""} ${past?"past":""} ${today?"today":""} ${selected?"selected":""}" data-date="${iso}" type="button"><span class="dayHead"><span>${day.getDate()}</span><span class="dayCount">${records.length?(state.calendarMode==="followups"?records.length+" follow-up"+(records.length===1?"":"s"):summary.services+" service"+(summary.services===1?"":"s")+(summary.followups?" · "+summary.followups+" follow-up"+(summary.followups===1?"":"s"):"")):""}</span></span><span class="dayEvents">${visibleEvents}${moreEvents}</span>${records.length?`<span class="capacity ${capacity.className}">${esc(capacity.label)}${capacity.alert?`<span class="capacityAlert">${esc(capacity.alert)}</span>`:""}</span>${summary.openToGroup?`<span class="capacity open">Willing to share · Verify space</span>`:""}`:""}</button>`); }
+        els.calendarGrid.innerHTML=cells.join(""); els.calendarGrid.querySelectorAll(".dayCell").forEach(btn=>btn.addEventListener("click",()=>{state.selectedCalendarDate=btn.dataset.date; renderCalendar();})); els.calendarGrid.querySelectorAll(".calEvent[data-id]").forEach(event=>event.addEventListener("click",click=>{click.stopPropagation();selectRecord(event.dataset.id);})); renderAgenda(); }
+      function renderActivePipelineCalendarList(){ const active=getFiltered().filter(record=>!isArchivedStatus(record)&&!isClosedStatus(record.status)); let entries=active.flatMap(record=>calendarEntriesForRecord(record).map(entry=>{ const item=entry._calendar_item||primaryTourItemFromRecord(entry); const itemStatus=normalizeStatus(item.status||entry.status); const date=toDateValue(item.date||item.tour_date||entry.requested_date||entry.requested_date_start); const single=Object.assign({},item,{status:itemStatus,date:date,tour_date:date}); return Object.assign({},entry,{_pipeline_list:true,status:itemStatus,requested_date:date,requested_date_start:date,tour_type:item.tour||entry.tour_type,product_selected:item.product_selected||entry.product_selected,guest_count:item.guests||entry.guest_count,pickup_location:item.pickup_location||entry.pickup_location,tour_items:JSON.stringify([single]),tour_items_json:JSON.stringify([single]),tour_count:"1"}); })); const filter=clean(els.pipelineStatusFilter.value); if(filter) entries=entries.filter(entry=>normalizeStatus(entry.status)===filter); if(els.pipelineSortInput.value==="updated") entries.sort((a,b)=>String(b.updated_at||b.created_at||"").localeCompare(String(a.updated_at||a.created_at||""))); else entries.sort((a,b)=>{ const ad=toDateValue(a.requested_date)||"9999-12-31"; const bd=toDateValue(b.requested_date)||"9999-12-31"; return ad.localeCompare(bd)||statusRank(a)-statusRank(b)||clean(a.full_name).localeCompare(clean(b.full_name)); }); els.calendarTitle.textContent="Active Pipeline · "+entries.length+" service"+(entries.length===1?"":"s"); renderRecords(els.calendarPipelineRecords,entries); }
+      function renderAgenda(){ const records=calendarRecordsForDate(state.selectedCalendarDate).sort((a,b)=>statusRank(a)-statusRank(b)); const date=parseDateOnly(state.selectedCalendarDate); const label=date?date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}):"Select a day"; const summary=calendarDaySummary(records); const services=summary.services+" service"+(summary.services===1?"":"s"); const guests=summary.bookedServices?(summary.guests.label+" guest"+(summary.guests.label==="1"?"":"s")+" booked"):"Not booked"; const details=state.calendarMode==="followups"?records.length+" follow-up"+(records.length===1?"":"s"):guests+" · "+services+(summary.followups?" · "+summary.followups+" follow-up"+(summary.followups===1?"":"s"):""); els.agendaDate.textContent=state.selectedCalendarDate?(label+" · "+details):"Select a day"; renderRecords(els.agendaRecords,records); }
+      function formatPipelineDate(value){ const date=parseDateOnly(value); return date?date.toLocaleDateString("en-US",{month:"short",day:"numeric"}):value; }
+      function calendarRecordsForDate(iso){ const mode=state.calendarMode||"tour"; const entries=[]; getFiltered().forEach(r=>{ const status=normalizeStatus(r.status); if(["cancelled","did_not_book","duplicate"].includes(status)) return; const tourEntries=calendarEntriesForRecord(r).filter(entry=>isRecordOnTourDate(entry,iso)); const followHit=r.followup_date===iso; if(mode==="followups"&&followHit) entries.push(r); else if(mode==="all"){ entries.push(...tourEntries); if(followHit) entries.push(Object.assign({},r,{_calendar_followup:true})); } else entries.push(...tourEntries); }); return state.calendarLegendFilter?entries.filter(entry=>matchesCalendarLegend(entry,iso)):entries; }
+      function matchesCalendarLegend(record,iso){ const filter=state.calendarLegendFilter; if(!filter) return true; if(filter.kind==="status") return calendarType(record,iso)===filter.value; return serviceVisual(record).label===filter.value; }
+      function isRecordOnTourDate(r,iso){ if(r._calendar_item) return r.requested_date===iso; const items=normalizeTourItems(r); if(items.length) return items.some(item=>item.tour_date===iso); const start=toDateValue(r.requested_date||r.requested_date_start); if(!start) return false; return iso===start; }
+      function calendarEvent(r,iso){ const type=calendarType(r,iso); const service=serviceVisual(r,type==="follow"&&state.calendarMode!=="tour"); const name=(clean(r.full_name)||"Guest")+" "+reportCountryFlag(r.country||r.home_country); const guests=r.guest_count?` · ${clean(r.guest_count)}p`:""; const fullText=service.fullLabel+" · "+name+guests; return `<span class="calEvent ${type}" data-id="${esc(r.inquiry_id)}" title="${esc(fullText)}"><span class="serviceIcon" aria-hidden="true">${service.icon}</span><span class="calEventText">${esc(service.label)} · ${esc(name)}${esc(guests)}</span></span>`; }
+      function activityServiceDetails(record){
+        const item=record._calendar_item||record;
+        const product=clean(item.product_selected);
+        const code=productCodeFromValue(product);
+        const service=MBW_PRODUCT_SERVICE_BY_CODE[code]||clean(item.service_type);
+        const title=clean(item.tour||item.tour_type||item.tour_category||productTitle(product)||item.service_type);
+        const genericBirding=/^(?:birdwatching|birding)(?:\s+(?:half[ -]?day|full[ -]?day))?(?:\s+tour)?$/i.test(title);
+        const genericActivity=/^(?:activity|custom|other|other activity or tour)$/i.test(title);
+        const displayTitle=(genericBirding||genericActivity)&&MBW_PRODUCT_SERVICE_BY_CODE[code]&&!/^(birdwatching|tour upgrade)$/i.test(service)?productTitle(product):title;
+        return {title:displayTitle,product,code,service};
+      }
+      function serviceVisual(record,isFollowup){
+        if(isFollowup||record._calendar_followup) return {icon:"↻",label:"Follow-up",fullLabel:"Follow-up"};
+        const details=activityServiceDetails(record);
+        const full=details.title;
+        const search=[full,details.service,details.product].map(clean).join(" ").toLowerCase();
+        if(search.includes("insect")||search.includes("macro")) return {icon:"✦",label:"Macro wildlife",fullLabel:full||"Private Insect & Macro Wildlife Search"};
+        if(search.includes("night")) return {icon:"🌙",label:"Night walk",fullLabel:full||"Night Walk"};
+        if(search.includes("transport")||search.includes("quito to mindo")) return {icon:"🚐",label:"Transport",fullLabel:full||"Transportation"};
+        if(search.includes("waterfall")||search.includes("hike")||search.includes("hiking")) return {icon:"🥾",label:"Waterfall",fullLabel:full||"Waterfall Tour / Hike"};
+        if(search.includes("chocolate")||search.includes("cacao")) return {icon:"🍫",label:"Chocolate",fullLabel:full||"Chocolate Tour"};
+        if(search.includes("lodg")||search.includes("hotel")||search.includes("glamp")||search.includes("accommodation")) return {icon:"🏨",label:"Lodging",fullLabel:full||"Lodging"};
+        if(/mountain bik|biking|cycling/.test(search)) return {icon:"🚵🏼",label:"Mountain biking",fullLabel:full||"Mountain Biking"};
+        if(details.service&&!/^(birdwatching|tour upgrade)$/i.test(details.service)) return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
+        if(search.includes("custom")&&!search.includes("bird")) return {icon:"✦",label:"Custom",fullLabel:full||"Custom activity"};
+        if(search.includes("half")) return {icon:"🐦",label:"Half day",fullLabel:full||"Half Day Birding"};
+        if(search.includes("full")||search.includes("quest")||search.includes("toucan")) return {icon:"🐦",label:"Full day",fullLabel:full||"Full Day Birding"};
+        if(search.includes("cock")||search.includes("andean")) return {icon:"🐦",label:"Dawn birding",fullLabel:full||"Dawn Birding"};
+        if(search.includes("bird")||search.includes("forest")||search.includes("jewels")||search.includes("mbw00")) return {icon:"🐦",label:"Birding",fullLabel:full||"Birding"};
+        return {icon:"✦",label:full||"Other",fullLabel:full||"Other activity"};
+      }
+      function reportServiceKey(record){
+        const details=activityServiceDetails(record);
+        const service=details.service.toLowerCase();
+        const knownType={MBW016:"night_walk",MBW013:"waterfall",MBW011:"chocolate"}[details.code];
+        if(knownType) return knownType;
+        if(service==="transportation") return "transportation";
+        if(service==="accommodation") return "lodging";
+        if(MBW_PRODUCT_SERVICE_BY_CODE[details.code]) return /^(birdwatching|tour upgrade)$/.test(service)?"birding":"other";
+        const full=[details.title,details.service,details.product].map(clean).join(" ").toLowerCase();
+        if(full.includes("night")) return "night_walk";
+        if(full.includes("transport")||full.includes("quito to mindo")) return "transportation";
+        if(full.includes("waterfall")||full.includes("hike")||full.includes("hiking")) return "waterfall";
+        if(full.includes("chocolate")||full.includes("cacao")) return "chocolate";
+        if(full.includes("lodg")||full.includes("hotel")||full.includes("glamp")||full.includes("accommodation")) return "lodging";
+        if(service&&!/^(birdwatching|tour upgrade)$/.test(service)) return "other";
+        if(full.includes("bird")||full.includes("half")||full.includes("full")||full.includes("quest")||full.includes("toucan")||full.includes("cock")||full.includes("andean")||full.includes("forest")||full.includes("jewels")||full.includes("mbw00")) return "birding";
+        return "other";
+      }
+      function allReportActivities(){
+        const rows=[];
+        state.records.forEach(record=>{
+          if(normalizeStatus(record.status)==="duplicate") return;
+          calendarEntriesForRecord(record).forEach(entry=>{
+            const date=toDateValue(entry.requested_date||entry.requested_date_start);
+            if(!date) return;
+            const inquiryStatus=normalizeStatus(record.status);
+            // A closed inquiry cannot leave old child services in operational reports.
+            const preserveClosedService=inquiryStatus==="completed"&&["cancelled","did_not_book"].includes(normalizeStatus(entry.status));
+            const status=isClosedStatus(inquiryStatus)&&!preserveClosedService?inquiryStatus:entry.status;
+            rows.push(Object.assign({},entry,{status,_report_date:date,_report_type:reportServiceKey(entry)}));
+          });
+        });
+        return rows.sort((a,b)=>a._report_date.localeCompare(b._report_date)||String(a.full_name||"").localeCompare(String(b.full_name||"")));
+      }
+      function reportBounds(){
+        const range=els.reportRangeInput.value||"30";
+        const today=datePlusDays(0);
+        let start=today;
+        let end="";
+        if(range==="all") return {start:"",end:"",label:"All dated activities"};
+        if(range==="custom"){
+          start=toDateValue(els.reportStartInput.value)||today;
+          end=toDateValue(els.reportEndInput.value)||datePlusDays(30);
+        }else if(range==="month"){
+          const now=new Date();
+          start=toIsoDate(new Date(now.getFullYear(),now.getMonth(),1));
+          end=toIsoDate(new Date(now.getFullYear(),now.getMonth()+1,0));
+        }else{
+          const days=Math.max(Number(range)||30,1);
+          end=datePlusDays(days-1);
+        }
+        if(start>end&&end){ const swap=start; start=end; end=swap; }
+        els.reportStartInput.value=start;
+        els.reportEndInput.value=end;
+        return {start,end,label:formatReportDate(start)+" – "+formatReportDate(end)};
+      }
+      function reportStatusMatches(record,filter){
+        const status=normalizeStatus(record.status);
+        const payment=normalizePayment(record.payment_status);
+        if(filter==="all") return true;
+        if(isArchivedStatus(record)) return false;
+        if(isClosedStatus(status)) return filter===status;
+        if(filter==="active") return !["completed","cancelled","did_not_book","duplicate"].includes(status);
+        if(filter==="pipeline") return ["new","contacted","planning","qualified","follow_up"].includes(status);
+        if(filter==="quoted") return status==="quoted"||record.quote_status==="sent";
+        if(filter==="deposit_pending") return status==="deposit_pending"||payment==="deposit_pending";
+        if(filter==="deposit_paid") return status==="deposit_paid"||payment==="deposit_paid";
+        if(filter==="payment_pending") return status==="payment_pending"||payment==="payment_pending";
+        if(filter==="booked") return ["booked","confirmed"].includes(status);
+        if(filter==="confirmed") return ["booked","confirmed"].includes(status)||["deposit_paid","paid"].includes(payment)||status==="deposit_paid";
+        return status===filter;
+      }
+      function reportInquiryFilters(){
+        const labels={searchInput:"Search",inlineSearchInput:"Search",viewFilter:"View",statusFilter:"Inquiry status",inlineStatusFilter:"Inquiry status",quoteFilter:"Quote",paymentFilter:"Payment",repFilter:"Rep",inlineRepFilter:"Rep",followupFilter:"Follow-up"};
+        return Object.entries(labels).filter(([id])=>clean(els[id]?.value)&&!(id==="viewFilter"&&els[id].value==="all")).map(([id,label])=>{
+          const input=els[id],option=Array.from(input.options||[]).find(option=>option.value===input.value);
+          return label+": "+(option?option.textContent:clean(input.value));
+        }).filter((label,index,all)=>all.indexOf(label)===index);
+      }
+      function filteredReportRows(){
+        const bounds=reportBounds();
+        const type=els.reportTypeInput.value||"all";
+        const status=els.reportStatusInput.value||"active";
+        const inquiryIds=reportInquiryFilters().length?new Set(getFiltered().map(record=>record.inquiry_id)):null;
+        return allReportActivities().filter(row=>(!inquiryIds||inquiryIds.has(row.inquiry_id))&&(!bounds.start||row._report_date>=bounds.start)&&(!bounds.end||row._report_date<=bounds.end)&&(type==="all"||row._report_type===type)&&reportStatusMatches(row,status));
+      }
+      function renderReports(){
+        if(!els.reportTableBody) return;
+        const loading=state.operationsStatus&&state.operationsStatus!=="ready";
+        [els.copyReportBtn,els.downloadReportBtn,els.printReportBtn,els.copyGuideReportBtn].forEach(button=>{if(button)button.disabled=Boolean(loading);});
+        if(loading){
+          [els.reportActivityCount,els.reportGuestCount,els.reportBookedCount,els.reportActionCount].forEach(node=>node.textContent="—");
+          els.reportRangeHint.textContent=state.operationsStatus==="loading"?"Loading assignment-backed report…":state.operationsError;
+          els.reportTableBody.innerHTML=`<tr><td colspan="8" class="emptyReport" role="status">${esc(els.reportRangeHint.textContent)}</td></tr>`;
+          return;
+        }
+        const rows=filteredReportRows();
+        const bounds=reportBounds();
+        const guests=uniqueGuestSummary(rows).label;
+        const booked=rows.filter(row=>reportStatusMatches(row,"confirmed")).length;
+        const action=rows.filter(row=>!reportStatusMatches(row,"confirmed")&&!["completed","cancelled","did_not_book","spam","duplicate"].includes(normalizeStatus(row.status))).length;
+        els.reportActivityCount.textContent=rows.length;
+        els.reportGuestCount.textContent=guests;
+        els.reportBookedCount.textContent=booked;
+        els.reportActionCount.textContent=action;
+        els.reportRangeHint.textContent=bounds.label+" · "+reportTypeLabel(els.reportTypeInput.value)+" · "+reportStatusLabel(els.reportStatusInput.value)+" · "+(reportInquiryFilters().join(" · ")||"All guest inquiries");
+        els.reportTableBody.innerHTML=rows.length?rows.map(row=>{
+          const visual=serviceVisual(row);
+          const status=normalizeStatus(row.status);
+          const phone=clean(row.phone_normalized||row.phone_number||row.phone_raw);
+          const phoneLink=reportPhoneMarkup(phone,row);
+          return `<tr><td>${reportDateMarkup(row._report_date)}</td><td><span class="reportType"><span aria-hidden="true">${visual.icon}</span>${esc(visual.fullLabel)}</span></td><td>${reportGuestMarkup(row)}<span class="reportSub">${reportCountryMarkup(row.country||row.home_country||"")}</span></td><td>${esc(row.guest_count||"?")}</td><td class="reportStatus"><span class="pill ${statusClass(status)}">${esc(labelStatus(status))}</span></td><td>${esc(normalizePayment(row.payment_status)||"—")}</td><td>${esc(row.pickup_location||"—")}</td><td>${phoneLink}</td></tr>`;
+        }).join(""):`<tr><td class="emptyReport" colspan="8">No activities match this report.</td></tr>`;
+      }
+      function applyReportPreset(preset){
+        const settings={
+          birding:["30","birding","active"],
+          night_walk:["30","night_walk","active"],
+          confirmed:["30","all","confirmed"],
+          deposit_pending:["30","all","deposit_pending"],
+          transportation:["30","transportation","active"],
+          guides:["30","all","confirmed"]
+        }[preset]||["30","all","active"];
+        els.reportRangeInput.value=settings[0];
+        els.reportTypeInput.value=settings[1];
+        els.reportStatusInput.value=settings[2];
+        renderReports();
+        showToast("Report preset applied");
+      }
+      function reportTypeLabel(value){ return ({all:"All tour types",birding:"Birding",night_walk:"Night walks",transportation:"Transportation",waterfall:"Waterfall / hike",chocolate:"Chocolate",lodging:"Lodging",other:"Other / custom"})[value]||"All tour types"; }
+      function reportStatusLabel(value){return({active:"Any Active Status",pipeline:"Pipeline",quoted:"Quoted",deposit_pending:"Deposit Pending",deposit_paid:"Deposit Paid",payment_pending:"Payment Pending",booked:"Booked",confirmed:"Booked / Paid",completed:"Completed",cancelled:"Cancelled",did_not_book:"Did Not Book",all:"All Statuses"})[value]||"Any Active Status";}
+      function reportGuestMarkup(row){
+        const name=clean(row.full_name)||"Guest",id=clean(row.inquiry_id);
+        return id&&state.records.some(record=>record.inquiry_id===id)?`<button type="button" class="reportGuest" data-report-inquiry="${esc(id)}" aria-label="${esc("Open profile for "+name)}">${esc(name)}</button>`:`<span class="reportGuest">${esc(name)}</span>`;
+      }
+      function handleReportGuestClick(event){
+        const button=event.target.closest("[data-report-inquiry]");
+        if(!button)return;
+        const id=button.dataset.reportInquiry;
+        if(!state.records.some(record=>record.inquiry_id===id)){showToast("This inquiry is no longer available. Refresh CRM and try again.");return;}
+        selectRecord(id);
+      }
+      function reportDateMarkup(value){
+        const date=parseDateOnly(value);
+        return date?`<time datetime="${esc(toDateValue(value))}"><span class="reportDay">${esc(date.toLocaleDateString("en-US",{weekday:"short"}))}</span><span class="reportDate">${esc(formatReportDate(value))}</span></time>`:esc(clean(value)||"—");
+      }
+      let reportCountryAliases;
+      function reportCountryFlag(value){
+        if(!reportCountryAliases){
+          reportCountryAliases=new Map();
+          try{
+            const names=new Intl.DisplayNames(["en"],{type:"region"});
+            const retired=new Set("AN BU CS DD DY FX HV NH NT QU RH SU TP UK VD YD YU ZR".split(" "));
+            for(let a=65;a<=90;a++)for(let b=65;b<=90;b++){
+              const code=String.fromCharCode(a,b),name=names.of(code);
+              if(name!==code&&!retired.has(code)){if(!reportCountryAliases.has(name.toLowerCase()))reportCountryAliases.set(name.toLowerCase(),code);reportCountryAliases.set(code.toLowerCase(),code);}
+            }
+          }catch(error){ /* Keep the recorded country text when flags are unavailable. */ }
+          Object.entries({usa:"US",us:"US","united states of america":"US",uk:"GB",england:"GB",scotland:"GB",wales:"GB","great britain":"GB","the netherlands":"NL","czech republic":"CZ","south korea":"KR",russia:"RU",taiwan:"TW",vietnam:"VN",turkey:"TR"}).forEach(([name,code])=>reportCountryAliases.set(name,code));
+        }
+        return clean(value).split(/\s*\/\s*/).map(part=>reportCountryAliases.get(part.toLowerCase())).filter(Boolean).map(code=>String.fromCodePoint(...[...code].map(letter=>127397+letter.charCodeAt(0)))).join(" ");
+      }
+      function reportCountryMarkup(value){const flag=reportCountryFlag(value);return (flag?`<span class="reportCountryFlag" aria-hidden="true">${flag}</span>`:"")+esc(value);}
+      function reportPhoneMarkup(phone,row){
+        const digits=normalizePhone(phone,row.country||row.home_country);
+        return /^[1-9]\d{6,14}$/.test(digits)?`<a class="reportPhone" href="https://wa.me/${digits}" target="_blank" rel="noopener noreferrer" aria-label="${esc("Open WhatsApp for "+(row.full_name||"guest"))}">${esc(phone)}</a>`:esc(phone||"—");
+      }
+      function formatReportDate(value){ const date=parseDateOnly(value); return date?date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):clean(value); }
+      function reportPlainText(){
+        const rows=filteredReportRows();
+        const heading="MBW Tour Report — "+reportTypeLabel(els.reportTypeInput.value)+" — "+reportStatusLabel(els.reportStatusInput.value);
+        const lines=rows.map(row=>{ const visual=serviceVisual(row); return [row._report_date,visual.fullLabel,row.full_name||"Guest",(row.guest_count||"?")+" guests",labelStatus(normalizeStatus(row.status)),normalizePayment(row.payment_status)||"",row.pickup_location||"",row.phone_normalized||row.phone_number||""].join(" | "); });
+        return [heading,els.reportRangeHint.textContent,"Tours / services: "+rows.length+" | Unique guests: "+uniqueGuestSummary(rows).label,"",...lines].join("\n");
+      }
+      async function copyReportText(){ const rows=filteredReportRows(); if(!rows.length){showToast("No report rows to copy");return;} try{await copyPlainText(reportPlainText());showToast("Report copied");}catch(e){showToast("Could not copy report");} }
+      function reportCsv(){
+        const rows=filteredReportRows();
+        const headers=["Date","Tour Type","Guest","Guests","Status","Payment","Pickup","Phone","Country","Inquiry ID"];
+        const csvRows=rows.map(row=>{ const visual=serviceVisual(row); return [row._report_date,visual.fullLabel,row.full_name||"",row.guest_count||"",labelStatus(normalizeStatus(row.status)),normalizePayment(row.payment_status),row.pickup_location||"",row.phone_normalized||row.phone_number||"",row.country||row.home_country||"",row.inquiry_id||""]; });
+        return [headers,...csvRows].map(cells=>cells.map(csvCell).join(",")).join("\r\n");
+      }
+      function csvCell(value){ const text=String(value??""); return /[",\r\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text; }
+      function downloadReportCsv(){ const rows=filteredReportRows(); if(!rows.length){showToast("No report rows to download");return;} const blob=new Blob(["\uFEFF"+reportCsv()],{type:"text/csv;charset=utf-8"}); const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download="mbw-tour-report-"+datePlusDays(0)+".csv"; document.body.appendChild(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(link.href),1000); showToast("Report CSV downloaded"); }
+      function guideReportText(){
+        const rows=filteredReportRows();
+        if(!rows.length) return "";
+        const grouped={};
+        rows.forEach(row=>(grouped[row._report_date]||(grouped[row._report_date]=[])).push(row));
+        const sections=Object.keys(grouped).sort().map(date=>{
+          const heading="📅 "+formatGuideDate(date);
+          const activities=grouped[date].map(row=>{
+            const visual=serviceVisual(row);
+            const phone=clean(row.phone_normalized||row.phone_number||row.phone_raw)||"Not provided";
+            return [visual.icon+" "+visual.fullLabel,"Guest(s): "+(row.full_name||"Guest"),"Group: "+(row.guest_count||"?")+" guest"+(guestNumber(row.guest_count)===1?"":"s"),"Phone: "+phone,"Pickup: "+(row.pickup_location||"To be confirmed"),"Status: "+labelStatus(normalizeStatus(row.status))].join("\n");
+          }).join("\n\n");
+          return heading+"\n"+activities;
+        });
+        return "Hi! Here is the Mindo Bird Watching guide schedule:\n\n"+sections.join("\n\n————————\n\n")+"\n\nPlease confirm you received the schedule. Thank you!";
+      }
+      function formatGuideDate(value){ const date=parseDateOnly(value); return date?date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}):value; }
+      async function copyGuideReport(){ const text=guideReportText(); if(!text){showToast("No guide schedule rows to copy");return;} try{await copyPlainText(text);showToast("Guide WhatsApp schedule copied");}catch(e){showToast("Could not copy guide schedule");} }
+      function calendarType(r,iso){ const status=normalizeStatus(r.status); const payment=normalizePayment(r.payment_status); if(r._calendar_followup||(state.calendarMode==="followups"&&r.followup_date===iso)||(!isRecordOnTourDate(r,iso)&&r.followup_date===iso)) return "follow"; if(["booked","completed"].includes(status)) return "booked"; if(["deposit_paid","paid"].includes(payment)||status==="deposit_paid") return "deposit"; if(payment==="deposit_pending"||status==="deposit_pending") return "pending"; if(status==="quoted"||r.quote_status==="sent") return "quoted"; if(status==="follow_up") return "follow"; return "pipeline"; }
+      function capacityInfo(count){ if(count>=1) return {className:"normal",label:count+" guest"+(count===1?"":"s")+" booked"}; return {className:"open",label:"Not booked"}; }
+      function guestNumber(value){ const match=String(value||"").match(/\d+/); return match?Number(match[0]):0; }
+      function toIsoDate(date){ return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0"); }
+      function setSelectValue(select,value){ if(!select) return; const found=[...select.options].some(option=>option.value===value); select.value=found?value:""; }
+      function openWhatsApp(){ const r=getSelected(); if(!r){showToast("Select a record first");return;} const phone=normalizePhone(r.phone_number||r.phone_normalized,r.country||r.home_country); if(!phone){showToast("No phone on selected record");return;} window.open("https://wa.me/"+phone,"_blank","noopener,noreferrer"); }
+      function clearFilters(){["searchInput","inlineSearchInput","statusFilter","inlineStatusFilter","quoteFilter","paymentFilter","repFilter","inlineRepFilter","followupFilter"].forEach(id=>els[id].value="");els.viewFilter.value="all";els.sortInput.value="created_at";els.sortDirectionInput.value="desc";localStorage.setItem("mbwCrmLabSort","created_at");localStorage.setItem("mbwCrmLabSortDirection","desc");state.activeQueue="all";render();}
+      function capitalizeInitial(value){ return String(value||"").replace(/^(\s*)(\p{L})/u,(match,spaces,letter)=>spaces+letter.toLocaleUpperCase()); }
+      function capitalizeNameField(input){ const start=input.selectionStart; const end=input.selectionEnd; const updated=capitalizeInitial(input.value); if(updated!==input.value){ input.value=updated; if(start!==null) input.setSelectionRange(start,end); } }
+      function syncFullName(){ els.fullNameInput.value=[clean(els.firstNameInput.value),clean(els.lastNameInput.value)].filter(Boolean).join(" "); renderPayload(); }
+      function syncCountry(){ const currentCountry=clean(els.countryInput.value); const n=normalizePhone(els.phoneInput.value,currentCountry); if(!currentCountry) els.countryInput.value=inferCountry(n); renderPayload(); }
+      function isUpcoming7(r){ const d=parseDateOnly(r.requested_date); if(!d) return false; const today=parseDateOnly(datePlusDays(0)); const diff=(d-today)/86400000; return diff>=0&&diff<=7; }
+      function isFollowupDue(r){ const d=parseDateOnly(r.followup_date); if(!d) return false; const today=parseDateOnly(datePlusDays(0)); return d<=today; }
+      function updateStatusField(){ if(!els.statusField) return; els.statusField.className="field statusField "+statusClass(els.recordStatusInput.value||"new"); }
+      function parseDateOnly(value){ const date=toDateValue(value); if(!date) return null; const parts=date.split("-").map(Number); return new Date(parts[0],parts[1]-1,parts[2]); }
+      function isDateWithinNextThreeDays(value){ const date=parseDateOnly(value); const today=parseDateOnly(datePlusDays(0)); if(!date||!today) return false; const days=Math.round((date-today)/86400000); return days>=0&&days<=3; }
+      function urgentDateHtml(value){ const date=toDateValue(value)||clean(value); if(!date) return ""; return isDateWithinNextThreeDays(date)?`<span class="urgentDate" title="Tour is within the next 3 days">${esc(date)}</span>`:esc(date); }
+      function datePlusDays(days){ const base=isoDayNumber(newYorkDate())+Number(days||0); const d=new Date(base*86400000); return d.toISOString().slice(0,10); }
+      function cleanPhoneText(value){ value=clean(value).replace(/^'/,""); if(/^#(ERROR|VALUE|REF|N\/A|NAME|DIV\/0)!?/i.test(value)) return ""; return value; }
+      function normalizePhone(phone,country){
+        const raw=String(phone||"").trim();
+        let digits=raw.replace(/\D/g,"");
+        const countryKey=clean(country).toLowerCase();
+        const isDenmark=countryKey.includes("denmark")||countryKey.includes("dinamarca");
+        const isNanp=countryKey.includes("united states")||countryKey==="usa"||countryKey.includes("canada");
+        const isEcuador=countryKey.includes("ecuador");
+
+        // Repair the old CRM bug that stored Danish +45 numbers as 1-45-XXXXXXXX.
+        if(isDenmark&&/^145\d{8}$/.test(digits)) digits=digits.slice(1);
+        if(isDenmark&&/^\d{8}$/.test(digits)) return "45"+digits;
+        if(isDenmark&&/^45\d{8}$/.test(digits)) return digits;
+
+        // An explicit international prefix is authoritative.
+        if(raw.startsWith("+")) return digits;
+        if(raw.startsWith("00")&&digits.startsWith("00")) return digits.slice(2);
+
+        if(isNanp&&/^\d{10}$/.test(digits)) return "1"+digits;
+        if(/^1\d{10}$/.test(digits)) return digits;
+        if(isEcuador&&/^09\d{8}$/.test(digits)) return "593"+digits.slice(1);
+
+        // Preserve recognizable international numbers instead of assuming that
+        // every 10-digit number belongs to the US/Canada numbering plan.
+        if(inferCountry(digits)&&!/^1\d{10}$/.test(digits)) return digits;
+        return digits;
+      }
+      function inferCountry(phone){ if(/^1\d{10}$/.test(phone)) return "United States / Canada"; if(String(phone).startsWith("593")) return "Ecuador"; const map=[["45","Denmark"],["44","United Kingdom"],["49","Germany"],["33","France"],["34","Spain"],["39","Italy"],["31","Netherlands"],["41","Switzerland"],["61","Australia"],["64","New Zealand"],["52","Mexico"],["55","Brazil"],["57","Colombia"],["51","Peru"],["56","Chile"],["54","Argentina"]]; const m=map.find(([c])=>String(phone).startsWith(c)); return m?m[1]:""; }
+      function stamp(){ return new Date().toISOString().replace(/[-:.TZ]/g,"").slice(0,14); }
+      function lastFour(v){ return (String(v||"").replace(/\D/g,"")||"0000").slice(-4).padStart(4,"0"); }
+      function clean(v){ return String(v||"").trim(); }
+      function esc(v){ return String(v||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+      function formatDateTime(value){
+        if(!value) return "not recorded";
+        const raw=String(value).trim();
+        let date;
+        if(/^\d{4}-\d{2}-\d{2}$/.test(raw)){
+          const parts=raw.split("-").map(Number);
+          date=new Date(parts[0],parts[1]-1,parts[2],12,0,0);
+        } else {
+          const normalized=raw.includes("T")?raw:raw.replace(" ","T");
+          date=new Date(normalized);
+        }
+        if(Number.isNaN(date.getTime())) return raw;
+        return date.toLocaleString("en-US", {timeZone:"America/New_York", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})+" ET";
+      }
+      function showToast(msg){ els.toast.textContent=msg; els.toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>els.toast.classList.remove("show"),2200); }
+    })();
+  
