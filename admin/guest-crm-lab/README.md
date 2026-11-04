@@ -27,3 +27,7 @@ Saved filter views sync privately to the signed-in account, with explicit Sync f
 ## QA
 
 Run the Lab, workspace, daily-workflow, calendar and service tests. Use fictional records for mutation browser tests. Production checks must not modify customer records solely for QA.
+
+## Mobile browser storage
+
+Full Lab guest records live in memory only. The obsolete mbwCrmLabRecords duplicate is removed on startup; working CRM storage and other origin data are untouched. Small preferences fall back to session memory if storage is blocked/full, and account views continue to sync through the protected API. Browser storage errors cannot fail a CRM refresh. A fresh page needs a network connection to retrieve guest records.

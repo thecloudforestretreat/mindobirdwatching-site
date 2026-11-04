@@ -1,4 +1,4 @@
-import './daily-workflows.mjs?v=2';
+import './daily-workflows.mjs?v=3';
 const B=window.MbwCrmLab;
 const status=document.createElement('p');status.id='labDataFreshness';status.className='lab-data-freshness';status.setAttribute('role','status');document.querySelector('.lab-saved-views')?.before(status);
 let refreshing=false,lastAttempt=Date.now();
