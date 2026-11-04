@@ -10,6 +10,7 @@ def change(old,new):
  global engine
  assert old in engine,old[:120]
  engine=engine.replace(old,new)
+change('localStorage','window.MbwLabStorage')
 change('https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api','/api/crm-lab/read')
 # Isolate the Beta's record cache/preferences from the existing CRM.
 change('credentials:"omit"','credentials:"same-origin"')
@@ -46,7 +47,7 @@ change('function render(){ renderPreparationOverview();', 'function render(){ la
 change('function renderBalances(){', 'function renderBalances(){ labEmit();')
 engine=engine.replace('    })();', (root/'scripts/crm-lab-bridge.js').read_text()+'\n    })();')
 html=html.replace('<style>'+styles[0]+'</style>','<link rel="stylesheet" href="./workflow-base.css?v=1"><link rel="stylesheet" href="./workflow.css?v=4">')
-html=html.replace('<script>'+scripts[0]+'</script>','<script src="./review-guard.js?v=3"></script><script src="./workflow-engine.js?v=2"></script><script defer src="./workflow-ui.js?v=2"></script><script type="module" src="./workspace.mjs?v=3"></script><script type="module" src="./daily-workflows.mjs?v=2"></script><script type="module" src="./readonly.mjs?v=1"></script>')
+html=html.replace('<script>'+scripts[0]+'</script>','<script src="./storage.js?v=1"></script><script src="./review-guard.js?v=3"></script><script src="./workflow-engine.js?v=3"></script><script defer src="./workflow-ui.js?v=2"></script><script type="module" src="./workspace.mjs?v=4"></script><script type="module" src="./daily-workflows.mjs?v=3"></script><script type="module" src="./readonly.mjs?v=2"></script>')
 html=re.sub(r'<script defer src="/assets/js/admin-nav\.js[^"]*"></script>','',html)
 html=html.replace('<div class="view active" id="calendarView">','<div class="view" id="calendarView">').replace('<div class="view" id="dashboardView">','<div class="view active" id="dashboardView">')
 html=html.replace('<title>MBW Admin | Guest CRM Manager</title>','<title>Guest CRM Lab Beta | MBW</title>').replace('https://admin.mindobirdwatching.com/guest-crm/" />','https://admin.mindobirdwatching.com/guest-crm-lab/" />')
