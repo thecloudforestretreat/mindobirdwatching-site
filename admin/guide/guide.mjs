@@ -1,6 +1,6 @@
 import { summarizeGuestDay, summarizeGuestItinerary } from "./pricing.mjs?v=guide-20261031-v43";
 import { mountTripBuilder, renderTripQuoteRequests } from "./trip-builder.mjs";
-import { loadSupplierCommitments, renderSupplierCommitments, saveSupplierCommitment } from "./supplier-commitments.mjs?v=guide-20261105-v1";
+import { loadSupplierCommitments, renderSupplierCommitments, saveSupplierCommitment, saveSupplierTransaction } from "./supplier-commitments.mjs?v=guide-20261105-v2";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -1242,6 +1242,15 @@ document.addEventListener("click", event => {
   if (savePlanButton) { savePlanButton.disabled = true; const planId = savePlanButton.dataset.savePlan; savePlan(planId, savePlanButton.dataset.planStatus).catch(error => { savingPlans.delete(planId); updatePlanSaveState(planId); savePlanButton.disabled = false; alert(error.message); }); }
 });
 document.addEventListener("submit", event => {
+  const transactionForm = event.target.closest("[data-supplier-transaction-form]");
+  if (transactionForm) {
+    event.preventDefault();
+    const plan = planFor(transactionForm.dataset.planId), button = transactionForm.querySelector('button[type="submit"]'), status = transactionForm.querySelector(".supplierFormStatus");
+    if (!plan || !button) return;
+    button.disabled = true; button.textContent = language === "es" ? "Guardando…" : "Saving…"; if (status) status.textContent = "";
+    saveSupplierTransaction(transactionForm).then(() => refreshSupplierCommitments(plan, true)).catch(error => { button.disabled = false; button.textContent = language === "es" ? "Registrar transacción" : "Record transaction"; if (status) status.textContent = error.message; });
+    return;
+  }
   const supplierForm = event.target.closest("[data-supplier-commitment-form]");
   if (supplierForm) {
     event.preventDefault();

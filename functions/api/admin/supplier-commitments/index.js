@@ -2,6 +2,7 @@ import { guideIdentity } from "../../../lib/mobile-auth.mjs";
 import { crmCall, listRecords } from "../../../lib/mobile-crm.mjs";
 import { assertSameOrigin, errorResponse, json, methodNotAllowed, readJson, writesEnabled } from "../../../lib/mobile-http.mjs";
 import { normalizeSupplierCommitment, summarizeSupplierCommitments, supplierCommitmentOptions } from "../../../lib/supplier-commitments.mjs";
+import { attachSupplierTransactions, summarizeSupplierTransactions } from "../../../lib/supplier-transactions.mjs";
 
 async function adminIdentity(request, env) {
   const identity = await guideIdentity(request, env);
@@ -15,10 +16,12 @@ export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
     const filters = Object.fromEntries(["plan_id", "inquiry_id", "booking_id"].map(key => [key, String(url.searchParams.get(key) || "").trim()]).filter(([, value]) => value));
     if (!Object.keys(filters).length) return json(400, { ok: false, error: "A plan, inquiry, or booking reference is required." });
-    const records = await listRecords(env, "list_supplier_commitments", filters);
+    const rawRecords = await listRecords(env, "list_supplier_commitments", filters);
+    const transactions = await listRecords(env, "list_supplier_transactions", filters);
+    const records = attachSupplierTransactions(rawRecords, transactions);
     const payments = filters.inquiry_id ? await listRecords(env, "list_payments", { inquiry_id: filters.inquiry_id }) : [];
     const guestPaid = payments.reduce((total, item) => total + Number(item.total_amount_paid || item.additional_amount_paid || item.deposit_amount_paid || 0), 0);
-    return json(200, { ok: true, records, summary: summarizeSupplierCommitments(records, { guestPaid }), options: supplierCommitmentOptions });
+    return json(200, { ok: true, records, transactions, transactionSummary: summarizeSupplierTransactions(transactions), summary: summarizeSupplierCommitments(records, { guestPaid }), options: supplierCommitmentOptions });
   } catch (error) { return errorResponse(error); }
 }
 
