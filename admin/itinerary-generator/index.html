@@ -390,10 +390,25 @@
             <label class="checkRow"><input id="showInvoice" type="checkbox" /><span>Show a Pay Invoice button.</span></label>
             <div class="field"><label for="invoiceLink">Invoice payment URL</label><input id="invoiceLink" type="url" placeholder="https://invoice-payment-link…" /><p class="hint">Paste the unique invoice URL for this guest.</p></div>
             <input id="depositPaid" type="checkbox" hidden />
-            <label class="checkRow">
-              <input id="showItemPrices" type="checkbox" checked />
-              <span>Show individual service prices beside timeline items.</span>
-            </label>
+            <div>
+              <div class="field">
+                <label for="guestPriceView">Guest price view</label>
+                <select id="guestPriceView">
+                  <option value="itemized">Itemized services</option>
+                  <option value="daily">One total per day</option>
+                </select>
+                <p class="hint">This changes only the guest itinerary. The complete internal cost breakdown remains saved.</p>
+              </div>
+              <div class="field">
+                <label for="lodgingDisplay">Lodging display</label>
+                <select id="lodgingDisplay">
+                  <option value="location_only">Included in daily total — location only</option>
+                  <option value="separate">Show lodging as a separate price</option>
+                  <option value="guest_direct">Guest books and pays directly</option>
+                </select>
+                <p class="hint">Direct booking removes lodging from the guest total but keeps the internal lodging line saved.</p>
+              </div>
+            </div>
             <div class="summaryBox">
               <div class="summaryRow"><span>Services subtotal</span><strong id="subtotalValue">$0.00</strong></div>
               <div class="summaryRow"><span>Adjustment</span><strong id="adjustmentValue">$0.00</strong></div>
@@ -884,17 +899,59 @@
         return String(language === 'es' ? (item[spanishKey] || item[key] || '') : (item[key] || item[spanishKey] || ''));
       }
       function groupMeta(items,language='en'){
-        const source = (items || []).find(item => item.dayTitle || item.dayTitleEs) || (items || [])[0] || {};
+        const list = items || [];
+        const sourceFor = key => list.find(item => itemText(item,key,language)) || list[0] || {};
         return {
-          title:itemText(source,'dayTitle',language),
-          details:itemText(source,'dayDetails',language),
-          pickup:itemText(source,'pickupLocation',language),
-          dropoff:itemText(source,'dropoffLocation',language),
-          overnight:itemText(source,'overnightCity',language)
+          title:itemText(sourceFor('dayTitle'),'dayTitle',language),
+          details:itemText(sourceFor('dayDetails'),'dayDetails',language),
+          pickup:itemText(sourceFor('pickupLocation'),'pickupLocation',language),
+          dropoff:itemText(sourceFor('dropoffLocation'),'dropoffLocation',language),
+          overnight:itemText(sourceFor('overnightCity'),'overnightCity',language)
         };
       }
       function groupTotal(items){return (items || []).reduce((sum,item)=>sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);}
       function itemPriceIsVisible(item){return Boolean(item?.showZeroPrice) || Number(item?.quantity || 0) * Number(item?.unitPrice || 0) !== 0;}
+      function isLodgingItem(item){
+        const type = String(item?.type || item?.service_type || '').toLowerCase();
+        const product = String(item?.productPreset || item?.product_selected || item?.name || '');
+        return ['lodging','accommodation'].includes(type) || /^ACCOM/i.test(product);
+      }
+      function guestPriceView(data){return data?.guestPriceView === 'daily' ? 'daily' : 'itemized';}
+      function lodgingDisplay(data){return ['location_only','separate','guest_direct'].includes(data?.lodgingDisplay) ? data.lodgingDisplay : 'separate';}
+      function billableGuestItems(data,items){return lodgingDisplay(data) === 'guest_direct' ? (items || []).filter(item => !isLodgingItem(item)) : (items || []);}
+      function timelineGuestItems(data,items){return lodgingDisplay(data) === 'separate' ? (items || []) : (items || []).filter(item => !isLodgingItem(item));}
+      function lodgingLocation(items,language='en'){
+        const meta = groupMeta(items,language);
+        const lodging = (items || []).find(isLodgingItem);
+        return meta.overnight || (lodging ? productDisplayName(lodging,language) : '');
+      }
+      function dayPriceRows(data,items){
+        const language = data.language === 'es' ? 'es' : 'en';
+        const mode = lodgingDisplay(data);
+        const lodgingItems = (items || []).filter(isLodgingItem);
+        const serviceItems = (items || []).filter(item => !isLodgingItem(item));
+        const billable = billableGuestItems(data,items);
+        if(guestPriceView(data) === 'daily'){
+          if(mode === 'separate') return [
+            {label:language === 'es' ? 'Servicios del día' : 'Daily services',amount:groupTotal(serviceItems)},
+            ...(lodgingItems.length ? [{label:language === 'es' ? 'Alojamiento' : 'Lodging',amount:groupTotal(lodgingItems)}] : [])
+          ];
+          return [{label:mode === 'guest_direct' ? (language === 'es' ? 'Servicios del día' : 'Daily services') : (language === 'es' ? 'Paquete diario' : 'Daily package'),amount:groupTotal(billable)}];
+        }
+        return billable.filter(itemPriceIsVisible).filter(item => mode === 'separate' || !isLodgingItem(item)).map(item => ({
+          label:productDisplayName(item,language) || serviceTypeLabel(item.type,language),
+          amount:Number(item.quantity || 0) * Number(item.unitPrice || 0),
+          item
+        }));
+      }
+      function lodgingDisplayNote(data,items){
+        const location = lodgingLocation(items,data.language);
+        if(!location) return '';
+        const spanish = data.language === 'es';
+        if(lodgingDisplay(data) === 'location_only') return `${spanish ? 'Alojamiento incluido en el total diario' : 'Lodging included in the daily total'}: ${location}`;
+        if(lodgingDisplay(data) === 'guest_direct') return `${spanish ? 'Alojamiento reservado y pagado directamente por el huésped' : 'Lodging booked and paid directly by the guest'}: ${location}`;
+        return '';
+      }
 
       const $ = (id) => document.getElementById(id);
       const state = { items: [], inquiryId:'', itineraryVersion:0, itineraryStatus:'draft', crmRecord:null, sourcePlanId:'', sourcePlanUpdatedAt:'' };
@@ -1218,6 +1275,11 @@
               <label>Description or guest note</label>
               <textarea data-field="note" placeholder="Pickup location, what is included, or any timing details.">${escapeHtml(item.note)}</textarea>
             </div>
+            ${index === 0 || state.items[index-1]?.date !== item.date ? `<div class="field">
+              <label>Overnight lodging or location for this day</label>
+              <input type="text" data-field="overnightCity" value="${escapeHtml(item.overnightCity)}" placeholder="For example: Mindo Glambird or Otavalo" />
+              <p class="hint">Shown once in the day summary. The lodging price remains in the internal service lines.</p>
+            </div>` : ''}
             <div class="two">
               <div class="field">
                 <label>${escapeHtml(billingQuantityLabel(item))}</label>
@@ -1270,14 +1332,16 @@
           showInvoice:['approved_pending','deposit_received'].includes(selectedStage) && $('showInvoice').checked,
           invoiceLink:$('invoiceLink').value.trim(),
           showImages:$('showImages').checked,
-          showItemPrices:$('showItemPrices').checked,
+          guestPriceView:$('guestPriceView').value === 'daily' ? 'daily' : 'itemized',
+          lodgingDisplay:['location_only','separate','guest_direct'].includes($('lodgingDisplay').value) ? $('lodgingDisplay').value : 'separate',
+          showItemPrices:$('guestPriceView').value !== 'daily',
           sourcePlanId:state.sourcePlanId,
           sourcePlanUpdatedAt:state.sourcePlanUpdatedAt,
           items:state.items.map(item => ({...item}))
         };
       }
       function totals(data){
-        const subtotal = data.items.reduce((sum,item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0),0);
+        const subtotal = groupTotal(billableGuestItems(data,data.items));
         const total = subtotal + Number(data.discount || 0);
         const stage = itineraryStage(data);
         const received = stage === 'paid_in_full' ? total : stage === 'deposit_received' ? Math.min(total,Math.max(0,Number(data.depositReceivedAmount || 0))) : 0;
@@ -1313,16 +1377,19 @@
         const sum = totals(data);
         const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
         const dayMarkup = groupedItems(validItems).map(([date,items],groupIndex) => {
-          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
-          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
+          const timelineItems=timelineGuestItems(data,items), lodgingNote=lodgingDisplayNote(data,items);
+          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',!lodgingNote && meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
+          const dayPrices=dayPriceRows(data,items);
           return `
           <section class="dayBlock">
             <h3 class="dayTitle">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h3>
             ${meta.title ? `<h4 style="margin:-8px 0 8px;color:#071923;font-size:18px;line-height:24px;">${escapeHtml(meta.title)}</h4>` : ''}
             ${meta.details ? `<p class="serviceNote" style="margin:0 0 8px;">${escapeHtml(meta.details)}</p>` : ''}
             ${logistics ? `<p class="serviceNote" style="margin:0 0 12px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}
+            ${lodgingNote ? `<p class="serviceNote" style="margin:0 0 12px;font-weight:800;">${escapeHtml(lodgingNote)}</p>` : ''}
             <div class="timeline">
-              ${items.map(item => {
+              ${timelineItems.map(item => {
                 const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
                 return `
                   <div class="timelineItem">
@@ -1332,20 +1399,19 @@
                       <div class="serviceName">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language) || c.item)}</div>
                       ${itemText(item,'note',data.language) ? `<p class="serviceNote">${escapeHtml(itemText(item,'note',data.language))}</p>` : ''}
                     </div>
-                    ${data.showItemPrices && itemPriceIsVisible(item) ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
+                    ${guestPriceView(data) === 'itemized' && itemPriceIsVisible(item) ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
                   </div>`;
               }).join('')}
             </div>
-            ${data.showItemPrices ? `<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</span><strong>${money(dayTotal,data.language)}</strong></div>` : ''}
+            ${guestPriceView(data) === 'daily' ? dayPrices.map(row=>`<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(row.label)}</span><strong>${money(row.amount,data.language)}</strong></div>`).join('') : `<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</span><strong>${money(dayTotal,data.language)}</strong></div>`}
           </section>`;
         }).join('');
 
-        const pricingLines = groupedItems(validItems.filter(itemPriceIsVisible)).map(([date,items],groupIndex) => {
-          const lines=items.map(item => {
-            const total = Number(item.quantity || 0) * Number(item.unitPrice || 0), qty = Number(item.quantity || 0);
-            return `<div class="priceLine"><span>${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</span><strong>${money(total,data.language)}</strong></div>`;
-          }).join('');
-          return `<h4 style="margin:14px 0 4px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</h4>${lines}<div class="priceLine total"><span>${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</span><strong>${money(groupTotal(items),data.language)}</strong></div>`;
+        const pricingLines = groupedItems(validItems).map(([date,items],groupIndex) => {
+          const rows=dayPriceRows(data,items);
+          const lines=rows.map(row => `<div class="priceLine"><span>${escapeHtml(row.label)}${row.item && isVehicleItem(row.item)?` · ${escapeHtml(vehicleQuantityText(row.item,data.language))}`:row.item && Number(row.item.quantity || 0) > 1 ? ` × ${Number(row.item.quantity || 0)}` : ''}</span><strong>${money(row.amount,data.language)}</strong></div>`).join('');
+          const lodgingNote=lodgingDisplayNote(data,items);
+          return `<h4 style="margin:14px 0 4px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</h4>${lines}${lodgingNote ? `<div class="priceLine"><span>${escapeHtml(lodgingNote)}</span><strong></strong></div>` : ''}<div class="priceLine total"><span>${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</span><strong>${money(groupTotal(billableGuestItems(data,items)),data.language)}</strong></div>`;
         }).join('');
 
         const dateRange = data.startDate && data.endDate && data.startDate !== data.endDate
@@ -1434,9 +1500,10 @@
         ));
 
         groupedItems(validItems).forEach(([date,items],groupIndex) => {
-          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
-          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
-          const itemRows = items.map(item => {
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
+          const timelineItems=timelineGuestItems(data,items), lodgingNote=lodgingDisplayNote(data,items), dayPrices=dayPriceRows(data,items);
+          const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',!lodgingNote && meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
+          const itemRows = timelineItems.map(item => {
             const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
             return `<tr><td style="padding:0 0 10px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #cfe0c8;border-radius:14px;">
@@ -1448,28 +1515,29 @@
                     <strong style="display:block;margin-top:6px;color:#071923;font-size:15px;line-height:20px;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}</strong>
                     ${itemText(item,'note',data.language) ? `<span style="display:block;margin-top:2px;color:#536067;font-size:12px;line-height:17px;font-weight:700;">${escapeHtml(itemText(item,'note',data.language))}</span>` : ''}
                   </td>
-                  <td width="86" valign="top" align="right" style="padding:14px 13px 13px 6px;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;white-space:nowrap;">${data.showItemPrices && itemPriceIsVisible(item) ? money(lineTotal,data.language) : ''}</td>
+                  <td width="86" valign="top" align="right" style="padding:14px 13px 13px 6px;color:#0D5925;font-size:14px;line-height:18px;font-weight:900;white-space:nowrap;">${guestPriceView(data) === 'itemized' && itemPriceIsVisible(item) ? money(lineTotal,data.language) : ''}</td>
                 </tr>
               </table>
             </td></tr>`;
           }).join('');
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
-              <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h2>${meta.title ? `<strong style="display:block;margin-top:6px;color:#071923;font-size:17px;line-height:23px;">${escapeHtml(meta.title)}</strong>` : ''}${meta.details ? `<p style="margin:8px 0 0;color:#536067;font-size:13px;line-height:20px;">${escapeHtml(meta.details)}</p>` : ''}${logistics ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}</td></tr>
+              <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h2>${meta.title ? `<strong style="display:block;margin-top:6px;color:#071923;font-size:17px;line-height:23px;">${escapeHtml(meta.title)}</strong>` : ''}${meta.details ? `<p style="margin:8px 0 0;color:#536067;font-size:13px;line-height:20px;">${escapeHtml(meta.details)}</p>` : ''}${logistics ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}${lodgingNote ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(lodgingNote)}</p>` : ''}</td></tr>
               <tr><td style="padding:0 14px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemRows}</table></td></tr>
-              ${data.showItemPrices ? `<tr><td style="padding:0 22px 18px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(dayTotal,data.language)}</td></tr></table></td></tr>` : ''}
+              <tr><td style="padding:0 22px 18px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${guestPriceView(data) === 'daily' ? dayPrices.map(row=>`<tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(row.label)}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(row.amount,data.language)}</td></tr>`).join('') : `<tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(dayTotal,data.language)}</td></tr>`}</table></td></tr>
             </table>`
           ));
         });
 
-        const priced = validItems.filter(itemPriceIsVisible);
+        const priced = validItems;
         if(priced.length){
           const priceRows = groupedItems(priced).map(([date,items],groupIndex) => {
-            const rows=items.map(item => {
-              const amount = Number(item.quantity || 0) * Number(item.unitPrice || 0), qty = Number(item.quantity || 0);
-              return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language))}${isVehicleItem(item)?` · ${escapeHtml(vehicleQuantityText(item,data.language))}`:qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(amount,data.language)}</td></tr>`;
+            const rows=dayPriceRows(data,items).map(row => {
+              const qty = Number(row.item?.quantity || 0);
+              return `<tr><td style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;">${escapeHtml(row.label)}${row.item && isVehicleItem(row.item)?` · ${escapeHtml(vehicleQuantityText(row.item,data.language))}`:row.item && qty > 1 ? ` × ${qty}` : ''}</td><td align="right" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:13px;line-height:18px;color:#071923;font-weight:900;white-space:nowrap;">${money(row.amount,data.language)}</td></tr>`;
             }).join('');
-            return `<tr><td colspan="2" style="padding:14px 0 4px;color:#0D5925;font-size:14px;line-height:19px;font-weight:900;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</td></tr>${rows}<tr><td style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</td><td align="right" style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${money(groupTotal(items),data.language)}</td></tr>`;
+            const lodgingNote=lodgingDisplayNote(data,items);
+            return `<tr><td colspan="2" style="padding:14px 0 4px;color:#0D5925;font-size:14px;line-height:19px;font-weight:900;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`)}</td></tr>${rows}${lodgingNote ? `<tr><td colspan="2" style="padding:8px 0;border-bottom:1px solid #d8e5d4;font-size:12px;line-height:18px;color:#536067;">${escapeHtml(lodgingNote)}</td></tr>` : ''}<tr><td style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${escapeHtml(data.language==='es'?'Subtotal del día':'Daily subtotal')}</td><td align="right" style="padding:9px 0 13px;border-bottom:2px solid #8db680;color:#0D5925;font-size:13px;font-weight:900;">${money(groupTotal(billableGuestItems(data,items)),data.language)}</td></tr>`;
           }).join('');
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F6FAF0;border:1px solid #b8d3ad;border-radius:18px;">
@@ -1539,25 +1607,30 @@
         const sum = totals(data);
         const lines = [`${c.hi} ${guestFirstName(data.guestName) || (data.language === 'es' ? 'allí' : 'there')},`,'',`${c.here} ${formatShortDate(data.startDate || data.endDate,data.language)}:`,''];
         groupedItems(data.items.filter(item => item.name || item.type)).forEach(([date,items],groupIndex) => {
-          const meta=groupMeta(items,data.language), dayTotal=groupTotal(items);
+          const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
           if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`);
           if(meta.title) lines.push(`*${meta.title}*`);
-          items.forEach(item => {
+          timelineGuestItems(data,items).forEach(item => {
             const time = formatTime(item.startTime,data.language);
             const durationText = translateKnownText(item.duration,data.language);
             const duration = durationText ? ` (${durationText})` : '';
             lines.push(`${time} - ${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}${duration}`);
           });
-          if(data.showItemPrices) lines.push(`${data.language==='es'?'Total del día':'Daily total'}: ${money(dayTotal,data.language)}`);
+          const lodgingNote=lodgingDisplayNote(data,items);
+          if(lodgingNote) lines.push(lodgingNote);
+          if(guestPriceView(data) === 'daily') dayPriceRows(data,items).forEach(row=>lines.push(`${row.label}: ${money(row.amount,data.language)}`));
+          else lines.push(`${data.language==='es'?'Total del día':'Daily total'}: ${money(dayTotal,data.language)}`);
           lines.push('');
         });
-        const priced = data.items.filter(itemPriceIsVisible);
+        const priced = data.items;
         if(priced.length){
           lines.push(`${c.pricingLabel}:`);
           groupedItems(priced).forEach(([date,items],groupIndex)=>{
             lines.push(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`);
-            items.forEach(item => lines.push(`${productDisplayName(item,data.language) || serviceTypeLabel(item.type,data.language)}: ${money(Number(item.quantity || 0) * Number(item.unitPrice || 0),data.language)}`));
-            lines.push(`Subtotal: ${money(groupTotal(items),data.language)}`);
+            dayPriceRows(data,items).forEach(row => lines.push(`${row.label}: ${money(row.amount,data.language)}`));
+            const lodgingNote=lodgingDisplayNote(data,items);
+            if(lodgingNote) lines.push(lodgingNote);
+            lines.push(`Subtotal: ${money(groupTotal(billableGuestItems(data,items)),data.language)}`);
           });
           if(sum.adjustment) lines.push(`${c.adjustment}: ${money(sum.adjustment,data.language)}`);
           lines.push(`${c.total}: ${money(sum.total,data.language)}`);
@@ -1583,7 +1656,7 @@
           const data = JSON.parse(raw);
           communicationBrandId=communications.brand(data.brandId).id;
           communicationBrandSelect.value=communicationBrandId;
-          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink','guestPriceView','lodgingDisplay'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
@@ -1596,7 +1669,8 @@
           $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
           $('showInvoice').checked = data.showInvoice === true;
           $('showImages').checked = data.showImages === true;
-          $('showItemPrices').checked = data.showItemPrices !== false;
+          $('guestPriceView').value = data.guestPriceView === 'daily' || data.showItemPrices === false ? 'daily' : 'itemized';
+          $('lodgingDisplay').value = ['location_only','separate','guest_direct'].includes(data.lodgingDisplay) ? data.lodgingDisplay : 'separate';
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           applyLanguageDefaults($('language').value,true);
           return true;
@@ -1724,7 +1798,8 @@
         $('showInvoice').checked = draft.showInvoice === true;
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showImages').checked = draft.showImages === true;
-        $('showItemPrices').checked = draft.showItemPrices !== false;
+        $('guestPriceView').value = draft.guestPriceView === 'daily' || draft.showItemPrices === false ? 'daily' : 'itemized';
+        $('lodgingDisplay').value = ['location_only','separate','guest_direct'].includes(draft.lodgingDisplay) ? draft.lodgingDisplay : 'separate';
         applyLanguageDefaults($('language').value,true);
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
@@ -1819,9 +1894,10 @@
           $('zelleEmailField').hidden = false;
         }
         const data = getFormData();
-        if(data.items.some(item=>item.unitPrice === '')){ toast('Enter each agreed service rate before preparing an invoice.'); return; }
+        const invoiceItems = billableGuestItems(data,data.items);
+        if(invoiceItems.some(item=>item.unitPrice === '')){ toast('Enter each agreed service rate before preparing an invoice.'); return; }
         const sum = totals(data);
-        if(!data.items.length){ toast('Add at least one service before creating the invoice.'); return; }
+        if(!invoiceItems.length){ toast('Add at least one guest-billed service before creating the invoice.'); return; }
         const createdAt = new Date().toISOString();
         const sourceVersion = Number(state.itineraryVersion || 0);
         const draft = {
@@ -1840,14 +1916,14 @@
           zelle_payment_email:data.zelleEmail || 'mindobirdwatching@gmail.com',
           quoted_amount:sum.total, adjustment_amount:sum.adjustment,
           adjustment_label:data.adjustmentReason || 'Adjustments',
-          tour_items_json:JSON.stringify(data.items.map(item => ({
+          tour_items_json:JSON.stringify(invoiceItems.map(item => ({
             date:item.date, tour:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
             description:productDisplayName(item,'en') || item.name || serviceTypeLabel(item.type,'en'),
             guests:Number(item.quantity || 0), quantity:Number(item.quantity || 0), vehicle_count:isVehicleItem(item)?Number(item.quantity||1):"",
             price:Number(item.unitPrice || 0), unit_price:Number(item.unitPrice || 0), note:item.note || '',
             start_time:item.startTime || '', duration:item.duration || '', product_selected:item.productPreset || ''
           }))),
-          sourceFingerprint:JSON.stringify({version:sourceVersion,items:data.items,adjustment:sum.adjustment,total:sum.total})
+          sourceFingerprint:JSON.stringify({version:sourceVersion,items:invoiceItems,adjustment:sum.adjustment,total:sum.total})
         };
         try{
           localStorage.setItem(ZELLE_HANDOFF_KEY,JSON.stringify(draft));
@@ -2038,7 +2114,8 @@
         $('showInvoice').checked=false;
         $('invoiceLink').value='';
         $('showImages').checked=false;
-        $('showItemPrices').checked=true;
+        $('guestPriceView').value='itemized';
+        $('lodgingDisplay').value='separate';
         updateStageControls();
         state.items=[];
         addItem({type:'Transportation',productPreset:'TRANS06 - Quito -> Mindo -> Quito',name:'TRANS06 - Quito -> Mindo -> Quito',startTime:'03:00',duration:'Flexible',quantity:1,unitPrice:180,note:'Pickup and drop-off locations to be confirmed.'});

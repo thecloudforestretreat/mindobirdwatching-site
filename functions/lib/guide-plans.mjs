@@ -517,7 +517,9 @@ export function guestItineraryDraft(plan) {
     brandId: "mbw",
     itineraryStage: "approved_pending",
     depositAmount: (plan.days || []).length > 1 ? 500 : 100,
-    showItemPrices: true,
+    guestPriceView: (plan.days || []).length > 2 ? "daily" : "itemized",
+    lodgingDisplay: "location_only",
+    showItemPrices: (plan.days || []).length <= 2,
     items,
   };
 }

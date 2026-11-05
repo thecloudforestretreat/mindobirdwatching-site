@@ -174,7 +174,9 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
   assert.equal(draft.guestName, "Robert");
   assert.equal(draft.itineraryStage, "approved_pending");
   assert.equal(draft.depositAmount, 500);
-  assert.equal(draft.showItemPrices, true);
+  assert.equal(draft.guestPriceView, "daily");
+  assert.equal(draft.lodgingDisplay, "location_only");
+  assert.equal(draft.showItemPrices, false);
   assert.equal(draft.items.length, base.days.length * 4);
   assert.deepEqual(draft.items.slice(0, 4).map(item => item.name), ["Reserve fee", "Private daily activities", "Private transportation", "Lodging allowance"]);
   assert.equal(draft.items[0].showZeroPrice, true);
@@ -200,6 +202,11 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
 
 test("itinerary generator preserves approved daily structure and itemized subtotals", () => {
   const generator = fs.readFileSync(new URL("../admin/itinerary-generator/index.html", import.meta.url), "utf8");
+  assert.match(generator, /id="guestPriceView"/);
+  assert.match(generator, /id="lodgingDisplay"/);
+  assert.match(generator, /value="guest_direct"/);
+  assert.match(generator, /function billableGuestItems/);
+  assert.match(generator, /Overnight lodging or location for this day/);
   assert.match(generator, /capitalizeFirst\(draft\.guestName \|\| crmFullName \|\| ''\)/);
   assert.match(generator, /const crmRecordMatchesDraft = Boolean\(state\.inquiryId && selectedInquiryId && state\.inquiryId === selectedInquiryId\)/);
   assert.match(generator, /state\.crmRecord = matchingCrmRecord/);

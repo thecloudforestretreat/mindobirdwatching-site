@@ -7,7 +7,7 @@ const html=fs.readFileSync(new URL('../admin/itinerary-generator/index.html',imp
 function source(name){const start=html.indexOf('function '+name+'(');assert.ok(start>=0,name);const indent=html.slice(html.lastIndexOf('\n',start)+1,start);const end=html.indexOf('\n'+indent+'function ',start+1);return html.slice(start,end<0?undefined:end)}
 
 test('guest itinerary deposit produces an exact remaining balance',()=>{
-  const c={itineraryStage:data=>data.itineraryStage};vm.createContext(c);vm.runInContext(source('totals'),c);
+  const c={itineraryStage:data=>data.itineraryStage,billableGuestItems:(data,items)=>items,groupTotal:items=>items.reduce((sum,item)=>sum+item.quantity*item.unitPrice,0)};vm.createContext(c);vm.runInContext(source('totals'),c);
   const result=c.totals({itineraryStage:'deposit_received',depositReceivedAmount:100,discount:-25,items:[{quantity:2,unitPrice:125},{quantity:1,unitPrice:180}]});
   assert.deepEqual(JSON.parse(JSON.stringify(result)),{subtotal:430,adjustment:-25,total:405,received:100,balance:305});
   assert.equal(c.totals({...result,itineraryStage:'paid_in_full',items:[{quantity:1,unitPrice:405}],discount:0}).balance,0);
