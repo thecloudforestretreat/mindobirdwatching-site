@@ -324,8 +324,8 @@ test("two guide identities receive only their own tours and cannot mutate each o
       if (action === "list_assignments") return Response.json({ ok: true, records: [
         { assignment_id: "A-CHICHO", inquiry_id: "I-CHICHO", provider_id: "PROV-ACTIVITY-CHICHO", provider_name: "Chicho", service_date: "2026-11-01", assignment_status: "confirmed" },
         { assignment_id: "A-NEICER", inquiry_id: "I-NEICER", provider_id: "PROV-NEICER-NIGHT", provider_name: "Neicer", service_date: "2026-11-02", assignment_status: "pending" },
-        { assignment_id: "O-CHICHO", assignment_kind: "offer", provider_id: "PROV-CHICHO", provider_name: "Chicho", service_date: "2026-11-03", assignment_status: "pending" },
-        { assignment_id: "O-NEICER", assignment_kind: "offer", provider_id: "PROV-NEICER", provider_name: "Neicer", service_date: "2026-11-04", assignment_status: "pending" },
+        { assignment_id: "O-CHICHO", assignment_kind: "offer", provider_id: "PROV-CHICHO", provider_name: "Chicho", service_date: "2099-11-03", assignment_status: "pending" },
+        { assignment_id: "O-NEICER", assignment_kind: "offer", provider_id: "PROV-NEICER", provider_name: "Neicer", service_date: "2099-11-04", assignment_status: "pending" },
       ] });
       if (action === "list_inquiries") return Response.json({ ok: true, records: [
         { inquiry_id: "I-CHICHO", full_name: "Chicho Guest", status: "booked" },

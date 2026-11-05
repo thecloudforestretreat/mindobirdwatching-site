@@ -509,8 +509,8 @@ export function guestItineraryDraft(plan) {
     inquiryId: plan.inquiryId || "",
     guestName: plan.guestName || "",
     guestCount: Number(plan.brief?.guestCount || 1),
-    tripTitle: plan.title?.en || plan.title?.es || "Custom Ecuador itinerary",
-    tripTitleEs: plan.title?.es || plan.title?.en || "Itinerario personalizado en Ecuador",
+    tripTitle: guestFacingPlanTitle(plan.title?.en || plan.title?.es, plan.guestName, "Custom Ecuador itinerary"),
+    tripTitleEs: guestFacingPlanTitle(plan.title?.es || plan.title?.en, plan.guestName, "Itinerario personalizado en Ecuador"),
     startDate: plan.startDate || plan.days?.[0]?.date || "",
     endDate: plan.endDate || plan.days?.at(-1)?.date || "",
     language: "en",
@@ -522,6 +522,15 @@ export function guestItineraryDraft(plan) {
     showItemPrices: (plan.days || []).length <= 2,
     items,
   };
+}
+
+function guestFacingPlanTitle(value, guestName, fallback) {
+  const title = text(value, 240) || fallback;
+  const guest = text(guestName, 160);
+  if (!guest) return title;
+  const escapedGuest = guest.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const cleaned = title.replace(new RegExp(`^\\s*${escapedGuest}\\s*(?:[·•|:—–-]\\s*)+`, "i"), "").trim();
+  return cleaned || fallback;
 }
 
 // Internal selling prices and markup are never returned to a guide session.

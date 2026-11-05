@@ -732,6 +732,13 @@
       function stripSubjectDates(value){
         return String(value || '').trim().replace(/\s+-\s+\d{1,2}\/\d{1,2}\/\d{2,4}(?:\s+-\s+\d{1,2}\/\d{1,2}\/\d{2,4})?\s*$/,'').trim();
       }
+      function stripGuestNameFromTitle(value,guestName,fallback=''){
+        const title=String(value||'').trim(), guest=String(guestName||'').trim();
+        if(!guest) return title||fallback;
+        const escapedGuest=guest.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        const cleaned=title.replace(new RegExp(`^\\s*${escapedGuest}\\s*(?:[·•|:—–-]\\s*)+`,'i'),'').trim();
+        return cleaned||fallback||title;
+      }
       function formatSubjectDate(value){
         const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if(!match) return '';
@@ -948,6 +955,8 @@
         const location = lodgingLocation(items,data.language);
         if(!location) return '';
         const spanish = data.language === 'es';
+        const lodgingItems=(items || []).filter(isLodgingItem);
+        if(!lodgingItems.length) return `${spanish ? 'Alojamiento' : 'Overnight'}: ${location}`;
         if(lodgingDisplay(data) === 'location_only') return `${spanish ? 'Alojamiento incluido en el total diario' : 'Lodging included in the daily total'}: ${location}`;
         if(lodgingDisplay(data) === 'guest_direct') return `${spanish ? 'Alojamiento reservado y pagado directamente por el huésped' : 'Lodging booked and paid directly by the guest'}: ${location}`;
         return '';
@@ -1297,14 +1306,16 @@
       function getFormData(){
         applyLanguageDefaults($('language').value,true);
         const selectedStage = itineraryStage();
+        const cleanTripTitle=stripGuestNameFromTitle($('tripTitle').value,$('guestName').value,COPY[$('language').value === 'es' ? 'es' : 'en'].defaultTitle);
+        $('tripTitle').value=cleanTripTitle;
         return {
           brandId:communicationBrandId,
           billingBrandId:communications.billing.brandId,
           itineraryStage:selectedStage,
           guestName:$('guestName').value.trim(),
           guestEmail:$('guestEmail').value.trim(),
-          tripTitle:$('tripTitle').value.trim(),
-          emailSubject:$('tripTitle').value.trim(),
+          tripTitle:cleanTripTitle,
+          emailSubject:cleanTripTitle,
           language:$('language').value || 'en',
           heroImage:HERO_IMAGES[$('heroImage').value] ? $('heroImage').value : DEFAULT_HERO_IMAGE,
           startDate:$('startDate').value,
@@ -1659,6 +1670,7 @@
           ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink','guestPriceView','lodgingDisplay'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
+          $('tripTitle').value=stripGuestNameFromTitle($('tripTitle').value,$('guestName').value,COPY[$('language').value === 'es' ? 'es' : 'en'].defaultTitle);
           $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
           if(!ITINERARY_STAGES.includes($('itineraryStage').value)) $('itineraryStage').value = data.paidInFull ? 'paid_in_full' : data.depositPaid ? 'deposit_received' : 'preliminary';
           $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
@@ -1766,7 +1778,7 @@
         // overwrite the guest attached to the approved plan.
         $('guestName').value = capitalizeFirst(draft.guestName || crmFullName || '');
         $('guestEmail').value = draft.guestEmail || matchingCrmRecord?.email || matchingCrmRecord?.guest_email || '';
-        $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
+        $('tripTitle').value = stripGuestNameFromTitle(draft.tripTitle,$('guestName').value,draft.language === 'es' ? COPY.es.defaultTitle : COPY.en.defaultTitle);
         $('language').value = draft.language === 'es' ? 'es' : 'en';
         $('heroImage').value = HERO_IMAGES[draft.heroImage] ? draft.heroImage : DEFAULT_HERO_IMAGE;
         $('startDate').value = draft.startDate || '';

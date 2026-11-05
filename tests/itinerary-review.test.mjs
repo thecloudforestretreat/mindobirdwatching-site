@@ -172,6 +172,8 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
   } }, base);
   const draft = guestItineraryDraft(plan);
   assert.equal(draft.guestName, "Robert");
+  assert.equal(draft.tripTitle, "Custom Ecuador itinerary");
+  assert.equal(draft.tripTitleEs, "Itinerario personalizado en Ecuador");
   assert.equal(draft.itineraryStage, "approved_pending");
   assert.equal(draft.depositAmount, 500);
   assert.equal(draft.guestPriceView, "daily");
@@ -207,6 +209,7 @@ test("itinerary generator preserves approved daily structure and itemized subtot
   assert.match(generator, /id="lodgingDisplay"/);
   assert.match(generator, /value="guest_direct"/);
   assert.match(generator, /function billableGuestItems/);
+  assert.match(generator, /function stripGuestNameFromTitle/);
   assert.match(generator, /Overnight lodging or location for this day/);
   assert.match(generator, /capitalizeFirst\(draft\.guestName \|\| crmFullName \|\| ''\)/);
   assert.match(generator, /const crmRecordMatchesDraft = Boolean\(state\.inquiryId && selectedInquiryId && state\.inquiryId === selectedInquiryId\)/);
