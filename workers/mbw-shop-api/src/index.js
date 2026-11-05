@@ -1,7 +1,8 @@
 /* MBW SHOP API V27 - USD GUIDE TIPS + TOUR DEPOSIT EMAILS */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
-  "https://www.mindobirdwatching.com"
+  "https://www.mindobirdwatching.com",
+  "https://admin.mindobirdwatching.com"
 ]);
 
 export default {
@@ -42,6 +43,13 @@ export default {
 
     if (
       request.method === "POST" &&
+      url.pathname === "/deposits/link"
+    ) {
+      return handleDepositLink(request, env);
+    }
+
+    if (
+      request.method === "POST" &&
       url.pathname === "/internal/guide-tip-notification"
     ) {
       return handleGuideTipNotification(request, env);
@@ -67,6 +75,10 @@ export default {
 
     if (url.pathname === "/tips/session") {
       return handleTipSessionStatus(request, env, url);
+    }
+
+    if (url.pathname === "/deposits/start") {
+      return handleDepositStart(request, env, url);
     }
 
     if (url.pathname === "/") {
@@ -7357,6 +7369,269 @@ function normalizeShippingOptions(raw) {
   });
 
   return result.slice(0, 5);
+}
+
+function base64UrlEncode(value) {
+  const bytes = new TextEncoder().encode(String(value || ""));
+  let binary = "";
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function base64UrlDecode(value) {
+  const normalized = String(value || "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+
+  return new TextDecoder().decode(bytes);
+}
+
+async function signDepositPayload(env, encodedPayload) {
+  const secret = getStripeSecretKey(env);
+
+  if (!secret) {
+    throw new Error("Stripe is not configured");
+  }
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(`mbw-tour-deposit-link-v1:${secret}`),
+    {
+      name: "HMAC",
+      hash: "SHA-256"
+    },
+    false,
+    ["sign", "verify"]
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(encodedPayload)
+  );
+
+  return Array.from(new Uint8Array(signature))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function createDepositToken(env, payload) {
+  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+  const signature = await signDepositPayload(env, encodedPayload);
+
+  return `${encodedPayload}.${signature}`;
+}
+
+async function verifyDepositToken(env, token) {
+  const parts = String(token || "").split(".");
+
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return null;
+  }
+
+  const expectedSignature = await signDepositPayload(env, parts[0]);
+
+  if (!constantTimeEqual(expectedSignature, parts[1])) {
+    return null;
+  }
+
+  let payload;
+
+  try {
+    payload = JSON.parse(base64UrlDecode(parts[0]));
+  } catch {
+    return null;
+  }
+
+  if (
+    !payload ||
+    payload.v !== 1 ||
+    ![100, 500].includes(Number(payload.amount)) ||
+    !cleanText(payload.reference_id, 180)
+  ) {
+    return null;
+  }
+
+  return payload;
+}
+
+async function handleDepositLink(request, env) {
+  const originError = validateWriteOrigin(request);
+
+  if (originError) {
+    return jsonResponse(originError, 403, request);
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: "Invalid request" }, 400, request);
+  }
+
+  const amount = Number(body.amount);
+  const inquiryId = cleanText(body.inquiry_id, 180);
+  const referenceId = inquiryId || `itinerary_${crypto.randomUUID()}`;
+  const language = body.language === "es" ? "es" : "en";
+
+  if (![100, 500].includes(amount)) {
+    return jsonResponse(
+      { ok: false, error: "Deposit amount must be US$100 or US$500." },
+      400,
+      request
+    );
+  }
+
+  let token;
+
+  try {
+    token = await createDepositToken(env, {
+      v: 1,
+      amount,
+      reference_id: referenceId,
+      inquiry_id: inquiryId,
+      language
+    });
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: cleanText(error && error.message, 240) || "Unable to create deposit link" },
+      500,
+      request
+    );
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      amount,
+      currency: "USD",
+      deposit_url:
+        `https://mbw-shop-api.thecloudforestretreat.workers.dev/deposits/start?token=${encodeURIComponent(token)}`
+    },
+    200,
+    request
+  );
+}
+
+async function createStripeDepositCheckoutSession(env, data) {
+  const params = new URLSearchParams();
+  const productId = "prod_Ui8J2Sa9WWtBss";
+
+  params.set("mode", "payment");
+  params.set(
+    "success_url",
+    `https://mindobirdwatching.com/book-tour/pay/success/?session_id={CHECKOUT_SESSION_ID}&env=live`
+  );
+  params.set(
+    "cancel_url",
+    "https://mindobirdwatching.com/contact/?payment=cancelled"
+  );
+  params.set("client_reference_id", data.referenceId);
+  params.set("submit_type", "pay");
+  params.set("adaptive_pricing[enabled]", "false");
+  params.set("line_items[0][quantity]", "1");
+  params.set("line_items[0][price_data][currency]", "usd");
+  params.set("line_items[0][price_data][unit_amount]", String(data.amount * 100));
+  params.set("line_items[0][price_data][product]", productId);
+
+  const metadata = {
+    payment_purpose: "tour_deposit",
+    service_type: "reservation_deposit",
+    tour_code: "DEP001",
+    tour_title: "Tour Reservation Deposit",
+    deposit_amount: String(data.amount),
+    currency: "USD",
+    inquiry_id: data.inquiryId,
+    source_system: "mbw_itinerary_generator",
+    language: data.language,
+    product_id: productId,
+    pricing_model: "flat_amount",
+    number_of_people: "1"
+  };
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    if (value) {
+      params.set(`metadata[${key}]`, String(value));
+      params.set(`payment_intent_data[metadata][${key}]`, String(value));
+    }
+  });
+  params.set(
+    "payment_intent_data[description]",
+    `DEP001 Tour Reservation Deposit - US$${data.amount}`
+  );
+
+  let response;
+
+  try {
+    response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getStripeSecretKey(env)}`,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: params.toString()
+    });
+  } catch {
+    return { ok: false, status: 502, error: "Unable to connect to Stripe" };
+  }
+
+  const session = await response.json().catch(() => null);
+
+  if (!response.ok || !session || !session.url) {
+    return {
+      ok: false,
+      status: 502,
+      error:
+        session && session.error && session.error.message
+          ? cleanText(session.error.message, 300)
+          : "Stripe could not start the deposit payment"
+    };
+  }
+
+  return { ok: true, status: 303, session };
+}
+
+async function handleDepositStart(request, env, url) {
+  let payload;
+
+  try {
+    payload = await verifyDepositToken(env, url.searchParams.get("token"));
+  } catch {
+    payload = null;
+  }
+
+  if (!payload) {
+    return new Response("This deposit link is invalid.", {
+      status: 400,
+      headers: { "Content-Type": "text/plain; charset=UTF-8" }
+    });
+  }
+
+  const result = await createStripeDepositCheckoutSession(env, {
+    amount: Number(payload.amount),
+    referenceId: cleanText(payload.reference_id, 180),
+    inquiryId: cleanText(payload.inquiry_id, 180),
+    language: payload.language === "es" ? "es" : "en"
+  });
+
+  if (!result.ok) {
+    return new Response(result.error || "Unable to start deposit payment.", {
+      status: result.status || 502,
+      headers: { "Content-Type": "text/plain; charset=UTF-8" }
+    });
+  }
+
+  return Response.redirect(result.session.url, 303);
 }
 
 async function createStripeTipCheckoutSession(env, data) {

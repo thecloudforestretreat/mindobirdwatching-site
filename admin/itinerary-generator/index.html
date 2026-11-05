@@ -359,7 +359,22 @@
               </div>
               <p class="hint">Saved with this itinerary and shown as a credit in the guest pricing breakdown. Record the payment in the CRM invoice ledger or Accounting as well; this itinerary does not create an accounting transaction.</p>
             </div>
-            <div class="field"><label for="depositLink">Deposit payment URL</label><input id="depositLink" readonly type="url" value="https://mindobirdwatching.com/book-tour/deposit/" placeholder="https://…" /><p class="hint">USD-only checkout. A saved CRM inquiry is required before the deposit button appears.</p></div>
+            <div class="two">
+              <div class="field">
+                <label for="depositAmount">Tour deposit</label>
+                <select id="depositAmount">
+                  <option value="100">US$100 — Standard deposit</option>
+                  <option value="500">US$500 — Multiday deposit</option>
+                </select>
+                <p class="hint">Choose the amount agreed with the guest. Checkout remains in USD.</p>
+              </div>
+              <div class="field">
+                <label for="depositLink">Secure deposit URL</label>
+                <input id="depositLink" readonly type="url" value="" placeholder="Generate the secure USD link" />
+                <button type="button" id="generateDepositLinkBtn">Generate Secure USD Link</button>
+                <p class="hint" id="depositLinkStatus">Generate the link before copying or downloading the itinerary.</p>
+              </div>
+            </div>
             <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
             <div class="field" id="zelleEmailField" hidden>
               <label for="zelleEmail">Zelle payment email</label>
@@ -419,20 +434,17 @@
       });
       const DEFAULT_HERO_IMAGE = 'cock-of-the-rock';
       function heroImageUrl(value){ return HERO_IMAGES[value] || HERO_IMAGES[DEFAULT_HERO_IMAGE]; }
-      const DEPOSIT_LINK = 'https://mindobirdwatching.com/book-tour/deposit/';
+      const DEPOSIT_LINK_API = 'https://mbw-shop-api.thecloudforestretreat.workers.dev/deposits/link';
       const ZELLE_INVOICE_URL = 'https://admin.mindobirdwatching.com/zelle-invoice-generator/';
       const ZELLE_HANDOFF_KEY = 'mbwZelleInvoiceDraft';
       function validHttpsUrl(value){ try{ const url=new URL(String(value||'').trim()); return url.protocol==='https:' ? url.toString() : ''; }catch(error){ return ''; } }
-      function getDepositLink(){
-        const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || new URLSearchParams(location.search).get('inquiry_id') || '').trim();
-        if(!inquiryId) return "";
-        const customLink = DEPOSIT_LINK;
-        const url = new URL(customLink);
-        url.searchParams.set('inquiry_id',inquiryId);
-        url.searchParams.set('lang',$('language').value === 'es' ? 'es' : 'en');
-        url.searchParams.set('brand',communicationBrandId || 'mbw');
-        return url.toString();
+      function validDepositUrl(value){
+        const normalized = validHttpsUrl(value);
+        if(!normalized) return '';
+        const url = new URL(normalized);
+        return url.hostname === 'mbw-shop-api.thecloudforestretreat.workers.dev' && url.pathname === '/deposits/start' && url.searchParams.has('token') ? url.toString() : '';
       }
+      function getDepositLink(){ return validDepositUrl($('depositLink')?.value); }
       const DEFAULT_WHATSAPP_NUMBER = '593969076501';
       const STORAGE_KEY = 'mbw_itinerary_generator_v1';
       const CRM_API_URL = 'https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api';
@@ -759,6 +771,8 @@
         $('depositPaid').checked = deposit || paid;
         $('paymentReceivedFields').hidden = !deposit;
         $('depositLink').disabled = !approved;
+        $('depositAmount').disabled = !approved;
+        $('generateDepositLinkBtn').disabled = !approved;
         $('offerZelle').disabled = !approved;
         $('showInvoice').disabled = paid || stage === 'preliminary';
         if(paid || stage === 'preliminary') $('showInvoice').checked = false;
@@ -766,7 +780,15 @@
         $('zelleEmailField').hidden = !approved || !$('offerZelle').checked;
       }
 
-      function copyFor(data){ return COPY[data && data.language === 'es' ? 'es' : 'en']; }
+      function copyFor(data){
+        const base = COPY[data && data.language === 'es' ? 'es' : 'en'];
+        const amount = Number(data && data.depositAmount) === 500 ? 500 : 100;
+        const label = `US$${amount}`;
+        return Object.fromEntries(Object.entries(base).map(([key,value]) => [
+          key,
+          typeof value === 'string' ? value.replace(/\$100/g,label).replace(/USD 100/g,label) : value
+        ]));
+      }
       function serviceTypeLabel(type, language='en'){
         const lang = language === 'es' ? 'es' : 'en';
         return (SERVICE_TYPE_LABELS[lang] && SERVICE_TYPE_LABELS[lang][type]) || type || COPY[lang].service;
@@ -972,6 +994,53 @@
         clearTimeout(toast.timer);
         toast.timer = setTimeout(() => el.classList.remove('show'),2200);
       }
+      function setDepositLinkStatus(message,isError=false){
+        const status = $('depositLinkStatus');
+        status.textContent = message;
+        status.style.color = isError ? '#9f1d1d' : '';
+      }
+      function invalidateDepositLink(){
+        $('depositLink').value = '';
+        setDepositLinkStatus('Generate the link before copying or downloading the itinerary.');
+      }
+      async function generateDepositLink(){
+        const button = $('generateDepositLinkBtn');
+        const amount = Number($('depositAmount').value) === 500 ? 500 : 100;
+        const inquiryId = String(state.inquiryId || state.crmRecord?.inquiry_id || new URLSearchParams(location.search).get('inquiry_id') || '').trim();
+        button.disabled = true;
+        button.textContent = 'Generating…';
+        setDepositLinkStatus(`Creating the secure US$${amount} link…`);
+        try{
+          const response = await fetch(DEPOSIT_LINK_API,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({amount,inquiry_id:inquiryId,language:$('language').value === 'es' ? 'es' : 'en'})
+          });
+          const result = await response.json().catch(() => ({}));
+          if(!response.ok || !validDepositUrl(result.deposit_url)) throw new Error(result.error || 'The secure link could not be generated.');
+          $('depositLink').value = validDepositUrl(result.deposit_url);
+          setDepositLinkStatus(`Ready: US$${amount}, USD-only checkout.`);
+          updateAll(false);
+          saveState();
+          toast(`US$${amount} deposit link ready.`);
+          return $('depositLink').value;
+        }catch(error){
+          invalidateDepositLink();
+          setDepositLinkStatus(error.message || 'The secure link could not be generated.',true);
+          toast('Deposit link could not be generated.');
+          return '';
+        }finally{
+          button.disabled = false;
+          updateStageControls();
+          button.textContent = 'Generate Secure USD Link';
+        }
+      }
+      function requireDepositLink(){
+        if(itineraryStage() !== 'approved_pending' || getDepositLink()) return true;
+        toast('Generate the secure USD deposit link before sending the itinerary.');
+        $('generateDepositLinkBtn').focus();
+        return false;
+      }
       function defaultItem(overrides = {}){
         const item = Object.assign({
           id:uid(), date:$('startDate').value || '', startTime:'', duration:'', type:'Custom', productPreset:'Other', name:'', nameEs:'', note:'', noteEs:'', dayTitle:'', dayTitleEs:'', dayDetails:'', dayDetailsEs:'', pickupLocation:'', pickupLocationEs:'', dropoffLocation:'', dropoffLocationEs:'', overnightCity:'', overnightCityEs:'', showZeroPrice:false, quantity:1, unitPrice:0, catalogUnitPrice:0, pricingModel:'custom', minimumGuests:0
@@ -1172,7 +1241,8 @@
           depositPaid:['deposit_received','paid_in_full'].includes(selectedStage),
           paidInFull:selectedStage === 'paid_in_full',
           paymentStatus:selectedStage === 'paid_in_full' ? 'paid' : selectedStage === 'deposit_received' ? 'deposit_paid' : selectedStage === 'approved_pending' ? 'payment_pending' : 'unpaid',
-          depositLink:validHttpsUrl($('depositLink').value) || DEPOSIT_LINK,
+          depositAmount:Number($('depositAmount').value || 100) === 500 ? 500 : 100,
+          depositLink:validDepositUrl($('depositLink').value),
           offerZelle:selectedStage === 'approved_pending' && $('offerZelle').checked,
           zelleEmail:$('zelleEmail').value,
           showInvoice:['approved_pending','deposit_received'].includes(selectedStage) && $('showInvoice').checked,
@@ -1491,12 +1561,14 @@
           const data = JSON.parse(raw);
           communicationBrandId=communications.brand(data.brandId).id;
           communicationBrandSelect.value=communicationBrandId;
-          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositLink','zelleEmail','invoiceLink'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('heroImage').value = HERO_IMAGES[data.heroImage] ? data.heroImage : DEFAULT_HERO_IMAGE;
           if(!ITINERARY_STAGES.includes($('itineraryStage').value)) $('itineraryStage').value = data.paidInFull ? 'paid_in_full' : data.depositPaid ? 'deposit_received' : 'preliminary';
           $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
+          $('depositAmount').value = Number(data.depositAmount) === 500 ? '500' : '100';
+          $('depositLink').value = validDepositUrl(data.depositLink) || '';
           $('offerZelle').checked = data.offerZelle === true;
           $('zelleEmailField').hidden = !$('offerZelle').checked;
           $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
@@ -1615,7 +1687,8 @@
         $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
         $('zelleEmailField').hidden = !$('offerZelle').checked;
         $('depositPaid').checked = ['deposit_received','paid_in_full'].includes($('itineraryStage').value);
-        $('depositLink').value = DEPOSIT_LINK;
+        $('depositAmount').value = Number(draft.depositAmount || draft.deposit_amount) === 500 ? '500' : '100';
+        $('depositLink').value = validDepositUrl(draft.depositLink) || '';
         $('showInvoice').checked = draft.showInvoice === true;
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showImages').checked = draft.showImages === true;
@@ -1729,7 +1802,7 @@
           email:data.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '',
           phone_number:data.whatsappNumber, guest_count:data.guestCount,
           requested_date:data.startDate, requested_date_end:data.endDate,
-          payment_request:data.depositPaid ? 'full' : 'deposit', deposit_amount:data.depositPaid ? Number(data.depositReceivedAmount || 0) : 100,
+          payment_request:data.depositPaid ? 'full' : 'deposit', deposit_amount:data.depositPaid ? Number(data.depositReceivedAmount || 0) : data.depositAmount,
           prior_payment_amount:data.depositPaid ? Number(data.depositReceivedAmount || 0) : 0,
           prior_payment_method:data.depositReceivedMethod || '', prior_payment_date:data.depositReceivedDate || '', prior_payment_reference:data.depositReceivedReference || '',
           zelle_payment_email:data.zelleEmail || 'mindobirdwatching@gmail.com',
@@ -1828,17 +1901,26 @@
         }));
         renderEditors();
         updateAll(false);
+        invalidateDepositLink();
+        if(itineraryStage() === 'approved_pending') generateDepositLink();
       });
       $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('addItemBtn').addEventListener('click',() => addItem());
       $('saveCrmBtn').addEventListener('click',saveItineraryToCrm);
       $('createZelleBtn').addEventListener('click',createZelleInvoice);
+      $('generateDepositLinkBtn').addEventListener('click',generateDepositLink);
+      $('depositAmount').addEventListener('change',() => {
+        invalidateDepositLink();
+        updateAll(false);
+        if(itineraryStage() === 'approved_pending') generateDepositLink();
+      });
       $('offerZelle').addEventListener('change',() => {
         $('zelleEmailField').hidden = !$('offerZelle').checked;
         updateAll(false);
       });
       $('downloadBtn').addEventListener('click',() => {
+        if(!requireDepositLink()) return;
         const data = getFormData();
         if(!data.guestName) toast('Add the guest name before downloading.');
         const html = buildStandaloneHtml(data);
@@ -1855,11 +1937,13 @@
         toast('Guest itinerary HTML downloaded.');
       });
       $('copyHtmlBtn').addEventListener('click',async() => {
+        if(!requireDepositLink()) return;
         const html = buildEmailSafeHtml(getFormData());
         try{ await navigator.clipboard.writeText(html); toast('Email HTML copied.'); }
         catch(error){ prompt('Copy this email HTML:',html); }
       });
       $('copyRenderedBtn').addEventListener('click',() => {
+        if(!requireDepositLink()) return;
         const range = document.createRange();
         range.selectNodeContents($('guestPreview'));
         const selection = window.getSelection();
@@ -1879,11 +1963,13 @@
         $('toggleHtmlBtn').textContent = output.hidden ? 'Show HTML' : 'Hide HTML';
       });
       $('copyWhatsAppBtn').addEventListener('click',async() => {
+        if(!requireDepositLink()) return;
         const message = buildWhatsAppMessage(getFormData());
         try{ await navigator.clipboard.writeText(message); toast('WhatsApp message copied.'); }
         catch(error){ prompt('Copy this WhatsApp message:',message); }
       });
       $('openWhatsAppBtn').addEventListener('click',() => {
+        if(!requireDepositLink()) return;
         const data = getFormData();
         window.open(buildGuestWhatsAppUrl(data),'_blank','noopener');
       });
@@ -1915,7 +2001,8 @@
         $('zelleEmail').value='mindobirdwatching@gmail.com';
         $('zelleEmailField').hidden=true;
         $('depositPaid').checked=false;
-        $('depositLink').value=DEPOSIT_LINK;
+        $('depositAmount').value='100';
+        $('depositLink').value='';
         $('showInvoice').checked=false;
         $('invoiceLink').value='';
         $('showImages').checked=false;
@@ -1941,6 +2028,11 @@
       renderEditors();
       applyDateMinimums();
       updateAll(false);
+      if(getDepositLink()){
+        setDepositLinkStatus(`Ready: US$${Number($('depositAmount').value) === 500 ? 500 : 100}, USD-only checkout.`);
+      }else if(itineraryStage() === 'approved_pending'){
+        generateDepositLink();
+      }
     })();
   </script>
 <script defer src="/assets/js/admin-nav.js?v=studio-remote-20260928"></script>
