@@ -73,3 +73,21 @@ export function attachSupplierTransactions(commitments = [], transactions = []) 
 }
 
 export const supplierTransactionOptions = { types: [...TYPES], methods: [...METHODS], currencies: [...CURRENCIES] };
+
+export async function supplierTransactionCrmCall(env, action, data = {}, timeoutMs = 25000) {
+  const url = String(env.N8N_SUPPLIER_TRANSACTION_URL || "https://n8n.mindobirdwatching.com/webhook/mbw-supplier-transactions-api").trim();
+  const token = String(env.N8N_CRM_ADMIN_TOKEN || "").trim();
+  if (!url.startsWith("https://") || !token) throw Object.assign(new Error("Supplier transaction storage is not configured."), { status: 503 });
+  let response;
+  try {
+    response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", "X-MBW-CRM-Key": token }, body: new URLSearchParams({ payload: JSON.stringify({ action, ...data }) }).toString(), signal: AbortSignal.timeout(timeoutMs) });
+  } catch { throw Object.assign(new Error("Supplier transaction storage is unavailable. No change was confirmed."), { status: 503 }); }
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body || body.ok === false) throw Object.assign(new Error(body?.error || "Supplier transaction storage rejected the request."), { status: response.status === 409 ? 409 : 502 });
+  return body;
+}
+
+export async function listSupplierTransactions(env, filters = {}) {
+  const result = await supplierTransactionCrmCall(env, "list_supplier_transactions", filters);
+  return Array.isArray(result.records) ? result.records : Array.isArray(result.data) ? result.data : [];
+}
