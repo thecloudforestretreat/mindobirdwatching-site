@@ -60,6 +60,9 @@ test('confirmed itinerary uses a first-name greeting, full guest field, and non-
   assert.match(html,/const guestName = data\.guestName \|\|/);
   assert.match(html,/const greetingName = guestFirstName\(data\.guestName\)/);
   assert.match(html,/const crmFullName = matchingCrmRecord\?\.full_name/);
+  assert.match(html,/function effectiveClosing\(data\)/);
+  assert.match(html,/Complete the US\$\$\{amount\} deposit to secure your approved itinerary\./);
+  assert.match(html,/Complete el depósito de US\$\$\{amount\} para asegurar su itinerario aprobado\./);
   assert.match(html,/depositReceivedBox/);
   assert.match(html,/\.paymentReceiptItem\{[^}]*text-align:center/);
 });
