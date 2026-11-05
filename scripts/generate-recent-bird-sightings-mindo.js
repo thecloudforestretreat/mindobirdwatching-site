@@ -347,14 +347,38 @@ function renderHeaderFallback(lang) {
 function renderFooterFallback(lang) {
   const isEs = lang === "es";
   return `
+<link rel="stylesheet" href="/assets/css/footer-social-20261105.css">
 <footer class="footer recentSightingsFallbackFooter" aria-label="Footer">
   <div class="footer-social" aria-label="${isEs ? "Redes sociales" : "Social media links"}">
-    <a href="https://www.instagram.com/mindobirdwatching" target="_blank" rel="noopener" aria-label="Instagram"><img src="/assets/images/icons/mbw_ig.png" alt="Instagram" loading="lazy"></a>
-    <a href="https://www.tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="TikTok"><img src="/assets/images/icons/mbw_tt.png" alt="TikTok" loading="lazy"></a>
-    <a href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Facebook"><img src="/assets/images/icons/mbw_fb.png" alt="Facebook" loading="lazy"></a>
-    <a href="https://www.youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="YouTube"><img src="/assets/images/icons/mbw_yt.png" alt="YouTube" loading="lazy"></a>
-    <a href="${isEs ? "/es/contacto/" : "/contact/"}" data-whatsapp-message-key="${isEs ? "default_es" : "default_en"}" data-analytics-link-url="dynamic_whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
-    <a href="https://g.page/r/CdMlIYMGgBIvEAE/review" target="_blank" rel="noopener" aria-label="Google Review"><img src="/assets/images/icons/mbw_gr.png" alt="Google Review" loading="lazy"></a>
+<a data-analytics-location="footer_social" href="https://www.instagram.com/mindobirdwatching" target="_blank" rel="noopener" aria-label="Instagram"><img src="/assets/images/icons/mbw_ig.png" alt="Instagram" loading="lazy"></a>
+
+<a data-analytics-location="footer_social" href="https://www.tiktok.com/@mindobirdwatching" target="_blank" rel="noopener" aria-label="TikTok"><img src="/assets/images/icons/mbw_tt.png" alt="TikTok" loading="lazy"></a>
+
+<a data-analytics-location="footer_social" href="https://www.facebook.com/profile.php?id=61577783327957" target="_blank" rel="noopener" aria-label="Facebook"><img src="/assets/images/icons/mbw_fb.png" alt="Facebook" loading="lazy"></a>
+
+<a data-analytics-location="footer_social" href="https://www.youtube.com/@MindoBirdWatching" target="_blank" rel="noopener" aria-label="YouTube"><img src="/assets/images/icons/mbw_yt.png" alt="YouTube" loading="lazy"></a>
+
+<a data-analytics-location="footer_social" href="https://twitter.com/mindobirds"
+   target="_blank" rel="noopener"
+   aria-label="X / Twitter">
+  <img src="/assets/images/icons/mbw_x.png" alt="X">
+</a>
+
+<a data-analytics-location="footer_social" href="https://www.pinterest.com/mindobirdwatching/"
+   target="_blank" rel="noopener"
+   aria-label="Pinterest">
+  <img src="/assets/images/icons/mbw_pin.png" alt="Pinterest">
+</a>
+
+<a data-analytics-location="footer_social" href="https://www.tripadvisor.com/UserReviewEdit-g609138-d34192556-Mindo_Bird_Watching-Mindo_Pichincha_Province.html"
+   target="_blank" rel="noopener noreferrer"
+   aria-label="TripAdvisor">
+  <img src="/assets/images/icons/mbw_ta_002.png" alt="TripAdvisor">
+</a>
+
+<a data-analytics-location="footer_social" href="https://g.page/r/CdMlIYMGgBIvEAE/review" target="_blank" rel="noopener" aria-label="Google Review"><img src="/assets/images/icons/mbw_gr.png" alt="Google Review" loading="lazy"></a>
+
+<a data-analytics-location="footer_social" href="${isEs ? "/es/contacto/" : "/contact/"}" data-whatsapp-message-key="${isEs ? "default_es" : "default_en"}" data-analytics-link-url="dynamic_whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><img src="/assets/images/icons/mbw_wa.png" alt="WhatsApp" loading="lazy"></a>
   </div>
   <div class="footer-bottom">
     <img src="${attr(LOGO_IMAGE)}" alt="" loading="lazy">
