@@ -1,0 +1,584 @@
+{
+  "name": "MBW Supplier Transactions API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mbw-supplier-transactions-api",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e0b3b555-c06b-42bb-8b0f-79c7004e2ff9",
+      "name": "Webhook - Supplier Transactions API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        560,
+        3056
+      ],
+      "webhookId": "mbw-supplier-transactions-api"
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $json.body || $json;\nlet body = incoming;\n\n// Mobile-safe requests arrive as a simple form post containing one JSON payload field.\n// JSON requests remain supported for backward compatibility and direct API testing.\nif (typeof incoming.payload === 'string') {\n  try {\n    body = JSON.parse(incoming.payload);\n  } catch (error) {\n    throw new Error('Invalid JSON in form payload.');\n  }\n}\n\nif (!body || typeof body !== 'object' || Array.isArray(body)) {\n  throw new Error('Request body must be a JSON object.');\n}\n\nconst action = String(body.action || '').trim();\nconst now = new Date().toISOString();\n\nif (!action) {\n  throw new Error('Missing action. See allowed_actions in the unsupported-action response.');\n}\n\nreturn [{\n  json: {\n    ...body,\n    action,\n    received_at: now,\n    document_id: '1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw',\n    guests_sheet: 'whatsapp_guests',\n    inquiries_sheet: 'whatsapp_inquiries',\n    operations_document_id: '1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg',\n    interactions_sheet: 'crm_interactions',\n    assignments_sheet: 'crm_assignments',\n    providers_sheet: 'crm_providers',\n    accounting_document_id: '1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU',\n    accounting_source_sheet: 'stripe_invoices'\n  }\n}];"
+      },
+      "id": "f822329c-51cb-4a80-8968-47f28444c640",
+      "name": "Normalize Supplier Transaction Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        3056
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "list_supplier_transactions",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "upsert_supplier_transaction",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "3183ffd7-62d5-4821-a02a-20ed610164a1",
+      "name": "Switch - Supplier Transaction Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        3056
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_transactions",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "7e170001-0000-4000-8000-000000000001",
+      "name": "Read CRM Supplier Transactions",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        46864,
+        16040
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst request=$('Normalize Supplier Transaction Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst number=value=>{const parsed=Number(value??0);return Number.isFinite(parsed)&&parsed>0?Math.round(parsed*100)/100:0;};\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nconst matches=(row,key,value)=>!value||clean(row[key])===value;\nif(action==='list_supplier_transactions'){\n  const filters={commitment_id:clean(request.commitment_id),plan_id:clean(request.plan_id),inquiry_id:clean(request.inquiry_id),booking_id:clean(request.booking_id),supplier_id:clean(request.supplier_id),confirmation_number:clean(request.confirmation_number)};\n  const records=rows.filter(row=>Object.entries(filters).every(([key,value])=>matches(row,key,value))).sort((a,b)=>clean(b.transaction_date||b.created_at).localeCompare(clean(a.transaction_date||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.transaction||request.record||{})};\nif(!clean(incoming.supplier_transaction_id)||!clean(incoming.commitment_id)||!clean(incoming.supplier_name)||!clean(incoming.transaction_date)||!number(incoming.amount)) throw new Error('Supplier transaction requires an ID, commitment, supplier, date, and positive amount.');\nconst confirmation=clean(incoming.confirmation_number);\nif(confirmation&&rows.some(row=>clean(row.confirmation_number)===confirmation&&clean(row.supplier_transaction_id)!==clean(incoming.supplier_transaction_id))) throw new Error('That supplier confirmation number is already recorded.');\nconst existing=rows.find(row=>clean(row.supplier_transaction_id)===clean(incoming.supplier_transaction_id))||{};\nconst record={...existing,...incoming,supplier_transaction_id:clean(incoming.supplier_transaction_id),amount:number(incoming.amount),created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nreturn [{json:{...record,_route:'write'}}];"
+      },
+      "id": "7e170002-0000-4000-8000-000000000002",
+      "name": "Process CRM Supplier Transactions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47104,
+        16040
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json._route}}",
+                    "rightValue": "write",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "7e170003-0000-4000-8000-000000000003",
+      "name": "Route CRM Supplier Transactions",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        47376,
+        16040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_transactions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "supplier_transaction_id": "={{ $json.supplier_transaction_id ?? '' }}",
+            "commitment_id": "={{ $json.commitment_id ?? '' }}",
+            "inquiry_id": "={{ $json.inquiry_id ?? '' }}",
+            "booking_id": "={{ $json.booking_id ?? '' }}",
+            "plan_id": "={{ $json.plan_id ?? '' }}",
+            "supplier_id": "={{ $json.supplier_id ?? '' }}",
+            "supplier_name": "={{ $json.supplier_name ?? '' }}",
+            "transaction_type": "={{ $json.transaction_type ?? '' }}",
+            "payment_method": "={{ $json.payment_method ?? '' }}",
+            "transaction_date": "={{ $json.transaction_date ?? '' }}",
+            "currency": "={{ $json.currency ?? '' }}",
+            "amount": "={{ $json.amount ?? '' }}",
+            "confirmation_number": "={{ $json.confirmation_number ?? '' }}",
+            "evidence_url": "={{ $json.evidence_url ?? '' }}",
+            "internal_notes": "={{ $json.internal_notes ?? '' }}",
+            "entered_by": "={{ $json.entered_by ?? '' }}",
+            "created_at": "={{ $json.created_at ?? '' }}",
+            "updated_at": "={{ $json.updated_at ?? '' }}"
+          },
+          "matchingColumns": [
+            "supplier_transaction_id"
+          ],
+          "schema": [
+            {
+              "id": "supplier_transaction_id",
+              "displayName": "supplier_transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commitment_id",
+              "displayName": "commitment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_id",
+              "displayName": "inquiry_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "booking_id",
+              "displayName": "booking_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "plan_id",
+              "displayName": "plan_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_id",
+              "displayName": "supplier_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_name",
+              "displayName": "supplier_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_type",
+              "displayName": "transaction_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_date",
+              "displayName": "transaction_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confirmation_number",
+              "displayName": "confirmation_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evidence_url",
+              "displayName": "evidence_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "internal_notes",
+              "displayName": "internal_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "entered_by",
+              "displayName": "entered_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7e170004-0000-4000-8000-000000000004",
+      "name": "Write CRM Supplier Transaction",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        47648,
+        15960
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record={...$('Process CRM Supplier Transactions').first().json}; delete record._route; return [{json:{ok:true,action:'upsert_supplier_transaction',record}}];"
+      },
+      "id": "7e170005-0000-4000-8000-000000000005",
+      "name": "Finalize CRM Supplier Transaction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47904,
+        15960
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "527dea7f-1252-44ad-a6b3-685b1011b729",
+      "name": "Respond to Admin Page",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        3152
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Supplier Transactions API": {
+      "main": [
+        [
+          {
+            "node": "Normalize Supplier Transaction Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Supplier Transaction Request": {
+      "main": [
+        [
+          {
+            "node": "Switch - Supplier Transaction Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Supplier Transaction Action": {
+      "main": [
+        [
+          {
+            "node": "Read CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Process CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Route CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Write CRM Supplier Transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write CRM Supplier Transaction": {
+      "main": [
+        [
+          {
+            "node": "Finalize CRM Supplier Transaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize CRM Supplier Transaction": {
+      "main": [
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "44c0cfec-9c70-49e6-99be-56e4bb08f89c",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
