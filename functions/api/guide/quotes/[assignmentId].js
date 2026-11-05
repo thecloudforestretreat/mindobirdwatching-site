@@ -48,8 +48,14 @@ export async function onRequestPost({ request, env, params }) {
     const previousDraft = prior.find(item => item.status === "draft");
     const maxVersion = Math.max(0, ...prior.filter(item => item.status !== "draft").map(item => Number(item.version || 0)));
     const timestamp = new Date().toISOString();
-    quote.quote_id = previousDraft?.quote_id || quote.quote_id || `GQ-${assignmentId}-${maxVersion + 1}`.slice(0, 128);
+    // A requested revision is a new auditable quote version, not an overwrite of
+    // the previously reviewed submission. A saved draft keeps its own ID until
+    // it is submitted.
+    quote.quote_id = previousDraft?.quote_id
+      || (prior.some(item => item.status !== "draft") ? `GQ-${assignmentId}-${maxVersion + 1}`.slice(0, 128) : quote.quote_id)
+      || `GQ-${assignmentId}-${maxVersion + 1}`.slice(0, 128);
     quote.version = maxVersion + 1;
+    quote.revision_note = String(previousDraft?.revision_note || body.quote?.revision_note || "").trim().slice(0, 3000);
     quote.created_at = previousDraft?.created_at || timestamp;
     quote.updated_at = timestamp;
     if (mode === "submit") quote.submitted_at = timestamp;

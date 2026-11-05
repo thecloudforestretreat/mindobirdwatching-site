@@ -161,6 +161,146 @@ class StudioStoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Explain"):
             studio_store.review_guide_quote(record, "GQ-1", "request_revision", "")
 
+    def test_admin_plan_keeps_net_costs_private_and_prices_lodging_at_net(self):
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-1", "guest_id": "G-1"},
+            {"message": "Request"},
+            self.analysis(),
+            [],
+        )
+        record["guide_quotes_json"] = json.dumps([{
+            "quote_id": "GQ-1", "version": 1, "status": "submitted", "admin_status": "approved",
+            "provider_id": "P-1", "provider_name": "Neicer", "brand_id": "mindo-tours",
+            "options": [{"option_id": "OPT-1", "name": "Private", "days": [{
+                "day_id": "DAY-1", "day_number": 1, "date": "2027-02-09", "title": "Mindo", "agenda": "Birding",
+                "costs": [
+                    {"cost_id": "C-GUIDE", "category": "guide", "description": "Guide", "amount": 100, "quantity": 1, "basis": "per_day", "status": "confirmed"},
+                    {"cost_id": "C-HOTEL", "category": "accommodation", "description": "Hotel", "amount": 75, "quantity": 1, "basis": "per_room_night", "status": "confirmed"},
+                ],
+            }]}],
+        }])
+        requests = []
+
+        def opener(request, timeout):
+            requests.append(json.loads(request.data))
+            return io.BytesIO(json.dumps({"ok": True}).encode())
+
+        updated = studio_store.save_admin_plan(record, {
+            "quote_id": "GQ-1", "selected_option_id": "OPT-1", "default_markup_percent": 30,
+            "sell_prices": {}, "admin_days": [{"day_id": "DAY-1", "title": "Mindo revised"}],
+        }, "Juan", opener)
+        plan = json.loads(updated["final_plan_json"])
+        self.assertEqual(plan["net_total"], 175)
+        self.assertEqual(plan["sell_prices"]["C-GUIDE"], 130)
+        self.assertEqual(plan["sell_prices"]["C-HOTEL"], 75)
+        self.assertEqual(plan["sell_total"], 205)
+        self.assertEqual(plan["gross_profit"], 30)
+        self.assertEqual(plan["admin_days"][0]["title"], "Mindo revised")
+        self.assertNotIn("sell_prices", updated["guide_quotes_json"])
+
+    def test_workflow_requires_saved_pricing_and_records_events(self):
+        record = {
+            "inquiry_studio_id": "IST-1", "inquiry_id": "INQ-1", "revision": 2,
+            "final_plan_json": json.dumps({"selected_option_id": "OPT-1", "pricing_status": "ready", "workflow": {"stage": "admin_proposal", "events": []}}),
+        }
+        requests = []
+
+        def opener(request, timeout):
+            requests.append(json.loads(request.data))
+            return io.BytesIO(json.dumps({"ok": True}).encode())
+
+        updated = studio_store.advance_workflow(record, "mark_preliminary_sent", "Sent by email", "Juan", opener, {"guest_reply": "Exact email"})
+        plan = json.loads(updated["final_plan_json"])
+        artifacts = json.loads(updated["handoff_json"])["sent_artifacts"]
+        self.assertEqual(plan["workflow"]["stage"], "guest_review")
+        self.assertEqual(plan["workflow"]["events"][-1]["note"], "Sent by email")
+        self.assertEqual(updated["status"], "guest_review")
+        self.assertEqual(artifacts[0]["artifact"]["guest_reply"], "Exact email")
+        self.assertEqual(len(artifacts[0]["sha256"]), 64)
+
+    def test_case_context_tracks_owner_decisions_and_room_deposit(self):
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-ROBERT", "guest_id": "G-ROBERT"},
+            {"message": "Request"}, self.analysis(), [],
+        )
+        requests = []
+
+        def opener(request, timeout):
+            requests.append(json.loads(request.data))
+            return io.BytesIO(json.dumps({"ok": True}).encode())
+
+        updated = studio_store.save_case_context(record, {
+            "case_owner": {"name": "Juan", "phone": "+1 555 0100"},
+            "guest_timezone": "Australia/Perth",
+            "preferred_contact": "phone",
+            "budget_ceiling": 2500,
+            "confirmed_facts": ["Two nights in Mindo"],
+            "open_decisions": ["Select Mindo room"],
+            "commitments": ["Juan will confirm lodging"],
+            "next_action": "Call Robert",
+            "accommodations": [{
+                "location": "Intag", "property": "El Refugio", "check_in": "2027-02-11",
+                "check_out": "2027-02-13", "net_total": 200, "deposit_percent": 50,
+                "status": "available",
+            }],
+            "suppliers": [{
+                "name": "Neicer", "role": "guide", "service": "Private guiding",
+                "service_date": "2027-02-11", "net_cost": 80, "deposit_percent": 25,
+                "availability": "available", "verified_at": "2026-11-04",
+                "valid_until": "2026-12-04", "evidence_source": "WhatsApp 2026-11-04",
+            }],
+        }, "Juan", opener)
+        context = json.loads(updated["handoff_json"])["case_context"]
+        self.assertEqual(context["case_owner"]["name"], "Juan")
+        self.assertEqual(context["budget_ceiling"], 2500)
+        self.assertEqual(context["accommodations"][0]["deposit_amount"], 100)
+        self.assertEqual(context["open_decisions"], ["Select Mindo room"])
+        self.assertEqual(context["suppliers"][0]["deposit_amount"], 20)
+        self.assertEqual([item["action"] for item in requests], ["save_inquiry_studio", "update_inquiry", "update_inquiry"])
+        self.assertEqual(requests[-1]["record"]["followup_date"], "")
+
+    def test_post_invoice_workflow_and_final_assignments_are_idempotent(self):
+        record = studio_store.build_record(
+            {"inquiry_id": "INQ-OPS", "guest_id": "G-OPS"}, {"message": "Request"}, self.analysis(), [],
+        )
+        quote = {
+            "quote_id": "GQ-OPS", "version": 2, "status": "submitted", "admin_status": "approved",
+            "provider_id": "P-1", "provider_name": "Neicer", "brand_id": "mindo-tours",
+            "options": [{"option_id": "OPT-1", "name": "Private", "days": [{
+                "day_id": "D-1", "day_number": 1, "date": "2027-02-09", "title": "Mindo", "agenda": "Birding",
+                "start_location": "Quito", "end_location": "Mindo",
+                "costs": [{"cost_id": "C-1", "category": "guide", "amount": 80, "quantity": 1, "status": "confirmed"}],
+            }]}],
+        }
+        record["guide_quotes_json"] = json.dumps([quote])
+        record["final_plan_json"] = json.dumps({
+            "quote_id": "GQ-OPS", "quote_version": 2, "selected_option_id": "OPT-1", "pricing_status": "ready",
+            "admin_days": [{"day_id": "D-1", "date": "2027-02-09", "title": "Mindo", "agenda": "Birding", "start_location": "Quito", "end_location": "Mindo"}],
+            "workflow": {"stage": "reservations_confirmed", "events": []},
+        })
+        assignments = []
+
+        def opener(request, timeout):
+            payload = json.loads(request.data)
+            if payload["action"] == "list_assignments":
+                result = {"ok": True, "records": assignments}
+            elif payload["action"] == "create_assignment":
+                saved = {**payload["assignment"], "assignment_id": f"A-{len(assignments) + 1}"}
+                assignments.append(saved)
+                result = {"ok": True, "record": saved}
+            else:
+                result = {"ok": True}
+            return io.BytesIO(json.dumps(result).encode())
+
+        updated, first = studio_store.create_operations_assignments(record, "Robert", "+61", "Juan", opener)
+        updated_again, second = studio_store.create_operations_assignments(updated, "Robert", "+61", "Juan", opener)
+        self.assertEqual(len(first), 1)
+        self.assertEqual(len(second), 1)
+        self.assertEqual(len(assignments), 1)
+        self.assertEqual(assignments[0]["assignment_status"], "confirmed")
+        self.assertEqual(assignments[0]["provider_cost"], 80)
+        self.assertEqual(json.loads(updated_again["handoff_json"])["operations_assignments"][0]["provider_name"], "Neicer")
+
 
 if __name__ == "__main__":
     unittest.main()

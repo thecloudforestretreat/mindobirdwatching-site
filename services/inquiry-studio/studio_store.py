@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import secrets
@@ -383,6 +384,8 @@ def review_guide_quote(record, quote_id, decision, note="", reviewer="MBW Admin"
     updated["revision"] = int(record.get("revision") or 0) + 1
     if decision == "approve":
         updated["status"] = "guide_quote_approved"
+        prior_plan = _parse(record.get("final_plan_json"), {})
+        prior_prices = prior_plan.get("sell_prices") if isinstance(prior_plan.get("sell_prices"), dict) else {}
         updated["final_plan_json"] = {
             "source": "guide_trip_builder",
             "quote_id": selected.get("quote_id"),
@@ -392,6 +395,11 @@ def review_guide_quote(record, quote_id, decision, note="", reviewer="MBW Admin"
             "brand_id": selected.get("brand_id", "mbw"),
             "currency": selected.get("currency", "USD"),
             "net_options": selected.get("options", []),
+            "selected_option_id": prior_plan.get("selected_option_id", ""),
+            "default_markup_percent": prior_plan.get("default_markup_percent", 30),
+            "sell_prices": prior_prices,
+            "admin_days": prior_plan.get("admin_days", []),
+            "workflow": prior_plan.get("workflow", {}),
             "approved_at": timestamp,
             "approved_by": str(reviewer or "MBW Admin")[:120],
             "pricing_status": "markup_required",
@@ -403,8 +411,435 @@ def review_guide_quote(record, quote_id, decision, note="", reviewer="MBW Admin"
         if not selected["revision_note"]:
             raise ValueError("Explain what the guide should revise")
         updated["status"] = "guide_revision_requested"
+        plan = _parse(record.get("final_plan_json"), {})
+        if plan:
+            workflow = plan.get("workflow") if isinstance(plan.get("workflow"), dict) else {}
+            events = workflow.get("events") if isinstance(workflow.get("events"), list) else []
+            events.append({"action": "guide_revision_requested", "at": timestamp, "by": str(reviewer or "MBW Admin")[:120], "note": selected["revision_note"]})
+            workflow.update({"stage": "guide_final_confirmation", "events": events[-50:]})
+            plan["workflow"] = workflow
+            plan["pricing_status"] = "guide_reconfirmation_required"
+            plan["updated_at"] = timestamp
+            updated["final_plan_json"] = plan
     save(updated, opener)
     return normalize_record(updated)
+
+
+WORKFLOW_ACTIONS = {
+    "mark_preliminary_sent": "guest_review",
+    "record_guest_changes": "guest_changes_received",
+    "mark_guest_preliminary_approved": "guide_final_confirmation",
+    "mark_guide_final_confirmed": "guest_final_confirmation",
+    "mark_guest_final_confirmed": "invoice_ready",
+    "mark_invoice_sent": "invoice_sent",
+    "record_deposit_received": "deposit_received",
+    "mark_supplier_holds": "supplier_holds",
+    "mark_reservations_confirmed": "reservations_confirmed",
+    "mark_operations_ready": "operations_ready",
+    "mark_completed": "completed",
+    "mark_cancelled": "cancelled",
+}
+
+WORKFLOW_PREVIOUS = {
+    "mark_preliminary_sent": {"admin_proposal"},
+    "record_guest_changes": {"guest_review"},
+    "mark_guest_preliminary_approved": {"guest_review"},
+    "mark_guide_final_confirmed": {"guide_final_confirmation"},
+    "mark_guest_final_confirmed": {"guest_final_confirmation"},
+    "mark_invoice_sent": {"invoice_ready"},
+    "record_deposit_received": {"invoice_sent"},
+    "mark_supplier_holds": {"deposit_received"},
+    "mark_reservations_confirmed": {"supplier_holds"},
+    "mark_operations_ready": {"reservations_confirmed"},
+    "mark_completed": {"operations_ready"},
+    "mark_cancelled": {"guest_review", "guest_changes_received", "guide_final_confirmation", "guest_final_confirmation", "invoice_ready", "invoice_sent", "deposit_received", "supplier_holds", "reservations_confirmed", "operations_ready"},
+}
+
+
+def _source_option(record, quote_id, option_id):
+    quotes = _parse(record.get("guide_quotes_json"), [])
+    quote = next((item for item in quotes if str(item.get("quote_id") or "") == str(quote_id or "") and item.get("admin_status") == "approved"), None)
+    if not quote:
+        raise ValueError("Approve a submitted guide quote before adding admin pricing")
+    options = quote.get("options") if isinstance(quote.get("options"), list) else []
+    option = next((item for item in options if str(item.get("option_id") or "") == str(option_id or "")), None)
+    if not option and len(options) == 1:
+        option = options[0]
+    if not option:
+        raise ValueError("Choose the guide option to price")
+    return quote, option
+
+
+def save_admin_plan(record, payload, reviewer="MBW Admin", opener=urlopen):
+    """Save private sell prices and admin itinerary edits without changing the guide quote."""
+    current = _parse(record.get("final_plan_json"), {})
+    quote_id = str(payload.get("quote_id") or current.get("quote_id") or "").strip()
+    option_id = str(payload.get("selected_option_id") or current.get("selected_option_id") or "").strip()
+    quote, option = _source_option(record, quote_id, option_id)
+    option_id = str(option.get("option_id") or option_id)
+    markup = max(0, min(float(payload.get("default_markup_percent", current.get("default_markup_percent", 30)) or 0), 500))
+    submitted_prices = payload.get("sell_prices") if isinstance(payload.get("sell_prices"), dict) else {}
+    prior_prices = current.get("sell_prices") if isinstance(current.get("sell_prices"), dict) else {}
+    submitted_days = payload.get("admin_days") if isinstance(payload.get("admin_days"), list) else []
+    edits_by_id = {str(day.get("day_id") or ""): day for day in submitted_days if isinstance(day, dict)}
+    sell_prices = {}
+    admin_days = []
+    net_total = 0.0
+    sell_total = 0.0
+    pending = 0
+    for source_day in option.get("days", []):
+        day_id = str(source_day.get("day_id") or "")
+        edits = edits_by_id.get(day_id, {})
+        day_net = 0.0
+        day_sell = 0.0
+        for cost in source_day.get("costs", []):
+            cost_id = str(cost.get("cost_id") or "")
+            net = round(float(cost.get("amount") or 0) * float(cost.get("quantity") or 0), 2)
+            default_sell = net if cost.get("category") == "accommodation" else round(net * (1 + markup / 100), 2)
+            raw_sell = submitted_prices.get(cost_id, prior_prices.get(cost_id, default_sell))
+            try:
+                sell = max(0, min(float(raw_sell), 999999))
+            except (TypeError, ValueError):
+                sell = default_sell
+            sell = round(sell, 2)
+            sell_prices[cost_id] = sell
+            day_net += net
+            day_sell += sell
+            if cost.get("status") in {"estimate", "verify"}:
+                pending += 1
+        net_total += day_net
+        sell_total += day_sell
+        admin_days.append({
+            "day_id": day_id,
+            "day_number": source_day.get("day_number"),
+            "date": str(edits.get("date", source_day.get("date", "")))[:20],
+            "title": str(edits.get("title", source_day.get("title", "")))[:180],
+            "agenda": str(edits.get("agenda", source_day.get("agenda", "")))[:3000],
+            "start_location": str(edits.get("start_location", source_day.get("start_location", "")))[:240],
+            "end_location": str(edits.get("end_location", source_day.get("end_location", "")))[:240],
+            "net_total": round(day_net, 2),
+            "sell_total": round(day_sell, 2),
+            "profit": round(day_sell - day_net, 2),
+        })
+    timestamp = now()
+    workflow = current.get("workflow") if isinstance(current.get("workflow"), dict) else {}
+    workflow.setdefault("stage", "admin_proposal")
+    events = workflow.get("events") if isinstance(workflow.get("events"), list) else []
+    events.append({"action": "admin_plan_saved", "at": timestamp, "by": str(reviewer or "MBW Admin")[:120]})
+    workflow["events"] = events[-50:]
+    plan = {
+        **current,
+        "source": "guide_trip_builder",
+        "quote_id": quote.get("quote_id"),
+        "quote_version": quote.get("version"),
+        "provider_id": quote.get("provider_id"),
+        "provider_name": quote.get("provider_name"),
+        "brand_id": quote.get("brand_id", "mbw"),
+        "currency": "USD",
+        "selected_option_id": option_id,
+        "selected_option_name": option.get("name", "Recommended"),
+        "default_markup_percent": markup,
+        "sell_prices": sell_prices,
+        "admin_days": admin_days,
+        "net_total": round(net_total, 2),
+        "sell_total": round(sell_total, 2),
+        "gross_profit": round(sell_total - net_total, 2),
+        "gross_margin_percent": round((sell_total - net_total) / sell_total * 100, 2) if sell_total else 0,
+        "pending_cost_count": pending,
+        "pricing_status": "ready" if not pending else "pending_verification",
+        "workflow": workflow,
+        "updated_at": timestamp,
+        "updated_by": str(reviewer or "MBW Admin")[:120],
+    }
+    updated = dict(record)
+    updated["final_plan_json"] = plan
+    updated["status"] = "proposal_ready" if not pending else "proposal_pricing_review"
+    updated["updated_at"] = timestamp
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    handoff = _parse(record.get("handoff_json"), {})
+    handoff["itinerary_status"] = "proposal_ready" if not pending else "pricing_verification_required"
+    updated["handoff_json"] = handoff
+    save(updated, opener)
+    return normalize_record(updated)
+
+
+def advance_workflow(record, action, note="", reviewer="MBW Admin", opener=urlopen, artifact=None):
+    if action not in WORKFLOW_ACTIONS:
+        raise ValueError("Choose a supported workflow action")
+    plan = _parse(record.get("final_plan_json"), {})
+    if not plan.get("selected_option_id"):
+        raise ValueError("Save the admin proposal before advancing the workflow")
+    if action in {"mark_preliminary_sent", "mark_guest_final_confirmed"} and plan.get("pricing_status") != "ready":
+        raise ValueError("Verify pending guide costs before sending or final approval")
+    workflow = plan.get("workflow") if isinstance(plan.get("workflow"), dict) else {}
+    current_stage = workflow.get("stage", "admin_proposal")
+    if current_stage not in WORKFLOW_PREVIOUS[action]:
+        raise ValueError("Complete the current workflow step before advancing")
+    note = str(note or "").strip()
+    if action in {"record_guest_changes", "mark_invoice_sent", "record_deposit_received", "mark_cancelled"} and not note:
+        raise ValueError("Add a note describing the changes or invoice reference")
+    timestamp = now()
+    events = workflow.get("events") if isinstance(workflow.get("events"), list) else []
+    events.append({"action": action, "at": timestamp, "by": str(reviewer or "MBW Admin")[:120], "note": note[:2000]})
+    workflow.update({"stage": WORKFLOW_ACTIONS[action], "events": events[-50:]})
+    plan["workflow"] = workflow
+    plan["updated_at"] = timestamp
+    updated = dict(record)
+    updated["final_plan_json"] = plan
+    updated["status"] = WORKFLOW_ACTIONS[action]
+    updated["updated_at"] = timestamp
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    if action in {"mark_preliminary_sent", "mark_guest_final_confirmed", "mark_invoice_sent"}:
+        handoff = _parse(record.get("handoff_json"), {})
+        artifacts = handoff.get("sent_artifacts") if isinstance(handoff.get("sent_artifacts"), list) else []
+        guest_snapshot = {
+            "action": action,
+            "created_at": timestamp,
+            "created_by": str(reviewer or "MBW Admin")[:120],
+            "quote_id": plan.get("quote_id"),
+            "quote_version": plan.get("quote_version"),
+            "workflow_stage": WORKFLOW_ACTIONS[action],
+            "sell_total": plan.get("sell_total"),
+            "admin_days": plan.get("admin_days", []),
+            "sell_prices": plan.get("sell_prices", {}),
+            "note": note[:2000],
+            "artifact": artifact if isinstance(artifact, dict) else {},
+        }
+        fingerprint = json.dumps(guest_snapshot, sort_keys=True, ensure_ascii=False).encode()
+        guest_snapshot["sha256"] = hashlib.sha256(fingerprint).hexdigest()
+        artifacts.append(guest_snapshot)
+        handoff["sent_artifacts"] = artifacts[-30:]
+        updated["handoff_json"] = handoff
+    save(updated, opener)
+    return normalize_record(updated)
+
+
+def save_case_context(record, context, reviewer="MBW Admin", opener=urlopen):
+    """Persist the human-owned memory shared by Studio and downstream tools."""
+    if not isinstance(context, dict):
+        raise ValueError("Missing case context")
+
+    def clean(value, limit=2000):
+        return str(value or "").strip()[:limit]
+
+    def string_list(value, limit=50):
+        if not isinstance(value, list):
+            return []
+        return [clean(item, 1000) for item in value if clean(item, 1000)][:limit]
+
+    accommodations = []
+    for item in context.get("accommodations") or []:
+        if not isinstance(item, dict):
+            continue
+        try:
+            deposit_percent = min(100, max(0, float(item.get("deposit_percent") or 0)))
+            net_total = max(0, float(item.get("net_total") or 0))
+        except (TypeError, ValueError):
+            raise ValueError("Accommodation totals and deposits must be numbers")
+        accommodations.append({
+            "location": clean(item.get("location"), 160),
+            "property": clean(item.get("property"), 240),
+            "check_in": clean(item.get("check_in"), 10),
+            "check_out": clean(item.get("check_out"), 10),
+            "net_total": round(net_total, 2),
+            "deposit_percent": round(deposit_percent, 2),
+            "deposit_amount": round(net_total * deposit_percent / 100, 2),
+            "status": clean(item.get("status"), 80) or "researching",
+            "hold_expires_at": clean(item.get("hold_expires_at"), 40),
+            "booking_owner": clean(item.get("booking_owner"), 120),
+            "confirmation_code": clean(item.get("confirmation_code"), 120),
+            "notes": clean(item.get("notes"), 1000),
+        })
+    if len(accommodations) > 30:
+        raise ValueError("Too many accommodation records")
+
+    suppliers = []
+    for index, item in enumerate(context.get("suppliers") or []):
+        if not isinstance(item, dict):
+            continue
+        try:
+            net_cost = max(0, float(item.get("net_cost") or 0))
+            deposit_percent = min(100, max(0, float(item.get("deposit_percent") or 0)))
+        except (TypeError, ValueError):
+            raise ValueError("Supplier costs and deposits must be numbers")
+        supplier_id = clean(item.get("supplier_id"), 128) or f"SUP-{index + 1}"
+        suppliers.append({
+            "supplier_id": supplier_id,
+            "provider_id": clean(item.get("provider_id"), 128),
+            "name": clean(item.get("name"), 180),
+            "role": clean(item.get("role"), 80) or "other",
+            "service": clean(item.get("service"), 240),
+            "service_date": clean(item.get("service_date"), 10),
+            "start_time": clean(item.get("start_time"), 8),
+            "end_time": clean(item.get("end_time"), 8),
+            "pickup_location": clean(item.get("pickup_location"), 240),
+            "dropoff_location": clean(item.get("dropoff_location"), 240),
+            "net_cost": round(net_cost, 2),
+            "deposit_percent": round(deposit_percent, 2),
+            "deposit_amount": round(net_cost * deposit_percent / 100, 2),
+            "availability": clean(item.get("availability"), 80) or "unverified",
+            "verified_at": clean(item.get("verified_at"), 40),
+            "valid_until": clean(item.get("valid_until"), 10),
+            "hold_expires_at": clean(item.get("hold_expires_at"), 40),
+            "status": clean(item.get("status"), 80) or "researching",
+            "evidence_source": clean(item.get("evidence_source"), 500),
+            "notes": clean(item.get("notes"), 1000),
+        })
+    if len(suppliers) > 50:
+        raise ValueError("Too many supplier records")
+
+    try:
+        budget_ceiling = max(0, float(context.get("budget_ceiling") or 0))
+    except (TypeError, ValueError):
+        raise ValueError("Budget ceiling must be a number")
+    handoff = _parse(record.get("handoff_json"), {})
+    previous = handoff.get("case_context") if isinstance(handoff.get("case_context"), dict) else {}
+    timestamp = now()
+    case_context = {
+        **previous,
+        "case_owner": {
+            "name": clean((context.get("case_owner") or {}).get("name"), 120),
+            "phone": clean((context.get("case_owner") or {}).get("phone"), 80),
+            "email": clean((context.get("case_owner") or {}).get("email"), 240),
+        },
+        "guest_timezone": clean(context.get("guest_timezone"), 120),
+        "preferred_contact": clean(context.get("preferred_contact"), 120),
+        "contact_window": clean(context.get("contact_window"), 240),
+        "budget_ceiling": budget_ceiling,
+        "confirmed_facts": string_list(context.get("confirmed_facts")),
+        "open_decisions": string_list(context.get("open_decisions")),
+        "commitments": string_list(context.get("commitments")),
+        "next_action": clean(context.get("next_action"), 1000),
+        "next_action_due": clean(context.get("next_action_due"), 10),
+        "accommodations": accommodations,
+        "suppliers": suppliers,
+        "updated_at": timestamp,
+        "updated_by": clean(reviewer, 120),
+    }
+    handoff["case_context"] = case_context
+    events = handoff.get("case_context_events") if isinstance(handoff.get("case_context_events"), list) else []
+    events.append({"action": "case_context_saved", "at": timestamp, "by": clean(reviewer, 120)})
+    handoff["case_context_events"] = events[-50:]
+    updated = dict(record)
+    updated["handoff_json"] = handoff
+    updated["updated_at"] = timestamp
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    save(updated, opener)
+    inquiry_id = str(record.get("inquiry_id") or "").strip()
+    if inquiry_id and (case_context.get("next_action_due") or case_context.get("next_action")):
+        patch = {
+            "inquiry_id": inquiry_id,
+            "followup_date": case_context.get("next_action_due", ""),
+            "next_action": case_context.get("next_action", ""),
+        }
+        request_n8n({"action": "update_inquiry", "record": patch, "inquiry_row": patch}, opener)
+    return normalize_record(updated)
+
+
+def list_interactions(record, opener=urlopen):
+    result = request_n8n({
+        "action": "list_interactions",
+        "guest_id": str(record.get("guest_id") or ""),
+        "inquiry_id": "",
+    }, opener)
+    inquiry_id = str(record.get("inquiry_id") or "")
+    rows = [item for item in _records(result) if not inquiry_id or str(item.get("inquiry_id") or "") == inquiry_id]
+    return sorted(rows, key=lambda item: str(item.get("occurred_at") or item.get("created_at") or ""), reverse=True)
+
+
+def add_interaction(record, payload, reviewer="MBW Admin", opener=urlopen):
+    note = str(payload.get("note") or "").strip()
+    if not note:
+        raise ValueError("Enter a communication note")
+    timestamp = now()
+    external_message_id = str(payload.get("external_message_id") or "").strip()[:500]
+    if external_message_id:
+        note = f"{note}\nExternal message ID: {external_message_id}"
+    interaction = {
+        "interaction_id": "",
+        "guest_id": str(record.get("guest_id") or "")[:128],
+        "inquiry_id": str(record.get("inquiry_id") or "")[:128],
+        "booking_id": "",
+        "occurred_at": str(payload.get("occurred_at") or timestamp)[:40],
+        "direction": str(payload.get("direction") or "internal")[:40],
+        "channel": str(payload.get("channel") or "other")[:40],
+        "interaction_type": str(payload.get("interaction_type") or "internal_note")[:80],
+        "note": note[:5000],
+        "created_by": str(reviewer or "MBW Admin")[:120],
+        "followup_required": "Yes" if payload.get("followup_at") else "No",
+        "followup_at": str(payload.get("followup_at") or "")[:40],
+    }
+    result = request_n8n({"action": "create_interaction", "interaction": interaction}, opener)
+    return result.get("record") or interaction
+
+
+def create_operations_assignments(record, guest_name="", guest_phone="", reviewer="MBW Admin", opener=urlopen):
+    plan = _parse(record.get("final_plan_json"), {})
+    workflow = plan.get("workflow") if isinstance(plan.get("workflow"), dict) else {}
+    if workflow.get("stage") not in {"reservations_confirmed", "operations_ready"}:
+        raise ValueError("Confirm reservations before creating final Guide Nest assignments")
+    quote, option = _source_option(record, plan.get("quote_id"), plan.get("selected_option_id"))
+    inquiry_id = str(record.get("inquiry_id") or "")
+    studio_id = str(record.get("inquiry_studio_id") or "")
+    group_id = f"OPS-{studio_id}"[:128]
+    existing = _records(request_n8n({"action": "list_assignments", "inquiry_id": inquiry_id}, opener))
+    existing_keys = {(str(item.get("assignment_group_id") or ""), str(item.get("service_item_id") or "")) for item in existing}
+    profile = _parse(record.get("guest_profile_json"), {})
+    created = []
+
+    def create(item):
+        key = (group_id, item["service_item_id"])
+        if key in existing_keys:
+            return
+        result = request_n8n({"action": "create_assignment", "assignment": item}, opener)
+        created.append(result.get("record") or item)
+        existing_keys.add(key)
+
+    edits = {str(item.get("day_id") or ""): item for item in plan.get("admin_days", []) if isinstance(item, dict)}
+    for day in option.get("days", []):
+        day_id = str(day.get("day_id") or f"DAY-{day.get('day_number')}")
+        edit = edits.get(day_id, {})
+        provider_cost = sum(float(cost.get("amount") or 0) * float(cost.get("quantity") or 0) for cost in day.get("costs", []) if cost.get("category") == "guide")
+        create({
+            "assignment_id": "", "assignment_group_id": group_id, "assignment_kind": "assignment", "service_item_id": day_id,
+            "guest_id": str(record.get("guest_id") or ""), "inquiry_id": inquiry_id, "booking_id": "",
+            "service_date": str(edit.get("date") or day.get("date") or "")[:10], "start_time": "", "end_time": "",
+            "service_type": "Custom Tour", "product_selected": str(edit.get("title") or day.get("title") or "Custom tour day")[:240],
+            "guest_name": str(guest_name or "")[:180], "guest_phone": str(guest_phone or "")[:80], "guest_count": str(profile.get("party_size") or "")[:20],
+            "provider_id": str(quote.get("provider_id") or "")[:128], "provider_role": "guide", "provider_name": str(quote.get("provider_name") or "")[:180],
+            "pickup_location": str(edit.get("start_location") or day.get("start_location") or "")[:240], "dropoff_location": str(edit.get("end_location") or day.get("end_location") or "")[:240],
+            "provider_cost": round(provider_cost, 2), "extra_cost": 0, "currency": "USD", "assignment_status": "confirmed",
+            "provider_informed": "No", "provider_informed_by": "", "internal_note": f"[STUDIO_FINAL studio={studio_id} quote={plan.get('quote_id')} version={plan.get('quote_version')}]",
+            "confirmation_note": str(edit.get("agenda") or day.get("agenda") or "")[:2000], "created_by": str(reviewer or "MBW Admin")[:120],
+        })
+    context = _parse(record.get("handoff_json"), {}).get("case_context", {})
+    for supplier in context.get("suppliers", []) if isinstance(context, dict) else []:
+        if not supplier.get("service_date") or not supplier.get("name"):
+            continue
+        service_id = str(supplier.get("supplier_id") or "supplier")
+        create({
+            "assignment_id": "", "assignment_group_id": group_id, "assignment_kind": "assignment", "service_item_id": service_id,
+            "guest_id": str(record.get("guest_id") or ""), "inquiry_id": inquiry_id, "booking_id": "", "service_date": supplier.get("service_date"),
+            "start_time": supplier.get("start_time", ""), "end_time": supplier.get("end_time", ""), "service_type": supplier.get("service") or supplier.get("role") or "Supplier",
+            "product_selected": supplier.get("service") or supplier.get("name"), "guest_name": str(guest_name or "")[:180], "guest_phone": str(guest_phone or "")[:80],
+            "guest_count": str(profile.get("party_size") or "")[:20], "provider_id": supplier.get("provider_id", ""), "provider_role": supplier.get("role", "other"),
+            "provider_name": supplier.get("name"), "pickup_location": supplier.get("pickup_location", ""), "dropoff_location": supplier.get("dropoff_location", ""),
+            "provider_cost": supplier.get("net_cost", 0), "extra_cost": 0, "currency": "USD", "assignment_status": "confirmed", "provider_informed": "No",
+            "internal_note": f"[STUDIO_SUPPLIER studio={studio_id} source={service_id}]", "confirmation_note": supplier.get("notes", ""), "created_by": str(reviewer or "MBW Admin")[:120],
+        })
+    verified = _records(request_n8n({"action": "list_assignments", "inquiry_id": inquiry_id}, opener))
+    final_rows = [item for item in verified if str(item.get("assignment_group_id") or "") == group_id]
+    if not final_rows:
+        raise ValueError("Final assignments were not verified in Guide Nest")
+    handoff = _parse(record.get("handoff_json"), {})
+    handoff["operations_assignments"] = [{"assignment_id": item.get("assignment_id"), "service_item_id": item.get("service_item_id"), "provider_name": item.get("provider_name"), "service_date": item.get("service_date")} for item in final_rows]
+    handoff["operations_assignments_updated_at"] = now()
+    updated = dict(record)
+    updated["handoff_json"] = handoff
+    updated["updated_at"] = now()
+    updated["revision"] = int(record.get("revision") or 0) + 1
+    save(updated, opener)
+    return normalize_record(updated), final_rows
 
 
 def normalize_record(record):

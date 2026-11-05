@@ -118,3 +118,32 @@ test("guide quote save rejects stale Studio revisions", async () => {
   } finally { globalThis.fetch = savedFetch; }
 });
 
+test("a requested revision creates a new quote ID and preserves the admin instructions", async () => {
+  const savedFetch = globalThis.fetch;
+  const prior = normalizeTripQuote(validQuote(), { assignmentId: "A-1", inquiryId: "I-1", studioId: "IST-1", providerId: "PROV-1" });
+  Object.assign(prior, { quote_id: "GQ-A-1-1", version: 1, status: "submitted", admin_status: "revision_requested", revision_note: "Move the trip to February 10." });
+  let studio = { inquiry_studio_id: "IST-1", inquiry_id: "I-1", revision: 4, guide_quotes_json: JSON.stringify([prior]) };
+  const assignment = { assignment_id: "A-1", assignment_group_id: "QUOTE-IST-1", assignment_kind: "quote_request", inquiry_id: "I-1", provider_id: "PROV-1", provider_name: "Neicer", internal_note: "[TRIP_BUILDER studio=IST-1 brand=mbw]", updated_at: "a1" };
+  try {
+    globalThis.fetch = async (_url, options) => {
+      const payload = JSON.parse(new URLSearchParams(options.body).get("payload"));
+      if (payload.action === "list_assignments") return Response.json({ ok: true, records: [assignment] });
+      if (payload.action === "get_inquiry_studio") return Response.json({ ok: true, record: studio });
+      if (payload.action === "save_inquiry_studio") { studio = payload.record; return Response.json({ ok: true }); }
+      if (payload.action === "update_assignment") return Response.json({ ok: true });
+      throw new Error(`Unexpected action ${payload.action}`);
+    };
+    const request = new Request("http://localhost/api/guide/quotes/A-1", {
+      method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "draft", studioRevision: 4, quote: prior }),
+    });
+    const response = await saveGuideTripQuote({ request, env, params: { assignmentId: "A-1" } });
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(body.quote.quote_id, "GQ-A-1-2");
+    assert.equal(body.quote.version, 2);
+    assert.equal(body.quote.revision_note, "Move the trip to February 10.");
+    assert.equal(JSON.parse(studio.guide_quotes_json).length, 2);
+  } finally { globalThis.fetch = savedFetch; }
+});
+

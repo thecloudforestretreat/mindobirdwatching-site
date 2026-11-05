@@ -5,6 +5,7 @@ import drafting
 import access_auth
 import attachments
 import custom_tours
+import knowledge_store
 import studio_store
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -213,6 +214,13 @@ def source_row(body):
   'grouping_preference':'','country':'','home_country':''
  }
 
+def require_revision(record,body):
+ expected=body.get('expected_revision')
+ if expected is None:return
+ try:expected=int(expected)
+ except (TypeError,ValueError):raise ValueError('Invalid Studio revision')
+ if expected!=int(record.get('revision') or 0):raise ValueError('This Studio record changed in another session. Refresh before saving.')
+
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args):pass # Avoid contact/query content in logs.
  def reply(self,status,value,ctype='application/json'):
@@ -237,6 +245,8 @@ class Handler(BaseHTTPRequestHandler):
   if path=='/api/providers':
    try:return self.reply(200,{'providers':studio_store.list_guides()})
    except Exception:return self.reply(502,{'error':'Guide records could not be loaded.'})
+  if path=='/api/knowledge':
+   return self.reply(200,{'ok':True,'items':knowledge_store.read(),'review_required':True})
   if path.startswith('/api/jobs/'):
    identifier=path.removeprefix('/api/jobs/')
    with JOB_LOCK:
@@ -333,6 +343,48 @@ class Handler(BaseHTTPRequestHandler):
     record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
     if not record:raise ValueError('The Inquiry Studio record could not be loaded')
     updated=studio_store.review_guide_quote(record,body.get('quote_id'),body.get('decision'),body.get('note'),"MBW Admin")
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated})
+   if path=='/api/save-admin-plan':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    require_revision(record,body)
+    updated=studio_store.save_admin_plan(record,body.get('plan') or {},'MBW Admin')
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated})
+   if path=='/api/save-case-context':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    require_revision(record,body)
+    updated=studio_store.save_case_context(record,body.get('context') or {},'MBW Admin')
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated})
+   if path=='/api/interactions':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    return self.reply(200,{'ok':True,'records':studio_store.list_interactions(record)})
+   if path=='/api/add-interaction':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    interaction=studio_store.add_interaction(record,body.get('interaction') or {},'MBW Admin')
+    return self.reply(200,{'ok':True,'record':interaction})
+   if path=='/api/publish-knowledge':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    items=knowledge_store.publish(body.get('items') or [],record.get('inquiry_id'),'MBW Admin')
+    return self.reply(200,{'ok':True,'items':items})
+   if path=='/api/create-operations-assignments':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    require_revision(record,body)
+    updated,assignments=studio_store.create_operations_assignments(record,str(body.get('guest_name') or ''),str(body.get('guest_phone') or ''),'MBW Admin')
+    with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
+    return self.reply(200,{'ok':True,'record':updated,'assignments':assignments})
+   if path=='/api/advance-tour-workflow':
+    record=studio_store.get(inquiry_id=str(body.get('inquiry_id') or ''),inquiry_studio_id=str(body.get('inquiry_studio_id') or ''))
+    if not record:raise ValueError('The Inquiry Studio record could not be loaded')
+    require_revision(record,body)
+    updated=studio_store.advance_workflow(record,str(body.get('action') or ''),str(body.get('note') or ''),'MBW Admin',artifact=body.get('artifact'))
     with SAVE_LOCK:write_private(PRIVATE/key(updated['inquiry_studio_id']),{'record':updated,'saved_at':datetime.now(timezone.utc).isoformat()})
     return self.reply(200,{'ok':True,'record':updated})
    return self.reply(404,{'error':'Not found'})

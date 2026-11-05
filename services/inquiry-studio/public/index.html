@@ -218,6 +218,58 @@
             <p id="guideTripStatus" class="muted">Save the Studio record before creating a Guide Nest request.</p>
           </section>
 
+          <section id="caseContinuity" class="resultCard caseContinuity" hidden>
+            <div class="cardTitle">
+              <div>
+                <h3>Case continuity</h3>
+                <p class="muted">Keep the human owner, guest preferences, promises, unresolved decisions, and room deposits visible before drafting the next reply.</p>
+              </div>
+              <button id="saveCaseContext" class="primary">Save case memory</button>
+            </div>
+            <div class="caseContextGrid">
+              <label>Case owner<input id="caseOwnerName" value="Juan"></label>
+              <label>Owner phone<input id="caseOwnerPhone" placeholder="Phone shown to the guest"></label>
+              <label>Owner email<input id="caseOwnerEmail" type="email"></label>
+              <label>Guest time zone<input id="guestTimezone" placeholder="e.g. Australia/Perth · 13 hours ahead"></label>
+              <label>Preferred contact<input id="preferredContact" placeholder="Email, WhatsApp, or phone"></label>
+              <label>Best contact window<input id="contactWindow" placeholder="Include both local times"></label>
+              <label>Budget ceiling (USD)<input id="budgetCeiling" type="number" min="0" step="1"></label>
+              <label>Next action due<input id="nextActionDue" type="date"></label>
+              <label class="wideField">Next action<textarea id="nextAction" placeholder="Who needs to do what next?"></textarea></label>
+              <label class="wideField">Confirmed facts<textarea id="confirmedFacts" placeholder="One verified fact per line"></textarea></label>
+              <label class="wideField">Open decisions<textarea id="openDecisions" placeholder="One unresolved question per line"></textarea></label>
+              <label class="wideField">Promises and commitments<textarea id="caseCommitments" placeholder="One promise made to the guest or supplier per line"></textarea></label>
+            </div>
+            <div class="accommodationHead">
+              <div><h4>Accommodation and deposit tracker</h4><p class="muted">Rates and availability remain provisional until verified. Deposit amount is calculated from the saved net total.</p></div>
+              <button id="addAccommodation" type="button">Add lodging</button>
+            </div>
+            <div id="accommodationRows"></div>
+            <div class="accommodationHead">
+              <div><h4>Suppliers, verification and holds</h4><p class="muted">Track guides, drivers, reserves, activities, rates, evidence, validity, and holds. Only verified rows with evidence can be published for future proposals.</p></div>
+              <div><button id="addSupplier" type="button">Add supplier</button> <button id="publishKnowledge" type="button">Publish verified facts</button></div>
+            </div>
+            <div id="supplierRows"></div>
+            <details class="knowledgeBank"><summary>Reusable tour knowledge bank</summary><p class="muted">Historical facts are reference only and must be reverified before reuse.</p><div id="knowledgeItems"></div></details>
+            <p id="caseContextStatus" class="muted"></p>
+          </section>
+
+          <section id="communicationTimeline" class="resultCard" hidden>
+            <div class="cardTitle"><div><h3>Communication and sent-artifact history</h3><p class="muted">CRM interactions and immutable proposal/invoice snapshots keep the paper trail attached to this inquiry.</p></div><button id="refreshInteractions">Refresh</button></div>
+            <div id="interactionRows" class="timelineRows"></div>
+            <div class="interactionForm">
+              <label>Direction<select id="interactionDirection"><option value="incoming">Incoming</option><option value="outgoing">Outgoing</option><option value="internal">Internal</option></select></label>
+              <label>Channel<select id="interactionChannel"><option value="email">Email</option><option value="whatsapp">WhatsApp</option><option value="phone">Phone</option><option value="other">Other</option></select></label>
+              <label>Type<select id="interactionType"><option value="guest_message">Guest message</option><option value="staff_reply">Staff reply</option><option value="quote_sent">Quote sent</option><option value="itinerary_sent">Itinerary sent</option><option value="invoice_sent">Invoice sent</option><option value="internal_note">Internal note</option></select></label>
+              <label>External message ID<input id="externalMessageId" placeholder="Gmail/WhatsApp message ID"></label>
+              <label class="wideField">Note<textarea id="interactionNote" placeholder="What was said, decided, or promised?"></textarea></label>
+              <label>Follow-up date<input id="interactionFollowup" type="datetime-local"></label>
+              <button id="addInteraction" type="button">Add to CRM timeline</button>
+            </div>
+            <div id="sentArtifacts" class="sentArtifacts"></div>
+            <p id="interactionStatus" class="muted"></p>
+          </section>
+
           <section id="guideQuoteReview" class="resultCard" hidden>
             <div class="cardTitle">
               <div>
@@ -227,6 +279,49 @@
               <button id="refreshGuideQuotes">Refresh</button>
             </div>
             <div id="guideQuotes"></div>
+          </section>
+
+          <section id="adminProposal" class="resultCard adminProposal" hidden>
+            <div class="cardTitle">
+              <div>
+                <h3>Admin proposal and handoff</h3>
+                <p class="muted">Guide costs remain private. Set the guest-facing prices, adjust the working itinerary, and move the trip through approvals without changing the guide’s original quote.</p>
+              </div>
+              <span id="proposalStage" class="resultBadge"></span>
+            </div>
+            <ol id="tourWorkflow" class="tourWorkflow" aria-label="Custom tour workflow"></ol>
+            <div class="proposalControls">
+              <label>Guide option<select id="adminPlanOption"></select></label>
+              <label>Default markup %<input id="adminMarkup" type="number" min="0" max="500" step="1" value="30"></label>
+              <button id="applyAdminMarkup">Apply markup</button>
+              <button id="saveAdminPlan" class="primary">Save private pricing</button>
+            </div>
+            <div id="adminPlanDays"></div>
+            <div class="proposalTotals">
+              <span><small>Guide/source costs</small><strong id="adminNetTotal">$0.00</strong></span>
+              <span><small>Guest price</small><strong id="adminSellTotal">$0.00</strong></span>
+              <span><small>Gross profit</small><strong id="adminProfit">$0.00</strong></span>
+              <span><small>Gross margin</small><strong id="adminMargin">0%</strong></span>
+            </div>
+            <label class="workflowNote">Workflow note<textarea id="tourWorkflowNote" placeholder="Record the guest’s changes, approval, or confirmation details."></textarea></label>
+            <div class="workflowActions">
+              <button data-tour-action="mark_preliminary_sent">Preliminary proposal sent</button>
+              <button data-tour-action="record_guest_changes">Guest requested changes</button>
+              <button id="requestGuideReconfirmation">Send changes to guide</button>
+              <button data-tour-action="mark_guest_preliminary_approved">Guest approved preliminary plan</button>
+              <button data-tour-action="mark_guide_final_confirmed">Guide confirmed final plan</button>
+              <button data-tour-action="mark_guest_final_confirmed">Guest confirmed final plan</button>
+              <button data-tour-action="mark_invoice_sent" class="primary">Invoice sent</button>
+              <button data-tour-action="record_deposit_received">Deposit received</button>
+              <button data-tour-action="mark_supplier_holds">Supplier holds placed</button>
+              <button data-tour-action="mark_reservations_confirmed">Reservations confirmed</button>
+              <button id="createOperationsAssignments" type="button">Create final assignments</button>
+              <button data-tour-action="mark_operations_ready">Operations ready</button>
+              <button data-tour-action="mark_completed">Trip completed</button>
+              <button data-tour-action="mark_cancelled">Cancel tour</button>
+              <button id="openItineraryGenerator" type="button">Open in itinerary generator</button>
+            </div>
+            <p id="adminPlanStatus" class="muted"></p>
           </section>
 
           <section class="resultCard">
