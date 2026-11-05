@@ -515,7 +515,8 @@ export function guestItineraryDraft(plan) {
     endDate: plan.endDate || plan.days?.at(-1)?.date || "",
     language: "en",
     brandId: "mbw",
-    itineraryStage: "preliminary",
+    itineraryStage: "approved_pending",
+    depositAmount: (plan.days || []).length > 1 ? 500 : 100,
     showItemPrices: true,
     items,
   };

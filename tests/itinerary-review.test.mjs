@@ -171,6 +171,9 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
     ] })),
   } }, base);
   const draft = guestItineraryDraft(plan);
+  assert.equal(draft.guestName, "Robert");
+  assert.equal(draft.itineraryStage, "approved_pending");
+  assert.equal(draft.depositAmount, 500);
   assert.equal(draft.showItemPrices, true);
   assert.equal(draft.items.length, base.days.length * 4);
   assert.deepEqual(draft.items.slice(0, 4).map(item => item.name), ["Reserve fee", "Private daily activities", "Private transportation", "Lodging allowance"]);
@@ -197,6 +200,10 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
 
 test("itinerary generator preserves approved daily structure and itemized subtotals", () => {
   const generator = fs.readFileSync(new URL("../admin/itinerary-generator/index.html", import.meta.url), "utf8");
+  assert.match(generator, /capitalizeFirst\(draft\.guestName \|\| crmFullName \|\| ''\)/);
+  assert.match(generator, /const crmRecordMatchesDraft = Boolean\(state\.inquiryId && selectedInquiryId && state\.inquiryId === selectedInquiryId\)/);
+  assert.match(generator, /state\.crmRecord = matchingCrmRecord/);
+  assert.doesNotMatch(generator, /else if\(itineraryStage\(\) === 'approved_pending'\)\{\s*generateDepositLink\(\)/);
   assert.match(generator, /function groupMeta/);
   assert.match(generator, /function itemPriceIsVisible/);
   assert.match(generator, /dayTitleEs/);
