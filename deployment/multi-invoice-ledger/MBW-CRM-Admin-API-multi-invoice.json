@@ -1,5 +1,5 @@
 {
-  "name": "MBW CRM Admin API",
+  "name": "MBW CRM Admin API - Collaboration to Acct",
   "nodes": [
     {
       "parameters": {
@@ -8,27 +8,27 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "182f762a-47df-4060-900a-16e1b016b927",
+      "id": "e0b3b555-c06b-42bb-8b0f-79c7004e2ff9",
       "name": "Webhook - CRM Admin API",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        46080,
-        12832
+        560,
+        3056
       ],
       "webhookId": "mbw-crm-admin-api"
     },
     {
       "parameters": {
-        "jsCode": "const incoming = $json.body || $json;\nlet body = incoming;\n\n// Mobile-safe requests arrive as a simple form post containing one JSON payload field.\n// JSON requests remain supported for backward compatibility and direct API testing.\nif (typeof incoming.payload === 'string') {\n  try {\n    body = JSON.parse(incoming.payload);\n  } catch (error) {\n    throw new Error('Invalid JSON in form payload.');\n  }\n}\n\nif (!body || typeof body !== 'object' || Array.isArray(body)) {\n  throw new Error('Request body must be a JSON object.');\n}\n\nconst action = String(body.action || '').trim();\nconst now = new Date().toISOString();\n\nif (!action) {\n  throw new Error('Missing action. See allowed_actions in the unsupported-action response.');\n}\n\nreturn [{\n  json: {\n    ...body,\n    action,\n    received_at: now,\n    document_id: '1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw',\n    guests_sheet: 'whatsapp_guests',\n    inquiries_sheet: 'whatsapp_inquiries',\n    operations_document_id: '1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg',\n    interactions_sheet: 'crm_interactions',\n    assignments_sheet: 'crm_assignments',\n    providers_sheet: 'crm_providers'\n  }\n}];"
+        "jsCode": "const incoming = $json.body || $json;\nlet body = incoming;\n\n// Mobile-safe requests arrive as a simple form post containing one JSON payload field.\n// JSON requests remain supported for backward compatibility and direct API testing.\nif (typeof incoming.payload === 'string') {\n  try {\n    body = JSON.parse(incoming.payload);\n  } catch (error) {\n    throw new Error('Invalid JSON in form payload.');\n  }\n}\n\nif (!body || typeof body !== 'object' || Array.isArray(body)) {\n  throw new Error('Request body must be a JSON object.');\n}\n\nconst action = String(body.action || '').trim();\nconst now = new Date().toISOString();\n\nif (!action) {\n  throw new Error('Missing action. See allowed_actions in the unsupported-action response.');\n}\n\nreturn [{\n  json: {\n    ...body,\n    action,\n    received_at: now,\n    document_id: '1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw',\n    guests_sheet: 'whatsapp_guests',\n    inquiries_sheet: 'whatsapp_inquiries',\n    operations_document_id: '1_1JtBLyZXpXxTVe11TolZ3Ip2b4ASRDoQaISdHulmFg',\n    interactions_sheet: 'crm_interactions',\n    assignments_sheet: 'crm_assignments',\n    providers_sheet: 'crm_providers',\n    accounting_document_id: '1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU',\n    accounting_source_sheet: 'stripe_invoices'\n  }\n}];"
       },
-      "id": "15f7dc5e-2251-44d7-86b7-281132cbce08",
+      "id": "f822329c-51cb-4a80-8968-47f28444c640",
       "name": "Normalize Request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        46320,
-        12832
+        800,
+        3056
       ]
     },
     {
@@ -365,6 +365,46 @@
                 "conditions": [
                   {
                     "leftValue": "={{$json.action}}",
+                    "rightValue": "post_zelle_accounting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "post_collaboration_accounting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
                     "rightValue": "list_bookings",
                     "operator": {
                       "type": "string",
@@ -481,78 +521,65 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "9dc526cd-7bfb-4984-b334-c27fb8794dcb",
+      "id": "3183ffd7-62d5-4821-a02a-20ed610164a1",
       "name": "Switch - Action",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        46560,
-        12832
+        1040,
+        3056
       ]
     },
     {
       "parameters": {
         "jsCode": "/*\nLIST INQUIRIES\nReplace this node with a Google Sheets read/search flow:\n1. Google Sheets: read rows from whatsapp_inquiries.\n2. Return rows as: { records: [...] }.\n3. Include row_number if you want direct update support.\n\nThis placeholder returns an empty records array so the admin page can connect safely while you wire the Sheet node.\n*/\nreturn [{ json: { ok: true, action: $json.action, records: [] } }];"
       },
-      "id": "3a215c0b-82ff-4814-9340-a0524ffa7897",
+      "id": "50a100f0-a0a0-42d0-b25f-569230aa2eaa",
       "name": "List Inquiries - Replace With Google Sheets Read",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        46864,
-        12528
+        1344,
+        2752
       ]
     },
     {
       "parameters": {
         "jsCode": "/*\nCREATE NEW GUEST + INQUIRY\nExpected payload from admin page:\n{\n  action: 'create_guest_and_inquiry',\n  guest_row: {...whatsapp_guests columns...},\n  inquiry_row: {...whatsapp_inquiries columns...}\n}\n\nRecommended wiring after this node:\n1. Google Sheets Append to whatsapp_guests using $json.guest_row.\n2. Google Sheets Append to whatsapp_inquiries using $json.inquiry_row.\n3. Respond with { ok:true, record:$json.inquiry_row }.\n*/\nconst guest = $json.guest_row || {};\nconst inquiry = $json.inquiry_row || $json.record || {};\nif (!guest.guest_id) throw new Error('Missing guest_row.guest_id');\nif (!inquiry.inquiry_id) throw new Error('Missing inquiry_row.inquiry_id');\nreturn [{ json: { ok: true, action: $json.action, guest_row: guest, inquiry_row: inquiry, record: inquiry } }];"
       },
-      "id": "1c1d7178-7631-467c-9418-298b052b58fd",
+      "id": "e15c2551-0d13-406e-8943-c7e73d2e9708",
       "name": "Create Guest + Inquiry - Prepare Rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        46848,
-        12704
+        1328,
+        2928
       ]
     },
     {
       "parameters": {
         "jsCode": "/*\nCREATE RETURNING INQUIRY\nExpected payload:\n{\n  action: 'create_returning_inquiry',\n  inquiry_row: {...whatsapp_inquiries columns...}\n}\n\nRecommended wiring after this node:\n1. Google Sheets Append to whatsapp_inquiries using $json.inquiry_row.\n2. Optional: update whatsapp_guests total_inquiries / last_contact_date.\n3. Respond with { ok:true, record:$json.inquiry_row }.\n*/\nconst inquiry = $json.inquiry_row || $json.record || {};\nif (!inquiry.guest_id) throw new Error('Missing inquiry_row.guest_id');\nif (!inquiry.inquiry_id) throw new Error('Missing inquiry_row.inquiry_id');\nreturn [{ json: { ok: true, action: $json.action, inquiry_row: inquiry, record: inquiry } }];"
       },
-      "id": "652ca142-6e51-40ba-882e-5875e3647147",
+      "id": "3faf4c82-725f-4fa5-b539-2564f5479b8e",
       "name": "Create Returning Inquiry - Prepare Row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        46848,
-        12896
+        1328,
+        3120
       ]
     },
     {
       "parameters": {
         "jsCode": "const request = $('Normalize Request').first().json;\nconst incoming = { ...(request.inquiry_row || request.record || {}) };\nconst clean = value => String(value ?? '').trim();\nconst key = value => clean(value).toLowerCase().replace(/[-\\s]+/g, '_');\nconst yes = value => ['yes', 'true', '1', 'y'].includes(key(value));\nconst terminal = new Set(['completed', 'cancelled', 'canceled', 'did_not_book', 'duplicate', 'archived']);\n\nif (!clean(incoming.inquiry_id)) {\n  throw new Error('Missing inquiry_id for update.');\n}\n\nconst rows = $input.all().map(item => item.json || item);\nconst existing = rows.find(row => clean(row.inquiry_id) === clean(incoming.inquiry_id));\n\nif (!existing) {\n  throw new Error('Inquiry not found in crm_inquiries: ' + incoming.inquiry_id);\n}\n\nconst record = { ...existing, ...incoming };\nconst protectedFields = [\n  'country',\n  'home_country',\n  'tour_type',\n  'tour_category',\n  'interest_category',\n  'service_type',\n  'product_selected',\n  'duration_preference',\n  'tour_items',\n  'tour_items_json',\n  'tour_count',\n  'itinerary_json',\n  'itinerary_updated_at',\n  'itinerary_version',\n  'itinerary_status',\n  'guest_calendar_event_id',\n  'guest_calendar_event_url',\n  'guest_calendar_status',\n  'guest_calendar_sent_at',\n  'guest_calendar_synced_at',\n  'inquiry_studio_id',\n  'inquiry_studio_status',\n  'inquiry_studio_updated_at'\n];\n\nfor (const field of protectedFields) {\n  if (!clean(incoming[field]) && clean(existing[field])) {\n    record[field] = existing[field];\n  }\n}\n\nconst explicitArchiveRestore = yes(existing.is_archived)\n  && !yes(incoming.is_archived)\n  && !clean(incoming.archived_at)\n  && !clean(incoming.archive_reason)\n  && /restored from duplicate archive/i.test(clean(incoming.internal_notes));\nconst explicitLifecycleOverride = yes(incoming.lifecycle_override) || explicitArchiveRestore;\nconst existingStatus = key(existing.status);\nconst incomingStatus = key(incoming.status);\n\nif (!explicitLifecycleOverride && yes(existing.is_archived)) {\n  record.status = existing.status || 'duplicate';\n  record.is_archived = existing.is_archived || 'Yes';\n  record.archived_at = existing.archived_at || record.archived_at;\n  record.archive_reason = existing.archive_reason || record.archive_reason || 'archived';\n  record.superseded_by_inquiry_id = existing.superseded_by_inquiry_id || record.superseded_by_inquiry_id;\n  record.priority = '';\n} else if (!explicitLifecycleOverride && terminal.has(existingStatus) && !terminal.has(incomingStatus)) {\n  record.status = existing.status;\n  record.completed_date = existing.completed_date || record.completed_date;\n  record.tour_completed = existing.tour_completed || record.tour_completed;\n  record.is_archived = existing.is_archived || record.is_archived;\n  record.archived_at = existing.archived_at || record.archived_at;\n  record.archive_reason = existing.archive_reason || record.archive_reason;\n  record.superseded_by_inquiry_id = existing.superseded_by_inquiry_id || record.superseded_by_inquiry_id;\n  record.priority = '';\n}\n\ndelete record.lifecycle_override;\nrecord.country = clean(record.country) || clean(record.home_country);\nrecord.home_country = clean(record.home_country) || clean(record.country);\nrecord.tour_type = clean(record.tour_type) || clean(record.tour_category) || clean(record.interest_category);\nrecord.tour_category = clean(record.tour_category) || clean(record.tour_type);\nrecord.interest_category = clean(record.interest_category) || clean(record.tour_type);\nrecord.updated_at = new Date().toISOString();\n\nreturn [{ json: { ok: true, action: 'update_inquiry', record, inquiry_row: record } }];"
       },
-      "id": "253812ab-3574-4e10-bc32-15db459fd20a",
+      "id": "60680292-a8fd-443c-8e23-690fe08bacc1",
       "name": "Update Inquiry - Prepare Row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        46848,
-        13072
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{ json: { ok: false, error: `Unsupported action: ${$json.action}`, allowed_actions: [\"list_inquiries\",\"create_guest_and_inquiry\",\"create_returning_inquiry\",\"update_inquiry\",\"list_interactions\",\"create_interaction\",\"update_interaction\",\"delete_interaction\",\"list_assignments\",\"create_assignment\",\"update_assignment\",\"delete_assignment\",\"list_providers\",\"invite_assignment_provider\",\"save_inquiry_studio\",\"get_inquiry_studio\",\"list_bookings\",\"upsert_booking\",\"list_payments\",\"upsert_payment\"] } }];"
-      },
-      "id": "47823356-5a22-4a5e-84f2-c44045af9f29",
-      "name": "Unsupported Action",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        46848,
-        13248
+        1328,
+        3296
       ]
     },
     {
@@ -578,13 +605,13 @@
           }
         }
       },
-      "id": "b5850dc3-0cff-43d1-a158-c98da26f62f7",
+      "id": "527dea7f-1252-44ad-a6b3-685b1011b729",
       "name": "Respond to Admin Page",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        47104,
-        12928
+        1584,
+        3152
       ]
     },
     {
@@ -593,13 +620,13 @@
         "height": 760,
         "width": 500
       },
-      "id": "6a4ba5de-2c65-416b-974a-96088ce08834",
+      "id": "a75c6b0b-4535-44d2-8dd6-b797b6c2cfdf",
       "name": "Workflow Notes",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        45824,
-        12016
+        304,
+        2240
       ]
     },
     {
@@ -621,10 +648,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        12336
+        1344,
+        2560
       ],
-      "id": "bb653744-40ad-45ea-a19a-336af1c83cda",
+      "id": "eeb977ba-421f-4425-a98e-e1bfbfdabbbc",
       "name": "Get row(s) in sheet",
       "retryOnFail": true,
       "maxTries": 3,
@@ -640,13 +667,13 @@
       "parameters": {
         "jsCode": "const records = $input.all().map((item) => item.json || item);\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'list_inquiries',\n    count: records.length,\n    records\n  }\n}];"
       },
-      "id": "c95606b7-fc27-42d8-aef3-e9c0220d6dbc",
+      "id": "a15c1f1b-08a5-4c2a-bf5a-3db1e5dc3855",
       "name": "Aggregate CRM Rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47136,
-        12272
+        1616,
+        2496
       ]
     },
     {
@@ -1938,10 +1965,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47936,
-        12256
+        2416,
+        2480
       ],
-      "id": "6e13c32c-0fc4-49f1-a857-056fcdab740c",
+      "id": "361bb92b-2a8a-44a5-b089-50929bf80e86",
       "name": "Append CRM Inquiry - New Guest",
       "retryOnFail": true,
       "maxTries": 3,
@@ -3136,10 +3163,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47936,
-        12496
+        2416,
+        2720
       ],
-      "id": "00bf7a4b-7193-4d05-95d6-69f2796ab6bc",
+      "id": "2152e7e4-8074-49f1-a5ef-ebdfe77d738c",
       "name": "Append CRM Inquiry - Returning Guest",
       "retryOnFail": true,
       "maxTries": 3,
@@ -4486,10 +4513,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47936,
-        12832
+        2416,
+        3056
       ],
-      "id": "ede18b93-5d60-4627-a1f6-10c7d55091c7",
+      "id": "e3bbf4f1-dad8-4289-b251-a8679ee987d4",
       "name": "Update CRM Inquiry - Google Sheets",
       "retryOnFail": true,
       "maxTries": 3,
@@ -4503,15 +4530,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const request = $('Normalize Request').first().json;\nconst records = $input.all().map(item => item.json || item);\nconst action = String(request.action || '');\n\nif (action === 'list_inquiries') {\n  return [{ json: { ok: true, action, count: records.length, records, _route: 'respond' } }];\n}\n\nconst incoming = { ...(request.inquiry_row || request.record || {}) };\nconst guest = { ...(request.guest_row || {}) };\nconst clean = value => String(value ?? '').trim();\n\n// Reject contradictory quote metadata on new inquiries, including stale browser clients.\n// Existing inquiry updates do not pass through this creation branch.\nif (['create_guest_and_inquiry', 'create_returning_inquiry'].includes(action)\n    && clean(incoming.quote_sent_at)\n    && ['', 'not_sent'].includes(clean(incoming.quote_status).toLowerCase())) {\n  return [{ json: {\n    ok: false,\n    error: 'Not saved: this new inquiry is marked Not Sent but has a quote-sent date. Clear the date, or record the quote as Sent only if it was actually sent.',\n    _route: 'respond'\n  } }];\n}\n\nconst email = row => clean(row.email_normalized || row.email).toLowerCase();\nconst phone = row => clean(row.phone_normalized || row.phone_number || row.phone_raw).replace(/\\D/g, '');\nconst date = row => clean(row.requested_date || row.requested_date_start).slice(0, 10);\nconst name = row => clean(row.full_name).toLowerCase();\nconst tour = row => clean(row.service_type || row.tour_type || row.tour_category).toLowerCase();\nconst yes = value => ['1','true','yes','y'].includes(clean(value).toLowerCase());\nconst status = row => clean(row.status).toLowerCase().replace(/[-\\s]+/g, '_');\nconst archived = row => yes(row.is_archived) || status(row) === 'duplicate';\nconst closed = row => ['completed','cancelled','did_not_book','duplicate'].includes(status(row));\nconst visible = records.filter(row => !archived(row) && clean(row.inquiry_id) !== clean(incoming.inquiry_id));\nconst operational = visible.filter(row => !closed(row));\nconst incomingEmail = email(incoming);\nconst incomingPhone = phone(incoming);\nconst incomingDate = date(incoming);\nconst incomingName = name(incoming);\nconst incomingTour = tour(incoming);\n\n// A duplicate is a repeated active trip, not merely a returning guest.\nconst duplicate = incomingDate && operational.find(row => {\n  if (date(row) !== incomingDate) return false;\n  const sameIdentity =\n    (incomingEmail && email(row) === incomingEmail) ||\n    (incomingPhone && phone(row) === incomingPhone) ||\n    (incomingName && name(row) === incomingName);\n  const sameService = !incomingTour || !tour(row) || tour(row) === incomingTour;\n  return sameIdentity && sameService;\n});\n\nif (duplicate) {\n  return [{ json: {\n    ok: false,\n    error: 'Duplicate trip blocked: this guest already has an active record for the same date and service.',\n    duplicate_inquiry_id: duplicate.inquiry_id,\n    duplicate_record: duplicate,\n    _route: 'respond'\n  } }];\n}\n\n// Identity matching intentionally includes completed and other closed history.\nconst existingGuest = visible.find(row =>\n  (incomingEmail && email(row) === incomingEmail) ||\n  (incomingPhone && phone(row) === incomingPhone)\n);\n\nif (existingGuest && existingGuest.guest_id) {\n  incoming.guest_id = existingGuest.guest_id;\n  incoming.return_sequence = String(\n    visible.filter(row => clean(row.guest_id) === clean(existingGuest.guest_id)).length + 1\n  );\n  return [{ json: {\n    ok: true,\n    action: 'create_returning_inquiry',\n    reused_guest: true,\n    inquiry_row: incoming,\n    record: incoming,\n    _route: 'append_returning'\n  } }];\n}\n\nif (action === 'create_returning_inquiry') {\n  if (!incoming.guest_id) throw new Error('Missing inquiry_row.guest_id');\n  return [{ json: { ok: true, action, inquiry_row: incoming, record: incoming, _route: 'append_returning' } }];\n}\n\nif (!guest.guest_id || !incoming.inquiry_id) throw new Error('Missing guest or inquiry ID');\nreturn [{ json: { ok: true, action, guest_row: guest, inquiry_row: incoming, record: incoming, _route: 'append_new' } }];"
+        "jsCode": "const request = $('Normalize Request').first().json;\nconst records = $input.all().map(item => item.json || item);\nconst action = String(request.action || '');\n\nif (action === 'list_inquiries') {\n  return [{ json: { ok: true, action, count: records.length, records, _route: 'respond' } }];\n}\n\nconst incoming = { ...(request.inquiry_row || request.record || {}) };\nconst guest = { ...(request.guest_row || {}) };\nconst clean = value => String(value ?? '').trim();\n\n// Reject contradictory quote metadata on new inquiries, including stale browser clients.\n// Existing inquiry updates do not pass through this creation branch.\nif (['create_guest_and_inquiry', 'create_returning_inquiry'].includes(action)\n    && clean(incoming.quote_sent_at)\n    && ['', 'not_sent'].includes(clean(incoming.quote_status).toLowerCase())) {\n  return [{ json: {\n    ok: false,\n    error: 'Not saved: this new inquiry is marked Not Sent but has a quote-sent date. Clear the date, or record the quote as Sent only if it was actually sent.',\n    _route: 'respond'\n  } }];\n}\n\nconst email = row => clean(row.email_normalized || row.email).toLowerCase();\nconst phone = row => clean(row.phone_normalized || row.phone_number || row.phone_raw).replace(/\\D/g, '');\nconst date = row => clean(row.requested_date || row.requested_date_start).slice(0, 10);\nconst name = row => clean(row.full_name).toLowerCase();\nconst tour = row => clean(row.service_type || row.tour_type || row.tour_category).toLowerCase();\nconst yes = value => ['1','true','yes','y'].includes(clean(value).toLowerCase());\nconst status = row => clean(row.status).toLowerCase().replace(/[-\\s]+/g, '_');\nconst archived = row => yes(row.is_archived) || status(row) === 'duplicate';\nconst closed = row => ['completed','cancelled','did_not_book','duplicate'].includes(status(row));\nconst visible = records.filter(row => !archived(row) && clean(row.inquiry_id) !== clean(incoming.inquiry_id));\nconst operational = visible.filter(row => !closed(row));\nconst incomingEmail = email(incoming);\nconst incomingPhone = phone(incoming);\nconst incomingDate = date(incoming);\nconst incomingName = name(incoming);\nconst incomingTour = tour(incoming);\n\n// A duplicate is a repeated active trip, not merely a returning guest.\nconst duplicate = incomingDate && operational.find(row => {\n  if (date(row) !== incomingDate) return false;\n  const sameIdentity =\n    (incomingEmail && email(row) === incomingEmail) ||\n    (incomingPhone && phone(row) === incomingPhone) ||\n    (incomingName && name(row) === incomingName);\n  const sameService = !incomingTour || !tour(row) || tour(row) === incomingTour;\n  return sameIdentity && sameService;\n});\n\nif (duplicate) {\n  return [{ json: {\n    ok: false,\n    error: 'Duplicate trip blocked: this guest already has an active record for the same date and service.',\n    duplicate_inquiry_id: duplicate.inquiry_id,\n    duplicate_record: duplicate,\n    _route: 'respond'\n  } }];\n}\n\n// Identity matching intentionally includes completed and other closed history.\nconst existingGuest = visible.find(row =>\n  (incomingEmail && email(row) === incomingEmail) ||\n  (incomingPhone && phone(row) === incomingPhone)\n);\n\nif (existingGuest && existingGuest.guest_id) {\n  incoming.guest_id = existingGuest.guest_id;\n  incoming.return_sequence = String(\n    visible.filter(row => clean(row.guest_id) === clean(existingGuest.guest_id)).length + 1\n  );\n  return [{ json: {\n    ok: true,\n    action: 'create_returning_inquiry',\n    reused_guest: true,\n    inquiry_row: incoming,\n    record: incoming,\n    _route: 'append_returning'\n  } }];\n}\n\nif (action === 'create_returning_inquiry') {\n  if (!incoming.guest_id) throw new Error('Missing inquiry_row.guest_id');\n  return [{ json: { ok: true, action, inquiry_row: incoming, record: incoming, _route: 'append_returning' } }];\n}\n\nif (!guest.guest_id || !incoming.inquiry_id) throw new Error('Missing guest or inquiry ID');\n  return [{ json: { ok: true, action, guest_row: guest, inquiry_row: incoming, record: incoming, _route: 'append_new' } }];"
       },
-      "id": "7506a8c5-0be8-40f9-bd71-6c32a69d48e1",
+      "id": "ef8849f5-f53f-4ece-a12a-d13ee9a89dc4",
       "name": "Validate Create Against CRM",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        11984
+        1584,
+        2208
       ]
     },
     {
@@ -4564,13 +4591,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "f1ac0b33-3eab-492a-991f-1fc0f2eaa516",
+      "id": "436df153-da18-490b-8761-2f77981ea141",
       "name": "Route Validated Create",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        47440,
-        12256
+        1920,
+        2480
       ]
     },
     {
@@ -4887,10 +4914,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47936,
-        12016
+        2416,
+        2240
       ],
-      "id": "c9081bdd-95e6-48ba-b6d0-65b18e3efe09",
+      "id": "4acb091a-2784-4db8-97b2-0530f5ba2b90",
       "name": "Append CRM Guest Profile",
       "retryOnFail": true,
       "maxTries": 3,
@@ -4909,10 +4936,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48144,
-        12016
+        2624,
+        2240
       ],
-      "id": "8e436721-b6bb-49f2-aad5-5caacc50898c",
+      "id": "4e2404bd-f3af-4435-b5d3-0cb72244709c",
       "name": "Restore Inquiry Row"
     },
     {
@@ -4929,13 +4956,13 @@
         },
         "options": {}
       },
-      "id": "911bd49c-72c9-4b09-a89e-e875df65d12d",
+      "id": "fe676c9f-49d0-4600-9ddf-3ab7ee0a3519",
       "name": "Read CRM Interactions",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        13408
+        1344,
+        3632
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -4949,13 +4976,13 @@
       "parameters": {
         "jsCode": "\nconst request = $('Normalize Request').first().json;\nconst action = String(request.action || '');\nconst now = new Date().toISOString();\nconst clean = value => String(value ?? '').trim();\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $input.all().map(item => item.json || item).filter(row => row && Object.keys(row).length && Object.values(row).some(value => clean(value) !== ''));\nconst user = value => { const v=clean(value).toUpperCase(); if(!['SS','JPG'].includes(v)) throw new Error('created_by/provider_informed_by must be SS or JPG.'); return v; };\nconst makeId = prefix => prefix + '-' + now.replace(/[-:.TZ]/g,'').slice(0,14) + '-' + Math.random().toString(36).slice(2,8).toUpperCase();\n\nconst allowedDirections=['incoming','outgoing','internal'];\nconst allowedChannels=['whatsapp','email','phone','website','in_person','other'];\nconst allowedTypes=['guest_message','staff_reply','quote_sent','itinerary_sent','invoice_sent','deposit_link_sent','payment_received','confirmation_sent','follow_up','internal_note','other'];\nconst active=rows.filter(r=>!yes(r.is_deleted));\nif(action==='list_interactions'){\n  const guest=clean(request.guest_id), inquiry=clean(request.inquiry_id);\n  const records=active.filter(r=>(!guest||clean(r.guest_id)===guest)&&(!inquiry||clean(r.inquiry_id)===inquiry)).sort((a,b)=>clean(b.occurred_at||b.created_at).localeCompare(clean(a.occurred_at||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nlet incoming={...(request.interaction||request.record||{})};\nlet existing={};\nif(action!=='create_interaction'){\n  const key=clean(incoming.interaction_id||request.interaction_id); existing=rows.find(r=>clean(r.interaction_id)===key)||{}; if(!key||!existing.interaction_id) throw new Error('Interaction not found.');\n}\nlet record={...existing,...incoming};\nif(action==='create_interaction') record.interaction_id=record.interaction_id||makeId('INT');\nif(!clean(record.guest_id)&&!clean(record.inquiry_id)) throw new Error('Interaction requires guest_id or inquiry_id.');\nif(!clean(record.note)) throw new Error('Interaction note is required.');\nrecord.direction=clean(record.direction||'internal').toLowerCase(); if(!allowedDirections.includes(record.direction)) throw new Error('Invalid interaction direction.');\nrecord.channel=clean(record.channel||'other').toLowerCase(); if(!allowedChannels.includes(record.channel)) throw new Error('Invalid interaction channel.');\nrecord.interaction_type=clean(record.interaction_type||'other').toLowerCase(); if(!allowedTypes.includes(record.interaction_type)) throw new Error('Invalid interaction_type.');\nrecord.created_by=user(record.created_by||request.created_by);\nrecord.followup_required=yes(record.followup_required)?'Yes':'No';\nrecord.occurred_at=clean(record.occurred_at)||now; record.created_at=clean(existing.created_at||record.created_at)||now; record.updated_at=now;\nif(action==='delete_interaction'){record.is_deleted='Yes';record.deleted_at=now;}else{record.is_deleted='No';record.deleted_at='';}\nreturn [{json:{...record,_action:action,_route:'write'}}];"
       },
-      "id": "e08db8ae-b23c-41a2-b931-4475fc82cc61",
+      "id": "f9a14939-1ea9-4566-b438-77021c864003",
       "name": "Process CRM Interactions",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        13408
+        1584,
+        3632
       ]
     },
     {
@@ -4988,13 +5015,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "73c4c7f3-7456-4d14-a552-ad06ce5845a1",
+      "id": "9d5e5f40-4f6a-41f5-8687-8328cfd292de",
       "name": "Route CRM Interactions",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        47376,
-        13408
+        1856,
+        3632
       ]
     },
     {
@@ -5200,13 +5227,13 @@
         },
         "options": {}
       },
-      "id": "de09a4a2-9c4f-40ed-bbec-6a864867828f",
+      "id": "81808bcf-d59d-44b5-9d26-95c3f08e2f46",
       "name": "Write CRM Interaction",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47648,
-        13392
+        2128,
+        3616
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -5219,13 +5246,13 @@
       "parameters": {
         "jsCode": "const record=$('Process CRM Interactions').item.json; const {_route,_action,...clean}=record; return [{json:{ok:true,action:_action,record:clean}}];"
       },
-      "id": "4a06cd35-4356-4b9e-8ebd-7ed486578b7d",
+      "id": "96d9f846-60df-4672-89d1-1da938519427",
       "name": "Finalize CRM Interaction",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47904,
-        13392
+        2384,
+        3616
       ]
     },
     {
@@ -5242,13 +5269,13 @@
         },
         "options": {}
       },
-      "id": "79e5bd1d-5e8a-467e-9070-b51d62c14b3b",
+      "id": "480554b4-b241-4493-9ebe-bed2a2b85dcd",
       "name": "Read CRM Assignments",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        13728
+        1344,
+        3952
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -5262,13 +5289,13 @@
       "parameters": {
         "jsCode": "const request = $('Normalize Request').first().json;\nconst action = String(request.action || '');\nconst now = new Date().toISOString();\nconst clean = value => String(value ?? '').trim();\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $input.all()\n  .map(item => item.json || item)\n  .filter(row => row && Object.keys(row).length && Object.values(row).some(value => clean(value) !== ''));\nconst user = value => {\n  const v = clean(value).toUpperCase();\n  if (!['SS','JPG'].includes(v)) throw new Error('created_by/provider_informed_by must be SS or JPG.');\n  return v;\n};\nconst makeId = prefix => prefix + '-' + now.replace(/[-:.TZ]/g,'').slice(0,14) + '-' + Math.random().toString(36).slice(2,8).toUpperCase();\n\nconst allowedStatus = ['pending','confirmed','cancelled','completed'];\nconst active = rows.filter(r => !yes(r.is_deleted));\n\nif (action === 'list_assignments') {\n  const guest = clean(request.guest_id);\n  const inquiry = clean(request.inquiry_id);\n  const from = clean(request.date_from);\n  const to = clean(request.date_to);\n  const service = clean(request.service_type).toLowerCase();\n\n  const records = active\n    .filter(r =>\n      (!guest || clean(r.guest_id) === guest) &&\n      (!inquiry || clean(r.inquiry_id) === inquiry) &&\n      (!from || clean(r.service_date) >= from) &&\n      (!to || clean(r.service_date) <= to) &&\n      (!service || clean(r.service_type).toLowerCase() === service)\n    )\n    .sort((a,b) => (clean(a.service_date) + ' ' + clean(a.start_time))\n      .localeCompare(clean(b.service_date) + ' ' + clean(b.start_time)));\n\n  return [{ json: { ok: true, action, count: records.length, records, _route: 'respond' } }];\n}\n\nif (action === 'invite_assignment_provider') {\n  const key = clean(request.assignment_id || request.assignment?.assignment_id || request.record?.assignment_id);\n  const existing = rows.find(r => clean(r.assignment_id) === key) || {};\n  if (!key || !existing.assignment_id) throw new Error('Assignment not found.');\n  if (yes(existing.is_deleted)) throw new Error('Cannot invite a provider for a deleted assignment.');\n  if (['cancelled','completed'].includes(clean(existing.assignment_status).toLowerCase())) throw new Error('Cannot invite a provider for a closed assignment.');\n  if (!clean(existing.google_calendar_event_id)) throw new Error('This assignment has not synced to Google Calendar yet.');\n  return [{ json: { ...existing, _action: action, _route: 'invite' } }];\n}\n\nlet incoming = { ...(request.assignment || request.record || {}) };\nlet existing = {};\n\nif (action !== 'create_assignment') {\n  const key = clean(incoming.assignment_id || request.assignment_id);\n  existing = rows.find(r => clean(r.assignment_id) === key) || {};\n  if (!key || !existing.assignment_id) throw new Error('Assignment not found.');\n}\n\nlet record = { ...existing, ...incoming };\n\nif (action === 'create_assignment') {\n  record.assignment_id = record.assignment_id || makeId('ASN');\n  record.assignment_group_id = record.assignment_group_id || makeId('ASG');\n}\n\nif (!clean(record.guest_id) && !clean(record.inquiry_id)) {\n  throw new Error('Assignment requires guest_id or inquiry_id.');\n}\nif (!clean(record.service_date)) throw new Error('service_date is required.');\nif (!clean(record.service_type)) throw new Error('service_type is required.');\n\nrecord.assignment_status = clean(record.assignment_status || 'pending').toLowerCase();\nif (!allowedStatus.includes(record.assignment_status)) throw new Error('Invalid assignment_status.');\n\nrecord.provider_informed = yes(record.provider_informed) ? 'Yes' : 'No';\nif (record.provider_informed === 'Yes') {\n  record.provider_informed_at = clean(record.provider_informed_at) || now;\n  record.provider_informed_by = user(record.provider_informed_by || request.created_by);\n} else {\n  record.provider_informed_at = '';\n  record.provider_informed_by = '';\n}\n\nrecord.round_trip = yes(record.round_trip) ? 'Yes' : 'No';\nrecord.currency = clean(record.currency || 'USD').toUpperCase();\nrecord.created_by = user(record.created_by || request.created_by);\nrecord.created_at = clean(existing.created_at || record.created_at) || now;\nrecord.updated_at = now;\n\n// Preserve all calendar identity fields across normal CRM edits.\n// The calendar arm below is responsible for changing these values after Google succeeds.\nrecord.google_calendar_event_id = clean(existing.google_calendar_event_id || record.google_calendar_event_id);\nrecord.google_calendar_id = clean(existing.google_calendar_id || record.google_calendar_id) || 'mindobirdwatching@gmail.com';\nrecord.calendar_event_url = clean(existing.calendar_event_url || record.calendar_event_url);\nrecord.calendar_synced_at = clean(existing.calendar_synced_at || record.calendar_synced_at);\nrecord.calendar_sync_error = '';\n\nif (action === 'delete_assignment') {\n  record.is_deleted = 'Yes';\n  record.deleted_at = now;\n  record.calendar_sync_status = record.google_calendar_event_id ? 'pending_delete' : 'not_required';\n} else {\n  record.is_deleted = 'No';\n  record.deleted_at = '';\n  if (record.assignment_status === 'cancelled') {\n    record.calendar_sync_status = record.google_calendar_event_id ? 'pending_delete' : 'not_required';\n  } else {\n    record.calendar_sync_status = record.google_calendar_event_id ? 'pending_update' : 'pending_create';\n  }\n}\n\nreturn [{ json: { ...record, _action: action, _route: 'write' } }];"
       },
-      "id": "5ecf3694-06c3-42cd-b5f1-2392d78de082",
+      "id": "5fb8f737-103d-4db4-8ac0-c7eb7b9d282d",
       "name": "Process CRM Assignments",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        13728
+        1584,
+        3952
       ]
     },
     {
@@ -5325,13 +5352,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "68502bff-337b-45fe-a304-d9545a1f861d",
+      "id": "3a13a9eb-d863-45f6-8ea0-15db20d1bb6f",
       "name": "Route CRM Assignments",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        47376,
-        13728
+        1856,
+        3952
       ]
     },
     {
@@ -5812,13 +5839,13 @@
         },
         "options": {}
       },
-      "id": "eeafbb3e-bd29-4eba-a80c-ad003c117961",
+      "id": "46407402-4f6f-47cd-983b-74609b3f59a2",
       "name": "Write CRM Assignment",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47648,
-        13680
+        2128,
+        3904
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -5831,13 +5858,13 @@
       "parameters": {
         "jsCode": "const original = $('Process CRM Assignments').item.json;\nconst latest = $json || {};\nconst merged = { ...original, ...latest };\nconst {_route,_action,...clean} = merged;\nreturn [{json:{ok:true,action:_action || original._action,record:clean}}];"
       },
-      "id": "182c8db0-0eaf-4c1b-86b8-59942e710bb0",
+      "id": "65ed63c0-4dea-4a0b-aac0-ab2065e1cf86",
       "name": "Finalize CRM Assignment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47904,
-        13680
+        2384,
+        3904
       ]
     },
     {
@@ -5854,13 +5881,13 @@
         },
         "options": {}
       },
-      "id": "00c839f3-ed64-4bd0-9ede-d182124d8996",
+      "id": "31ef0364-5fb9-454d-946c-6241ca840025",
       "name": "Read CRM Providers",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        14048
+        1344,
+        4272
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -5874,13 +5901,13 @@
       "parameters": {
         "jsCode": "\nconst request = $('Normalize Request').first().json;\nconst action = String(request.action || '');\nconst now = new Date().toISOString();\nconst clean = value => String(value ?? '').trim();\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $input.all().map(item => item.json || item).filter(row => row && Object.keys(row).length && Object.values(row).some(value => clean(value) !== ''));\nconst user = value => { const v=clean(value).toUpperCase(); if(!['SS','JPG'].includes(v)) throw new Error('created_by/provider_informed_by must be SS or JPG.'); return v; };\nconst makeId = prefix => prefix + '-' + now.replace(/[-:.TZ]/g,'').slice(0,14) + '-' + Math.random().toString(36).slice(2,8).toUpperCase();\n\nconst service=clean(request.service_type).toLowerCase();\nconst records=rows.filter(r=>!service||clean(r.service_type).toLowerCase()===service).filter(r=>!clean(r.is_active)||yes(r.is_active)).sort((a,b)=>{const d=(yes(b.is_default)?1:0)-(yes(a.is_default)?1:0);return d||clean(a.provider_name).localeCompare(clean(b.provider_name));});\nreturn [{json:{ok:true,action:'list_providers',count:records.length,records,_route:'respond'}}];"
       },
-      "id": "6e874280-a60b-4f0a-86ad-ce6a51f9f1cc",
+      "id": "44308343-a5f9-4797-809c-3f284e8fa87a",
       "name": "Process CRM Providers",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        14048
+        1584,
+        4272
       ]
     },
     {
@@ -5902,10 +5929,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46608,
-        11696
+        1088,
+        1920
       ],
-      "id": "32ddf7d8-0e7b-4a2c-b1c6-97f94bd88f10",
+      "id": "bd67245f-a8cb-499a-b4fc-19cd63896b22",
       "name": "Read CRM Inquiry For Safe Update",
       "retryOnFail": true,
       "maxTries": 3,
@@ -5921,13 +5948,13 @@
       "parameters": {
         "jsCode": "const request = $('Normalize Request').first().json;\nconst record = $('Process CRM Assignments').item.json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\n\nfunction normalizeTime(value) {\n  const raw = clean(value).toLowerCase();\n  if (!raw) return '';\n  const m = raw.match(/^(\\d{1,2}):(\\d{2})(?:\\s*(am|pm))?/);\n  if (!m) return '';\n  let h = Number(m[1]);\n  const min = Number(m[2]);\n  if (m[3] === 'pm' && h < 12) h += 12;\n  if (m[3] === 'am' && h === 12) h = 0;\n  if (h > 23 || min > 59) return '';\n  return String(h).padStart(2,'0') + ':' + String(min).padStart(2,'0');\n}\n\nfunction addMinutesLocal(date, time, minutes) {\n  const [y,m,d] = date.split('-').map(Number);\n  const [hh,mm] = time.split(':').map(Number);\n  const dt = new Date(Date.UTC(y,m-1,d,hh,mm,0));\n  dt.setUTCMinutes(dt.getUTCMinutes() + minutes);\n  const yyyy = dt.getUTCFullYear();\n  const mo = String(dt.getUTCMonth()+1).padStart(2,'0');\n  const da = String(dt.getUTCDate()).padStart(2,'0');\n  const h = String(dt.getUTCHours()).padStart(2,'0');\n  const mi = String(dt.getUTCMinutes()).padStart(2,'0');\n  return { date: `${yyyy}-${mo}-${da}`, time: `${h}:${mi}` };\n}\n\nconst date = clean(record.service_date);\nconst startTime = normalizeTime(record.start_time);\nconst endTimeRaw = normalizeTime(record.end_time);\nconst calendarId = clean(record.google_calendar_id) || 'mindobirdwatching@gmail.com';\nconst existingEventId = clean(record.google_calendar_event_id);\nconst providerNameForColor = (clean(record.provider_name) === 'Other' ? clean(record.provider_name_other) : clean(record.provider_name)).toLowerCase();\nconst calendarColorId = providerNameForColor === 'chicho' ? '10'\n  : providerNameForColor === 'juan' ? '9'\n  : providerNameForColor === 'neicer' ? '5'\n  : '';\nconst cancelled = yes(record.is_deleted) || clean(record.assignment_status).toLowerCase() === 'cancelled';\n\nlet calendarAction = 'skip';\nlet skipReason = '';\n\nif (cancelled) {\n  calendarAction = existingEventId ? 'delete' : 'skip';\n  if (!existingEventId) skipReason = 'No Google Calendar event exists to delete.';\n} else if (!date || !startTime) {\n  calendarAction = 'skip';\n  skipReason = !date ? 'Service date is missing.' : 'Start time is missing.';\n} else {\n  calendarAction = existingEventId ? 'update' : 'create';\n}\n\nlet endDate = date;\nlet endTime = endTimeRaw;\nlet endWasDefaulted = false;\n\nif (!cancelled && date && startTime && !endTime) {\n  const fallback = addMinutesLocal(date, startTime, 60);\n  endDate = fallback.date;\n  endTime = fallback.time;\n  endWasDefaulted = true;\n} else if (!cancelled && date && startTime && endTime && endTime <= startTime) {\n  const overnight = addMinutesLocal(date, endTime, 24 * 60);\n  endDate = overnight.date;\n}\n\nconst titleParts = [\n  clean(record.service_type) || 'Scheduled Service',\n  clean(record.guest_name),\n  clean(record.guest_count) ? `${clean(record.guest_count)} guest${clean(record.guest_count)==='1'?'':'s'}` : ''\n].filter(Boolean);\n\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || record.guest_phone || record.phone_number || record.phone_normalized || record.phone_raw);\nconst descriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  '',\n  clean(record.guest_name) ? `Guest: ${html(record.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(record.service_type) ? `Service: ${html(record.service_type)}` : '',\n  clean(record.product_selected) ? `<b>Product / Service:</b> ${html(record.product_selected)}` : '',\n  clean(record.guest_count) ? `Guests: ${html(record.guest_count)}` : '',\n  clean(record.provider_name) || clean(record.provider_name_other) ? `Assigned provider: ${html(clean(record.provider_name)==='Other' ? clean(record.provider_name_other) : clean(record.provider_name))}` : '',\n  clean(record.pickup_location) ? `Pickup: ${html(record.pickup_location)}` : '',\n  clean(record.dropoff_location) ? `Drop-off: ${html(record.dropoff_location)}` : '',\n  clean(record.trip_direction) ? `Direction: ${html(record.trip_direction)}` : '',\n  clean(record.assignment_status) ? `Assignment status: ${html(record.assignment_status)}` : '',\n  endWasDefaulted ? 'End time: Not set in CRM. Calendar currently uses a temporary 1-hour block.' : '',\n  clean(record.confirmation_note) ? `Confirmation note: ${html(record.confirmation_note)}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(record.assignment_id) ? `CRM Assignment: ${html(record.assignment_id)}` : ''\n].filter(Boolean);\n\nreturn [{\n  json: {\n    ...record,\n    calendar_id: calendarId,\n    calendar_event_id: existingEventId,\n    calendar_action: calendarAction,\n    calendar_skip_reason: skipReason,\n    calendar_timezone: 'America/Guayaquil',\n    calendar_start: date && startTime ? `${date}T${startTime}:00-05:00` : '',\n    calendar_end: endDate && endTime ? `${endDate}T${endTime}:00-05:00` : '',\n    calendar_summary: titleParts.join(' | '),\n    calendar_description: descriptionLines.join('<br>'),\n    calendar_location: clean(record.pickup_location) || clean(record.dropoff_location),\n    calendar_color_id: calendarColorId,\n    calendar_end_defaulted: endWasDefaulted\n  }\n}];"
       },
-      "id": "7bbd3d8e-50c3-47be-8684-c406c0405780",
+      "id": "16381670-543c-4b09-8794-cd49e161016b",
       "name": "Prepare Assignment Calendar Sync",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48176,
-        13680
+        2656,
+        3904
       ]
     },
     {
@@ -6000,13 +6027,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "d71d0e50-4f6c-48c6-b9bb-ba66e0ab0e3c",
+      "id": "8ad3afde-e9bb-4fd5-9292-e09e8ea3c905",
       "name": "Route Assignment Calendar Action",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        48416,
-        13648
+        2896,
+        3872
       ]
     },
     {
@@ -6044,13 +6071,13 @@
           ]
         }
       },
-      "id": "d89381ff-fd2b-493f-b1bf-4616c4e6b544",
+      "id": "a7e5f02d-5d46-4255-9788-366d1cdd6cab",
       "name": "Google Calendar - Create Assignment Event",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        48688,
-        13264
+        3168,
+        3488
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -6093,13 +6120,13 @@
           ]
         }
       },
-      "id": "a955f723-b968-4afa-b621-5815360149a3",
+      "id": "0854a4dc-12fc-40a8-82fb-ae9d76bba5d8",
       "name": "Google Calendar - Update Assignment Event",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        48688,
-        13488
+        3168,
+        3712
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -6123,13 +6150,13 @@
           "sendUpdates": "all"
         }
       },
-      "id": "c2208d8a-7a2d-4cf3-8b6a-ca1cb2dff7e5",
+      "id": "b0abb515-1b85-40b6-a627-156aae0db99e",
       "name": "Google Calendar - Delete Assignment Event",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        48688,
-        13696
+        3168,
+        3920
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -6144,52 +6171,52 @@
       "parameters": {
         "jsCode": "const base = $('Prepare Assignment Calendar Sync').item.json;\nconst result = $json || {};\nconst now = new Date().toISOString();\nconst error = result.error ? String(result.error.message || result.error) : '';\nconst eventId = String(result.id || '').trim();\nreturn [{\n  json: {\n    assignment_id: base.assignment_id,\n    google_calendar_event_id: eventId || base.google_calendar_event_id || '',\n    google_calendar_id: base.calendar_id || 'mindobirdwatching@gmail.com',\n    calendar_event_url: String(result.htmlLink || base.calendar_event_url || ''),\n    calendar_sync_status: error || !eventId ? 'error' : (base.calendar_end_defaulted ? 'synced_end_tbd' : 'synced'),\n    calendar_synced_at: error || !eventId ? (base.calendar_synced_at || '') : now,\n    calendar_sync_error: error || (!eventId ? 'Google Calendar did not return an event ID.' : '')\n  }\n}];"
       },
-      "id": "c386a2a3-5072-4540-8b47-8392ec4a90b0",
+      "id": "b8228c57-e02e-4415-8b26-5f1a42f3d472",
       "name": "Build Assignment Calendar Create State",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48912,
-        13264
+        3392,
+        3488
       ]
     },
     {
       "parameters": {
         "jsCode": "const base = $('Prepare Assignment Calendar Sync').item.json;\nconst result = $json || {};\nconst now = new Date().toISOString();\nconst clean = value => String(value ?? '').trim();\nconst eventId = clean(base.google_calendar_event_id || base.calendar_event_id);\nconst error = result.error ? String(result.error.message || result.error)\n  : (!clean(result.id) || clean(result.id) !== eventId ? 'Google Calendar did not confirm the existing event ID.' : '');\n// Read the original saved row: the processor has already replaced sync status with pending_update.\nconst previous = $('Read CRM Assignments').all().map(item => item.json || item)\n  .find(item => clean(item.assignment_id) === clean(base.assignment_id)) || {};\nconst providerKey = item => clean(item.provider_name === 'Other' ? item.provider_name_other : item.provider_name)\n  .toLowerCase().replace(/^niecer$/, 'neicer');\nconst sameProvider = !!providerKey(base) && providerKey(previous) === providerKey(base)\n  && !(clean(previous.provider_id) && clean(base.provider_id) && clean(previous.provider_id) !== clean(base.provider_id));\nconst attendees = (Array.isArray(result.attendees) ? result.attendees : [])\n  .filter(attendee => !attendee.organizer && !attendee.self && clean(attendee.email));\nlet invitation = '';\nif (attendees.length) {\n  // Operations events invite only the assigned provider. Ambiguous or reassigned guests require review.\n  if (!sameProvider || attendees.length !== 1 || result.attendeesOmitted) invitation = 'guide_invitation_review';\n  else invitation = ({accepted:'guide_accepted',declined:'guide_declined',tentative:'guide_tentative'})[attendees[0].responseStatus] || 'guide_invited';\n} else if (result.attendeesOmitted) invitation = 'guide_invitation_review';\nconst syncStatus = invitation || 'synced';\nreturn [{json: {\n  assignment_id: base.assignment_id,\n  google_calendar_event_id: eventId,\n  google_calendar_id: base.calendar_id || 'mindobirdwatching@gmail.com',\n  calendar_event_url: clean(result.htmlLink || base.calendar_event_url),\n  calendar_sync_status: error ? 'error' : syncStatus + (base.calendar_end_defaulted ? '_end_tbd' : ''),\n  calendar_synced_at: error ? (base.calendar_synced_at || '') : now,\n  calendar_sync_error: error\n}}];"
       },
-      "id": "ad94093f-2a73-47d1-aa65-cfcd2dc3b901",
+      "id": "ee6e8c40-d50d-467b-abd8-4ce0afcedc36",
       "name": "Build Assignment Calendar Update State",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48912,
-        13488
+        3392,
+        3712
       ]
     },
     {
       "parameters": {
         "jsCode": "const base = $('Prepare Assignment Calendar Sync').item.json;\nconst result = $json || {};\nconst now = new Date().toISOString();\nconst error = result.error ? String(result.error.message || result.error) : '';\nreturn [{\n  json: {\n    assignment_id: base.assignment_id,\n    google_calendar_event_id: base.google_calendar_event_id || base.calendar_event_id || '',\n    google_calendar_id: base.calendar_id || 'mindobirdwatching@gmail.com',\n    calendar_event_url: base.calendar_event_url || '',\n    calendar_sync_status: error ? 'error' : 'deleted',\n    calendar_synced_at: error ? (base.calendar_synced_at || '') : now,\n    calendar_sync_error: error\n  }\n}];"
       },
-      "id": "3e7405ec-b648-4916-86c6-739babf085c4",
+      "id": "cf82c428-84b6-42ef-8f45-db4ea8a95695",
       "name": "Build Assignment Calendar Delete State",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48912,
-        13696
+        3392,
+        3920
       ]
     },
     {
       "parameters": {
         "jsCode": "const base = $('Prepare Assignment Calendar Sync').item.json;\nreturn [{\n  json: {\n    assignment_id: base.assignment_id,\n    google_calendar_event_id: base.google_calendar_event_id || '',\n    google_calendar_id: base.calendar_id || 'mindobirdwatching@gmail.com',\n    calendar_event_url: base.calendar_event_url || '',\n    calendar_sync_status: base.calendar_skip_reason && /missing/i.test(base.calendar_skip_reason) ? 'needs_attention' : (base.calendar_sync_status || 'not_required'),\n    calendar_synced_at: base.calendar_synced_at || '',\n    calendar_sync_error: base.calendar_skip_reason || ''\n  }\n}];"
       },
-      "id": "540e457f-b134-4d43-8474-1069c3e6c289",
+      "id": "b4960f8f-3f6f-4ac7-99a5-c6ed673ac050",
       "name": "Build Assignment Calendar Skip State",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48704,
-        14128
+        3184,
+        4352
       ]
     },
     {
@@ -6636,13 +6663,13 @@
         },
         "options": {}
       },
-      "id": "342024bf-b457-459b-acf9-ced6934487eb",
+      "id": "36db2222-17b0-4ef3-b748-1b7886c5b743",
       "name": "Write Assignment Calendar State",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        49328,
-        13696
+        3808,
+        3920
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -6665,13 +6692,13 @@
         },
         "options": {}
       },
-      "id": "8f5929ed-357b-4741-879d-56f5a18bbbe0",
+      "id": "56a02626-0131-4d42-893f-27ffe7765303",
       "name": "Read Provider For Calendar Invite",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47648,
-        13920
+        2128,
+        4144
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -6685,13 +6712,13 @@
       "parameters": {
         "jsCode": "const assignment = $('Process CRM Assignments').item.json;\nconst request = $('Normalize Request').first().json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $input.all()\n  .map(item => item.json || item)\n  .filter(row => row && Object.keys(row).length);\n\nconst providerName = clean(assignment.provider_name) === 'Other'\n  ? clean(assignment.provider_name_other)\n  : clean(assignment.provider_name);\n\nconst provider = rows.find(row =>\n  clean(row.provider_name).toLowerCase() === providerName.toLowerCase()\n) || {};\n\nif (!providerName) throw new Error('No guide/driver is assigned.');\nif (!Object.keys(provider).length) throw new Error(`Provider not found in crm_providers: ${providerName}`);\n\nconst enabled = yes(provider.calendar_invites_enabled);\nif (!enabled) throw new Error(`Calendar invites are disabled for ${providerName}.`);\n\nconst email = clean(provider.google_calendar_email || provider.provider_email || provider.email);\nif (!email || email.toUpperCase() === 'PENDING') {\n  throw new Error(`Calendar email is missing for ${providerName}.`);\n}\n\nconst providerColorName = providerName.toLowerCase();\nconst calendarColorId = providerColorName === 'chicho' ? '10'\n  : providerColorName === 'juan' ? '9'\n  : providerColorName === 'neicer' ? '5'\n  : '';\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || assignment.guest_phone || assignment.phone_number || assignment.phone_normalized || assignment.phone_raw);\nconst inviteDescriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  '',\n  clean(assignment.guest_name) ? `Guest: ${html(assignment.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(assignment.service_type) ? `Service: ${html(assignment.service_type)}` : '',\n  clean(assignment.product_selected) ? `<b>Product / Service:</b> ${html(assignment.product_selected)}` : '',\n  clean(assignment.guest_count) ? `Guests: ${html(assignment.guest_count)}` : '',\n  providerName ? `Assigned provider: ${html(providerName)}` : '',\n  clean(assignment.pickup_location) ? `Pickup: ${html(assignment.pickup_location)}` : '',\n  clean(assignment.dropoff_location) ? `Drop-off: ${html(assignment.dropoff_location)}` : '',\n  clean(assignment.trip_direction) ? `Direction: ${html(assignment.trip_direction)}` : '',\n  clean(assignment.assignment_status) ? `Assignment status: ${html(assignment.assignment_status)}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(assignment.assignment_id) ? `CRM Assignment: ${html(assignment.assignment_id)}` : ''\n].filter(Boolean);\nconst calendarDescription = inviteDescriptionLines.join('<br>');\nconst eventId = clean(assignment.google_calendar_event_id);\nif (!eventId) throw new Error('This assignment does not have a Google Calendar event yet.');\n\nconst staff = clean(request.created_by || request.staff || assignment.created_by).toUpperCase();\nif (staff && !['SS','JPG'].includes(staff)) throw new Error('created_by must be SS or JPG.');\n\nreturn [{\n  json: {\n    assignment_id: assignment.assignment_id,\n    calendar_id: clean(assignment.google_calendar_id) || 'mindobirdwatching@gmail.com',\n    calendar_event_id: eventId,\n    guide_name: providerName,\n    guide_email: email,\n    calendar_color_id: calendarColorId,\n    calendar_description: calendarDescription,\n    provider_informed_by: staff || 'JPG'\n  }\n}];"
       },
-      "id": "0fb3f15d-1250-47c8-983c-ebe39467eac0",
+      "id": "b294a3f1-b299-49c7-9f5b-22167b2bae45",
       "name": "Prepare Guide Calendar Invite",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47904,
-        13920
+        2384,
+        4144
       ]
     },
     {
@@ -6730,13 +6757,13 @@
           ]
         }
       },
-      "id": "7e04fd7e-1b8b-4ef2-bc4c-499e69ff2e43",
+      "id": "f928f37e-fdb9-4686-a3b0-ba8b35e5bedd",
       "name": "Google Calendar - Invite Assigned Guide",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        48176,
-        13920
+        2656,
+        4144
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -6751,13 +6778,13 @@
       "parameters": {
         "jsCode": "const base = $('Prepare Guide Calendar Invite').item.json;\nconst assignment = $('Process CRM Assignments').item.json;\nconst result = $json || {};\nconst now = new Date().toISOString();\nconst error = result.error ? String(result.error.message || result.error) : '';\n\nreturn [{\n  json: {\n    assignment_id: base.assignment_id,\n    provider_informed: error ? (assignment.provider_informed || 'No') : 'Yes',\n    provider_informed_at: error ? (assignment.provider_informed_at || '') : now,\n    provider_informed_by: error ? (assignment.provider_informed_by || '') : base.provider_informed_by,\n    calendar_sync_status: error ? 'invite_error' : (String(assignment.calendar_sync_status || '').toLowerCase()==='synced_end_tbd' ? 'guide_invited_end_tbd' : 'guide_invited'),\n    calendar_sync_error: error\n  }\n}];"
       },
-      "id": "5ef4c2ef-33bf-4582-8c08-3510f222190f",
+      "id": "887a3bdd-bd87-4aeb-9d76-f39614dd3aaf",
       "name": "Build Guide Invite State",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48432,
-        13920
+        2912,
+        4144
       ]
     },
     {
@@ -7203,13 +7230,13 @@
         },
         "options": {}
       },
-      "id": "58857cb0-00a1-4f03-b4b2-393927e50935",
+      "id": "fa6b2d32-90f5-4113-9200-517008ed5ec4",
       "name": "Write Guide Invite State",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        48688,
-        13920
+        3168,
+        4144
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -7222,13 +7249,13 @@
       "parameters": {
         "jsCode": "const assignment = $('Process CRM Assignments').item.json;\nconst latest = $json || {};\nconst merged = { ...assignment, ...latest };\nconst {_route,_action,...record} = merged;\nreturn [{json:{\n  ok: true,\n  action: 'invite_assignment_provider',\n  record,\n  guide_invited: String(latest.calendar_sync_error || '').trim() ? false : true\n}}];"
       },
-      "id": "188b124d-e268-4d00-8db2-98ab10af1315",
+      "id": "abe6163e-f2b8-4054-bdbe-72bd10de1816",
       "name": "Finalize Guide Calendar Invite",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48912,
-        13920
+        3392,
+        4144
       ]
     },
     {
@@ -7242,13 +7269,13 @@
         "eventId": "={{ $json.google_calendar_event_id }}",
         "options": {}
       },
-      "id": "997e8506-2661-4134-80fe-181c809713b5",
+      "id": "bc0ada4e-0d3a-423d-8c26-6ade02a07411",
       "name": "Google Calendar - Check Assignment Event",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        49728,
-        13472
+        4208,
+        3696
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -7291,26 +7318,26 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "7fac7f26-6a49-479b-b954-50a956b58d5c",
+      "id": "c6053ab2-57fa-42a7-b20e-b1de6893fe5f",
       "name": "Route Existing Calendar Event",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        49952,
-        13472
+        4432,
+        3696
       ]
     },
     {
       "parameters": {
         "jsCode": "const base = $('Prepare Assignment Calendar Sync').item.json;\nreturn [{json:{...base, google_calendar_event_id:''}}];"
       },
-      "id": "73d2f094-b2e6-4db3-b6c1-dc7b3f06d3f9",
+      "id": "1bfcd66b-bb79-4f1d-b16e-7a5c8d0b3198",
       "name": "Restore Assignment Calendar Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        50176,
-        13584
+        4656,
+        3808
       ]
     },
     {
@@ -7338,13 +7365,13 @@
         },
         "options": {}
       },
-      "id": "102cffd3-941a-498c-9f37-4a1944b06169",
+      "id": "3da84666-7466-4251-ba14-68b02e7a60ab",
       "name": "Is Reference Request",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        45104,
-        12416
+        -416,
+        2640
       ]
     },
     {
@@ -7366,13 +7393,13 @@
           "timeout": 15000
         }
       },
-      "id": "eef5ef28-a076-45b1-8929-3d74fb785862",
+      "id": "f4f72ade-365f-49e5-8532-c345b85b395d",
       "name": "Resolve or Link Reference",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        45376,
-        12416
+        -144,
+        2640
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -7396,13 +7423,13 @@
         },
         "options": {}
       },
-      "id": "4b36ad86-c232-4658-8ee5-6e758b28d3d7",
+      "id": "64dc38f9-aad9-41f7-bbda-04cb528a0d90",
       "name": "Read Inquiry Studio For Save",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46880,
-        14688
+        1360,
+        4912
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -7416,13 +7443,13 @@
       "parameters": {
         "jsCode": "const request = $('Normalize Request').first().json;\nconst incoming = { ...(request.record || {}) };\nconst fields = [\"inquiry_studio_id\", \"inquiry_id\", \"guest_id\", \"created_at\", \"updated_at\", \"created_by\", \"assigned_to\", \"status\", \"inquiry_complexity\", \"revision\", \"source_type\", \"source_subject\", \"source_message\", \"input_language\", \"output_language\", \"attachment_manifest_json\", \"extracted_request_json\", \"request_summary\", \"guest_profile_json\", \"requested_dates_json\", \"target_species_json\", \"requirements_json\", \"unknowns_json\", \"assumptions_json\", \"validation_flags_json\", \"proposed_days_json\", \"guest_reply_draft\", \"guide_brief_draft\", \"internal_summary\", \"guide_responses_json\", \"guide_quotes_json\", \"final_plan_json\", \"handoff_json\", \"ai_model\", \"prompt_version\", \"validation_status\", \"validation_notes\", \"last_analyzed_at\", \"approved_at\", \"approved_by\"];\nconst jsonFields = new Set([\"attachment_manifest_json\", \"extracted_request_json\", \"guest_profile_json\", \"requested_dates_json\", \"target_species_json\", \"requirements_json\", \"unknowns_json\", \"assumptions_json\", \"validation_flags_json\", \"proposed_days_json\", \"guide_responses_json\", \"guide_quotes_json\", \"final_plan_json\", \"handoff_json\"]);\nconst arrayJsonFields = new Set([\"attachment_manifest_json\", \"requested_dates_json\", \"target_species_json\", \"requirements_json\", \"unknowns_json\", \"assumptions_json\", \"validation_flags_json\", \"proposed_days_json\", \"guide_responses_json\", \"guide_quotes_json\"]);\nconst clean = value => String(value ?? '').trim();\nif (!clean(incoming.inquiry_studio_id)) throw new Error('Missing inquiry_studio_id.');\nconst rows = $input.all().map(item => item.json || item).filter(row => clean(row.inquiry_studio_id));\nconst existing = rows.find(row => clean(row.inquiry_studio_id) === clean(incoming.inquiry_studio_id)) || {};\nconst now = new Date().toISOString();\nconst record = {};\nfor (const field of fields) record[field] = incoming[field] ?? existing[field] ?? '';\nrecord.inquiry_studio_id = clean(record.inquiry_studio_id);\nrecord.created_at = clean(existing.created_at) || clean(record.created_at) || now;\nrecord.updated_at = now;\nrecord.status = clean(record.status) || 'draft';\nrecord.revision = Math.max(Number(existing.revision || 0) + 1, Number(record.revision || 1));\nfor (const field of jsonFields) {\n  const value = clean(record[field]);\n  if (!value) record[field] = arrayJsonFields.has(field) ? '[]' : '{}';\n  try { JSON.parse(record[field]); } catch { throw new Error(field + ' must contain valid JSON.'); }\n}\nreturn [{ json: { ok: true, action: 'save_inquiry_studio', record } }];"
       },
-      "id": "4b887e58-ce15-48db-aacd-4a3f6f0c7469",
+      "id": "58185f0f-7fba-4a52-bd72-43d8da494b42",
       "name": "Prepare Inquiry Studio Save",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47120,
-        14688
+        1600,
+        4912
       ]
     },
     {
@@ -7892,13 +7919,13 @@
         },
         "options": {}
       },
-      "id": "8bd9a1d7-a557-4b98-bc9a-42797c47cd4b",
+      "id": "35bc9dc9-6377-4923-bf58-335ba02d54d1",
       "name": "Write Inquiry Studio Record",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47408,
-        14688
+        1888,
+        4912
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -7911,13 +7938,13 @@
       "parameters": {
         "jsCode": "const prepared = $('Prepare Inquiry Studio Save').first().json;\nreturn [{ json: { ok: true, action: 'save_inquiry_studio', record: prepared.record } }];"
       },
-      "id": "a4dfdca5-7554-405a-ac1a-8ff19fde8449",
+      "id": "3b91a653-31b0-44a1-8725-7441517ec5ce",
       "name": "Finalize Inquiry Studio Save",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47648,
-        14688
+        2128,
+        4912
       ]
     },
     {
@@ -7934,13 +7961,13 @@
         },
         "options": {}
       },
-      "id": "92c25d38-6428-4a9c-961f-2e1910372718",
+      "id": "96d49122-0dd3-416a-a3ab-72b017d128d1",
       "name": "Read Inquiry Studio For Get",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46880,
-        14928
+        1360,
+        5152
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -7954,13 +7981,2315 @@
       "parameters": {
         "jsCode": "const request = $('Normalize Request').first().json;\nconst clean = value => String(value ?? '').trim();\nconst studioId = clean(request.inquiry_studio_id);\nconst inquiryId = clean(request.inquiry_id);\nif (!studioId && !inquiryId) throw new Error('Provide inquiry_studio_id or inquiry_id.');\nconst records = $input.all().map(item => item.json || item).filter(row => clean(row.inquiry_studio_id));\nconst matches = records.filter(row => studioId ? clean(row.inquiry_studio_id) === studioId : clean(row.inquiry_id) === inquiryId);\nmatches.sort((a,b) => clean(b.updated_at).localeCompare(clean(a.updated_at)) || Number(b.revision || 0) - Number(a.revision || 0));\nreturn [{ json: { ok: true, action: 'get_inquiry_studio', record: matches[0] || null } }];"
       },
-      "id": "36018629-c17c-42db-a987-c09b8d0c9389",
+      "id": "ab2fbbe4-ac03-40c1-be6d-c8e5b787165b",
       "name": "Filter Inquiry Studio Record",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47120,
-        14928
+        1600,
+        5152
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $json || {};\nconst rows = Array.isArray(source.accounting_rows) ? source.accounting_rows : [];\nif (!rows.length) throw new Error('No Zelle accounting rows were supplied.');\nif (rows.length > 20) throw new Error('A maximum of 20 service rows can be posted at once.');\n\nconst required = ['invoice_no','date_paid','tour_date','guest_first_name','party_size','service_type','product_selected','tour_guide','amount_received','inquiry_id','guest_id','tour_key'];\nconst allowed = new Set([\"created_at_iso\", \"stripe_environment\", \"stripe_event_id\", \"stripe_session_id\", \"stripe_payment_intent\", \"stripe_charge_id\", \"stripe_product_id\", \"stripe_price_id\", \"stripe_payment_link_id\", \"stripe_receipt_url\", \"invoice_no\", \"date_paid\", \"tour_date\", \"tour_completed\", \"guest_first_name\", \"guest_last_name\", \"guest_email\", \"guest_phone\", \"home_country\", \"party_size\", \"service_type\", \"product_selected\", \"tour_title\", \"tour_guide\", \"payment_method\", \"invoice_id\", \"transaction_id\", \"payment_reference_note\", \"guest_rate_override\", \"standard_price_per_person\", \"price_adjustment_per_person\", \"final_price_per_person\", \"pricing_reason\", \"pricing_notes\", \"discount_rate_guest\", \"discount_reason\", \"amount_received\", \"transaction_fee_total\", \"fee_pct_of_amount_received\", \"mbw_fee_pct_override\", \"total_tip_collected\", \"tip_paid_to_guide_override\", \"pickup_location\", \"pickup_address_or_hotel\", \"other_guests\", \"notes\", \"agent_id\", \"inquiry_id\", \"guest_id\", \"booking_id\", \"payment_purpose\", \"deposit_status\", \"applied_invoice_id\", \"applied_invoice_no\", \"applied_at\", \"stripe_customer_id\", \"currency\", \"gross_payment_amount\", \"guide_pay_model\", \"guide_base_rate\", \"guide_base_payout\", \"guide_tip_pct_used\", \"tip_paid_to_guide\", \"tip_paid_to_mbw\", \"total_amount_owed_to_guide\", \"mbw_gross_expected\", \"mbw_gross_actual\", \"gross_discrepency\", \"mbw_profit_expected\", \"mbw_profit_accrual\", \"net_discrepency\", \"mbw_profit_margin\", \"mbw_cash_expected\", \"mbw_cash_actual\", \"cash_discrepency\", \"mbw_cash_profit_margin\", \"reconciliation_status\", \"guide_paid_actual\", \"fees_paid_actual\", \"expense_reconciled_flag\", \"invoice_no_txt\", \"tour_key\", \"quote_id\", \"record_type\", \"source_line_id\", \"payment_bundle_id\", \"payment_intent_ids\", \"deposit_payment_intent_id\", \"deposit_applied_amount\", \"deposit_fee_actual\", \"balance_fee_actual\", \"combined_fee_actual\", \"fee_allocation_method\", \"exclude_from_invoice_sync\", \"record_status\", \"reversal_event_id\", \"amount_before_deposit\", \"amount_remaining\"]);\nconst seen = new Set();\n\nreturn rows.map((input, index) => {\n  const row = {};\n  for (const key of allowed) row[key] = input[key] ?? '';\n  for (const key of required) {\n    if (String(row[key] ?? '').trim() === '') throw new Error(`Zelle row ${index + 1} is missing ${key}.`);\n  }\n  if (String(row.payment_method).trim().toLowerCase() !== 'zelle') throw new Error(`Zelle row ${index + 1} has an invalid payment method.`);\n  if (!(Number(row.amount_received) > 0)) throw new Error(`Zelle row ${index + 1} must have a positive amount_received.`);\n  if (seen.has(String(row.tour_key))) throw new Error(`Duplicate tour_key in request: ${row.tour_key}`);\n  seen.add(String(row.tour_key));\n  row.transaction_fee_total = 0;\n  row.stripe_environment = 'manual';\n  row.exclude_from_invoice_sync = 'No';\n  row.record_status = 'paid';\n  row._zelle_batch_count = rows.length;\n  return { json: row };\n});"
+      },
+      "id": "5d40081a-3048-49d3-b82e-8b284a129499",
+      "name": "Prepare Zelle Accounting Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        5392
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU/edit?gid=1450193828#gid=1450193828",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1450193828,
+          "mode": "list",
+          "cachedResultName": "stripe_invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU/edit#gid=1450193828"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at_iso": "={{ $json.created_at_iso ?? '' }}",
+            "stripe_environment": "={{ $json.stripe_environment ?? '' }}",
+            "stripe_event_id": "={{ $json.stripe_event_id ?? '' }}",
+            "stripe_session_id": "={{ $json.stripe_session_id ?? '' }}",
+            "stripe_payment_intent": "={{ $json.stripe_payment_intent ?? '' }}",
+            "stripe_charge_id": "={{ $json.stripe_charge_id ?? '' }}",
+            "stripe_product_id": "={{ $json.stripe_product_id ?? '' }}",
+            "stripe_price_id": "={{ $json.stripe_price_id ?? '' }}",
+            "stripe_payment_link_id": "={{ $json.stripe_payment_link_id ?? '' }}",
+            "stripe_receipt_url": "={{ $json.stripe_receipt_url ?? '' }}",
+            "invoice_no": "={{ $json.invoice_no ?? '' }}",
+            "date_paid": "={{ $json.date_paid ?? '' }}",
+            "tour_date": "={{ $json.tour_date ?? '' }}",
+            "tour_completed": "={{ $json.tour_completed ?? '' }}",
+            "guest_first_name": "={{ $json.guest_first_name ?? '' }}",
+            "guest_last_name": "={{ $json.guest_last_name ?? '' }}",
+            "guest_email": "={{ $json.guest_email ?? '' }}",
+            "guest_phone": "={{ $json.guest_phone ?? '' }}",
+            "home_country": "={{ $json.home_country ?? '' }}",
+            "party_size": "={{ $json.party_size ?? '' }}",
+            "service_type": "={{ $json.service_type ?? '' }}",
+            "product_selected": "={{ $json.product_selected ?? '' }}",
+            "tour_title": "={{ $json.tour_title ?? '' }}",
+            "tour_guide": "={{ $json.tour_guide ?? '' }}",
+            "payment_method": "={{ $json.payment_method ?? '' }}",
+            "invoice_id": "={{ $json.invoice_id ?? '' }}",
+            "transaction_id": "={{ $json.transaction_id ?? '' }}",
+            "payment_reference_note": "={{ $json.payment_reference_note ?? '' }}",
+            "guest_rate_override": "={{ $json.guest_rate_override ?? '' }}",
+            "standard_price_per_person": "={{ $json.standard_price_per_person ?? '' }}",
+            "price_adjustment_per_person": "={{ $json.price_adjustment_per_person ?? '' }}",
+            "final_price_per_person": "={{ $json.final_price_per_person ?? '' }}",
+            "pricing_reason": "={{ $json.pricing_reason ?? '' }}",
+            "pricing_notes": "={{ $json.pricing_notes ?? '' }}",
+            "discount_rate_guest": "={{ $json.discount_rate_guest ?? '' }}",
+            "discount_reason": "={{ $json.discount_reason ?? '' }}",
+            "amount_received": "={{ $json.amount_received ?? '' }}",
+            "transaction_fee_total": "={{ $json.transaction_fee_total ?? '' }}",
+            "fee_pct_of_amount_received": "={{ $json.fee_pct_of_amount_received ?? '' }}",
+            "mbw_fee_pct_override": "={{ $json.mbw_fee_pct_override ?? '' }}",
+            "total_tip_collected": "={{ $json.total_tip_collected ?? '' }}",
+            "tip_paid_to_guide_override": "={{ $json.tip_paid_to_guide_override ?? '' }}",
+            "pickup_location": "={{ $json.pickup_location ?? '' }}",
+            "pickup_address_or_hotel": "={{ $json.pickup_address_or_hotel ?? '' }}",
+            "other_guests": "={{ $json.other_guests ?? '' }}",
+            "notes": "={{ $json.notes ?? '' }}",
+            "agent_id": "={{ $json.agent_id ?? '' }}",
+            "inquiry_id": "={{ $json.inquiry_id ?? '' }}",
+            "guest_id": "={{ $json.guest_id ?? '' }}",
+            "booking_id": "={{ $json.booking_id ?? '' }}",
+            "payment_purpose": "={{ $json.payment_purpose ?? '' }}",
+            "deposit_status": "={{ $json.deposit_status ?? '' }}",
+            "applied_invoice_id": "={{ $json.applied_invoice_id ?? '' }}",
+            "applied_invoice_no": "={{ $json.applied_invoice_no ?? '' }}",
+            "applied_at": "={{ $json.applied_at ?? '' }}",
+            "stripe_customer_id": "={{ $json.stripe_customer_id ?? '' }}",
+            "currency": "={{ $json.currency ?? '' }}",
+            "gross_payment_amount": "={{ $json.gross_payment_amount ?? '' }}",
+            "guide_pay_model": "={{ $json.guide_pay_model ?? '' }}",
+            "guide_base_rate": "={{ $json.guide_base_rate ?? '' }}",
+            "guide_base_payout": "={{ $json.guide_base_payout ?? '' }}",
+            "guide_tip_pct_used": "={{ $json.guide_tip_pct_used ?? '' }}",
+            "tip_paid_to_guide": "={{ $json.tip_paid_to_guide ?? '' }}",
+            "tip_paid_to_mbw": "={{ $json.tip_paid_to_mbw ?? '' }}",
+            "total_amount_owed_to_guide": "={{ $json.total_amount_owed_to_guide ?? '' }}",
+            "mbw_gross_expected": "={{ $json.mbw_gross_expected ?? '' }}",
+            "mbw_gross_actual": "={{ $json.mbw_gross_actual ?? '' }}",
+            "gross_discrepency": "={{ $json.gross_discrepency ?? '' }}",
+            "mbw_profit_expected": "={{ $json.mbw_profit_expected ?? '' }}",
+            "mbw_profit_accrual": "={{ $json.mbw_profit_accrual ?? '' }}",
+            "net_discrepency": "={{ $json.net_discrepency ?? '' }}",
+            "mbw_profit_margin": "={{ $json.mbw_profit_margin ?? '' }}",
+            "mbw_cash_expected": "={{ $json.mbw_cash_expected ?? '' }}",
+            "mbw_cash_actual": "={{ $json.mbw_cash_actual ?? '' }}",
+            "cash_discrepency": "={{ $json.cash_discrepency ?? '' }}",
+            "mbw_cash_profit_margin": "={{ $json.mbw_cash_profit_margin ?? '' }}",
+            "reconciliation_status": "={{ $json.reconciliation_status ?? '' }}",
+            "guide_paid_actual": "={{ $json.guide_paid_actual ?? '' }}",
+            "fees_paid_actual": "={{ $json.fees_paid_actual ?? '' }}",
+            "expense_reconciled_flag": "={{ $json.expense_reconciled_flag ?? '' }}",
+            "invoice_no_txt": "={{ $json.invoice_no_txt ?? '' }}",
+            "tour_key": "={{ $json.tour_key ?? '' }}",
+            "quote_id": "={{ $json.quote_id ?? '' }}",
+            "record_type": "={{ $json.record_type ?? '' }}",
+            "source_line_id": "={{ $json.source_line_id ?? '' }}",
+            "payment_bundle_id": "={{ $json.payment_bundle_id ?? '' }}",
+            "payment_intent_ids": "={{ $json.payment_intent_ids ?? '' }}",
+            "deposit_payment_intent_id": "={{ $json.deposit_payment_intent_id ?? '' }}",
+            "deposit_applied_amount": "={{ $json.deposit_applied_amount ?? '' }}",
+            "deposit_fee_actual": "={{ $json.deposit_fee_actual ?? '' }}",
+            "balance_fee_actual": "={{ $json.balance_fee_actual ?? '' }}",
+            "combined_fee_actual": "={{ $json.combined_fee_actual ?? '' }}",
+            "fee_allocation_method": "={{ $json.fee_allocation_method ?? '' }}",
+            "exclude_from_invoice_sync": "={{ $json.exclude_from_invoice_sync ?? '' }}",
+            "record_status": "={{ $json.record_status ?? '' }}",
+            "reversal_event_id": "={{ $json.reversal_event_id ?? '' }}",
+            "amount_before_deposit": "={{ $json.amount_before_deposit ?? '' }}",
+            "amount_remaining": "={{ $json.amount_remaining ?? '' }}"
+          },
+          "matchingColumns": [
+            "tour_key"
+          ],
+          "schema": [
+            {
+              "id": "created_at_iso",
+              "displayName": "created_at_iso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_environment",
+              "displayName": "stripe_environment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_event_id",
+              "displayName": "stripe_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_session_id",
+              "displayName": "stripe_session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_payment_intent",
+              "displayName": "stripe_payment_intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_charge_id",
+              "displayName": "stripe_charge_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_product_id",
+              "displayName": "stripe_product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_price_id",
+              "displayName": "stripe_price_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_payment_link_id",
+              "displayName": "stripe_payment_link_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_receipt_url",
+              "displayName": "stripe_receipt_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_no",
+              "displayName": "invoice_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date_paid",
+              "displayName": "date_paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_date",
+              "displayName": "tour_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_completed",
+              "displayName": "tour_completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_first_name",
+              "displayName": "guest_first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_last_name",
+              "displayName": "guest_last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_email",
+              "displayName": "guest_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_phone",
+              "displayName": "guest_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "home_country",
+              "displayName": "home_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "party_size",
+              "displayName": "party_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_type",
+              "displayName": "service_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_selected",
+              "displayName": "product_selected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_title",
+              "displayName": "tour_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_guide",
+              "displayName": "tour_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_id",
+              "displayName": "invoice_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_id",
+              "displayName": "transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_reference_note",
+              "displayName": "payment_reference_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_rate_override",
+              "displayName": "guest_rate_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "standard_price_per_person",
+              "displayName": "standard_price_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price_adjustment_per_person",
+              "displayName": "price_adjustment_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "final_price_per_person",
+              "displayName": "final_price_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_reason",
+              "displayName": "pricing_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_notes",
+              "displayName": "pricing_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "discount_rate_guest",
+              "displayName": "discount_rate_guest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "discount_reason",
+              "displayName": "discount_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_received",
+              "displayName": "amount_received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_fee_total",
+              "displayName": "transaction_fee_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fee_pct_of_amount_received",
+              "displayName": "fee_pct_of_amount_received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_fee_pct_override",
+              "displayName": "mbw_fee_pct_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_tip_collected",
+              "displayName": "total_tip_collected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_guide_override",
+              "displayName": "tip_paid_to_guide_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pickup_location",
+              "displayName": "pickup_location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pickup_address_or_hotel",
+              "displayName": "pickup_address_or_hotel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "other_guests",
+              "displayName": "other_guests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agent_id",
+              "displayName": "agent_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_id",
+              "displayName": "inquiry_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_id",
+              "displayName": "guest_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "booking_id",
+              "displayName": "booking_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_purpose",
+              "displayName": "payment_purpose",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_status",
+              "displayName": "deposit_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_invoice_id",
+              "displayName": "applied_invoice_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_invoice_no",
+              "displayName": "applied_invoice_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_at",
+              "displayName": "applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_customer_id",
+              "displayName": "stripe_customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gross_payment_amount",
+              "displayName": "gross_payment_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_pay_model",
+              "displayName": "guide_pay_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_base_rate",
+              "displayName": "guide_base_rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_base_payout",
+              "displayName": "guide_base_payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_tip_pct_used",
+              "displayName": "guide_tip_pct_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_guide",
+              "displayName": "tip_paid_to_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_mbw",
+              "displayName": "tip_paid_to_mbw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_amount_owed_to_guide",
+              "displayName": "total_amount_owed_to_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_gross_expected",
+              "displayName": "mbw_gross_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_gross_actual",
+              "displayName": "mbw_gross_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gross_discrepency",
+              "displayName": "gross_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_expected",
+              "displayName": "mbw_profit_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_accrual",
+              "displayName": "mbw_profit_accrual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "net_discrepency",
+              "displayName": "net_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_margin",
+              "displayName": "mbw_profit_margin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_expected",
+              "displayName": "mbw_cash_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_actual",
+              "displayName": "mbw_cash_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cash_discrepency",
+              "displayName": "cash_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_profit_margin",
+              "displayName": "mbw_cash_profit_margin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reconciliation_status",
+              "displayName": "reconciliation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_paid_actual",
+              "displayName": "guide_paid_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fees_paid_actual",
+              "displayName": "fees_paid_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expense_reconciled_flag",
+              "displayName": "expense_reconciled_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_no_txt",
+              "displayName": "invoice_no_txt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_key",
+              "displayName": "tour_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quote_id",
+              "displayName": "quote_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "record_type",
+              "displayName": "record_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_line_id",
+              "displayName": "source_line_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_bundle_id",
+              "displayName": "payment_bundle_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_intent_ids",
+              "displayName": "payment_intent_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_payment_intent_id",
+              "displayName": "deposit_payment_intent_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_applied_amount",
+              "displayName": "deposit_applied_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_fee_actual",
+              "displayName": "deposit_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "balance_fee_actual",
+              "displayName": "balance_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "combined_fee_actual",
+              "displayName": "combined_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fee_allocation_method",
+              "displayName": "fee_allocation_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exclude_from_invoice_sync",
+              "displayName": "exclude_from_invoice_sync",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "record_status",
+              "displayName": "record_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reversal_event_id",
+              "displayName": "reversal_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_before_deposit",
+              "displayName": "amount_before_deposit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_remaining",
+              "displayName": "amount_remaining",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bbc19fb7-1df2-47ab-aab0-90c9f30f533f",
+      "name": "Write Zelle Rows to Accounting",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1600,
+        5392
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map(item => item.json || {});\nconst first = items[0] || {};\nreturn [{ json: { ok: true, action: 'post_zelle_accounting', posted_count: items.length, invoice_no: first.invoice_no || '', message: 'Zelle accounting source rows posted. Invoice and guide-expense sync will continue automatically.' } }];"
+      },
+      "id": "87f4b192-55c5-4d22-82e9-8dd4dedf505a",
+      "name": "Finalize Zelle Accounting Push",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        5392
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $json || {};\nconst rows = Array.isArray(source.accounting_rows) ? source.accounting_rows : [];\nif (!rows.length) throw new Error('No collaboration accounting rows were supplied.');\nif (rows.length > 20) throw new Error('A maximum of 20 collaboration service rows can be posted at once.');\n\nconst required = ['invoice_no','tour_date','guest_first_name','party_size','service_type','product_selected','tour_guide','inquiry_id','guest_id','tour_key'];\nconst allowed = new Set([\"created_at_iso\", \"stripe_environment\", \"stripe_event_id\", \"stripe_session_id\", \"stripe_payment_intent\", \"stripe_charge_id\", \"stripe_product_id\", \"stripe_price_id\", \"stripe_payment_link_id\", \"stripe_receipt_url\", \"invoice_no\", \"date_paid\", \"tour_date\", \"tour_completed\", \"guest_first_name\", \"guest_last_name\", \"guest_email\", \"guest_phone\", \"home_country\", \"party_size\", \"service_type\", \"product_selected\", \"tour_title\", \"tour_guide\", \"payment_method\", \"invoice_id\", \"transaction_id\", \"payment_reference_note\", \"guest_rate_override\", \"standard_price_per_person\", \"price_adjustment_per_person\", \"final_price_per_person\", \"pricing_reason\", \"pricing_notes\", \"discount_rate_guest\", \"discount_reason\", \"amount_received\", \"transaction_fee_total\", \"fee_pct_of_amount_received\", \"mbw_fee_pct_override\", \"total_tip_collected\", \"tip_paid_to_guide_override\", \"pickup_location\", \"pickup_address_or_hotel\", \"other_guests\", \"notes\", \"agent_id\", \"inquiry_id\", \"guest_id\", \"booking_id\", \"payment_purpose\", \"deposit_status\", \"applied_invoice_id\", \"applied_invoice_no\", \"applied_at\", \"stripe_customer_id\", \"currency\", \"gross_payment_amount\", \"guide_pay_model\", \"guide_base_rate\", \"guide_base_payout\", \"guide_tip_pct_used\", \"tip_paid_to_guide\", \"tip_paid_to_mbw\", \"total_amount_owed_to_guide\", \"mbw_gross_expected\", \"mbw_gross_actual\", \"gross_discrepency\", \"mbw_profit_expected\", \"mbw_profit_accrual\", \"net_discrepency\", \"mbw_profit_margin\", \"mbw_cash_expected\", \"mbw_cash_actual\", \"cash_discrepency\", \"mbw_cash_profit_margin\", \"reconciliation_status\", \"guide_paid_actual\", \"fees_paid_actual\", \"expense_reconciled_flag\", \"invoice_no_txt\", \"tour_key\", \"quote_id\", \"record_type\", \"source_line_id\", \"payment_bundle_id\", \"payment_intent_ids\", \"deposit_payment_intent_id\", \"deposit_applied_amount\", \"deposit_fee_actual\", \"balance_fee_actual\", \"combined_fee_actual\", \"fee_allocation_method\", \"exclude_from_invoice_sync\", \"record_status\", \"reversal_event_id\", \"amount_before_deposit\", \"amount_remaining\"]);\nconst seen = new Set();\n\nreturn rows.map((input, index) => {\n  const row = {};\n  for (const key of allowed) row[key] = input[key] ?? '';\n  for (const key of required) {\n    if (String(row[key] ?? '').trim() === '') throw new Error(`Collaboration row ${index + 1} is missing ${key}.`);\n  }\n  if (String(row.payment_method).trim().toLowerCase() !== 'marketing collaboration') throw new Error(`Collaboration row ${index + 1} has an invalid payment method.`);\n  if (Number(row.amount_received || 0) !== 0) throw new Error(`Collaboration row ${index + 1} must have zero amount_received.`);\n  if (Number(row.transaction_fee_total || 0) !== 0) throw new Error(`Collaboration row ${index + 1} must have zero transaction fees.`);\n  if (Number(row.total_amount_owed_to_guide || 0) !== 0) throw new Error(`Collaboration row ${index + 1} must have zero guide payable.`);\n  if (seen.has(String(row.tour_key))) throw new Error(`Duplicate tour_key in request: ${row.tour_key}`);\n  seen.add(String(row.tour_key));\n  row.date_paid = '';\n  row.amount_received = 0;\n  row.gross_payment_amount = 0;\n  row.transaction_fee_total = 0;\n  row.total_amount_owed_to_guide = 0;\n  row.guide_base_rate = 0;\n  row.guide_base_payout = 0;\n  row.stripe_environment = 'manual';\n  row.payment_method = 'Marketing Collaboration';\n  row.guide_pay_model = 'contributed_service';\n  row.exclude_from_invoice_sync = 'No';\n  row.record_status = 'no_payment_required';\n  return { json: row };\n});"
+      },
+      "id": "9f86003e-da03-41c4-847c-373cbc4fb2c0",
+      "name": "Prepare Collaboration Accounting Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        5664
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU/edit?gid=1450193828#gid=1450193828",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1450193828,
+          "mode": "list",
+          "cachedResultName": "stripe_invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU/edit#gid=1450193828"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at_iso": "={{ $json.created_at_iso ?? '' }}",
+            "stripe_environment": "={{ $json.stripe_environment ?? '' }}",
+            "stripe_event_id": "={{ $json.stripe_event_id ?? '' }}",
+            "stripe_session_id": "={{ $json.stripe_session_id ?? '' }}",
+            "stripe_payment_intent": "={{ $json.stripe_payment_intent ?? '' }}",
+            "stripe_charge_id": "={{ $json.stripe_charge_id ?? '' }}",
+            "stripe_product_id": "={{ $json.stripe_product_id ?? '' }}",
+            "stripe_price_id": "={{ $json.stripe_price_id ?? '' }}",
+            "stripe_payment_link_id": "={{ $json.stripe_payment_link_id ?? '' }}",
+            "stripe_receipt_url": "={{ $json.stripe_receipt_url ?? '' }}",
+            "invoice_no": "={{ $json.invoice_no ?? '' }}",
+            "date_paid": "={{ $json.date_paid ?? '' }}",
+            "tour_date": "={{ $json.tour_date ?? '' }}",
+            "tour_completed": "={{ $json.tour_completed ?? '' }}",
+            "guest_first_name": "={{ $json.guest_first_name ?? '' }}",
+            "guest_last_name": "={{ $json.guest_last_name ?? '' }}",
+            "guest_email": "={{ $json.guest_email ?? '' }}",
+            "guest_phone": "={{ $json.guest_phone ?? '' }}",
+            "home_country": "={{ $json.home_country ?? '' }}",
+            "party_size": "={{ $json.party_size ?? '' }}",
+            "service_type": "={{ $json.service_type ?? '' }}",
+            "product_selected": "={{ $json.product_selected ?? '' }}",
+            "tour_title": "={{ $json.tour_title ?? '' }}",
+            "tour_guide": "={{ $json.tour_guide ?? '' }}",
+            "payment_method": "={{ $json.payment_method ?? '' }}",
+            "invoice_id": "={{ $json.invoice_id ?? '' }}",
+            "transaction_id": "={{ $json.transaction_id ?? '' }}",
+            "payment_reference_note": "={{ $json.payment_reference_note ?? '' }}",
+            "guest_rate_override": "={{ $json.guest_rate_override ?? '' }}",
+            "standard_price_per_person": "={{ $json.standard_price_per_person ?? '' }}",
+            "price_adjustment_per_person": "={{ $json.price_adjustment_per_person ?? '' }}",
+            "final_price_per_person": "={{ $json.final_price_per_person ?? '' }}",
+            "pricing_reason": "={{ $json.pricing_reason ?? '' }}",
+            "pricing_notes": "={{ $json.pricing_notes ?? '' }}",
+            "discount_rate_guest": "={{ $json.discount_rate_guest ?? '' }}",
+            "discount_reason": "={{ $json.discount_reason ?? '' }}",
+            "amount_received": "={{ $json.amount_received ?? '' }}",
+            "transaction_fee_total": "={{ $json.transaction_fee_total ?? '' }}",
+            "fee_pct_of_amount_received": "={{ $json.fee_pct_of_amount_received ?? '' }}",
+            "mbw_fee_pct_override": "={{ $json.mbw_fee_pct_override ?? '' }}",
+            "total_tip_collected": "={{ $json.total_tip_collected ?? '' }}",
+            "tip_paid_to_guide_override": "={{ $json.tip_paid_to_guide_override ?? '' }}",
+            "pickup_location": "={{ $json.pickup_location ?? '' }}",
+            "pickup_address_or_hotel": "={{ $json.pickup_address_or_hotel ?? '' }}",
+            "other_guests": "={{ $json.other_guests ?? '' }}",
+            "notes": "={{ $json.notes ?? '' }}",
+            "agent_id": "={{ $json.agent_id ?? '' }}",
+            "inquiry_id": "={{ $json.inquiry_id ?? '' }}",
+            "guest_id": "={{ $json.guest_id ?? '' }}",
+            "booking_id": "={{ $json.booking_id ?? '' }}",
+            "payment_purpose": "={{ $json.payment_purpose ?? '' }}",
+            "deposit_status": "={{ $json.deposit_status ?? '' }}",
+            "applied_invoice_id": "={{ $json.applied_invoice_id ?? '' }}",
+            "applied_invoice_no": "={{ $json.applied_invoice_no ?? '' }}",
+            "applied_at": "={{ $json.applied_at ?? '' }}",
+            "stripe_customer_id": "={{ $json.stripe_customer_id ?? '' }}",
+            "currency": "={{ $json.currency ?? '' }}",
+            "gross_payment_amount": "={{ $json.gross_payment_amount ?? '' }}",
+            "guide_pay_model": "={{ $json.guide_pay_model ?? '' }}",
+            "guide_base_rate": "={{ $json.guide_base_rate ?? '' }}",
+            "guide_base_payout": "={{ $json.guide_base_payout ?? '' }}",
+            "guide_tip_pct_used": "={{ $json.guide_tip_pct_used ?? '' }}",
+            "tip_paid_to_guide": "={{ $json.tip_paid_to_guide ?? '' }}",
+            "tip_paid_to_mbw": "={{ $json.tip_paid_to_mbw ?? '' }}",
+            "total_amount_owed_to_guide": "={{ $json.total_amount_owed_to_guide ?? '' }}",
+            "mbw_gross_expected": "={{ $json.mbw_gross_expected ?? '' }}",
+            "mbw_gross_actual": "={{ $json.mbw_gross_actual ?? '' }}",
+            "gross_discrepency": "={{ $json.gross_discrepency ?? '' }}",
+            "mbw_profit_expected": "={{ $json.mbw_profit_expected ?? '' }}",
+            "mbw_profit_accrual": "={{ $json.mbw_profit_accrual ?? '' }}",
+            "net_discrepency": "={{ $json.net_discrepency ?? '' }}",
+            "mbw_profit_margin": "={{ $json.mbw_profit_margin ?? '' }}",
+            "mbw_cash_expected": "={{ $json.mbw_cash_expected ?? '' }}",
+            "mbw_cash_actual": "={{ $json.mbw_cash_actual ?? '' }}",
+            "cash_discrepency": "={{ $json.cash_discrepency ?? '' }}",
+            "mbw_cash_profit_margin": "={{ $json.mbw_cash_profit_margin ?? '' }}",
+            "reconciliation_status": "={{ $json.reconciliation_status ?? '' }}",
+            "guide_paid_actual": "={{ $json.guide_paid_actual ?? '' }}",
+            "fees_paid_actual": "={{ $json.fees_paid_actual ?? '' }}",
+            "expense_reconciled_flag": "={{ $json.expense_reconciled_flag ?? '' }}",
+            "invoice_no_txt": "={{ $json.invoice_no_txt ?? '' }}",
+            "tour_key": "={{ $json.tour_key ?? '' }}",
+            "quote_id": "={{ $json.quote_id ?? '' }}",
+            "record_type": "={{ $json.record_type ?? '' }}",
+            "source_line_id": "={{ $json.source_line_id ?? '' }}",
+            "payment_bundle_id": "={{ $json.payment_bundle_id ?? '' }}",
+            "payment_intent_ids": "={{ $json.payment_intent_ids ?? '' }}",
+            "deposit_payment_intent_id": "={{ $json.deposit_payment_intent_id ?? '' }}",
+            "deposit_applied_amount": "={{ $json.deposit_applied_amount ?? '' }}",
+            "deposit_fee_actual": "={{ $json.deposit_fee_actual ?? '' }}",
+            "balance_fee_actual": "={{ $json.balance_fee_actual ?? '' }}",
+            "combined_fee_actual": "={{ $json.combined_fee_actual ?? '' }}",
+            "fee_allocation_method": "={{ $json.fee_allocation_method ?? '' }}",
+            "exclude_from_invoice_sync": "={{ $json.exclude_from_invoice_sync ?? '' }}",
+            "record_status": "={{ $json.record_status ?? '' }}",
+            "reversal_event_id": "={{ $json.reversal_event_id ?? '' }}",
+            "amount_before_deposit": "={{ $json.amount_before_deposit ?? '' }}",
+            "amount_remaining": "={{ $json.amount_remaining ?? '' }}"
+          },
+          "matchingColumns": [
+            "tour_key"
+          ],
+          "schema": [
+            {
+              "id": "created_at_iso",
+              "displayName": "created_at_iso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_environment",
+              "displayName": "stripe_environment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_event_id",
+              "displayName": "stripe_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_session_id",
+              "displayName": "stripe_session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_payment_intent",
+              "displayName": "stripe_payment_intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_charge_id",
+              "displayName": "stripe_charge_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_product_id",
+              "displayName": "stripe_product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_price_id",
+              "displayName": "stripe_price_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_payment_link_id",
+              "displayName": "stripe_payment_link_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_receipt_url",
+              "displayName": "stripe_receipt_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_no",
+              "displayName": "invoice_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date_paid",
+              "displayName": "date_paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_date",
+              "displayName": "tour_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_completed",
+              "displayName": "tour_completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_first_name",
+              "displayName": "guest_first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_last_name",
+              "displayName": "guest_last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_email",
+              "displayName": "guest_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_phone",
+              "displayName": "guest_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "home_country",
+              "displayName": "home_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "party_size",
+              "displayName": "party_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_type",
+              "displayName": "service_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_selected",
+              "displayName": "product_selected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_title",
+              "displayName": "tour_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_guide",
+              "displayName": "tour_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_id",
+              "displayName": "invoice_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_id",
+              "displayName": "transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_reference_note",
+              "displayName": "payment_reference_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_rate_override",
+              "displayName": "guest_rate_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "standard_price_per_person",
+              "displayName": "standard_price_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price_adjustment_per_person",
+              "displayName": "price_adjustment_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "final_price_per_person",
+              "displayName": "final_price_per_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_reason",
+              "displayName": "pricing_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_notes",
+              "displayName": "pricing_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "discount_rate_guest",
+              "displayName": "discount_rate_guest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "discount_reason",
+              "displayName": "discount_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_received",
+              "displayName": "amount_received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_fee_total",
+              "displayName": "transaction_fee_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fee_pct_of_amount_received",
+              "displayName": "fee_pct_of_amount_received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_fee_pct_override",
+              "displayName": "mbw_fee_pct_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_tip_collected",
+              "displayName": "total_tip_collected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_guide_override",
+              "displayName": "tip_paid_to_guide_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pickup_location",
+              "displayName": "pickup_location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pickup_address_or_hotel",
+              "displayName": "pickup_address_or_hotel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "other_guests",
+              "displayName": "other_guests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agent_id",
+              "displayName": "agent_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_id",
+              "displayName": "inquiry_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_id",
+              "displayName": "guest_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "booking_id",
+              "displayName": "booking_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_purpose",
+              "displayName": "payment_purpose",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_status",
+              "displayName": "deposit_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_invoice_id",
+              "displayName": "applied_invoice_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_invoice_no",
+              "displayName": "applied_invoice_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_at",
+              "displayName": "applied_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stripe_customer_id",
+              "displayName": "stripe_customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gross_payment_amount",
+              "displayName": "gross_payment_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_pay_model",
+              "displayName": "guide_pay_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_base_rate",
+              "displayName": "guide_base_rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_base_payout",
+              "displayName": "guide_base_payout",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_tip_pct_used",
+              "displayName": "guide_tip_pct_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_guide",
+              "displayName": "tip_paid_to_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tip_paid_to_mbw",
+              "displayName": "tip_paid_to_mbw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_amount_owed_to_guide",
+              "displayName": "total_amount_owed_to_guide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_gross_expected",
+              "displayName": "mbw_gross_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_gross_actual",
+              "displayName": "mbw_gross_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gross_discrepency",
+              "displayName": "gross_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_expected",
+              "displayName": "mbw_profit_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_accrual",
+              "displayName": "mbw_profit_accrual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "net_discrepency",
+              "displayName": "net_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_profit_margin",
+              "displayName": "mbw_profit_margin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_expected",
+              "displayName": "mbw_cash_expected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_actual",
+              "displayName": "mbw_cash_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cash_discrepency",
+              "displayName": "cash_discrepency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mbw_cash_profit_margin",
+              "displayName": "mbw_cash_profit_margin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reconciliation_status",
+              "displayName": "reconciliation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guide_paid_actual",
+              "displayName": "guide_paid_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fees_paid_actual",
+              "displayName": "fees_paid_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expense_reconciled_flag",
+              "displayName": "expense_reconciled_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "invoice_no_txt",
+              "displayName": "invoice_no_txt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_key",
+              "displayName": "tour_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quote_id",
+              "displayName": "quote_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "record_type",
+              "displayName": "record_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_line_id",
+              "displayName": "source_line_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_bundle_id",
+              "displayName": "payment_bundle_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_intent_ids",
+              "displayName": "payment_intent_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_payment_intent_id",
+              "displayName": "deposit_payment_intent_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_applied_amount",
+              "displayName": "deposit_applied_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deposit_fee_actual",
+              "displayName": "deposit_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "balance_fee_actual",
+              "displayName": "balance_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "combined_fee_actual",
+              "displayName": "combined_fee_actual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fee_allocation_method",
+              "displayName": "fee_allocation_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exclude_from_invoice_sync",
+              "displayName": "exclude_from_invoice_sync",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "record_status",
+              "displayName": "record_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reversal_event_id",
+              "displayName": "reversal_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_before_deposit",
+              "displayName": "amount_before_deposit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_remaining",
+              "displayName": "amount_remaining",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e1884f51-7757-41f8-9d51-bee7855f408f",
+      "name": "Write Collaboration Rows to Accounting",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1600,
+        5664
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map(item => item.json || {});\nconst first = items[0] || {};\nreturn [{ json: { ok: true, action: 'post_collaboration_accounting', posted_count: items.length, invoice_no: first.invoice_no || '', message: 'Zero-revenue collaboration service rows posted. No Stripe fee or guide payable was created.' } }];"
+      },
+      "id": "c51be1ef-cd86-4ff7-b47a-d31c9d808194",
+      "name": "Finalize Collaboration Accounting Push",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        5664
       ]
     },
     {
@@ -7977,13 +10306,13 @@
         },
         "options": {}
       },
-      "id": "122ff0a2-0000-4000-8000-9293c0ea7f36",
+      "id": "1c8466a6-492d-4ade-86a2-6e349dc0d8a0",
       "name": "Read CRM Bookings",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        14800
+        47952,
+        16720
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -7995,15 +10324,15 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_bookings'){\n  const guest=clean(request.guest_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id);\n  const records=rows.filter(row=>(!guest||clean(row.guest_id)===guest)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)&&clean(row.is_archived).toLowerCase()!=='yes').sort((a,b)=>clean(b.tour_date_start||b.created_at).localeCompare(clean(a.tour_date_start||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.booking||request.record||{})};\nif(!clean(incoming.inquiry_id)||!clean(incoming.guest_id)) throw new Error('Booking requires inquiry_id and guest_id.');\nincoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id).replace(/^INQ-/,''));\nconst existing=rows.find(row=>clean(row.booking_id)===incoming.booking_id)||{};\nconst record={...existing,...incoming,booking_id:incoming.booking_id,created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nrecord.booking_status=clean(record.booking_status||'pending').toLowerCase();\nif(record.booking_status==='confirmed') record.booking_status='booked';\nrecord.quoted_currency=clean(record.quoted_currency||'USD').toUpperCase();\nrecord.is_archived=['yes','true','1'].includes(clean(record.is_archived).toLowerCase())?'Yes':'No';\nreturn [{json:{...record,_route:'write'}}];"
+        "jsCode": "const request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_bookings'){\n  const guest=clean(request.guest_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id);\n  const records=rows.filter(row=>(!guest||clean(row.guest_id)===guest)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)&&clean(row.is_archived).toLowerCase()!=='yes').sort((a,b)=>clean(b.tour_date_start||b.created_at).localeCompare(clean(a.tour_date_start||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.booking||request.record||{})};\nif(!clean(incoming.inquiry_id)||!clean(incoming.guest_id)) throw new Error('Booking requires inquiry_id and guest_id.');\nincoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id).replace(/^INQ-/,''));\nconst existing=rows.find(row=>clean(row.booking_id)===incoming.booking_id)||{};\nconst record={...existing,...incoming,booking_id:incoming.booking_id,created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nrecord.booking_status=clean(record.booking_status||'pending').toLowerCase();\nif(record.booking_status==='confirmed') record.booking_status='booked';\nrecord.quoted_currency=clean(record.quoted_currency||'USD').toUpperCase();\nrecord.is_archived=['yes','true','1'].includes(clean(record.is_archived).toLowerCase())?'Yes':'No';\nreturn [{json:{...record,_route:'write'}}];"
       },
-      "id": "8acaf9dc-0000-4000-8000-a967feca840f",
+      "id": "65bdca1c-b0c0-44b9-8de7-1aab4b1c7b02",
       "name": "Process CRM Bookings",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        14800
+        48192,
+        16720
       ]
     },
     {
@@ -8036,13 +10365,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "cbe44178-0000-4000-8000-0cf563da475e",
+      "id": "db54b2f7-e95a-4919-8c7d-3fa475764f29",
       "name": "Route CRM Bookings",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        47376,
-        14800
+        48464,
+        16720
       ]
     },
     {
@@ -8380,13 +10709,13 @@
         },
         "options": {}
       },
-      "id": "462abea6-0000-4000-8000-33b3279f95ef",
+      "id": "aabb8089-fd35-4fb8-90d1-cb92d02d36af",
       "name": "Write CRM Booking",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47648,
-        14720
+        48736,
+        16640
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -8399,13 +10728,13 @@
       "parameters": {
         "jsCode": "const record={...$('Process CRM Bookings').first().json}; delete record._route; return [{json:{ok:true,action:'upsert_booking',record}}];"
       },
-      "id": "20abc46b-0000-4000-8000-d7e5c34a7b12",
+      "id": "0c02edf7-409b-47e3-97b8-41c6d5c7a7aa",
       "name": "Finalize CRM Booking",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47904,
-        14720
+        48992,
+        16640
       ]
     },
     {
@@ -8422,13 +10751,13 @@
         },
         "options": {}
       },
-      "id": "f6947bc2-0000-4000-8000-c35b3b5411fc",
+      "id": "95e85cae-38ff-4b42-a244-52467a737290",
       "name": "Read CRM Payments",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        46864,
-        15320
+        47952,
+        17248
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -8442,13 +10771,13 @@
       "parameters": {
         "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst number=value=>{const parsed=Number(String(value??'').replace(/[^0-9.-]/g,''));return Number.isFinite(parsed)?parsed:0;};\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_payments'){\n  const guest=clean(request.guest_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id);\n  const records=rows.filter(row=>(!guest||clean(row.guest_id)===guest)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)).sort((a,b)=>clean(b.payment_date||b.created_at).localeCompare(clean(a.payment_date||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.payment||request.record||{})};\nif(!clean(incoming.inquiry_id)||!clean(incoming.guest_id)) throw new Error('Payment requires inquiry_id and guest_id.');\nconst identity=clean(incoming.invoice_id||incoming.transaction_id||incoming.invoice_no);\nincoming.payment_id=clean(incoming.payment_id)||(identity?'PAY-'+identity.replace(/[^A-Za-z0-9_-]/g,'-'):'PAY-'+Date.now());\nincoming.booking_id=clean(incoming.booking_id)||('B-'+clean(incoming.inquiry_id).replace(/^INQ-/,''));\nconst existing=rows.find(row=>clean(row.payment_id)===incoming.payment_id)||{};\nconst record={...existing,...incoming,payment_id:incoming.payment_id,created_at:clean(existing.created_at||incoming.created_at)||now};\nrecord.deposit_amount_paid=number(record.deposit_amount_paid);\nrecord.additional_amount_paid=number(record.additional_amount_paid);\nrecord.total_amount_paid=number(record.total_amount_paid||record.additional_amount_paid||record.deposit_amount_paid);\nrecord.total_booking_price=number(record.total_booking_price);\nrecord.balance_remaining=Math.max(0,number(record.balance_remaining||Math.max(0,record.total_booking_price-record.total_amount_paid)));\nrecord.is_fully_paid=record.balance_remaining<=0.005&&record.total_amount_paid>0?'Yes':'No';\nrecord.payment_status=clean(record.payment_status||(record.is_fully_paid==='Yes'?'paid':record.total_amount_paid>0?'partial':'unpaid')).toLowerCase();\nreturn [{json:{...record,_route:'write'}}];"
       },
-      "id": "b8aa0037-0000-4000-8000-725916b6dfec",
+      "id": "9bd65fda-9ed6-4b23-8cd2-a08496a8006d",
       "name": "Process CRM Payments",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47104,
-        15320
+        48192,
+        17248
       ]
     },
     {
@@ -8481,13 +10810,13 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "0d1ffd4a-0000-4000-8000-d1c14cd724db",
+      "id": "6b9b9210-def5-4eaf-b6af-25f18eab1245",
       "name": "Route CRM Payments",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        47376,
-        15320
+        48464,
+        17248
       ]
     },
     {
@@ -8737,13 +11066,13 @@
         },
         "options": {}
       },
-      "id": "24f909ee-0000-4000-8000-fa7956c48adc",
+      "id": "5e9556ca-bcd2-4f91-aa09-a5b8e73dec0f",
       "name": "Write CRM Payment",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        47648,
-        15240
+        48736,
+        17168
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -8756,13 +11085,13 @@
       "parameters": {
         "jsCode": "const record={...$('Process CRM Payments').first().json}; delete record._route; return [{json:{ok:true,action:'upsert_payment',record}}];"
       },
-      "id": "02aa11d8-0000-4000-8000-1476687f9223",
+      "id": "b89f14b8-a570-43d0-9adb-ed8e2c1321dc",
       "name": "Finalize CRM Payment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        47904,
-        15240
+        48992,
+        17168
       ]
     },
     {
@@ -9307,6 +11636,20 @@
         ],
         [
           {
+            "node": "Prepare Zelle Accounting Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Collaboration Accounting Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Read CRM Bookings",
             "type": "main",
             "index": 0
@@ -9349,7 +11692,7 @@
         ],
         [
           {
-            "node": "Unsupported Action",
+            "node": "Respond to Admin Page",
             "type": "main",
             "index": 0
           }
@@ -9372,17 +11715,6 @@
         [
           {
             "node": "Update CRM Inquiry - Google Sheets",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Unsupported Action": {
-      "main": [
-        [
-          {
-            "node": "Respond to Admin Page",
             "type": "main",
             "index": 0
           }
@@ -9998,6 +12330,72 @@
         ]
       ]
     },
+    "Prepare Zelle Accounting Rows": {
+      "main": [
+        [
+          {
+            "node": "Write Zelle Rows to Accounting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Zelle Rows to Accounting": {
+      "main": [
+        [
+          {
+            "node": "Finalize Zelle Accounting Push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Zelle Accounting Push": {
+      "main": [
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Collaboration Accounting Rows": {
+      "main": [
+        [
+          {
+            "node": "Write Collaboration Rows to Accounting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Collaboration Rows to Accounting": {
+      "main": [
+        [
+          {
+            "node": "Finalize Collaboration Accounting Push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Collaboration Accounting Push": {
+      "main": [
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Read CRM Bookings": {
       "main": [
         [
@@ -10185,16 +12583,16 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
+    "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "c7be5971-6e08-4701-936c-151608f8b0d5",
+  "versionId": "d6d7901b-d450-479d-b1a9-f133dcb74a44",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "6a4efba651db808c30e4fe2c7bae2825dd5ce83446256251c019be827604e65a"
   },
-  "id": "vqIPKNg2yGSUO3wE",
+  "id": "dIJ9ZEQcYg5foS56",
   "tags": []
 }

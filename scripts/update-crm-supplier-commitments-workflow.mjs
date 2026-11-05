@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
-const file = new URL("../deployment/multi-invoice-ledger/MBW-CRM-Admin-API-multi-invoice.json", import.meta.url);
+const defaultFile = new URL("../deployment/multi-invoice-ledger/MBW-CRM-Admin-API-multi-invoice.json", import.meta.url);
+const file = globalThis.process.argv[2] ? new URL(`file://${globalThis.process.argv[2]}`) : defaultFile;
 const workflow = JSON.parse(fs.readFileSync(file, "utf8"));
 const byName = name => workflow.nodes.find(node => node.name === name);
 const clone = value => structuredClone(value);
