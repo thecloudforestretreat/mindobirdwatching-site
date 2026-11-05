@@ -65,7 +65,7 @@ Create a separate production webhook at `/webhook/mbw-mobile-crm-api` with this 
 
 1. Webhook: POST only, response through a Respond to Webhook node.
 2. Authentication gate: compare the incoming `X-MBW-CRM-Key` header with the same high-entropy value stored as `N8N_CRM_ADMIN_TOKEN`. Reject missing or unequal values with HTTP 401 before parsing or forwarding the payload. Store the value as an n8n secret/credential, never in workflow JSON.
-3. Request guard: accept `application/x-www-form-urlencoded` with one `payload` JSON field, reject bodies over 16 KB, and allow only these Phase 1 actions: `list_inquiries`, `list_interactions`, `list_assignments`, `list_providers`, `list_bookings`, `list_payments`, `update_inquiry`, `create_interaction`, `update_assignment`.
+3. Request guard: accept `application/x-www-form-urlencoded` with one `payload` JSON field, reject bodies over 16 KB, and allow only the approved admin actions: `list_inquiries`, `list_interactions`, `list_assignments`, `list_providers`, `list_bookings`, `list_payments`, `list_accounting_deposits`, `list_supplier_commitments`, `upsert_supplier_commitment`, `update_inquiry`, `create_interaction`, `update_assignment`. The supplier actions are restricted again at the Cloudflare origin to mapped MBW administrators; guides cannot access the supplier ledger.
 4. HTTP Request: forward the original form `payload` server-to-server to the current `https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api` workflow.
 5. Respond: preserve the upstream JSON body and status. Do not log the authentication header or full guest payload in successful execution logs.
 
