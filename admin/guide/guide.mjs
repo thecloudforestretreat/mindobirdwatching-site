@@ -1,5 +1,6 @@
 import { summarizeGuestDay, summarizeGuestItinerary } from "./pricing.mjs?v=guide-20261031-v43";
 import { mountTripBuilder, renderTripQuoteRequests } from "./trip-builder.mjs";
+import { loadSupplierCommitments, renderSupplierCommitments, saveSupplierCommitment } from "./supplier-commitments.mjs?v=guide-20261105-v1";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -122,6 +123,7 @@ let planView = "assigned";
 let dirtyPlans = new Set();
 let completedPricingDays = new Set();
 let savingPlans = new Set();
+let supplierCommitmentState = new Map();
 let draggedPlanDay = null;
 let adminWorkspaceMode = new URLSearchParams(location.search).get("mode") === "admin" ? "admin" : "guide";
 const t = key => TERMINOLOGY[language]?.[key] || COPY[language][key] || key;
@@ -354,6 +356,43 @@ function renderOffers() {
 
 const money = value => new Intl.NumberFormat(language === "es" ? "es-EC" : "en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
 const planStatusLabel = value => t({ guide_drafting: "guideDrafting", admin_review: "adminReview", changes_requested: "changesRequested", approved: "approved" }[value] || "guideDrafting");
+
+function supplierGuestTotal(plan) {
+  return (plan.mbwPricing?.days || []).reduce((total, item) => total + Number(item.sellPrice || 0), 0);
+}
+
+function supplierSectionHtml(plan) {
+  const state = supplierCommitmentState.get(plan.planId) || { state: "loading", records: [], summary: {} };
+  return renderSupplierCommitments({ plan, ...state, language, esc, guestTotal: supplierGuestTotal(plan) });
+}
+
+function replaceSupplierSection(plan) {
+  const current = document.querySelector(`[data-supplier-section="${CSS.escape(plan.planId)}"]`);
+  if (!current) return;
+  const template = document.createElement("template"); template.innerHTML = supplierSectionHtml(plan).trim();
+  current.replaceWith(template.content.firstElementChild);
+}
+
+async function refreshSupplierCommitments(plan, force = false) {
+  const current = supplierCommitmentState.get(plan.planId);
+  if (!force && current && current.state !== "error") return;
+  supplierCommitmentState.set(plan.planId, { state: "loading", records: [], summary: {} }); replaceSupplierSection(plan);
+  try {
+    const payload = await loadSupplierCommitments(plan);
+    supplierCommitmentState.set(plan.planId, { state: "ready", records: payload.records || [], summary: payload.summary || {} });
+  } catch (error) {
+    supplierCommitmentState.set(plan.planId, { state: "error", records: [], summary: {}, error: error.message });
+  }
+  replaceSupplierSection(plan);
+}
+
+function loadSupplierCommitmentsForPlans() {
+  if (!isAdminReview()) return;
+  for (const source of data?.plans || []) {
+    const plan = planFor(source.planId);
+    if (plan) refreshSupplierCommitments(plan);
+  }
+}
 
 function renderPlanWorkflow(plan) {
   const labels = language === "es"
@@ -769,6 +808,7 @@ function renderPlans() {
       <section class="planSection"><div class="planSectionHead"><h3>${t("itinerary")}</h3><span>${t("guideEstimate")}: <b>${esc(money(plan.originalTotal))}</b> · ${t("protected")}</span>${isAdminReview() ? `<button type="button" data-copy-guide-whatsapp="${esc(plan.planId)}">${esc(t("copyGuideWhatsApp"))}</button>` : ""}</div>${readOnly ? "" : `<div class="planOrganizer" aria-label="${esc(language === "es" ? "Herramientas de fechas" : "Date tools")}"><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-delta="-1">${esc(t("shiftAllEarlier"))}</button><button type="button" data-shift-plan-dates data-plan-id="${esc(plan.planId)}" data-delta="1">${esc(t("shiftAllLater"))}</button></div>`}<p class="planLanguageNote">${t("languageEdited")}: <b>${language === "es" ? "Español" : "English"}</b>${localeStamp ? ` · ${esc(new Date(localeStamp).toLocaleString(language === "es" ? "es-EC" : "en-US"))}` : ""}${language === "en" && !englishTranslationNeeded(plan) ? ` · ${esc(t("translationCurrent"))}` : ""}</p>${isAdminReview() && language === "en" && !locked && englishTranslationNeeded(plan) ? `<div class="planTranslation"><p>${esc(t("translationAutomatic"))}</p></div>` : ""}<div class="planDays">${plan.days.map((day, index) => renderPlanDay(plan, day, index)).join("")}</div>${readOnly ? "" : `<button class="addPlanDay" type="button" data-add-plan-day="${esc(plan.planId)}">${t("addDate")}</button>`}${renderPlanChecklist(plan)}</section>
       <section class="planSection"><div class="planSectionHead"><h3>${t("additionalCosts")}</h3><span>${t("revisedTotal")}: <b>${esc(money(plan.originalTotal + addedTotal))}</b></span></div><div class="planCosts">${costs}</div>${readOnly ? "" : `<form class="planCostForm" data-plan-cost-form="${esc(plan.planId)}"><label><span>${t("day")}</span><select name="dayId">${dayOptions}</select></label><label><span>${t("category")}</span><select name="category">${costCategories.map(category => `<option value="${category}">${esc(costCategoryLabel(category))}</option>`).join("")}</select></label><label class="wide"><span>${t("description")}</span><input name="description" maxlength="300" required></label><label><span>${t("amount")}</span><input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label><span>${t("verification")}</span><select name="verification"><option value="needs_verification">${t("needsVerification")}</option><option value="estimated">${t("estimated")}</option><option value="confirmed">${t("confirmedCost")}</option></select></label><button class="primary wide" type="submit">${t("addCost")}</button></form>`}</section>
       ${renderAdminPricing(plan, locked)}
+      ${isAdminReview() ? supplierSectionHtml(plan) : ""}
       <section class="planSection"><h3>${t("collaboration")}</h3><p class="planSectionHelp">${t("collaborationHelp")}</p><div class="planComments">${comments}</div>${readOnly ? "" : `<form class="planCommentForm" data-plan-comment-form="${esc(plan.planId)}"><textarea name="message" maxlength="1000" required placeholder="${esc(t("commentPlaceholder"))}"></textarea><button type="submit">${t("addComment")}</button></form>`}</section>
       <details class="planHistory planSection"><summary>${t("activityHistory")}</summary><ol>${history}</ol></details>
       <div class="planActions ${isAdminReview() ? "planActions--admin" : "planActions--guide"}"><span data-plan-save-state aria-live="polite"></span><p>${isGuidePreview() ? t("guidePreviewNote") : isAdminReview() ? (plan.status === "admin_review" ? t("adminActionHelp") : t("externalConfirmationHelp")) : t("handoffHelp")}</p>${!readOnly ? `<button class="actionDiscard" type="button" data-discard-plan="${esc(plan.planId)}" ${dirtyPlans.has(plan.planId) ? "" : "disabled"}>${esc(t("discardDraft"))}</button>` : ""}${actions}</div></details>`;
@@ -781,6 +821,7 @@ function renderPlans() {
   });
   for (const plan of plans) updatePlanSaveState(plan.planId);
   queueMicrotask(maybeAutoTranslatePlans);
+  queueMicrotask(loadSupplierCommitmentsForPlans);
 }
 
 async function savePlan(planId, status) {
@@ -982,7 +1023,7 @@ async function load(provider = "") {
     const url = new URL("/api/guide/bootstrap", location.origin); if (provider) url.searchParams.set("provider", provider);
     const response = await fetch(url, { cache: "no-store", credentials: "same-origin" }); const body = await readApiBody(response);
     if (!response.ok || !body.identity) throw new Error(body.error || (language === "es" ? "No se pudieron cargar los tours." : "Guide data could not load."));
-    data = body; reports = []; reportsLoaded = false; reportsLoading = false; planDrafts = new Map(); dirtyPlans = new Set(); savingPlans = new Set(); if (!localStorage.getItem(LANGUAGE_KEY)) language = data.identity?.role === "guide" ? "es" : "en"; render(); $("#loading").hidden = true; $("#workspace").hidden = false; $("#nav").hidden = false;
+    data = body; reports = []; reportsLoaded = false; reportsLoading = false; planDrafts = new Map(); dirtyPlans = new Set(); savingPlans = new Set(); supplierCommitmentState = new Map(); if (!localStorage.getItem(LANGUAGE_KEY)) language = data.identity?.role === "guide" ? "es" : "en"; render(); $("#loading").hidden = true; $("#workspace").hidden = false; $("#nav").hidden = false;
   } catch (error) { $("#loading").hidden = true; $("#errorText").textContent = error.message; $("#error").hidden = false; }
 }
 
@@ -1004,6 +1045,8 @@ async function copyText(text) {
 }
 
 document.addEventListener("click", event => {
+  const retrySuppliers = event.target.closest("[data-retry-suppliers]");
+  if (retrySuppliers) { const plan = planFor(retrySuppliers.dataset.retrySuppliers); if (plan) refreshSupplierCommitments(plan, true); return; }
   const nav = event.target.closest("[data-route]"); if (nav) route(nav.dataset.route);
   const previewMode = event.target.closest("[data-preview-mode]");
   if (previewMode) {
@@ -1199,6 +1242,18 @@ document.addEventListener("click", event => {
   if (savePlanButton) { savePlanButton.disabled = true; const planId = savePlanButton.dataset.savePlan; savePlan(planId, savePlanButton.dataset.planStatus).catch(error => { savingPlans.delete(planId); updatePlanSaveState(planId); savePlanButton.disabled = false; alert(error.message); }); }
 });
 document.addEventListener("submit", event => {
+  const supplierForm = event.target.closest("[data-supplier-commitment-form]");
+  if (supplierForm) {
+    event.preventDefault();
+    const plan = planFor(supplierForm.dataset.planId), button = supplierForm.querySelector('button[type="submit"]'), status = supplierForm.querySelector(".supplierFormStatus");
+    if (!plan || !button) return;
+    button.disabled = true; button.textContent = language === "es" ? "Guardando…" : "Saving…"; if (status) status.textContent = "";
+    saveSupplierCommitment(supplierForm).then(() => {
+      if (status) status.textContent = language === "es" ? "Compromiso guardado." : "Supplier commitment saved.";
+      return refreshSupplierCommitments(plan, true);
+    }).catch(error => { button.disabled = false; button.textContent = language === "es" ? "Guardar compromiso" : "Save commitment"; if (status) status.textContent = error.message; });
+    return;
+  }
   const newPlanForm = event.target.closest("#newPlanForm");
   if (newPlanForm) {
     event.preventDefault();
