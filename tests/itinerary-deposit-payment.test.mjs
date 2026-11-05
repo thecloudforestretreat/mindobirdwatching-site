@@ -14,7 +14,7 @@ test('guest itinerary deposit produces an exact remaining balance',()=>{
 });
 
 test('itinerary generator loads shared assets from the admin host root and fails visibly',()=>{
-  assert.match(html,/<script src="\/assets\/js\/communication-library\.js\?v=20261105-1"><\/script>/);
+  assert.match(html,/<script src="\/assets\/js\/communication-library\.js\?v=20261105-family-signatures"><\/script>/);
   assert.match(html,/<link rel="stylesheet" href="\/assets\/css\/communication-brand\.css\?v=20261105-1">/);
   assert.doesNotMatch(html,/src="\/admin\/assets\/js\/communication-library\.js/);
   assert.match(html,/if\(!communications\)/);
