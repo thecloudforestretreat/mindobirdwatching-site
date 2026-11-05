@@ -4483,8 +4483,15 @@ export default {
       const eventObject = event.data && event.data.object ? event.data.object : {};
       const eventMetadata = eventObject.metadata || {};
       const isUsdDeposit = String(eventMetadata.source_system || "") === "mbw_usd_deposit";
-      if (isUsdDeposit && !event.livemode) return text("ok — sandbox deposit isolated from live CRM and accounting",200);
-      const requiresSynchronousDeposit = isUsdDeposit && event.type === "checkout.session.completed";
+      const isCustomItineraryDeposit =
+        String(eventMetadata.source_system || "") === "mbw_itinerary_generator" &&
+        String(eventMetadata.payment_purpose || "").toLowerCase() === "tour_deposit";
+      if ((isUsdDeposit || isCustomItineraryDeposit) && !event.livemode) {
+        return text("ok — sandbox deposit isolated from live CRM and accounting", 200);
+      }
+      const requiresSynchronousDeposit =
+        (isUsdDeposit || isCustomItineraryDeposit) &&
+        event.type === "checkout.session.completed";
       const requiresSynchronousGuideTip =
         event.type === "checkout.session.completed" &&
         String(eventMetadata.payment_purpose || "").toLowerCase() === "guide_tip" &&
@@ -4729,7 +4736,7 @@ export default {
 
             await postToSheetsLogger(env, { fields });
 
-            if (!isGuideTip && inquiryId && session.payment_status === "paid") {
+            if (!isGuideTip && !isDeposit && inquiryId && session.payment_status === "paid") {
               const attributionResult = await syncRevenueAttribution(env, {
                 inquiry_id: inquiryId,
                 guest_id: checkoutGuestId,
@@ -4767,6 +4774,11 @@ export default {
                 console.log("Guide tip notification sent", JSON.stringify(tipNotificationResult));
                 return;
               }
+
+              // Reservation deposits secure an existing itinerary. They are
+              // accounting credits, not fully paid tours, and must never emit
+              // a guest booking confirmation from this checkout event.
+              if (isDeposit) return;
 
               const bookingPayload = {
                 booking_status: "confirmed",

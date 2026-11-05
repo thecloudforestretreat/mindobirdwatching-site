@@ -1,4 +1,4 @@
-/* MBW SHOP API V27 - USD GUIDE TIPS + TOUR DEPOSIT EMAILS */
+/* MBW SHOP API V28 - CUSTOM TOUR DEPOSIT CRM CONFIRMATION */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com",
@@ -116,7 +116,7 @@ export default {
           stripe_webhook_configured:
             Boolean(getStripeWebhookSecret(env)),
           stripe_shop_event_filter_version:
-            "v27-deposit-safe",
+            "v28-custom-deposit-crm",
           resend_configured:
             Boolean(env.RESEND_API_KEY),
           admin_order_email_configured:
@@ -1157,6 +1157,45 @@ async function handleStripeWebhook(
     );
   }
 
+  if (isCustomItineraryDepositSession(sessionFromEvent)) {
+    try {
+      const result = await processCustomItineraryDepositCompleted(
+        env,
+        event,
+        sessionFromEvent
+      );
+
+      return jsonResponse(
+        {
+          ok: true,
+          received: true,
+          custom_tour_deposit: true,
+          ...result
+        },
+        200,
+        request
+      );
+    } catch (error) {
+      console.log("Custom itinerary deposit CRM synchronization failed", {
+        stripe_event_id: cleanText(event.id, 255),
+        stripe_session_id: cleanText(sessionFromEvent.id, 255),
+        error: cleanText(error && error.message, 500)
+      });
+
+      return jsonResponse(
+        {
+          ok: false,
+          received: true,
+          custom_tour_deposit: true,
+          retry_required: true,
+          error: "Custom tour deposit CRM synchronization failed"
+        },
+        500,
+        request
+      );
+    }
+  }
+
   if (!isMbwShopCheckoutSession(sessionFromEvent)) {
     const metadata =
       sessionFromEvent.metadata &&
@@ -1374,6 +1413,264 @@ function isMbwShopCheckoutSession(session) {
     cleanText(metadata.mbw_reference_id, 160) &&
     cleanText(metadata.mbw_items, 5000)
   );
+}
+
+function isCustomItineraryDepositSession(session) {
+  const metadata =
+    session &&
+    session.metadata &&
+    typeof session.metadata === "object"
+      ? session.metadata
+      : {};
+
+  return (
+    cleanText(metadata.payment_purpose, 120) === "tour_deposit" &&
+    cleanText(metadata.source_system, 120) === "mbw_itinerary_generator"
+  );
+}
+
+function crmRecordsFromResponse(data) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  for (const key of ["records", "data", "inquiries"]) {
+    if (data && Array.isArray(data[key])) {
+      return data[key];
+    }
+  }
+
+  return [];
+}
+
+async function customDepositCrmCall(env, action, fields = {}) {
+  const endpoint =
+    cleanText(env.CRM_API_URL, 1000) ||
+    "https://n8n.mindobirdwatching.com/webhook/mbw-crm-admin-api";
+  let response;
+
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+      },
+      body: new URLSearchParams({
+        payload: JSON.stringify({ action, ...fields })
+      }).toString()
+    });
+  } catch {
+    throw new Error(`CRM ${action} request failed`);
+  }
+
+  const raw = await response.text();
+  let data;
+
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    data = null;
+  }
+
+  if (
+    !response.ok ||
+    !data ||
+    data.ok === false ||
+    data.success === false
+  ) {
+    throw new Error(`CRM ${action} was rejected`);
+  }
+
+  return data;
+}
+
+function customDepositPaymentDate(event) {
+  const seconds = Number(event && event.created);
+  const date = Number.isFinite(seconds) && seconds > 0
+    ? new Date(seconds * 1000)
+    : new Date();
+
+  return date.toISOString();
+}
+
+function customDepositInternalNote(currentNotes, evidence) {
+  const existing = cleanText(currentNotes, 20000);
+
+  if (
+    existing.includes(evidence.paymentIntentId) ||
+    existing.includes(evidence.sessionId)
+  ) {
+    return existing;
+  }
+
+  const line = [
+    "Stripe custom-tour deposit confirmed",
+    `${evidence.amount.toFixed(2)} ${evidence.currency}`,
+    evidence.paidAt,
+    `Session ${evidence.sessionId}`,
+    `PaymentIntent ${evidence.paymentIntentId}`,
+    evidence.email ? `Guest email ${evidence.email}` : "",
+    evidence.eventId ? `Event ${evidence.eventId}` : ""
+  ].filter(Boolean).join(" · ");
+
+  return [existing, line].filter(Boolean).join("\n");
+}
+
+async function processCustomItineraryDepositCompleted(env, event, session) {
+  if (!event.livemode) {
+    return {
+      sandbox: true,
+      crm_updated: false,
+      payment_recorded: false
+    };
+  }
+
+  if (session.payment_status !== "paid") {
+    return {
+      ignored: true,
+      reason: "Checkout Session is not paid",
+      crm_updated: false,
+      payment_recorded: false
+    };
+  }
+
+  const metadata = session.metadata || {};
+  const inquiryId = cleanText(metadata.inquiry_id, 180);
+  const paymentIntentId = stripeObjectId(session.payment_intent);
+  const amountCents = Number(session.amount_total);
+  const amount = amountCents / 100;
+  const currency = String(session.currency || "").trim().toUpperCase();
+  const expectedAmount = Number(metadata.deposit_amount);
+
+  if (
+    !inquiryId ||
+    !paymentIntentId ||
+    !Number.isInteger(amountCents) ||
+    ![10000, 50000].includes(amountCents) ||
+    ![100, 500].includes(expectedAmount) ||
+    expectedAmount !== amount ||
+    currency !== "USD"
+  ) {
+    throw new Error("Custom tour deposit identity or amount is invalid");
+  }
+
+  const listed = await customDepositCrmCall(env, "list_inquiries", {
+    filters: {}
+  });
+  const current = crmRecordsFromResponse(listed).find(
+    (record) => cleanText(record && record.inquiry_id, 180) === inquiryId
+  );
+
+  if (!current || !cleanText(current.guest_id, 180)) {
+    throw new Error("Custom tour deposit CRM identity is unavailable");
+  }
+
+  const guestId = cleanText(current.guest_id, 180);
+  const paidAt = customDepositPaymentDate(event);
+  const customerDetails =
+    session.customer_details &&
+    typeof session.customer_details === "object"
+      ? session.customer_details
+      : {};
+  const email = cleanText(
+    customerDetails.email || session.customer_email || current.email,
+    320
+  );
+  const quotedTotal = Number(
+    String(current.quoted_amount || current.total_booking_price || "")
+      .replace(/[^0-9.-]/g, "")
+  );
+  const hasUsableTotal =
+    Number.isFinite(quotedTotal) && quotedTotal > amount;
+
+  if (hasUsableTotal) {
+    const payment = {
+      payment_id: `PAY-${paymentIntentId}`,
+      booking_id:
+        cleanText(current.booking_id, 180) ||
+        `B-${inquiryId.replace(/^INQ-/, "")}`,
+      inquiry_id: inquiryId,
+      guest_id: guestId,
+      payment_status: "deposit_paid",
+      payment_date: paidAt,
+      payment_method: "Stripe",
+      paid_to: "Mindo Bird Watching",
+      invoice_id: "",
+      transaction_id: paymentIntentId,
+      total_booking_price: quotedTotal,
+      deposit_amount_paid: amount,
+      additional_amount_paid: 0,
+      total_amount_paid: amount,
+      balance_remaining: Math.max(0, quotedTotal - amount),
+      is_fully_paid: "No",
+      notes:
+        `Custom-tour deposit confirmed from Stripe Checkout Session ${session.id}; ` +
+        `event ${cleanText(event.id, 255) || "not recorded"}.`
+    };
+
+    await customDepositCrmCall(env, "upsert_payment", {
+      payment,
+      record: payment
+    });
+  }
+
+  const currentStatus = cleanText(current.status, 80)
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  const currentPaymentStatus = cleanText(current.payment_status, 80)
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  const preserveStatus = new Set([
+    "booked",
+    "completed",
+    "cancelled",
+    "canceled",
+    "did_not_book",
+    "duplicate",
+    "archived"
+  ]).has(currentStatus);
+  const evidence = {
+    amount,
+    currency,
+    paidAt,
+    sessionId: cleanText(session.id, 255),
+    paymentIntentId,
+    email,
+    eventId: cleanText(event.id, 255)
+  };
+  const patch = {
+    inquiry_id: inquiryId,
+    guest_id: guestId,
+    payment_status:
+      currentPaymentStatus === "paid" ? "paid" : "deposit_paid",
+    payment_method: "Stripe",
+    date_paid: paidAt.slice(0, 10),
+    internal_notes: customDepositInternalNote(
+      current.internal_notes,
+      evidence
+    )
+  };
+
+  if (!preserveStatus) {
+    patch.status = "deposit_paid";
+  }
+
+  await customDepositCrmCall(env, "update_inquiry", {
+    record: patch,
+    inquiry_row: patch
+  });
+
+  return {
+    sandbox: false,
+    crm_updated: true,
+    payment_recorded: hasUsableTotal,
+    payment_record_skipped_reason:
+      hasUsableTotal ? null : "quoted_total_missing_or_not_above_deposit",
+    inquiry_id: inquiryId,
+    payment_intent_id: paymentIntentId,
+    amount,
+    currency
+  };
 }
 
 async function verifyStripeWebhookSignature(

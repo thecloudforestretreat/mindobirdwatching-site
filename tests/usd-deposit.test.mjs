@@ -25,8 +25,9 @@ function harness({status='quoted',payment='unpaid',existing=false,crmFailure=fal
  vm.createContext(context);vm.runInContext(source.replace('export default {','globalThis.worker = {'),context);
  const env={STRIPE_SECRET_KEY:'sk_QA',STRIPE_SECRET_KEY_TEST:'sk_test_QA',STRIPE_WEBHOOK_SECRET:secret,STRIPE_WEBHOOK_SECRET_TEST:secret,CRM_API_URL:'https://qa.invalid/crm',GSHEET_WEBAPP_URL:'https://qa.invalid/logger'};
  const create=body=>context.worker.fetch(new Request('https://qa.invalid/stripe/api/create-deposit-session',{method:'POST',body:JSON.stringify({inquiry_id:record.inquiry_id,...body})}),env,{});
- const webhook=async({live=true,paid=true,currency='usd',amount=10000}={})=>{
-  const timestamp=Math.floor(Date.now()/1000),event={id:'evt_QA',type:'checkout.session.completed',created:timestamp,livemode:live,data:{object:{id:'cs_QA',currency,amount_total:amount,payment_status:paid?'paid':'unpaid',payment_intent:'pi_QA',client_reference_id:record.inquiry_id,customer:'cus_QA',metadata:{source_system:'mbw_usd_deposit',payment_purpose:'tour_deposit',inquiry_id:record.inquiry_id,guest_id:record.guest_id}}}};
+ const webhook=async({live=true,paid=true,currency='usd',amount=10000,sourceSystem='mbw_usd_deposit'}={})=>{
+  const custom=sourceSystem==='mbw_itinerary_generator',metadata={source_system:sourceSystem,payment_purpose:'tour_deposit',inquiry_id:record.inquiry_id,...(custom?{deposit_amount:String(amount/100)}:{guest_id:record.guest_id})};
+  const timestamp=Math.floor(Date.now()/1000),event={id:'evt_QA',type:'checkout.session.completed',created:timestamp,livemode:live,data:{object:{id:'cs_QA',currency,amount_total:amount,payment_status:paid?'paid':'unpaid',payment_intent:'pi_QA',client_reference_id:record.inquiry_id,customer:'cus_QA',metadata}}};
   const body=JSON.stringify(event),sig=createHmac('sha256',secret).update(timestamp+'.'+body).digest('hex');
   return context.worker.fetch(new Request('https://qa.invalid/stripe/webhook',{method:'POST',headers:{'stripe-signature':`t=${timestamp},v1=${sig}`},body}),env,{waitUntil(){throw Error('Deposit webhook must be awaited');}});
  };
@@ -46,6 +47,9 @@ test('sandbox payment events never touch live CRM/accounting',async()=>{const h=
 test('unpaid checkout is not recorded as a deposit',async()=>{const h=harness();assert.equal((await h.webhook({paid:false})).status,200);assert.equal(h.calls.length,0);});
 test('paid deposit retries without duplicate accounting and does not confirm a tour or create invoice ledger revenue',async()=>{
  const h=harness();assert.equal((await h.webhook()).status,200);assert.equal((await h.webhook()).status,200);assert.equal(h.logged.size,1);const row=h.logged.get('pi_QA');assert.equal(row.gross_payment_amount,'100.00');assert.equal(row.deposit_status,'available');assert.equal(row.stripe_customer_id,'cus_QA');assert.equal(row.record_type,'deposit');assert.ok(!h.calls.some(c=>c.url.includes('booking_confirmation')));
+});
+test('custom itinerary deposit is awaited and never emits a paid-tour confirmation or conversion',async()=>{
+ const h=harness();const response=await h.webhook({sourceSystem:'mbw_itinerary_generator',amount:50000});assert.equal(response.status,200);assert.equal(h.logged.size,1);const row=h.logged.get('pi_QA');assert.equal(row.gross_payment_amount,'500.00');assert.equal(row.deposit_status,'available');assert.ok(!h.calls.some(c=>c.url.includes('booking_confirmation')));assert.ok(!h.calls.some(c=>c.url.includes('booking_attribution')));
 });
 test('deposit cannot downgrade an already paid CRM record',async()=>{const h=harness({payment:'paid'});assert.equal((await h.webhook()).status,200);});
 test('CRM failure returns retryable error rather than acknowledging lost update',async()=>{const h=harness({crmFailure:true});assert.equal((await h.webhook()).status,500);});
