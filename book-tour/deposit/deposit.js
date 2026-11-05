@@ -6,8 +6,10 @@
   document.getElementById('sandbox').hidden = !sandbox;
   if (es) {
     document.documentElement.lang = 'es'; document.title = 'Depósito de reserva | Mindo Bird Watching';
-    const copy = {title:'Depósito de reserva del tour',description:'El depósito se descuenta del precio total de tu reserva. Realiza el pago después de que nuestro equipo confirme los detalles del tour.',currency:'El cobro se realiza en dólares estadounidenses. La conversión de moneda de Stripe está desactivada.',billing:'Todos los pagos se facturan a nombre de Mindo Bird Watching.',contact:'Contacta a nuestro equipo',terms:'Términos del servicio',privacy:'Política de privacidad',sandbox:'Prueba en sandbox: sin pago real ni registros en el CRM o la contabilidad de producción.'};
+    const copy = {title:'Depósito de reserva del tour',description:'El depósito se descuenta del precio total de tu reserva. Realiza el pago después de que nuestro equipo confirme los detalles del tour.',currency:'El cobro se realiza en dólares estadounidenses. La conversión de moneda de Stripe está desactivada.',depositTermsNotice:'Al continuar, aceptas nuestros Términos y Condiciones de Reserva, incluidas las disposiciones sobre cancelación de tours personalizados y costos no reembolsables de proveedores.',billing:'Todos los pagos se facturan a nombre de Mindo Bird Watching.',contact:'Contacta a nuestro equipo',terms:'Términos y Condiciones de Reserva',privacy:'Política de privacidad',sandbox:'Prueba en sandbox: sin pago real ni registros en el CRM o la contabilidad de producción.'};
     for (const [id,text] of Object.entries(copy)) document.getElementById(id).textContent = text;
+    document.getElementById('terms').href = '/es/terminos-y-condiciones/';
+    document.getElementById('privacy').href = '/es/politica-de-privacidad/';
     button.textContent = 'Continuar al pago seguro';
   }
   const fail = es ? 'No pudimos abrir el pago. Contacta a nuestro equipo antes de volver a intentarlo.' : 'We could not open checkout. Please contact our team before trying again.';

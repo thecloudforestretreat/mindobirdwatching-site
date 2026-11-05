@@ -132,6 +132,34 @@
  * - Adds clearer agent activity logging diagnostics in Worker logs
  */
 
+const BOOKING_TERMS_VERSION = "2026-11-05";
+const BOOKING_TERMS_URL = "https://mindobirdwatching.com/terms-conditions/";
+const BOOKING_TERMS_URL_ES = "https://mindobirdwatching.com/es/terminos-y-condiciones/";
+
+function bookingTermsUrl(language) {
+  return language === "es" ? BOOKING_TERMS_URL_ES : BOOKING_TERMS_URL;
+}
+
+function invoiceTermsFooter(language) {
+  return language === "es"
+    ? `El pago está sujeto a los Términos y Condiciones de Reserva de Mindo Bird Watching: ${BOOKING_TERMS_URL_ES}`
+    : `Payment is subject to the Mindo Bird Watching Booking Terms and Conditions: ${BOOKING_TERMS_URL}`;
+}
+
+function requireBookingTerms(form, language, deposit = false) {
+  form.set("consent_collection[terms_of_service]", "required");
+  form.set(
+    "custom_text[submit][message]",
+    language === "es"
+      ? deposit
+        ? "El depósito se acredita al tour. Pueden descontarse costos no reembolsables de proveedores según los Términos y Condiciones de Reserva."
+        : "El pago está sujeto a los Términos y Condiciones de Reserva de Mindo Bird Watching."
+      : deposit
+        ? "The deposit is credited to the tour. Non-refundable supplier costs may be deducted under the Booking Terms and Conditions."
+        : "Payment is subject to the Mindo Bird Watching Booking Terms and Conditions."
+  );
+}
+
 const TOURS = [
   {
     "tour_code": "MBW004",
@@ -3071,11 +3099,13 @@ export default {
           source_system: "mbw_usd_deposit", stripe_environment: isTest ? "sandbox" : "live", billing_brand_id: "mbw", marketing_brand_id: brand,
           language, agent_id: String(crm.assigned_to || ""), tour_date: String(crm.requested_date || crm.requested_date_start || ""),
           tour_code: "DEP001", tour_title: "Tour Reservation Deposit", service_type: "reservation_deposit",
-          number_of_people: String(crm.guest_count || "") };
+          number_of_people: String(crm.guest_count || ""), terms_version: BOOKING_TERMS_VERSION,
+          terms_url: bookingTermsUrl(language), terms_acceptance_required: "true" };
         const form = new URLSearchParams({ mode: "payment", customer_creation: "always", "adaptive_pricing[enabled]": "false",
           "payment_method_types[0]": "card", "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": "10000",
           client_reference_id: inquiryId, locale: language, "phone_number_collection[enabled]": "true",
           "payment_intent_data[description]": "Mindo Bird Watching — $100 USD reservation deposit" });
+        requireBookingTerms(form, language, true);
         const deposit = TOURS.find(t => t.tour_code === "DEP001" && t.language === "en");
         if (!isTest) form.set("line_items[0][price_data][product]", deposit.product_id_live);
         else if (env.STRIPE_DEPOSIT_PRODUCT_TEST) form.set("line_items[0][price_data][product]",env.STRIPE_DEPOSIT_PRODUCT_TEST);
@@ -3450,6 +3480,7 @@ export default {
         const form = new URLSearchParams();
         form.set("mode", "payment");
         form.set("adaptive_pricing[enabled]", "false");
+        requireBookingTerms(form, language);
         form.set("success_url", successUrl);
         form.set("cancel_url", cancelUrl);
         if (tour.use_inline_price) {
@@ -3502,6 +3533,9 @@ export default {
           guide_rate_per_person: checkoutGuideCost.ratePerPerson ? dollarsToDisplay(checkoutGuideCost.ratePerPerson) : "",
           guide_payout_total: checkoutGuideCost.total ? dollarsToDisplay(checkoutGuideCost.total) : "",
           fees_charged_to_guide: checkoutGuideCost.total ? "0.00" : "",
+          terms_version: BOOKING_TERMS_VERSION,
+          terms_url: bookingTermsUrl(language),
+          terms_acceptance_required: "true",
         };
 
         Object.keys(md).forEach((k) => {
@@ -3706,6 +3740,8 @@ export default {
           guide_rate_per_person: invoiceGuideCost.ratePerPerson ? dollarsToDisplay(invoiceGuideCost.ratePerPerson) : "",
           guide_payout_total: invoiceGuideCost.total ? dollarsToDisplay(invoiceGuideCost.total) : "",
           fees_charged_to_guide: invoiceGuideCost.total ? "0.00" : "",
+          terms_version: BOOKING_TERMS_VERSION,
+          terms_url: bookingTermsUrl(language),
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
@@ -3740,6 +3776,7 @@ export default {
         invForm.set("days_until_due", String(invoice_due_days));
         invForm.set("auto_advance", "false");
         invForm.set("pending_invoice_items_behavior", "exclude");
+        invForm.set("footer", invoiceTermsFooter(language));
         Object.keys(md).forEach((k) => {
           const v = md[k];
           if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
@@ -4020,6 +4057,8 @@ export default {
           deposit_application_method: deposit
             ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
             : "",
+          terms_version: BOOKING_TERMS_VERSION,
+          terms_url: bookingTermsUrl(normalizedItems[0].language),
         };
 
         let customer = deposit && deposit.customer ? deposit.customer : null;
@@ -4065,6 +4104,8 @@ export default {
             ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
             : "",
           stripe_customer_id: customer.id,
+          terms_version: BOOKING_TERMS_VERSION,
+          terms_url: bookingTermsUrl(normalizedItems[0].language),
         };
 
         const invForm = new URLSearchParams();
@@ -4074,6 +4115,7 @@ export default {
         invForm.set("days_until_due", String(invoice_due_days));
         invForm.set("auto_advance", "false");
         invForm.set("pending_invoice_items_behavior", "exclude");
+        invForm.set("footer", invoiceTermsFooter(normalizedItems[0].language));
         Object.keys(invMd).forEach((k) => {
           const v = invMd[k];
           if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));

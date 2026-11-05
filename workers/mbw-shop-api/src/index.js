@@ -4,6 +4,9 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.mindobirdwatching.com",
   "https://admin.mindobirdwatching.com"
 ]);
+const BOOKING_TERMS_VERSION = "2026-11-05";
+const BOOKING_TERMS_URL = "https://mindobirdwatching.com/terms-conditions/";
+const BOOKING_TERMS_URL_ES = "https://mindobirdwatching.com/es/terminos-y-condiciones/";
 
 export default {
   async fetch(request, env) {
@@ -7539,6 +7542,13 @@ async function createStripeDepositCheckoutSession(env, data) {
   params.set("client_reference_id", data.referenceId);
   params.set("submit_type", "pay");
   params.set("adaptive_pricing[enabled]", "false");
+  params.set("consent_collection[terms_of_service]", "required");
+  params.set(
+    "custom_text[submit][message]",
+    data.language === "es"
+      ? "El depósito se acredita al tour. Pueden descontarse costos no reembolsables de proveedores según los Términos y Condiciones de Reserva."
+      : "The deposit is credited to the tour. Non-refundable supplier costs may be deducted under the Booking Terms and Conditions."
+  );
   params.set("line_items[0][quantity]", "1");
   params.set("line_items[0][price_data][currency]", "usd");
   params.set("line_items[0][price_data][unit_amount]", String(data.amount * 100));
@@ -7556,7 +7566,10 @@ async function createStripeDepositCheckoutSession(env, data) {
     language: data.language,
     product_id: productId,
     pricing_model: "flat_amount",
-    number_of_people: "1"
+    number_of_people: "1",
+    terms_version: BOOKING_TERMS_VERSION,
+    terms_url: data.language === "es" ? BOOKING_TERMS_URL_ES : BOOKING_TERMS_URL,
+    terms_acceptance_required: "true"
   };
 
   Object.entries(metadata).forEach(([key, value]) => {
