@@ -15,6 +15,7 @@ test("admin endpoint combines supplier commitments with received guest funds", a
   global.fetch = async (_url, init) => {
     const payload = JSON.parse(new URLSearchParams(init.body).get("payload"));
     if (payload.action === "list_supplier_commitments") return Response.json({ ok: true, records: [{ committed_cost: 200, amount_paid: 100, refundability: "nonrefundable", payment_status: "partially_paid" }] });
+    if (payload.action === "list_supplier_transactions") return Response.json({ ok: true, records: [{ commitment_id: "", transaction_type: "deposit", amount: 100 }] });
     if (payload.action === "list_payments") return Response.json({ ok: true, records: [{ total_amount_paid: 500 }] });
     throw new Error("Unexpected CRM action");
   };

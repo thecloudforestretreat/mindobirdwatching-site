@@ -514,6 +514,46 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "list_supplier_transactions",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "upsert_supplier_transaction",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -11494,6 +11534,341 @@
         47904,
         15560
       ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_transactions",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "7e170001-0000-4000-8000-000000000001",
+      "name": "Read CRM Supplier Transactions",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        46864,
+        16040
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst number=value=>{const parsed=Number(value??0);return Number.isFinite(parsed)&&parsed>0?Math.round(parsed*100)/100:0;};\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nconst matches=(row,key,value)=>!value||clean(row[key])===value;\nif(action==='list_supplier_transactions'){\n  const filters={commitment_id:clean(request.commitment_id),plan_id:clean(request.plan_id),inquiry_id:clean(request.inquiry_id),booking_id:clean(request.booking_id),supplier_id:clean(request.supplier_id),confirmation_number:clean(request.confirmation_number)};\n  const records=rows.filter(row=>Object.entries(filters).every(([key,value])=>matches(row,key,value))).sort((a,b)=>clean(b.transaction_date||b.created_at).localeCompare(clean(a.transaction_date||a.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.transaction||request.record||{})};\nif(!clean(incoming.supplier_transaction_id)||!clean(incoming.commitment_id)||!clean(incoming.supplier_name)||!clean(incoming.transaction_date)||!number(incoming.amount)) throw new Error('Supplier transaction requires an ID, commitment, supplier, date, and positive amount.');\nconst confirmation=clean(incoming.confirmation_number);\nif(confirmation&&rows.some(row=>clean(row.confirmation_number)===confirmation&&clean(row.supplier_transaction_id)!==clean(incoming.supplier_transaction_id))) throw new Error('That supplier confirmation number is already recorded.');\nconst existing=rows.find(row=>clean(row.supplier_transaction_id)===clean(incoming.supplier_transaction_id))||{};\nconst record={...existing,...incoming,supplier_transaction_id:clean(incoming.supplier_transaction_id),amount:number(incoming.amount),created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nreturn [{json:{...record,_route:'write'}}];"
+      },
+      "id": "7e170002-0000-4000-8000-000000000002",
+      "name": "Process CRM Supplier Transactions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47104,
+        16040
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json._route}}",
+                    "rightValue": "write",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "7e170003-0000-4000-8000-000000000003",
+      "name": "Route CRM Supplier Transactions",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        47376,
+        16040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_transactions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "supplier_transaction_id": "={{ $json.supplier_transaction_id ?? '' }}",
+            "commitment_id": "={{ $json.commitment_id ?? '' }}",
+            "inquiry_id": "={{ $json.inquiry_id ?? '' }}",
+            "booking_id": "={{ $json.booking_id ?? '' }}",
+            "plan_id": "={{ $json.plan_id ?? '' }}",
+            "supplier_id": "={{ $json.supplier_id ?? '' }}",
+            "supplier_name": "={{ $json.supplier_name ?? '' }}",
+            "transaction_type": "={{ $json.transaction_type ?? '' }}",
+            "payment_method": "={{ $json.payment_method ?? '' }}",
+            "transaction_date": "={{ $json.transaction_date ?? '' }}",
+            "currency": "={{ $json.currency ?? '' }}",
+            "amount": "={{ $json.amount ?? '' }}",
+            "confirmation_number": "={{ $json.confirmation_number ?? '' }}",
+            "evidence_url": "={{ $json.evidence_url ?? '' }}",
+            "internal_notes": "={{ $json.internal_notes ?? '' }}",
+            "entered_by": "={{ $json.entered_by ?? '' }}",
+            "created_at": "={{ $json.created_at ?? '' }}",
+            "updated_at": "={{ $json.updated_at ?? '' }}"
+          },
+          "matchingColumns": [
+            "supplier_transaction_id"
+          ],
+          "schema": [
+            {
+              "id": "supplier_transaction_id",
+              "displayName": "supplier_transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commitment_id",
+              "displayName": "commitment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_id",
+              "displayName": "inquiry_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "booking_id",
+              "displayName": "booking_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "plan_id",
+              "displayName": "plan_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_id",
+              "displayName": "supplier_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_name",
+              "displayName": "supplier_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_type",
+              "displayName": "transaction_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_date",
+              "displayName": "transaction_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confirmation_number",
+              "displayName": "confirmation_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evidence_url",
+              "displayName": "evidence_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "internal_notes",
+              "displayName": "internal_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "entered_by",
+              "displayName": "entered_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7e170004-0000-4000-8000-000000000004",
+      "name": "Write CRM Supplier Transaction",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        47648,
+        15960
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record={...$('Process CRM Supplier Transactions').first().json}; delete record._route; return [{json:{ok:true,action:'upsert_supplier_transaction',record}}];"
+      },
+      "id": "7e170005-0000-4000-8000-000000000005",
+      "name": "Finalize CRM Supplier Transaction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47904,
+        15960
+      ]
     }
   ],
   "pinData": {},
@@ -11686,6 +12061,20 @@
         [
           {
             "node": "Read CRM Supplier Commitments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read CRM Supplier Transactions",
             "type": "main",
             "index": 0
           }
@@ -12572,6 +12961,68 @@
       ]
     },
     "Finalize CRM Supplier Commitment": {
+      "main": [
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Process CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Route CRM Supplier Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route CRM Supplier Transactions": {
+      "main": [
+        [
+          {
+            "node": "Write CRM Supplier Transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write CRM Supplier Transaction": {
+      "main": [
+        [
+          {
+            "node": "Finalize CRM Supplier Transaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize CRM Supplier Transaction": {
       "main": [
         [
           {
