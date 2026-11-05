@@ -1,6 +1,6 @@
 (function(){
   "use strict";
-  var API="https://mindobirdwatching.com/api/admin/carousels";
+  var API="/api/admin/carousels";
   var state={rows:[],slides:[],activeStatus:"upcoming",query:"",selected:null,reviewImages:null,draggedIndex:null,reviewDraggedIndex:null,replaceIndex:null,reviewTimer:null,reviewPolls:0,pollMode:"",recoveryActive:false,actionBusy:false,scheduleNotice:"",showSafeGuide:true,showProfileGuide:false};
   var routeParams=new URLSearchParams(location.search),pendingOpenId=cleanRoute(routeParams.get("id"));
   var demo=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&routeParams.get("demo")==="1";
