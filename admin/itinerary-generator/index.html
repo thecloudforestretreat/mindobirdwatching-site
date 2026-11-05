@@ -1668,11 +1668,18 @@
         state.sourcePlanId = String(draft.sourcePlanId || '');
         state.sourcePlanUpdatedAt = String(draft.sourcePlanUpdatedAt || '');
         try{ state.crmRecord = JSON.parse(localStorage.getItem('mbwSelectedCrmRecord') || 'null'); }catch(error){ state.crmRecord = null; }
+        const selectedInquiryId = String(state.crmRecord?.inquiry_id || '');
+        const crmRecordMatchesDraft = Boolean(state.inquiryId && selectedInquiryId && state.inquiryId === selectedInquiryId);
+        const matchingCrmRecord = crmRecordMatchesDraft ? state.crmRecord : null;
+        state.crmRecord = matchingCrmRecord;
         $('saveCrmBtn').disabled = !state.inquiryId;
         $('saveCrmBtn').title = state.inquiryId ? `Save to inquiry ${state.inquiryId}` : 'Open this generator from a CRM inquiry to save it';
-        const crmFullName = state.crmRecord?.full_name || [state.crmRecord?.first_name,state.crmRecord?.last_name].filter(Boolean).join(' ');
-        $('guestName').value = capitalizeFirst(crmFullName || draft.guestName || '');
-        $('guestEmail').value = draft.guestEmail || state.crmRecord?.email || state.crmRecord?.guest_email || '';
+        const crmFullName = matchingCrmRecord?.full_name || [matchingCrmRecord?.first_name,matchingCrmRecord?.last_name].filter(Boolean).join(' ');
+        // A guide-plan draft is authoritative for guest identity. A previously
+        // selected CRM record may belong to a different inquiry and must never
+        // overwrite the guest attached to the approved plan.
+        $('guestName').value = capitalizeFirst(draft.guestName || crmFullName || '');
+        $('guestEmail').value = draft.guestEmail || matchingCrmRecord?.email || matchingCrmRecord?.guest_email || '';
         $('tripTitle').value = draft.tripTitle || COPY.en.defaultTitle;
         $('language').value = draft.language === 'es' ? 'es' : 'en';
         $('heroImage').value = HERO_IMAGES[draft.heroImage] ? draft.heroImage : DEFAULT_HERO_IMAGE;
@@ -1684,14 +1691,14 @@
         if(draft.pricingNote) $('pricingNote').value = draft.pricingNote;
         if(draft.adjustmentReason) $('adjustmentReason').value = draft.adjustmentReason;
         if(draft.closingText) $('closingText').value = draft.closingText;
-        const paymentStatus = String(draft.paymentStatus || draft.payment_status || state.crmRecord?.payment_status || '').toLowerCase();
+        const paymentStatus = String(draft.paymentStatus || draft.payment_status || matchingCrmRecord?.payment_status || '').toLowerCase();
         const savedStage = ITINERARY_STAGES.includes(draft.itineraryStage) ? draft.itineraryStage : '';
         $('itineraryStage').value = paymentStatus === 'paid' ? 'paid_in_full' : savedStage || (paymentStatus === 'deposit_paid' ? 'deposit_received' : ['payment_pending','deposit_pending'].includes(paymentStatus) ? 'approved_pending' : 'preliminary');
-        const depositCandidate = [draft.depositReceivedAmount,draft.deposit_received_amount,draft.deposit_amount_paid,state.crmRecord?.deposit_amount_paid,state.crmRecord?.deposit_amount].find(value => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value)));
+        const depositCandidate = [draft.depositReceivedAmount,draft.deposit_received_amount,draft.deposit_amount_paid,matchingCrmRecord?.deposit_amount_paid,matchingCrmRecord?.deposit_amount].find(value => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value)));
         $('depositReceivedAmount').value = depositCandidate === undefined ? '100' : String(Math.max(0,Number(depositCandidate)));
-        $('depositReceivedDate').value = String(draft.depositReceivedDate || draft.deposit_received_date || state.crmRecord?.deposit_paid_at || state.crmRecord?.date_paid || '').slice(0,10);
-        $('depositReceivedMethod').value = draft.depositReceivedMethod || draft.deposit_received_method || state.crmRecord?.payment_method || '';
-        $('depositReceivedReference').value = draft.depositReceivedReference || draft.deposit_received_reference || state.crmRecord?.payment_reference_note || '';
+        $('depositReceivedDate').value = String(draft.depositReceivedDate || draft.deposit_received_date || matchingCrmRecord?.deposit_paid_at || matchingCrmRecord?.date_paid || '').slice(0,10);
+        $('depositReceivedMethod').value = draft.depositReceivedMethod || draft.deposit_received_method || matchingCrmRecord?.payment_method || '';
+        $('depositReceivedReference').value = draft.depositReceivedReference || draft.deposit_received_reference || matchingCrmRecord?.payment_reference_note || '';
         $('showDeposit').checked = $('itineraryStage').value === 'approved_pending';
         $('offerZelle').checked = draft.offerZelle === true;
         $('zelleEmail').value = draft.zelleEmail || 'mindobirdwatching@gmail.com';
@@ -2041,7 +2048,7 @@
       if(getDepositLink()){
         setDepositLinkStatus(`Ready: US$${Number($('depositAmount').value) === 500 ? 500 : 100}, USD-only checkout.`);
       }else if(itineraryStage() === 'approved_pending'){
-        generateDepositLink();
+        setDepositLinkStatus('Generate the secure USD link before copying or downloading the itinerary.');
       }
     })();
   </script>

@@ -59,7 +59,7 @@ test('confirmed itinerary uses a first-name greeting, full guest field, and non-
   assert.match(html,/\$\{escapeHtml\(c\.hi\)\} \$\{escapeHtml\(guestFirstName\(data\.guestName\) \|\| c\.guest\)\}/);
   assert.match(html,/const guestName = data\.guestName \|\|/);
   assert.match(html,/const greetingName = guestFirstName\(data\.guestName\)/);
-  assert.match(html,/const crmFullName = state\.crmRecord\?\.full_name/);
+  assert.match(html,/const crmFullName = matchingCrmRecord\?\.full_name/);
   assert.match(html,/depositReceivedBox/);
   assert.match(html,/\.paymentReceiptItem\{[^}]*text-align:center/);
 });
