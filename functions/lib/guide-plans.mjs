@@ -481,7 +481,7 @@ export function guestItineraryDraft(plan) {
       id: line.id,
       sourceDayId: day.id,
       date: day.date,
-      type: line.category === "transportation" ? "Transportation" : line.category === "lodging" ? "Lodging" : "Custom",
+      type: line.category === "transportation" ? "Transportation" : line.category === "lodging" ? "Accommodation" : "Custom",
       productPreset: "Other",
       name: line.label.en || line.label.es,
       nameEs: line.label.es || line.label.en,

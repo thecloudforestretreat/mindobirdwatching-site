@@ -179,6 +179,7 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
   assert.equal(draft.showItemPrices, false);
   assert.equal(draft.items.length, base.days.length * 4);
   assert.deepEqual(draft.items.slice(0, 4).map(item => item.name), ["Reserve fee", "Private daily activities", "Private transportation", "Lodging allowance"]);
+  assert.deepEqual(draft.items.slice(0, 4).map(item => item.type), ["Custom", "Custom", "Transportation", "Accommodation"]);
   assert.equal(draft.items[0].showZeroPrice, true);
   assert.equal(draft.items[0].dayTitle, base.days[0].title.en);
   assert.equal(draft.items[0].dayDetails, base.days[0].details.en);
