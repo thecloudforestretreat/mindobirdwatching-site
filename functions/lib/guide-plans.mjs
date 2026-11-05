@@ -511,7 +511,15 @@ export function guestItineraryDraft(plan, inquiry = {}) {
     inquiryId: plan.inquiryId || "",
     guestName,
     guestEmail: text(inquiry.email || inquiry.guest_email, 240),
-    whatsappNumber: text(inquiry.phone_number || inquiry.phone || inquiry.whatsapp_number || inquiry.whatsapp, 80),
+    whatsappNumber: text(
+      inquiry.phone_number ||
+      inquiry.phone_normalized ||
+      inquiry.phone_raw ||
+      inquiry.phone ||
+      inquiry.whatsapp_number ||
+      inquiry.whatsapp,
+      80,
+    ),
     guestCount: Number(plan.brief?.guestCount || 1),
     tripTitle: guestFacingPlanTitle(plan.title?.en || plan.title?.es, plan.guestName || guestName, "Custom Ecuador itinerary"),
     tripTitleEs: guestFacingPlanTitle(plan.title?.es || plan.title?.en, plan.guestName || guestName, "Itinerario personalizado en Ecuador"),

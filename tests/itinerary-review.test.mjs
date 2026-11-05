@@ -174,6 +174,12 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
   assert.equal(draft.guestName, "Robert Kirberger");
   assert.equal(draft.guestEmail, "robert@example.test");
   assert.equal(draft.whatsappNumber, "+1 305 555 0107");
+
+  const normalizedPhoneDraft = guestItineraryDraft(plan, {
+    full_name: "Robert Kirberger",
+    phone_normalized: "+61456809793",
+  });
+  assert.equal(normalizedPhoneDraft.whatsappNumber, "+61456809793");
   assert.equal(draft.tripTitle, "Custom Ecuador itinerary");
   assert.equal(draft.tripTitleEs, "Itinerario personalizado en Ecuador");
   assert.equal(draft.itineraryStage, "approved_pending");
