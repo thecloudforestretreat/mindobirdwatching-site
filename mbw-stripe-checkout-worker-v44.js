@@ -1,5 +1,7 @@
 /**
- * MBW Stripe Checkout Worker (FULL DROP-IN) - v50
+ * MBW Stripe Checkout Worker (FULL DROP-IN) - v51
+ *
+ * v51: Records versioned Stripe Checkout terms acceptance on paid deposits.
  *
  * v50: Synchronizes void/uncollectible invoice status without changing tours or deposits.
  *
@@ -135,9 +137,47 @@
 const BOOKING_TERMS_VERSION = "2026-11-05";
 const BOOKING_TERMS_URL = "https://mindobirdwatching.com/terms-conditions/";
 const BOOKING_TERMS_URL_ES = "https://mindobirdwatching.com/es/terminos-y-condiciones/";
+const BOOKING_TERMS_SHA256 = "5b0eb4ac1ba440546c0af7c0656c973f5ff6adabb9f7d6c26b67e7d826980f39";
+const BOOKING_TERMS_SHA256_ES = "bf4162043ed491395edf8edb7841dcb754bd020dd6c0396de81e5301d2ea1164";
 
 function bookingTermsUrl(language) {
   return language === "es" ? BOOKING_TERMS_URL_ES : BOOKING_TERMS_URL;
+}
+
+function bookingTermsSha256(language) {
+  return language === "es" ? BOOKING_TERMS_SHA256_ES : BOOKING_TERMS_SHA256;
+}
+
+function checkoutTermsAcceptance(session, event) {
+  const metadata = session && session.metadata ? session.metadata : {};
+  if (String(metadata.terms_acceptance_required || "") !== "true") return null;
+  if (session?.consent?.terms_of_service !== "accepted") {
+    throw new Error("Stripe Checkout terms acceptance is missing");
+  }
+  const language = String(metadata.language || "").toLowerCase() === "es" ||
+    String(metadata.terms_url || "").includes("/es/") ? "es" : "en";
+  const version = String(metadata.terms_version || BOOKING_TERMS_VERSION);
+  const url = String(metadata.terms_url || bookingTermsUrl(language));
+  const contentSha256 = String(
+    metadata.terms_content_sha256 ||
+    (version === BOOKING_TERMS_VERSION ? bookingTermsSha256(language) : "")
+  );
+  if (!version || !url || !contentSha256) {
+    throw new Error("Stripe Checkout terms version evidence is incomplete");
+  }
+  const created = Number(event && event.created);
+  const acceptedAt = new Date(
+    (Number.isFinite(created) && created > 0 ? created : Math.floor(Date.now() / 1000)) * 1000
+  ).toISOString();
+  return { status: "accepted", acceptedAt, version, url, language, contentSha256 };
+}
+
+function appendTermsAcceptanceNote(notes, acceptance, sessionId, paymentIntentId) {
+  if (!acceptance) return String(notes || "");
+  const existing = String(notes || "");
+  if (existing.includes(`terms ${acceptance.version}`) && existing.includes(paymentIntentId)) return existing;
+  const line = `Stripe terms accepted ${acceptance.acceptedAt} · terms ${acceptance.version} · ${acceptance.language} · ${acceptance.url} · SHA-256 ${acceptance.contentSha256} · Session ${sessionId} · PaymentIntent ${paymentIntentId}`;
+  return [existing, line].filter(Boolean).join("\n");
 }
 
 function invoiceTermsFooter(language) {
@@ -3071,7 +3111,7 @@ export default {
     const path = url.pathname.startsWith(routePrefix + "/") ? url.pathname.slice(routePrefix.length) : url.pathname;
 
     if (path === "/" && request.method === "GET") {
-      return text("MBW Stripe Worker is running. version=v50-invoice-status-sync-2026-10-24", 200);
+      return text("MBW Stripe Worker is running. version=v51-versioned-terms-acceptance-2026-11-05", 200);
     }
 
     // Fixed USD deposit Checkout. No browser-supplied amount or guest identity is trusted.
@@ -3100,7 +3140,8 @@ export default {
           language, agent_id: String(crm.assigned_to || ""), tour_date: String(crm.requested_date || crm.requested_date_start || ""),
           tour_code: "DEP001", tour_title: "Tour Reservation Deposit", service_type: "reservation_deposit",
           number_of_people: String(crm.guest_count || ""), terms_version: BOOKING_TERMS_VERSION,
-          terms_url: bookingTermsUrl(language), terms_acceptance_required: "true" };
+          terms_url: bookingTermsUrl(language), terms_content_sha256: bookingTermsSha256(language),
+          terms_acceptance_required: "true" };
         const form = new URLSearchParams({ mode: "payment", customer_creation: "always", "adaptive_pricing[enabled]": "false",
           "payment_method_types[0]": "card", "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": "10000",
           client_reference_id: inquiryId, locale: language, "phone_number_collection[enabled]": "true",
@@ -3334,7 +3375,7 @@ export default {
     if (path === "/debug" && request.method === "GET") {
       return json({
         ok: true,
-        worker_version: "mbw-stripe-v47-crm-ledger-retry",
+        worker_version: "mbw-stripe-v51-versioned-terms-acceptance",
         stripe_mode_default: env.STRIPE_SECRET_KEY_TEST ? "sandbox" : env.STRIPE_SECRET_KEY ? "live" : "not_configured",
         agent_activity_webapp_configured: !!env.AGENT_ACTIVITY_WEBAPP_URL,
         agent_activity_token_configured: !!env.AGENT_ACTIVITY_WEBAPP_TOKEN,
@@ -3535,6 +3576,7 @@ export default {
           fees_charged_to_guide: checkoutGuideCost.total ? "0.00" : "",
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(language),
+          terms_content_sha256: bookingTermsSha256(language),
           terms_acceptance_required: "true",
         };
 
@@ -4531,6 +4573,9 @@ export default {
         const isGuideTip =
           String(md.payment_purpose || "").toLowerCase() === "guide_tip" &&
           String(md.source_system || "").toLowerCase() === "mbw_tip_page";
+        const termsAcceptance = session.payment_status === "paid"
+          ? checkoutTermsAcceptance(session, event)
+          : null;
         const paidDate = formatDateNY(createdAt);
         const tipGuestParts = splitName(md.guest_name || "");
         const tipGuideName = String(md.guide_name || "").trim();
@@ -4582,7 +4627,12 @@ export default {
           other_guests: "",
           notes: isGuideTip
             ? "Guide gratuity. The selected guide/payee is responsible for 100% of the Stripe processing fee; MBW retains none of the tip."
-            : md.notes || "",
+            : appendTermsAcceptanceNote(
+                md.notes || "",
+                termsAcceptance,
+                session.id || "",
+                typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id || ""
+              ),
           month_ky: "",
           guest_rate_per_person: "",
           subtotal_guest: "",
@@ -4645,6 +4695,16 @@ export default {
           const enriched = await enrichChargeAndFees(env,false,session.payment_intent);
           Object.assign(fields,enriched,{record_type:"deposit",deposit_status:"available"});
           const piMetadata = new URLSearchParams({"metadata[deposit_status]":"available"});
+          if (termsAcceptance) {
+            piMetadata.set("metadata[terms_consent]", termsAcceptance.status);
+            piMetadata.set("metadata[terms_accepted_at]", termsAcceptance.acceptedAt);
+            piMetadata.set("metadata[terms_version]", termsAcceptance.version);
+            piMetadata.set("metadata[terms_url]", termsAcceptance.url);
+            piMetadata.set("metadata[terms_language]", termsAcceptance.language);
+            piMetadata.set("metadata[terms_content_sha256]", termsAcceptance.contentSha256);
+            piMetadata.set("metadata[terms_checkout_session_id]", session.id || "");
+            piMetadata.set("metadata[terms_stripe_event_id]", event.id || "");
+          }
           await stripeRequest(env,false,"POST",`/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`,piMetadata);
           const logged = await postToSheetsLogger(env,{fields});
           if (!logged || logged.ok === false || logged.skipped) throw new Error("Deposit accounting sync failed");
@@ -4653,7 +4713,13 @@ export default {
           if (!current || String(current.guest_id) !== checkoutGuestId) throw new Error("Deposit CRM identity unavailable");
           const patch = {inquiry_id:inquiryId,guest_id:checkoutGuestId,
             payment_status: String(current.payment_status || "").toLowerCase() === "paid" ? "paid" : "deposit_paid",
-            payment_method:"Stripe"};
+            payment_method:"Stripe",
+            internal_notes: appendTermsAcceptanceNote(
+              current.internal_notes || "",
+              termsAcceptance,
+              session.id || "",
+              session.payment_intent || ""
+            )};
           const result = await postCrmLedgerAction(env,"update_inquiry","record",patch);
           if (!result.ok) throw new Error("Deposit CRM update failed");
           return;
@@ -4729,6 +4795,16 @@ export default {
               if (md.deposit_amount) piMetadata.set("metadata[deposit_amount]", String(md.deposit_amount));
               if (md.source_system) piMetadata.set("metadata[source_system]", String(md.source_system));
               if (isDeposit && session.payment_status === "paid") piMetadata.set("metadata[deposit_status]", "available");
+              if (termsAcceptance) {
+                piMetadata.set("metadata[terms_consent]", termsAcceptance.status);
+                piMetadata.set("metadata[terms_accepted_at]", termsAcceptance.acceptedAt);
+                piMetadata.set("metadata[terms_version]", termsAcceptance.version);
+                piMetadata.set("metadata[terms_url]", termsAcceptance.url);
+                piMetadata.set("metadata[terms_language]", termsAcceptance.language);
+                piMetadata.set("metadata[terms_content_sha256]", termsAcceptance.contentSha256);
+                piMetadata.set("metadata[terms_checkout_session_id]", session.id || "");
+                piMetadata.set("metadata[terms_stripe_event_id]", event.id || "");
+              }
               if ([...piMetadata.keys()].length) {
                 await stripeRequest(env, isTest, "POST", `/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`, piMetadata);
               }

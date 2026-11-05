@@ -24,7 +24,8 @@ function fixture({
   quotedAmount = 2380,
   status = "approved",
   paymentStatus = "payment_pending",
-  livemode = true
+  livemode = true,
+  termsConsent = "accepted"
 } = {}) {
   let inquiry = {
     inquiry_id: "INQ-QA-CUSTOM",
@@ -38,9 +39,15 @@ function fixture({
   };
   const payments = new Map();
   const actions = [];
+  const stripeTermsUpdates = [];
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = async (url, options = {}) => {
+    if (String(url) === "https://api.stripe.com/v1/payment_intents/pi_QACUSTOM") {
+      stripeTermsUpdates.push(Object.fromEntries(new URLSearchParams(options.body)));
+      return Response.json({ id: "pi_QACUSTOM" });
+    }
+
     assert.equal(String(url), "https://qa.invalid/crm");
     const payload = JSON.parse(
       new URLSearchParams(options.body).get("payload")
@@ -85,12 +92,18 @@ function fixture({
           email: "guest@example.test",
           name: "QA Guest"
         },
+        consent: {
+          terms_of_service: termsConsent
+        },
         metadata: {
           payment_purpose: "tour_deposit",
           source_system: "mbw_itinerary_generator",
           inquiry_id: "INQ-QA-CUSTOM",
           deposit_amount: "500",
-          terms_version: "2026-11-05"
+          terms_version: "2026-11-05",
+          terms_url: "https://mindobirdwatching.com/terms-conditions/",
+          terms_acceptance_required: "true",
+          language: "en"
         }
       }
     }
@@ -126,6 +139,7 @@ function fixture({
     send,
     payments,
     actions,
+    stripeTermsUpdates,
     inquiry: () => inquiry,
     restore: () => {
       globalThis.fetch = originalFetch;
@@ -151,6 +165,23 @@ test("custom itinerary deposit is recorded once and advances the CRM", async () 
     assert.equal(payment.balance_remaining, 1880);
     assert.equal(payment.payment_status, "deposit_paid");
     assert.equal(payment.transaction_id, "pi_QACUSTOM");
+    assert.equal(harness.stripeTermsUpdates.length, 2);
+    assert.equal(
+      harness.stripeTermsUpdates[0]["metadata[terms_consent]"],
+      "accepted"
+    );
+    assert.equal(
+      harness.stripeTermsUpdates[0]["metadata[terms_version]"],
+      "2026-11-05"
+    );
+    assert.equal(
+      harness.stripeTermsUpdates[0]["metadata[terms_language]"],
+      "en"
+    );
+    assert.match(
+      harness.stripeTermsUpdates[0]["metadata[terms_content_sha256]"],
+      /^[a-f0-9]{64}$/
+    );
 
     const inquiry = harness.inquiry();
     assert.equal(inquiry.status, "deposit_paid");
@@ -160,6 +191,8 @@ test("custom itinerary deposit is recorded once and advances the CRM", async () 
       inquiry.internal_notes.match(/PaymentIntent pi_QACUSTOM/g).length,
       1
     );
+    assert.match(inquiry.internal_notes, /Terms accepted/);
+    assert.match(inquiry.internal_notes, /SHA-256 [a-f0-9]{64}/);
     assert.deepEqual(
       harness.actions,
       [
@@ -217,6 +250,21 @@ test("CRM failure returns a retryable Stripe webhook response", async () => {
     assert.equal(response.status, 500);
     assert.equal(body.retry_required, true);
     assert.equal(harness.payments.size, 1);
+  } finally {
+    harness.restore();
+  }
+});
+
+test("missing Stripe terms consent fails closed before CRM writes", async () => {
+  const harness = fixture({ termsConsent: null });
+
+  try {
+    const response = await harness.send();
+    const body = await response.json();
+    assert.equal(response.status, 500);
+    assert.equal(body.retry_required, true);
+    assert.deepEqual(harness.actions, []);
+    assert.deepEqual(harness.stripeTermsUpdates, []);
   } finally {
     harness.restore();
   }

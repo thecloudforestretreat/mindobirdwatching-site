@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -41,15 +42,22 @@ test("deposit and itinerary pages link the booking terms before payment", async 
 });
 
 test("Stripe checkout and invoice integrations record the policy version", async () => {
-  const [stripeWorker, shopWorker] = await Promise.all([
+  const [stripeWorker, shopWorker, englishTerms, spanishTerms] = await Promise.all([
     read("mbw-stripe-checkout-worker-v44.js"),
     read("workers/mbw-shop-api/src/index.js"),
+    read("terms-conditions/index.html"),
+    read("es/terminos-y-condiciones/index.html"),
   ]);
 
   for (const source of [stripeWorker, shopWorker]) {
     assert.match(source, /consent_collection\[terms_of_service\]/);
     assert.match(source, /BOOKING_TERMS_VERSION = "2026-11-05"/);
     assert.match(source, /terms_acceptance_required/);
+    assert.match(source, /terms_content_sha256/);
+    assert.match(source, /terms_accepted_at/);
+    assert.match(source, /terms_consent/);
+    assert.match(source, new RegExp(createHash("sha256").update(englishTerms).digest("hex")));
+    assert.match(source, new RegExp(createHash("sha256").update(spanishTerms).digest("hex")));
   }
   assert.match(stripeWorker, /invForm\.set\("footer", invoiceTermsFooter/);
 });

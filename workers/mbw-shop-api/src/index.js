@@ -1,4 +1,4 @@
-/* MBW SHOP API V28 - CUSTOM TOUR DEPOSIT CRM CONFIRMATION */
+/* MBW SHOP API V29 - VERSIONED BOOKING TERMS ACCEPTANCE */
 const ALLOWED_ORIGINS = new Set([
   "https://mindobirdwatching.com",
   "https://www.mindobirdwatching.com",
@@ -7,6 +7,14 @@ const ALLOWED_ORIGINS = new Set([
 const BOOKING_TERMS_VERSION = "2026-11-05";
 const BOOKING_TERMS_URL = "https://mindobirdwatching.com/terms-conditions/";
 const BOOKING_TERMS_URL_ES = "https://mindobirdwatching.com/es/terminos-y-condiciones/";
+const BOOKING_TERMS_SHA256 = "5b0eb4ac1ba440546c0af7c0656c973f5ff6adabb9f7d6c26b67e7d826980f39";
+const BOOKING_TERMS_SHA256_ES = "bf4162043ed491395edf8edb7841dcb754bd020dd6c0396de81e5301d2ea1164";
+
+function bookingTermsSha256(language) {
+  return language === "es"
+    ? BOOKING_TERMS_SHA256_ES
+    : BOOKING_TERMS_SHA256;
+}
 
 export default {
   async fetch(request, env) {
@@ -116,7 +124,7 @@ export default {
           stripe_webhook_configured:
             Boolean(getStripeWebhookSecret(env)),
           stripe_shop_event_filter_version:
-            "v28-custom-deposit-crm",
+            "v29-versioned-terms-acceptance",
           resend_configured:
             Boolean(env.RESEND_API_KEY),
           admin_order_email_configured:
@@ -1493,6 +1501,91 @@ function customDepositPaymentDate(event) {
   return date.toISOString();
 }
 
+function customDepositTermsAcceptance(event, session) {
+  const metadata = session.metadata || {};
+
+  if (metadata.terms_acceptance_required !== "true") {
+    throw new Error("Custom tour deposit terms requirement is missing");
+  }
+
+  if (
+    !session.consent ||
+    session.consent.terms_of_service !== "accepted"
+  ) {
+    throw new Error("Custom tour deposit terms acceptance is missing");
+  }
+
+  const language =
+    metadata.language === "es" ||
+    String(metadata.terms_url || "").includes("/es/")
+      ? "es"
+      : "en";
+  const version = cleanText(metadata.terms_version, 80);
+  const url = cleanText(metadata.terms_url, 1000);
+  const contentSha256 = cleanText(
+    metadata.terms_content_sha256 ||
+      (version === BOOKING_TERMS_VERSION
+        ? bookingTermsSha256(language)
+        : ""),
+    128
+  );
+
+  if (!version || !url || !contentSha256) {
+    throw new Error("Custom tour deposit terms evidence is incomplete");
+  }
+
+  return {
+    status: "accepted",
+    acceptedAt: customDepositPaymentDate(event),
+    version,
+    url,
+    language,
+    contentSha256
+  };
+}
+
+async function saveCustomDepositTermsToStripe(
+  env,
+  event,
+  session,
+  paymentIntentId,
+  acceptance
+) {
+  const form = new URLSearchParams({
+    "metadata[terms_consent]": acceptance.status,
+    "metadata[terms_accepted_at]": acceptance.acceptedAt,
+    "metadata[terms_version]": acceptance.version,
+    "metadata[terms_url]": acceptance.url,
+    "metadata[terms_language]": acceptance.language,
+    "metadata[terms_content_sha256]": acceptance.contentSha256,
+    "metadata[terms_checkout_session_id]": cleanText(session.id, 255),
+    "metadata[terms_stripe_event_id]": cleanText(event.id, 255)
+  });
+  let response;
+
+  try {
+    response = await fetch(
+      `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntentId)}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getStripeSecretKey(env)}`,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: form.toString()
+      }
+    );
+  } catch {
+    throw new Error("Stripe terms evidence update failed");
+  }
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok || !result || result.id !== paymentIntentId) {
+    throw new Error("Stripe terms evidence update was rejected");
+  }
+}
+
 function customDepositInternalNote(currentNotes, evidence) {
   const existing = cleanText(currentNotes, 20000);
 
@@ -1510,7 +1603,10 @@ function customDepositInternalNote(currentNotes, evidence) {
     `Session ${evidence.sessionId}`,
     `PaymentIntent ${evidence.paymentIntentId}`,
     evidence.email ? `Guest email ${evidence.email}` : "",
-    evidence.eventId ? `Event ${evidence.eventId}` : ""
+    evidence.eventId ? `Event ${evidence.eventId}` : "",
+    evidence.terms
+      ? `Terms accepted ${evidence.terms.acceptedAt} · version ${evidence.terms.version} · ${evidence.terms.language} · ${evidence.terms.url} · SHA-256 ${evidence.terms.contentSha256}`
+      : ""
   ].filter(Boolean).join(" · ");
 
   return [existing, line].filter(Boolean).join("\n");
@@ -1553,6 +1649,15 @@ async function processCustomItineraryDepositCompleted(env, event, session) {
   ) {
     throw new Error("Custom tour deposit identity or amount is invalid");
   }
+
+  const termsAcceptance = customDepositTermsAcceptance(event, session);
+  await saveCustomDepositTermsToStripe(
+    env,
+    event,
+    session,
+    paymentIntentId,
+    termsAcceptance
+  );
 
   const listed = await customDepositCrmCall(env, "list_inquiries", {
     filters: {}
@@ -1605,7 +1710,9 @@ async function processCustomItineraryDepositCompleted(env, event, session) {
       is_fully_paid: "No",
       notes:
         `Custom-tour deposit confirmed from Stripe Checkout Session ${session.id}; ` +
-        `event ${cleanText(event.id, 255) || "not recorded"}.`
+        `event ${cleanText(event.id, 255) || "not recorded"}. ` +
+        `Terms accepted ${termsAcceptance.acceptedAt}; version ${termsAcceptance.version}; ` +
+        `${termsAcceptance.language}; ${termsAcceptance.url}; SHA-256 ${termsAcceptance.contentSha256}.`
     };
 
     await customDepositCrmCall(env, "upsert_payment", {
@@ -1636,7 +1743,8 @@ async function processCustomItineraryDepositCompleted(env, event, session) {
     sessionId: cleanText(session.id, 255),
     paymentIntentId,
     email,
-    eventId: cleanText(event.id, 255)
+    eventId: cleanText(event.id, 255),
+    terms: termsAcceptance
   };
   const patch = {
     inquiry_id: inquiryId,
@@ -7866,6 +7974,7 @@ async function createStripeDepositCheckoutSession(env, data) {
     number_of_people: "1",
     terms_version: BOOKING_TERMS_VERSION,
     terms_url: data.language === "es" ? BOOKING_TERMS_URL_ES : BOOKING_TERMS_URL,
+    terms_content_sha256: bookingTermsSha256(data.language),
     terms_acceptance_required: "true"
   };
 
