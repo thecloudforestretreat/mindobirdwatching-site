@@ -16,6 +16,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 60,
+      "privatePrice": 75,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Half Day",
@@ -42,6 +44,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 85,
+      "privatePrice": 115,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Half Day",
@@ -68,6 +72,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 115,
+      "privatePrice": 150,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Full Day",
@@ -94,6 +100,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 60,
+      "privatePrice": 70,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "3 Hours",
@@ -121,6 +129,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 150,
+      "privatePrice": 175,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Extended Half Day",
@@ -147,6 +157,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 200,
+      "privatePrice": 225,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Full Day",
@@ -173,6 +185,8 @@ const catalog={
         "choco-andino"
       ],
       "price": 35,
+      "privatePrice": 40,
+      "privateMinGuests": 2,
       "minGuests": 2,
       "model": "per_person",
       "duration": "Evening",
@@ -694,7 +708,9 @@ function block(base,item,lang='en',id='mbw'){
   extra.price=priceText(item,lang);
   extra.duration=item.time||item.duration;
   extra.minimum=item.minGuests>1?(lang==='es'?'Mínimo '+item.minGuests+' personas':'Minimum '+item.minGuests+' guests'):'';
-  extra.privatePrice=item.soloPrice?(lang==='es'?'Tarifa individual: $':'Solo rate: $')+item.soloPrice:'';
+  extra.privatePrice=item.privatePrice
+    ? (lang==='es'?'Privado/exclusivo: $':'Private/exclusive: $')+item.privatePrice+(lang==='es'?' por persona · mínimo ':' per person · minimum ')+item.privateMinGuests+(lang==='es'?' personas':' guests')
+    : item.soloPrice?(lang==='es'?'Tarifa individual: $':'Solo rate: $')+item.soloPrice:'';
   extra.priceNote=item.priceNote?.[lang]||'';
   if(extra.priceNote)extra.ctaNote=extra.priceNote;
   extra.productCode=item.productCode;
