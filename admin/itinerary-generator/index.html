@@ -422,13 +422,20 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="/admin/assets/js/communication-library.js?v=20261024-4"></script>
-<link rel="stylesheet" href="/admin/assets/css/communication-brand.css?v=20261024-1">
+<script src="/assets/js/communication-library.js?v=20261105-1"></script>
+<link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261105-1">
   <script>
     (async () => {
       'use strict';
 
       const communications=window.MBW_COMMUNICATIONS;
+      if(!communications){
+        const preview=document.getElementById('guestPreview');
+        if(preview) preview.innerHTML='<div style="padding:24px;color:#7a271a;background:#fff4f2;border:1px solid #f1b9b1;border-radius:14px;"><strong>Itinerary tools could not load.</strong><br>Refresh this page. If the message remains, return to Guide Nest and open the approved itinerary again.</div>';
+        const toast=document.getElementById('toast');
+        if(toast){ toast.textContent='Itinerary tools could not load. Refresh the page.'; toast.classList.add('show'); }
+        return;
+      }
       let communicationBrandId='mbw';
       const HERO_IMAGES = Object.freeze({
         'cock-of-the-rock':'https://mindobirdwatching.com/assets/images/pages/tours/andean_cock_of_the_rock_dawn/mbw_tours_acotr_dawn_01.jpg',

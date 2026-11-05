@@ -13,6 +13,14 @@ test('guest itinerary deposit produces an exact remaining balance',()=>{
   assert.equal(c.totals({...result,itineraryStage:'paid_in_full',items:[{quantity:1,unitPrice:405}],discount:0}).balance,0);
 });
 
+test('itinerary generator loads shared assets from the admin host root and fails visibly',()=>{
+  assert.match(html,/<script src="\/assets\/js\/communication-library\.js\?v=20261105-1"><\/script>/);
+  assert.match(html,/<link rel="stylesheet" href="\/assets\/css\/communication-brand\.css\?v=20261105-1">/);
+  assert.doesNotMatch(html,/src="\/admin\/assets\/js\/communication-library\.js/);
+  assert.match(html,/if\(!communications\)/);
+  assert.match(html,/Itinerary tools could not load\./);
+});
+
 test('money fields require direct text entry rather than native number spinners',()=>{
   assert.match(html,/id="discount" type="text" inputmode="decimal"/);
   assert.match(html,/data-money-input data-field="unitPrice"/);

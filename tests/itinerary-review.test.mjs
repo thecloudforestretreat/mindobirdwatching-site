@@ -104,7 +104,7 @@ test("Guide Nest and Inquiry Studio expose the standard review handoff", () => {
   assert.match(guide, /guestBelowGuideQuote/);
   assert.match(guide, /resetGuestBreakdownConfirm/);
   assert.match(css, /--gold:#d3a126/);
-  assert.match(guideHtml, /guide-20261031-v45/);
+  assert.match(guideHtml, /guide-20261104-v46/);
   assert.match(guide, /function renderPlanChecklist/);
   assert.match(guide, /data-shift-plan-dates/);
   assert.match(guide, /data-discard-plan/);
