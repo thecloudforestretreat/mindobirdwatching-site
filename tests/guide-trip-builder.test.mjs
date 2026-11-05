@@ -41,7 +41,6 @@ test("trip quote totals are recalculated from bounded net-cost rows", () => {
   assert.equal(quote.brand_id, "mindo-tours");
   assert.deepEqual(tripQuoteErrors(quote, true), []);
 });
-
 test("submitted trip quotes require an agenda and accessibility assessment", () => {
   const source = validQuote();
   source.options[0].days[0].agenda = "";

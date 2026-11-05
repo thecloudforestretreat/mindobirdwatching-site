@@ -21,7 +21,6 @@ export function parseTripBuilderMarker(value) {
   const pairs = Object.fromEntries([...marker.matchAll(/([a-z_]+)=([^\s]+)/gi)].map(match => [match[1].toLowerCase(), match[2]]));
   return { studioId: text(pairs.studio, 128), brandId: BRAND_IDS.has(pairs.brand) ? pairs.brand : "mbw", responseDueAt: text(pairs.due, 30) };
 }
-
 export function isTripQuoteAssignment(row = {}) {
   const kind = text(row.assignment_kind, 40).toLowerCase();
   return kind === "quote_request"

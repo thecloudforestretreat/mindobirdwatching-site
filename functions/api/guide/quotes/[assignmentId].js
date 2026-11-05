@@ -116,4 +116,3 @@ export async function onRequestPost({ request, env, params }) {
 }
 
 export function onRequestGet() { return methodNotAllowed(["POST"]); }
-
