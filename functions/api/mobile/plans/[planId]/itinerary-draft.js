@@ -10,11 +10,15 @@ export async function onRequestGet({ request, env, params }) {
       throw Object.assign(new Error("Only MBW administrators can prepare a guest itinerary."), { status: 403 });
     }
     const planId = validId(params.planId);
-    const rows = await listRecords(env, "list_assignments", {});
+    const [rows, inquiryRows] = await Promise.all([
+      listRecords(env, "list_assignments", {}),
+      listRecords(env, "list_inquiries", { filters: {} }),
+    ]);
     const plans = await Promise.all(rows.filter(isPlanRow).map(parsePlanRow));
     const plan = plans.find(item => item?.planId === planId);
     if (!plan) throw Object.assign(new Error("The itinerary plan was not found."), { status: 404 });
-    return json(200, { ok: true, draft: guestItineraryDraft(plan) });
+    const inquiry = inquiryRows.find(item => String(item.inquiry_id || "") === String(plan.inquiryId || ""));
+    return json(200, { ok: true, draft: guestItineraryDraft(plan, inquiry) });
   } catch (error) {
     return errorResponse(error, "The guest itinerary draft is unavailable.");
   }

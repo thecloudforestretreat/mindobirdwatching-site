@@ -464,7 +464,7 @@ export function sanitizePlan(input, current = robertPlan()) {
   };
 }
 
-export function guestItineraryDraft(plan) {
+export function guestItineraryDraft(plan, inquiry = {}) {
   if (!plan || typeof plan !== "object") throw Object.assign(new Error("The itinerary plan is unavailable."), { status: 404 });
   if (plan.status !== "approved") throw Object.assign(new Error("Approve the itinerary before preparing the guest version."), { status: 409 });
   const pricing = new Map((plan.mbwPricing?.days || []).map(item => [item.dayId, item]));
@@ -502,15 +502,19 @@ export function guestItineraryDraft(plan) {
       overnightCityEs: day.overnightCity?.es || day.overnightCity?.en || "",
     }));
   }
+  const crmName = text(inquiry.full_name || [inquiry.first_name, inquiry.last_name].filter(Boolean).join(" "), 160);
+  const guestName = crmName || plan.guestName || "";
   return {
     source: "guide_plan",
     sourcePlanId: plan.planId,
     sourcePlanUpdatedAt: plan.updatedAt || "",
     inquiryId: plan.inquiryId || "",
-    guestName: plan.guestName || "",
+    guestName,
+    guestEmail: text(inquiry.email || inquiry.guest_email, 240),
+    whatsappNumber: text(inquiry.phone_number || inquiry.phone || inquiry.whatsapp_number || inquiry.whatsapp, 80),
     guestCount: Number(plan.brief?.guestCount || 1),
-    tripTitle: guestFacingPlanTitle(plan.title?.en || plan.title?.es, plan.guestName, "Custom Ecuador itinerary"),
-    tripTitleEs: guestFacingPlanTitle(plan.title?.es || plan.title?.en, plan.guestName, "Itinerario personalizado en Ecuador"),
+    tripTitle: guestFacingPlanTitle(plan.title?.en || plan.title?.es, plan.guestName || guestName, "Custom Ecuador itinerary"),
+    tripTitleEs: guestFacingPlanTitle(plan.title?.es || plan.title?.en, plan.guestName || guestName, "Itinerario personalizado en Ecuador"),
     startDate: plan.startDate || plan.days?.[0]?.date || "",
     endDate: plan.endDate || plan.days?.at(-1)?.date || "",
     language: "en",
@@ -518,6 +522,7 @@ export function guestItineraryDraft(plan) {
     itineraryStage: "approved_pending",
     depositAmount: (plan.days || []).length > 1 ? 500 : 100,
     guestPriceView: (plan.days || []).length > 2 ? "daily" : "itemized",
+    dailyContentView: (plan.days || []).length > 2 ? "summary" : "services",
     lodgingDisplay: "location_only",
     showItemPrices: (plan.days || []).length <= 2,
     items,

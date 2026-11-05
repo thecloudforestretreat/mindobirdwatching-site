@@ -19,12 +19,15 @@ test('draft application keeps missing rates blank instead of using catalog price
 test('invoice preparation stops before creating any draft when a service rate is missing',()=>{let message='';const fields={offerZelle:{checked:true}};const c={$:id=>fields[id],getFormData:()=>({items:[{unitPrice:''}]}),billableGuestItems:(data,items)=>items,toast:text=>message=text};vm.createContext(c);vm.runInContext(source(itinerary,'createZelleInvoice'),c);c.createZelleInvoice();assert.match(message,/each agreed service rate/)});
 test('guest pricing can collapse to daily totals while lodging remains internal',()=>{
  const c={productDisplayName:item=>item.name,serviceTypeLabel:type=>type};vm.createContext(c);
- for(const name of ['groupTotal','itemPriceIsVisible','isLodgingItem','guestPriceView','lodgingDisplay','billableGuestItems','timelineGuestItems','dayPriceRows'])vm.runInContext(source(itinerary,name),c);
+ for(const name of ['groupTotal','itemPriceIsVisible','isLodgingItem','guestPriceView','dailyContentView','showDailyServiceCards','lodgingDisplay','billableGuestItems','timelineGuestItems','dayPriceRows'])vm.runInContext(source(itinerary,name),c);
  const items=[{name:'Guiding',type:'Custom',quantity:1,unitPrice:200},{name:'Mindo Glambird',type:'Accommodation',quantity:1,unitPrice:75}];
  assert.deepEqual(JSON.parse(JSON.stringify(c.dayPriceRows({guestPriceView:'daily',lodgingDisplay:'location_only',language:'en'},items))),[{label:'Daily package',amount:275}]);
  assert.deepEqual(JSON.parse(JSON.stringify(c.dayPriceRows({guestPriceView:'daily',lodgingDisplay:'separate',language:'en'},items))),[{label:'Daily services',amount:200},{label:'Lodging',amount:75}]);
  assert.equal(c.groupTotal(c.billableGuestItems({lodgingDisplay:'guest_direct'},items)),200);
  assert.deepEqual(c.timelineGuestItems({lodgingDisplay:'location_only'},items).map(item=>item.name),['Guiding']);
+ assert.equal(c.showDailyServiceCards({guestPriceView:'daily',dailyContentView:'summary'}),false);
+ assert.equal(c.showDailyServiceCards({guestPriceView:'daily',dailyContentView:'services'}),true);
+ assert.equal(c.showDailyServiceCards({guestPriceView:'itemized',dailyContentView:'summary'}),true);
  assert.equal(items.length,2);
  assert.match(itinerary,/tour_items_json:JSON\.stringify\(invoiceItems\.map/);
 });

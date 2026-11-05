@@ -297,6 +297,35 @@
           </div>
 
           <div class="section">
+            <h2 class="panelTitle">Guest Display</h2>
+            <div class="field">
+              <label for="dailyContentView">Daily schedule detail</label>
+              <select id="dailyContentView">
+                <option value="summary">Summary only — hide individual service cards</option>
+                <option value="services">Detailed schedule — show individual services</option>
+              </select>
+              <p class="hint">Use the compact summary for multiday custom tours. The individual services and internal costs remain saved for staff.</p>
+            </div>
+            <div class="field">
+              <label for="guestPriceView">Guest price view</label>
+              <select id="guestPriceView">
+                <option value="daily">One total per day</option>
+                <option value="itemized">Itemized service prices</option>
+              </select>
+              <p class="hint">This controls guest pricing only. It never changes the guide costs or MBW markup stored in Nest.</p>
+            </div>
+            <div class="field">
+              <label for="lodgingDisplay">Lodging display</label>
+              <select id="lodgingDisplay">
+                <option value="location_only">Included in daily total — location only</option>
+                <option value="separate">Show lodging as a separate price</option>
+                <option value="guest_direct">Guest books and pays directly</option>
+              </select>
+              <p class="hint">Direct booking removes lodging from the guest total but keeps the internal lodging line saved.</p>
+            </div>
+          </div>
+
+          <div class="section">
             <h2 class="panelTitle">Services and Products</h2>
             <div id="itemsEditor"></div>
             <button type="button" id="addItemBtn" class="primary">+ Add Service</button>
@@ -374,8 +403,8 @@
               <div class="field">
                 <label for="depositLink">Secure deposit URL</label>
                 <input id="depositLink" readonly type="url" value="" placeholder="Generate the secure USD link" />
-                <button type="button" id="generateDepositLinkBtn">Generate Secure USD Link</button>
-                <p class="hint" id="depositLinkStatus">Generate the link before copying or downloading the itinerary.</p>
+                <button type="button" id="generateDepositLinkBtn">Create US$100 Payment Button</button>
+                <p class="hint" id="depositLinkStatus">1. Select the deposit amount. 2. Create the secure link. 3. Confirm the payment button appears in the preview.</p>
               </div>
             </div>
             <label class="checkRow"><input id="offerZelle" type="checkbox" /><span>Also offer Zelle for this U.S. guest.</span></label>
@@ -390,25 +419,6 @@
             <label class="checkRow"><input id="showInvoice" type="checkbox" /><span>Show a Pay Invoice button.</span></label>
             <div class="field"><label for="invoiceLink">Invoice payment URL</label><input id="invoiceLink" type="url" placeholder="https://invoice-payment-link…" /><p class="hint">Paste the unique invoice URL for this guest.</p></div>
             <input id="depositPaid" type="checkbox" hidden />
-            <div>
-              <div class="field">
-                <label for="guestPriceView">Guest price view</label>
-                <select id="guestPriceView">
-                  <option value="itemized">Itemized services</option>
-                  <option value="daily">One total per day</option>
-                </select>
-                <p class="hint">This changes only the guest itinerary. The complete internal cost breakdown remains saved.</p>
-              </div>
-              <div class="field">
-                <label for="lodgingDisplay">Lodging display</label>
-                <select id="lodgingDisplay">
-                  <option value="location_only">Included in daily total — location only</option>
-                  <option value="separate">Show lodging as a separate price</option>
-                  <option value="guest_direct">Guest books and pays directly</option>
-                </select>
-                <p class="hint">Direct booking removes lodging from the guest total but keeps the internal lodging line saved.</p>
-              </div>
-            </div>
             <div class="summaryBox">
               <div class="summaryRow"><span>Services subtotal</span><strong id="subtotalValue">$0.00</strong></div>
               <div class="summaryRow"><span>Adjustment</span><strong id="adjustmentValue">$0.00</strong></div>
@@ -735,8 +745,12 @@
       function stripGuestNameFromTitle(value,guestName,fallback=''){
         const title=String(value||'').trim(), guest=String(guestName||'').trim();
         if(!guest) return title||fallback;
-        const escapedGuest=guest.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-        const cleaned=title.replace(new RegExp(`^\\s*${escapedGuest}\\s*(?:[·•|:—–-]\\s*)+`,'i'),'').trim();
+        const names=[guest,guest.split(/\s+/)[0]].filter((name,index,list)=>name&&list.indexOf(name)===index);
+        let cleaned=title;
+        names.forEach(name=>{
+          const escapedGuest=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+          cleaned=cleaned.replace(new RegExp(`^\\s*${escapedGuest}\\s*(?:[·•|:—–-]\\s*)+`,'i'),'').trim();
+        });
         return cleaned||fallback||title;
       }
       function formatSubjectDate(value){
@@ -775,7 +789,7 @@
         if(forceKnownDefaults && isKnownDefaultText('closing',$('closingText').value)){
           $('closingText').value = next.closing;
         }
-        $('tripTitle').value = itineraryTitleWithDates($('tripTitle').value,$('startDate').value,$('endDate').value);
+        $('tripTitle').value = stripSubjectDates($('tripTitle').value);
         updateStageControls();
       }
 
@@ -817,6 +831,7 @@
         $('depositLink').disabled = !approved;
         $('depositAmount').disabled = !approved;
         $('generateDepositLinkBtn').disabled = !approved;
+        $('generateDepositLinkBtn').textContent = `Create US$${Number($('depositAmount').value) === 500 ? 500 : 100} Payment Button`;
         $('offerZelle').disabled = !approved;
         $('showInvoice').disabled = paid || stage === 'preliminary';
         if(paid || stage === 'preliminary') $('showInvoice').checked = false;
@@ -924,6 +939,8 @@
         return ['lodging','accommodation'].includes(type) || /^ACCOM/i.test(product);
       }
       function guestPriceView(data){return data?.guestPriceView === 'daily' ? 'daily' : 'itemized';}
+      function dailyContentView(data){return data?.dailyContentView === 'summary' ? 'summary' : 'services';}
+      function showDailyServiceCards(data){return guestPriceView(data) === 'itemized' || dailyContentView(data) === 'services';}
       function lodgingDisplay(data){return ['location_only','separate','guest_direct'].includes(data?.lodgingDisplay) ? data.lodgingDisplay : 'separate';}
       function billableGuestItems(data,items){return lodgingDisplay(data) === 'guest_direct' ? (items || []).filter(item => !isLodgingItem(item)) : (items || []);}
       function timelineGuestItems(data,items){return lodgingDisplay(data) === 'separate' ? (items || []) : (items || []).filter(item => !isLodgingItem(item));}
@@ -1089,7 +1106,8 @@
       }
       function invalidateDepositLink(){
         $('depositLink').value = '';
-        setDepositLinkStatus('Generate the link before copying or downloading the itinerary.');
+        const amount = Number($('depositAmount').value) === 500 ? 500 : 100;
+        setDepositLinkStatus(`Select “Create US$${amount} Payment Button.” The secure Stripe button will then appear in the guest preview.`);
       }
       async function generateDepositLink(){
         const button = $('generateDepositLinkBtn');
@@ -1120,7 +1138,7 @@
         }finally{
           button.disabled = false;
           updateStageControls();
-          button.textContent = 'Generate Secure USD Link';
+          button.textContent = `Create US$${amount} Payment Button`;
         }
       }
       function requireDepositLink(){
@@ -1344,6 +1362,7 @@
           invoiceLink:$('invoiceLink').value.trim(),
           showImages:$('showImages').checked,
           guestPriceView:$('guestPriceView').value === 'daily' ? 'daily' : 'itemized',
+          dailyContentView:$('dailyContentView').value === 'summary' ? 'summary' : 'services',
           lodgingDisplay:['location_only','separate','guest_direct'].includes($('lodgingDisplay').value) ? $('lodgingDisplay').value : 'separate',
           showItemPrices:$('guestPriceView').value !== 'daily',
           sourcePlanId:state.sourcePlanId,
@@ -1389,7 +1408,7 @@
         const validItems = data.items.filter(item => productDisplayName(item,data.language) || item.type || item.note);
         const dayMarkup = groupedItems(validItems).map(([date,items],groupIndex) => {
           const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
-          const timelineItems=timelineGuestItems(data,items), lodgingNote=lodgingDisplayNote(data,items);
+          const timelineItems=showDailyServiceCards(data) ? timelineGuestItems(data,items) : [], lodgingNote=lodgingDisplayNote(data,items);
           const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',!lodgingNote && meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
           const dayPrices=dayPriceRows(data,items);
           return `
@@ -1399,7 +1418,7 @@
             ${meta.details ? `<p class="serviceNote" style="margin:0 0 8px;">${escapeHtml(meta.details)}</p>` : ''}
             ${logistics ? `<p class="serviceNote" style="margin:0 0 12px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}
             ${lodgingNote ? `<p class="serviceNote" style="margin:0 0 12px;font-weight:800;">${escapeHtml(lodgingNote)}</p>` : ''}
-            <div class="timeline">
+            ${timelineItems.length ? `<div class="timeline">
               ${timelineItems.map(item => {
                 const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
                 return `
@@ -1413,7 +1432,7 @@
                     ${guestPriceView(data) === 'itemized' && itemPriceIsVisible(item) ? `<div class="itemPrice">${money(lineTotal,data.language)}</div>` : '<div></div>'}
                   </div>`;
               }).join('')}
-            </div>
+            </div>` : ''}
             ${guestPriceView(data) === 'daily' ? dayPrices.map(row=>`<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(row.label)}</span><strong>${money(row.amount,data.language)}</strong></div>`).join('') : `<div class="priceLine" style="margin-top:10px;padding-top:10px;border-top:2px solid #8db680;"><span>${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</span><strong>${money(dayTotal,data.language)}</strong></div>`}
           </section>`;
         }).join('');
@@ -1512,7 +1531,7 @@
 
         groupedItems(validItems).forEach(([date,items],groupIndex) => {
           const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
-          const timelineItems=timelineGuestItems(data,items), lodgingNote=lodgingDisplayNote(data,items), dayPrices=dayPriceRows(data,items);
+          const timelineItems=showDailyServiceCards(data) ? timelineGuestItems(data,items) : [], lodgingNote=lodgingDisplayNote(data,items), dayPrices=dayPriceRows(data,items);
           const logistics=[meta.pickup ? `${data.language==='es'?'Recogida':'Pickup'}: ${meta.pickup}` : '',meta.dropoff ? `${data.language==='es'?'Llegada':'Drop-off'}: ${meta.dropoff}` : '',!lodgingNote && meta.overnight ? `${data.language==='es'?'Noche':'Overnight'}: ${meta.overnight}` : ''].filter(Boolean).join(' · ');
           const itemRows = timelineItems.map(item => {
             const lineTotal = Number(item.quantity || 0) * Number(item.unitPrice || 0);
@@ -1534,7 +1553,7 @@
           rows.push(row(
             `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #d9e2d5;border-radius:18px;">
               <tr><td style="padding:20px 22px 10px;"><h2 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:29px;color:#0D5925;">${escapeHtml(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatDate(date,data.language)}`)}</h2>${meta.title ? `<strong style="display:block;margin-top:6px;color:#071923;font-size:17px;line-height:23px;">${escapeHtml(meta.title)}</strong>` : ''}${meta.details ? `<p style="margin:8px 0 0;color:#536067;font-size:13px;line-height:20px;">${escapeHtml(meta.details)}</p>` : ''}${logistics ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(logistics)}</p>` : ''}${lodgingNote ? `<p style="margin:8px 0 0;color:#0D5925;font-size:12px;line-height:18px;font-weight:800;">${escapeHtml(lodgingNote)}</p>` : ''}</td></tr>
-              <tr><td style="padding:0 14px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemRows}</table></td></tr>
+              ${itemRows ? `<tr><td style="padding:0 14px 10px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${itemRows}</table></td></tr>` : ''}
               <tr><td style="padding:0 22px 18px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${guestPriceView(data) === 'daily' ? dayPrices.map(row=>`<tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(row.label)}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(row.amount,data.language)}</td></tr>`).join('') : `<tr><td style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:14px;font-weight:900;">${escapeHtml(data.language==='es'?'Total del día':'Daily total')}</td><td align="right" style="padding-top:11px;border-top:2px solid #8db680;color:#0D5925;font-size:16px;font-weight:900;">${money(dayTotal,data.language)}</td></tr>`}</table></td></tr>
             </table>`
           ));
@@ -1621,7 +1640,7 @@
           const meta=groupMeta(items,data.language), dayTotal=groupTotal(billableGuestItems(data,items));
           if(groupIndex > 0 || data.items.some(item => item.date && item.date !== data.startDate)) lines.push(`${data.language==='es'?'Día':'Day'} ${groupIndex+1} · ${formatShortDate(date,data.language)}`);
           if(meta.title) lines.push(`*${meta.title}*`);
-          timelineGuestItems(data,items).forEach(item => {
+          (showDailyServiceCards(data) ? timelineGuestItems(data,items) : []).forEach(item => {
             const time = formatTime(item.startTime,data.language);
             const durationText = translateKnownText(item.duration,data.language);
             const duration = durationText ? ` (${durationText})` : '';
@@ -1667,7 +1686,7 @@
           const data = JSON.parse(raw);
           communicationBrandId=communications.brand(data.brandId).id;
           communicationBrandSelect.value=communicationBrandId;
-          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink','guestPriceView','lodgingDisplay'].forEach(key => {
+          ['guestName','guestEmail','tripTitle','language','itineraryStage','startDate','endDate','guestCount','whatsappNumber','replyWhatsappNumber','openingText','pricingNote','adjustmentReason','closingText','discount','depositReceivedAmount','depositReceivedDate','depositReceivedMethod','depositReceivedReference','depositAmount','depositLink','zelleEmail','invoiceLink','guestPriceView','dailyContentView','lodgingDisplay'].forEach(key => {
             if($(key) && data[key] !== undefined) $(key).value = data[key];
           });
           $('tripTitle').value=stripGuestNameFromTitle($('tripTitle').value,$('guestName').value,COPY[$('language').value === 'es' ? 'es' : 'en'].defaultTitle);
@@ -1682,6 +1701,7 @@
           $('showInvoice').checked = data.showInvoice === true;
           $('showImages').checked = data.showImages === true;
           $('guestPriceView').value = data.guestPriceView === 'daily' || data.showItemPrices === false ? 'daily' : 'itemized';
+          $('dailyContentView').value = data.dailyContentView === 'summary' ? 'summary' : 'services';
           $('lodgingDisplay').value = ['location_only','separate','guest_direct'].includes(data.lodgingDisplay) ? data.lodgingDisplay : 'separate';
           state.items = Array.isArray(data.items) ? data.items.map(item => defaultItem({...item,id:item.id || uid()})) : [];
           applyLanguageDefaults($('language').value,true);
@@ -1811,11 +1831,12 @@
         $('invoiceLink').value = draft.invoiceLink || draft.invoice_url || '';
         $('showImages').checked = draft.showImages === true;
         $('guestPriceView').value = draft.guestPriceView === 'daily' || draft.showItemPrices === false ? 'daily' : 'itemized';
+        $('dailyContentView').value = draft.dailyContentView === 'summary' ? 'summary' : 'services';
         $('lodgingDisplay').value = ['location_only','separate','guest_direct'].includes(draft.lodgingDisplay) ? draft.lodgingDisplay : 'separate';
         applyLanguageDefaults($('language').value,true);
         state.items = (Array.isArray(draft.items) ? draft.items : []).map(raw => {
           const requestedProduct = String(raw.productPreset || raw.name || 'Other');
-          const knownProduct = PRODUCT_OPTIONS.includes(requestedProduct);
+          const knownProduct = requestedProduct !== 'Other' && PRODUCT_OPTIONS.includes(requestedProduct);
           const rule = knownProduct ? PRODUCT_PRICING_RULES[productCodeFromPreset(requestedProduct)] : null;
           const hasQuantity = raw.quantity !== undefined && raw.quantity !== null && raw.quantity !== '';
           const hasUnitPrice = raw.unitPrice !== undefined && raw.unitPrice !== null && raw.unitPrice !== '';
@@ -2022,7 +2043,6 @@
         renderEditors();
         updateAll(false);
         invalidateDepositLink();
-        if(itineraryStage() === 'approved_pending') generateDepositLink();
       });
       $('startDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
       $('endDate').addEventListener('change',() => { applyDateMinimums(); updateAll(false); });
@@ -2032,8 +2052,8 @@
       $('generateDepositLinkBtn').addEventListener('click',generateDepositLink);
       $('depositAmount').addEventListener('change',() => {
         invalidateDepositLink();
+        updateStageControls();
         updateAll(false);
-        if(itineraryStage() === 'approved_pending') generateDepositLink();
       });
       $('offerZelle').addEventListener('change',() => {
         $('zelleEmailField').hidden = !$('offerZelle').checked;
@@ -2127,6 +2147,7 @@
         $('invoiceLink').value='';
         $('showImages').checked=false;
         $('guestPriceView').value='itemized';
+        $('dailyContentView').value='services';
         $('lodgingDisplay').value='separate';
         updateStageControls();
         state.items=[];

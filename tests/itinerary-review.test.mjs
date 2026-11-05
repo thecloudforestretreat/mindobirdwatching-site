@@ -170,13 +170,16 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
       { category: "lodging", label: { en: "Lodging allowance", es: "Alojamiento provisional" }, amount: 20 },
     ] })),
   } }, base);
-  const draft = guestItineraryDraft(plan);
-  assert.equal(draft.guestName, "Robert");
+  const draft = guestItineraryDraft(plan, { full_name: "Robert Kirberger", email: "robert@example.test", phone_number: "+1 305 555 0107" });
+  assert.equal(draft.guestName, "Robert Kirberger");
+  assert.equal(draft.guestEmail, "robert@example.test");
+  assert.equal(draft.whatsappNumber, "+1 305 555 0107");
   assert.equal(draft.tripTitle, "Custom Ecuador itinerary");
   assert.equal(draft.tripTitleEs, "Itinerario personalizado en Ecuador");
   assert.equal(draft.itineraryStage, "approved_pending");
   assert.equal(draft.depositAmount, 500);
   assert.equal(draft.guestPriceView, "daily");
+  assert.equal(draft.dailyContentView, "summary");
   assert.equal(draft.lodgingDisplay, "location_only");
   assert.equal(draft.showItemPrices, false);
   assert.equal(draft.items.length, base.days.length * 4);
@@ -195,9 +198,18 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
 
   const savedFetch = globalThis.fetch;
   try {
-    globalThis.fetch = async () => Response.json({ ok: true, records: [{ assignment_id: "PLAN-1", assignment_kind: "tour_plan", assignment_group_id: "PLAN-robert-2027", provider_id: "PROV-NEICER", provider_name: "Neicer", internal_note: JSON.stringify(plan), updated_at: "2026-10-30T12:00:00Z" }] });
+    globalThis.fetch = async (_url, options) => {
+      const action = JSON.parse(new URLSearchParams(options.body).get("payload")).action;
+      if (action === "list_assignments") return Response.json({ ok: true, records: [{ assignment_id: "PLAN-1", assignment_kind: "tour_plan", assignment_group_id: "PLAN-robert-2027", provider_id: "PROV-NEICER", provider_name: "Neicer", internal_note: JSON.stringify(plan), updated_at: "2026-10-30T12:00:00Z" }] });
+      if (action === "list_inquiries") return Response.json({ ok: true, records: [{ inquiry_id: plan.inquiryId, full_name: "Robert Kirberger", email: "robert@example.test", phone_number: "+1 305 555 0107" }] });
+      throw new Error(`Unexpected action ${action}`);
+    };
     const response = await getGuestItineraryDraft({ request: new Request("http://localhost/api/mobile/plans/robert-2027/itinerary-draft"), env, params: { planId: "robert-2027" } });
     assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.draft.guestName, "Robert Kirberger");
+    assert.equal(body.draft.guestEmail, "robert@example.test");
+    assert.equal(body.draft.whatsappNumber, "+1 305 555 0107");
     const denied = await getGuestItineraryDraft({ request: new Request("http://localhost/api/mobile/plans/robert-2027/itinerary-draft"), env: { ...env, LOCAL_TEST_IDENTITY: "guide@example.test" }, params: { planId: "robert-2027" } });
     assert.equal(denied.status, 403);
   } finally { globalThis.fetch = savedFetch; }
@@ -206,6 +218,8 @@ test("approved plans produce a guest-only generator draft and guides cannot fetc
 test("itinerary generator preserves approved daily structure and itemized subtotals", () => {
   const generator = fs.readFileSync(new URL("../admin/itinerary-generator/index.html", import.meta.url), "utf8");
   assert.match(generator, /id="guestPriceView"/);
+  assert.match(generator, /id="dailyContentView"/);
+  assert.match(generator, /Summary only — hide individual service cards/);
   assert.match(generator, /id="lodgingDisplay"/);
   assert.match(generator, /value="guest_direct"/);
   assert.match(generator, /function billableGuestItems/);
@@ -217,6 +231,7 @@ test("itinerary generator preserves approved daily structure and itemized subtot
   assert.doesNotMatch(generator, /else if\(itineraryStage\(\) === 'approved_pending'\)\{\s*generateDepositLink\(\)/);
   assert.match(generator, /function groupMeta/);
   assert.match(generator, /function itemPriceIsVisible/);
+  assert.match(generator, /function showDailyServiceCards/);
   assert.match(generator, /dayTitleEs/);
   assert.match(generator, /dayDetailsEs/);
   assert.match(generator, /Daily subtotal/);
