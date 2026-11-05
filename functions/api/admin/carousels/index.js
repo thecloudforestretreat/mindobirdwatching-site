@@ -17,9 +17,16 @@ async function upload(request,env,form){
     const f=files[i];
     if(!["image/jpeg","image/png","image/webp"].includes(f.type)||f.size>12*1024*1024)return out(request,{ok:false,message:`${f.name} must be JPG, PNG, or WebP and no larger than 12 MB.`},400);
     const fd=new FormData();fd.append("file",f,f.name);fd.append("upload_preset",preset);fd.append("folder","mbw/carousels/intake");
-    const r=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud)}/image/upload`,{method:"POST",body:fd,signal:AbortSignal.timeout(60000)});
-    if(!r.ok)return out(request,{ok:false,message:`Image ${i+1} could not be uploaded.`},502);
-    const d=await r.json();images.push({order:i+1,secure_url:d.secure_url,original_url:d.secure_url,width:d.width,height:d.height,public_id:d.public_id});
+    try{
+      const r=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud)}/image/upload`,{method:"POST",body:fd,signal:AbortSignal.timeout(60000)});
+      const d=await r.json();
+      if(!r.ok){const reason=clean(d?.error?.message,240);return out(request,{ok:false,message:`Image ${i+1} could not be uploaded${reason?": "+reason:" (storage service returned "+r.status+")"}.`},502)}
+      if(typeof d.secure_url!=="string"||!d.secure_url.startsWith("https://res.cloudinary.com/"))return out(request,{ok:false,message:`Image ${i+1}: storage service returned an invalid upload response.`},502);
+      images.push({order:i+1,secure_url:d.secure_url,original_url:d.secure_url,width:d.width,height:d.height,public_id:d.public_id});
+    }catch(error){
+      const timeout=["TimeoutError","AbortError"].includes(error?.name);
+      return out(request,{ok:false,message:timeout?`Image ${i+1} upload timed out. Your carousel has not been submitted.`:`Image ${i+1} upload could not reach the storage service. Your carousel has not been submitted.`},timeout?504:502);
+    }
   }
   return out(request,{ok:true,images});
 }
