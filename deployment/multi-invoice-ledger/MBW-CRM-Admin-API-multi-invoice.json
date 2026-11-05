@@ -434,6 +434,46 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "list_supplier_commitments",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.action}}",
+                    "rightValue": "upsert_supplier_commitment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -8724,6 +8764,407 @@
         47904,
         15240
       ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_commitments",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "6e170001-0000-4000-8000-000000000001",
+      "name": "Read CRM Supplier Commitments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        46864,
+        15640
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst request=$('Normalize Request').first().json;\nconst action=String(request.action||'');\nconst clean=value=>String(value??'').trim();\nconst number=value=>{const parsed=Number(value??0);return Number.isFinite(parsed)&&parsed>=0?Math.round(parsed*100)/100:0;};\nconst rows=$input.all().map(item=>item.json||item).filter(row=>row&&Object.values(row).some(value=>clean(value)!==''));\nif(action==='list_supplier_commitments'){\n  const plan=clean(request.plan_id),inquiry=clean(request.inquiry_id),booking=clean(request.booking_id),supplier=clean(request.supplier_id);\n  const records=rows.filter(row=>(!plan||clean(row.plan_id)===plan)&&(!inquiry||clean(row.inquiry_id)===inquiry)&&(!booking||clean(row.booking_id)===booking)&&(!supplier||clean(row.supplier_id)===supplier)).sort((a,b)=>clean(a.service_date_start||a.created_at).localeCompare(clean(b.service_date_start||b.created_at)));\n  return [{json:{ok:true,action,count:records.length,records,_route:'respond'}}];\n}\nconst now=new Date().toISOString();\nconst incoming={...(request.commitment||request.record||{})};\nif(!clean(incoming.commitment_id)||!clean(incoming.supplier_name)||!clean(incoming.description)||(!clean(incoming.plan_id)&&!clean(incoming.inquiry_id))) throw new Error('Commitment requires an ID, supplier, description, and plan or inquiry reference.');\nconst existing=rows.find(row=>clean(row.commitment_id)===clean(incoming.commitment_id))||{};\nconst record={...existing,...incoming,commitment_id:clean(incoming.commitment_id),created_at:clean(existing.created_at||incoming.created_at)||now,updated_at:now};\nfor(const key of ['quoted_cost','committed_cost','amount_paid','refundable_amount']) record[key]=number(record[key]);\nreturn [{json:{...record,_route:'write'}}];"
+      },
+      "id": "6e170002-0000-4000-8000-000000000002",
+      "name": "Process CRM Supplier Commitments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47104,
+        15640
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json._route}}",
+                    "rightValue": "write",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "6e170003-0000-4000-8000-000000000003",
+      "name": "Route CRM Supplier Commitments",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        47376,
+        15640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "crm_supplier_commitments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "commitment_id": "={{ $json.commitment_id ?? '' }}",
+            "inquiry_id": "={{ $json.inquiry_id ?? '' }}",
+            "booking_id": "={{ $json.booking_id ?? '' }}",
+            "plan_id": "={{ $json.plan_id ?? '' }}",
+            "supplier_id": "={{ $json.supplier_id ?? '' }}",
+            "supplier_name": "={{ $json.supplier_name ?? '' }}",
+            "category": "={{ $json.category ?? '' }}",
+            "description": "={{ $json.description ?? '' }}",
+            "service_date_start": "={{ $json.service_date_start ?? '' }}",
+            "service_date_end": "={{ $json.service_date_end ?? '' }}",
+            "currency": "={{ $json.currency ?? '' }}",
+            "quoted_cost": "={{ $json.quoted_cost ?? '' }}",
+            "committed_cost": "={{ $json.committed_cost ?? '' }}",
+            "amount_paid": "={{ $json.amount_paid ?? '' }}",
+            "payment_status": "={{ $json.payment_status ?? '' }}",
+            "refundability": "={{ $json.refundability ?? '' }}",
+            "refundable_amount": "={{ $json.refundable_amount ?? '' }}",
+            "cancellation_deadline": "={{ $json.cancellation_deadline ?? '' }}",
+            "confirmation_reference": "={{ $json.confirmation_reference ?? '' }}",
+            "evidence_url": "={{ $json.evidence_url ?? '' }}",
+            "internal_notes": "={{ $json.internal_notes ?? '' }}",
+            "entered_by": "={{ $json.entered_by ?? '' }}",
+            "created_at": "={{ $json.created_at ?? '' }}",
+            "updated_at": "={{ $json.updated_at ?? '' }}"
+          },
+          "matchingColumns": [
+            "commitment_id"
+          ],
+          "schema": [
+            {
+              "id": "commitment_id",
+              "displayName": "commitment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_id",
+              "displayName": "inquiry_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "booking_id",
+              "displayName": "booking_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "plan_id",
+              "displayName": "plan_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_id",
+              "displayName": "supplier_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_name",
+              "displayName": "supplier_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_date_start",
+              "displayName": "service_date_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_date_end",
+              "displayName": "service_date_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quoted_cost",
+              "displayName": "quoted_cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "committed_cost",
+              "displayName": "committed_cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount_paid",
+              "displayName": "amount_paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_status",
+              "displayName": "payment_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "refundability",
+              "displayName": "refundability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "refundable_amount",
+              "displayName": "refundable_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cancellation_deadline",
+              "displayName": "cancellation_deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confirmation_reference",
+              "displayName": "confirmation_reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evidence_url",
+              "displayName": "evidence_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "internal_notes",
+              "displayName": "internal_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "entered_by",
+              "displayName": "entered_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6e170004-0000-4000-8000-000000000004",
+      "name": "Write CRM Supplier Commitment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        47648,
+        15560
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record={...$('Process CRM Supplier Commitments').first().json}; delete record._route; return [{json:{ok:true,action:'upsert_supplier_commitment',record}}];"
+      },
+      "id": "6e170005-0000-4000-8000-000000000005",
+      "name": "Finalize CRM Supplier Commitment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        47904,
+        15560
+      ]
     }
   ],
   "pinData": {},
@@ -8888,6 +9329,20 @@
         [
           {
             "node": "Read CRM Payments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read CRM Supplier Commitments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read CRM Supplier Commitments",
             "type": "main",
             "index": 0
           }
@@ -9657,6 +10112,68 @@
       ]
     },
     "Finalize CRM Payment": {
+      "main": [
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CRM Supplier Commitments": {
+      "main": [
+        [
+          {
+            "node": "Process CRM Supplier Commitments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process CRM Supplier Commitments": {
+      "main": [
+        [
+          {
+            "node": "Route CRM Supplier Commitments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route CRM Supplier Commitments": {
+      "main": [
+        [
+          {
+            "node": "Write CRM Supplier Commitment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write CRM Supplier Commitment": {
+      "main": [
+        [
+          {
+            "node": "Finalize CRM Supplier Commitment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize CRM Supplier Commitment": {
       "main": [
         [
           {
