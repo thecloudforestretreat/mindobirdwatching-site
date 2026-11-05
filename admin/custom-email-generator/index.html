@@ -599,7 +599,7 @@
               <label for="languageInput">Language</label>
               <select id="languageInput">
                 <option value="en" selected>English</option>
-                <option value="es">South American Spanish</option>
+                <option value="es">Spanish</option>
               </select>
             </div>
           </div>
@@ -694,7 +694,7 @@ experiences waiting for you in Mindo.</textarea>
 
   <div class="toast" id="toast">Copied</div>
 
-<script src="/assets/js/communication-library.js?v=20261024-4"></script>
+<script src="/assets/js/communication-library.js?v=20261105-private-rates"></script>
 <link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
     (function(){
@@ -2528,10 +2528,13 @@ experiences waiting for you in Mindo.</textarea>
       }
 
       function renderTravelerNote(){
+        const note = getLanguage() === "es"
+          ? "¿Viajas por tu cuenta? Podemos ayudarte a unirte a un tour con cupos disponibles, según disponibilidad. Los grupos de dos o más personas viajarán en un grupo pequeño de 2 a 8 participantes, salvo que elijan un tour privado."
+          : "Traveling solo? We can help coordinate joining an open tour, based on availability. Groups of two or more will travel in a small group of 2–8 guests unless a private tour is selected.";
         return "" +
           "<tr><td style='padding:10px 20px 0;'>" +
           "<table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background:#F6FAF0; border:1px solid rgba(13,89,37,.25); border-radius:14px;'><tr><td align='center' style='padding:14px 18px;'>" +
-          "<p style='margin:0; color:rgba(7,25,35,.76); font-size:12px; line-height:18px; font-weight:700;'>Traveling solo? We can help coordinate joining an open tour, based on availability. Groups of two or more will travel in a small group of 2–8 guests unless a private tour is selected.</p>" +
+          "<p style='margin:0; color:rgba(7,25,35,.76); font-size:12px; line-height:18px; font-weight:700;'>" + esc(note) + "</p>" +
           "</td></tr></table></td></tr>";
       }
 
