@@ -3,8 +3,8 @@
 
   // The admin Pages project is static; its API is deployed with the main site
   // and explicitly allows requests from the protected admin origin.
-  var API = "https://mindobirdwatching.com/api/admin/reels";
-  var INSIGHTS_API = "https://mindobirdwatching.com/api/admin/media-insights?period=90d";
+  var API = "/api/admin/reels";
+  var INSIGHTS_API = "/api/admin/media-insights?period=90d";
   var state = { rows: [], activeStatus: "review", query: "", selected: null, loading: false, generationPoll: null, timing: null };
   var routeParams = new URLSearchParams(window.location.search), pendingOpenId = cleanRoute(routeParams.get("id"));
   var demoMode = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && routeParams.get("demo") === "1";
@@ -430,7 +430,7 @@
   function mediaEditor(row) {
     if (!mediaCanBeReplaced(row)) return '<section class="mediaEditor isLocked"><div class="mediaEditorHeader"><strong>Video source</strong><span>Locked after publishing begins</span></div><p>The media URL cannot be replaced because this reel has a platform post or an unresolved publishing claim.</p></section>';
     return '<section class="mediaEditor"><div class="mediaEditorHeader"><strong>Replace video only</strong><span>Copy stays unchanged</span></div>' +
-      '<label><span>Cloudinary video URL</span><input type="url" data-replacement-video-url value="' + esc(row.video_url) + '" placeholder="https://res.cloudinary.com/…/video/upload/…mp4" /></label>' +
+      '<label><span>Video delivery URL</span><input type="url" data-replacement-video-url value="' + esc(row.video_url) + '" placeholder="https://n8n.mindobirdwatching.com/media-delivery/…/original.mp4" /></label>' +
       '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
       '<p class="mediaEditorStatus" data-media-status role="status" aria-live="polite"></p></section>';
   }
@@ -516,8 +516,8 @@
       var mediaStatus = $("reviewContent").querySelector("[data-media-status]");
       var replacementUrl = clean(mediaInput && mediaInput.value);
       if (!mediaCanBeReplaced(state.selected)) { if (mediaStatus) mediaStatus.textContent = "This reel is locked because publishing has already started."; return; }
-      if (!/^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\/.+\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(replacementUrl)) { if (mediaStatus) mediaStatus.textContent = "Enter a valid Cloudinary video URL ending in MP4, MOV, or M4V."; return; }
-      if (replacementUrl === clean(state.selected.video_url)) { if (mediaStatus) mediaStatus.textContent = "Paste the adjusted video's new Cloudinary URL first."; return; }
+      if (!(/^https:\/\/n8n\.mindobirdwatching\.com\/media-delivery\/v1\/[a-f0-9]{32}\/original\.mp4$/.test(replacementUrl)||/^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\/.+\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(replacementUrl))) { if (mediaStatus) mediaStatus.textContent = "Enter a valid Video delivery URL ending in MP4, MOV, or M4V."; return; }
+      if (replacementUrl === clean(state.selected.video_url)) { if (mediaStatus) mediaStatus.textContent = "Paste the adjusted video's new delivery URL first."; return; }
       var replaceButton = $("reviewActions").querySelector('[data-action="replace-media"]') || $("reviewContent").querySelector('[data-action="replace-media"]');
       if (replaceButton) replaceButton.disabled = true;
       if (mediaInput) mediaInput.disabled = true;

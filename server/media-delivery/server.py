@@ -45,10 +45,10 @@ class Handler(BaseHTTPRequestHandler):
    try:guard();self.send(200,b'{"ok":true}')
    except Exception:self.error(503,'Primary media drive unavailable')
    return
-  m=re.fullmatch(PREFIX+r'/v1/([a-f0-9]{32})/(original\.(?:jpg|png|webp)|(?:fill|fit)-(?:auto|center|north|south|east|west)\.jpg)',path.path)
+  m=re.fullmatch(PREFIX+r'/v1/([a-f0-9]{32})/(original\.(?:jpg|png|webp|mp4)|(?:fill|fit)-(?:auto|center|north|south|east|west)\.jpg)',path.path)
   if not m or path.query:return self.error(404,'Not found')
   try:
-   guard();folder=ROOT/m[1];meta=json.loads((folder/'metadata.json').read_text());f=folder/m[2];assert not folder.is_symlink() and not f.is_symlink()
+   guard();folder=(ROOT.parent/'Reels' if m[2]=='original.mp4' else ROOT)/m[1];meta=json.loads((folder/'metadata.json').read_text());f=folder/m[2];assert not folder.is_symlink() and not f.is_symlink()
    if m[2].startswith('original.'):
     if m[2]!='original.'+meta['extension']:return self.error(404,'Not found')
     mime=meta['mime']
@@ -56,6 +56,26 @@ class Handler(BaseHTTPRequestHandler):
     mime='image/jpeg'
     if not f.exists():
      fit,gravity=m[2][:-4].split('-');raw=(folder/('original.'+meta['extension'])).read_bytes();data=render(raw,fit,gravity);tmp=folder/(m[2]+'.'+uuid.uuid4().hex+'.tmp');tmp.write_bytes(data);os.replace(tmp,f)
+   if mime=='video/mp4':
+    size=f.stat().st_size;lo=0;hi=size-1;status=200;rg=self.headers.get('Range');headers={'ETag':'"'+meta['sha256']+'"','Accept-Ranges':'bytes'}
+    if rg:
+     match=re.fullmatch(r'bytes=(\d*)-(\d*)',rg)
+     if not match or not any(match.groups()):return self.send(416,b'',mime,extra={'Content-Range':'bytes */'+str(size)})
+     if not match[1]:lo=max(0,size-int(match[2]))
+     else:lo=int(match[1]);hi=min(int(match[2]) if match[2] else size-1,size-1)
+     if lo>hi or lo>=size:return self.send(416,b'',mime,extra={'Content-Range':'bytes */'+str(size)})
+     status=206;headers['Content-Range']=f'bytes {lo}-{hi}/{size}'
+    self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(hi-lo+1));self.send_header('Cache-Control','public, max-age=86400');self.send_header('X-Content-Type-Options','nosniff')
+    for k,v in headers.items():self.send_header(k,v)
+    self.end_headers()
+    if self.command!='HEAD':
+     with f.open('rb') as stream:
+      stream.seek(lo);remaining=hi-lo+1
+      while remaining:
+       chunk=stream.read(min(1024*1024,remaining))
+       if not chunk:break
+       self.wfile.write(chunk);remaining-=len(chunk)
+    return
    data=f.read_bytes();headers={'ETag':'"'+hashlib.sha256(data).hexdigest()+'"','Accept-Ranges':'bytes'}
    if self.headers.get('If-None-Match')==headers['ETag']:return self.send(304,b'',mime,'public, max-age=86400',headers)
    rg=self.headers.get('Range')
