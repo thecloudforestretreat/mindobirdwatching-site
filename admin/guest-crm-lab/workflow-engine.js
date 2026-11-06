@@ -877,7 +877,7 @@
               if(!linked.ok)throw new Error(linked.error||"Link failed");
               referenceStatus("Reference matched and linked to this inquiry.");showToast("Saved to live Google Sheet; reference linked.");
             }catch(error){referenceStatus("Inquiry saved. Reference link failed; save again to retry.");showToast("Inquiry saved; reference link needs retry.");}}
-            else showToast(attributionWarning?"Guest saved successfully. Tracking reference kept for later repair.":(missingManualWhatsappReference()?"Saved without a Reference ID; attribution is unavailable.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet")));
+            else showToast(attributionWarning?"Guest saved. Historical tracking reference is unavailable; booking data is unaffected.":(missingManualWhatsappReference()?"Saved without a Reference ID; attribution is unavailable.":(reusedGuest?"Saved as a new inquiry under the existing guest.":"Saved to live Google Sheet")));
           } else {
             upsert(payload.record);
             showToast(reusedGuest?"Saved locally under the existing guest.":"Saved locally");
@@ -2392,4 +2392,4 @@ window.MbwCrmLab={snapshot:labSnapshot,refresh:()=>refreshCrm(true),open:setView
 };
 
     })();
-  
+
