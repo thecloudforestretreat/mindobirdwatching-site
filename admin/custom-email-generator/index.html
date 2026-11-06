@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js?v=20260719" defer></script>
-  <script src="/assets/js/email-blocks.js?v=20260804-bear-price-image-sync" defer></script>
+  <script src="/assets/js/email-blocks.js?v=20261106-custom-tour-products" defer></script>
   <style>
     :root{
       --mbw-green:#0D5925;
@@ -694,7 +694,7 @@ experiences waiting for you in Mindo.</textarea>
 
   <div class="toast" id="toast">Copied</div>
 
-<script src="/assets/js/communication-library.js?v=20261105-family-signatures"></script>
+<script src="/assets/js/communication-library.js?v=20261106-custom-tour-products"></script>
 <link rel="stylesheet" href="/assets/css/communication-brand.css?v=20261024-1">
   <script>
     (function(){
@@ -896,7 +896,8 @@ experiences waiting for you in Mindo.</textarea>
         const guests = record.guest_count || record.guestCount || "";
         const date = record.requested_date || record.requested_date_start || record.tour_date || record.tourDate || "";
         const tour = record.tour_type || record.tour_category || record.tour_interest || "";
-        const importedBlocks=crmEmailItems(record).map(emailBlockForCrmItem).filter(Boolean);
+        const importedItems=crmEmailItems(record);
+        const importedBlocks=importedItems.map(emailBlockForCrmItem).filter(Boolean);
         if(guestName) els.guestNameInput.value = titleCaseName(guestName);
         if(guests){
           const count = String(guests).match(/\d+/);
@@ -911,8 +912,16 @@ experiences waiting for you in Mindo.</textarea>
         if(tour) setEmailTitle(tour + " Options");
         if(importedBlocks.length){
           importedBlocks.forEach(id=>state.selected.add(id));
+          ["tour-custom-half-day","tour-custom-full-day"].forEach(id=>{
+            const matching=importedItems.filter(item=>emailBlockForCrmItem(item)===id);
+            if(matching.length!==1)return;
+            const raw=[matching[0].price,matching[0].unitPrice,matching[0].unit_price].find(value=>value!==undefined&&value!==null&&String(value).trim()!=="");
+            const amount=Number(raw);
+            if(Number.isFinite(amount)&&amount>0)state.overrides[id]=Object.assign({},state.overrides[id]||{},{price:"US$"+amount.toLocaleString("en-US",{maximumFractionDigits:2})+" total"});
+          });
           state.order=smartOrder(getCatalog().blocks.filter(block=>state.selected.has(block.id))).map(block=>block.id);
           saveOrder();
+          renderBlockControls();
         }
       }
 
@@ -1227,7 +1236,7 @@ experiences waiting for you in Mindo.</textarea>
         const mergedById = new Map(loadedBlocks.map(block => [block.id, Object.assign({}, fallbackById.get(block.id) || {}, block)]));
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
-          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
+          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "tour-custom-half-day", "tour-custom-full-day", "birding-beyond-lodge",
           "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activity-frog-concert", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
@@ -2249,7 +2258,7 @@ experiences waiting for you in Mindo.</textarea>
 
       function blockPriority(block){
         const canonical = [
-          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
+          "tour-jewels", "tour-andean", "tour-full-day", "tour-hummingbird", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "tour-custom-half-day", "tour-custom-full-day", "birding-beyond-lodge",
           "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activity-frog-concert", "activities-more",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"

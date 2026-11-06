@@ -2,9 +2,9 @@
 (function(global){
 "use strict";
 const catalog={
-  "version": 1,
-  "checkedAt": "2026-10-24",
-  "source": "Staff Info Library live feed",
+  "version": 2,
+  "checkedAt": "2026-11-06",
+  "source": "Staff Info Library and approved product catalog",
   "experiences": [
     {
       "id": "tour-jewels",
@@ -117,6 +117,66 @@ const catalog={
       "description": {
         "en": "A three-hour hummingbird-focused outing in Mindo, from 11:00 AM to 2:00 PM, with a local birding guide. Includes transportation from Mindo and entrance fees. Species and sightings vary with weather, season and bird activity.",
         "es": "Recorrido de tres horas dedicado a los colibríes de Mindo, de 11:00 a 14:00, con un guía local de aviturismo. Incluye transporte desde Mindo y entradas. Las especies y los avistamientos varían según el clima, la temporada y la actividad de las aves."
+      }
+    },
+    {
+      "id": "tour-custom-half-day",
+      "productCode": "TOUR001",
+      "productPreset": "TOUR001 - Custom Half-Day Tour",
+      "sourceId": "product-catalog-tour001",
+      "brands": [
+        "mbw",
+        "mindo-tours",
+        "choco-andino"
+      ],
+      "price": 50,
+      "quoteOnly": true,
+      "model": "flat",
+      "duration": "Half Day",
+      "time": "",
+      "group": "tours",
+      "title": {
+        "en": "Custom Half-Day Tour",
+        "es": "Tour Personalizado de Medio Día"
+      },
+      "image": "https://mindobirdwatching.com/assets/images/tours/custom/tour001-custom-half-day-tour.png",
+      "description": {
+        "en": "A flexible private half-day experience planned around the guest’s interests, pace, location and confirmed inclusions. The itinerary and final package price are prepared individually.",
+        "es": "Una experiencia privada y flexible de medio día, diseñada según los intereses, el ritmo, el lugar y los servicios confirmados para el visitante. El itinerario y el precio final del paquete se preparan de forma individual."
+      },
+      "priceNote": {
+        "en": "The final charge must match the guest-approved custom quote.",
+        "es": "El cobro final debe coincidir con la cotización personalizada aprobada por el visitante."
+      }
+    },
+    {
+      "id": "tour-custom-full-day",
+      "productCode": "TOUR002",
+      "productPreset": "TOUR002 - Custom Full-Day Tour",
+      "sourceId": "product-catalog-tour002",
+      "brands": [
+        "mbw",
+        "mindo-tours",
+        "choco-andino"
+      ],
+      "price": 100,
+      "quoteOnly": true,
+      "model": "flat",
+      "duration": "Full Day",
+      "time": "",
+      "group": "tours",
+      "title": {
+        "en": "Custom Full-Day Tour",
+        "es": "Tour Personalizado de Día Completo"
+      },
+      "image": "https://mindobirdwatching.com/assets/images/tours/custom/tour002-custom-full-day-tour.png",
+      "description": {
+        "en": "A flexible private full-day experience planned around the guest’s interests, pace, locations and confirmed inclusions. The itinerary and final package price are prepared individually.",
+        "es": "Una experiencia privada y flexible de día completo, diseñada según los intereses, el ritmo, los lugares y los servicios confirmados para el visitante. El itinerario y el precio final del paquete se preparan de forma individual."
+      },
+      "priceNote": {
+        "en": "The final charge must match the guest-approved custom quote.",
+        "es": "El cobro final debe coincidir con la cotización personalizada aprobada por el visitante."
       }
     },
     {
@@ -695,6 +755,7 @@ const allows=(item,id)=>!item.brands||item.brands.includes(brand(id).id);
 const byCode=code=>catalog.experiences.find(x=>x.productCode===code);
 const byId=id=>catalog.experiences.find(x=>x.id===id);
 function priceText(item,lang='en'){
+ if(item.quoteOnly)return lang==='es'?'Precio según la cotización personalizada aprobada':'Price based on the approved custom quote';
  const unit=item.model==='per_quad'?(lang==='es'?'por cuatrimoto':'per quad'):(lang==='es'?'por persona':'per person');
  return '$'+item.price+' '+unit+(item.productCode==='ACT021'?(lang==='es'?' por sesión privada':' per private session'):'');
 }
@@ -738,11 +799,12 @@ function emailCatalog(base,id='mbw',lang='en'){
 function applyItineraryCatalog(options,defaults,rules,labels){
  for(const x of catalog.experiences){
   let key=Object.keys(defaults).find(k=>k.startsWith(x.productCode+' - '));
-  if(!key&&x.productPreset){key=x.productPreset;defaults[key]={type:'Activity',duration:x.duration||'Flexible'};}
+  if(!key&&x.productPreset){key=x.productPreset;defaults[key]={type:x.quoteOnly?'Custom':'Activity',duration:x.duration||'Flexible'};}
   if(!key)continue;
   if(x.productPreset&&!options.includes(key))options.push(key);
-  rules[x.productCode]={...rules[x.productCode],model:x.model,price:x.price,minGuests:x.minGuests,minimumBilledQuantity:x.productCode==='ACT011'?4:1,soloPrice:x.soloPrice||null};
+  rules[x.productCode]={...rules[x.productCode],model:x.model,price:x.price,minGuests:x.minGuests,minimumBilledQuantity:x.productCode==='ACT011'?4:1,soloPrice:x.soloPrice||null,quoteOnly:x.quoteOnly===true};
   defaults[key]={...defaults[key],unitPrice:x.price};
+  if(x.quoteOnly)defaults[key].type='Custom';
   if(x.group==='activities')defaults[key].type=x.productCode==='ACT021'?'Specialty Wildlife':'Activity';
   if(x.description){defaults[key].note=x.description.en+(x.priceNote?' '+x.priceNote.en:'');defaults[key].duration=x.duration;}
   if(x.title&&labels)labels[key]=x.productCode+' - '+x.title.es;
