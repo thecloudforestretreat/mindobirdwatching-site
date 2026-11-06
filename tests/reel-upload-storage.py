@@ -21,4 +21,6 @@ with tempfile.TemporaryDirectory() as tmp:
  except ValueError:pass
  try:uploads.session('../escape');assert False
  except ValueError:pass
+ for i in range(12):
+  session=uploads.begin({'name':'video.mp4','bytes':len(raw)})['upload_id'];uploads.chunk(session,0,raw,digest);uploads.finish(session)
  print('PASS chunk checksum, retry idempotency, incomplete/path rejection, immutable existing object, completion retry.')

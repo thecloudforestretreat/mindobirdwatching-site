@@ -22,7 +22,7 @@ def probe(path):
   subprocess.run([DOCKER,'cp',str(path),CONTAINER+':'+remote],check=True,capture_output=True,timeout=120)
   r=subprocess.run([DOCKER,'exec',CONTAINER,'ffprobe','-v','error','-show_entries','format=format_name,duration:stream=codec_type,codec_name,width,height','-of','json',remote],check=True,capture_output=True,timeout=60)
   info=json.loads(r.stdout);video=next(s for s in info['streams'] if s['codec_type']=='video');audio=[s for s in info['streams'] if s['codec_type']=='audio'];duration=float(info['format']['duration'])
-  if video['codec_name']!='h264' or any(s['codec_name']!='aac' for s in audio) or not 0<duration<=900 or not video.get('width') or not video.get('height'):raise ValueError('Use an MP4 with H.264 video and AAC audio, up to 15 minutes. Export a compatible copy; the server does not convert your original.')
+  if 'mp4' not in info['format'].get('format_name','').split(',') or video['codec_name']!='h264' or any(s['codec_name']!='aac' for s in audio) or not 0<duration<=900 or not video.get('width') or not video.get('height'):raise ValueError('Use an MP4 with H.264 video and AAC audio, up to 15 minutes. Export a compatible copy; the server does not convert your original.')
   return {'width':video['width'],'height':video['height'],'duration':duration}
  finally:
   subprocess.run([DOCKER,'exec',CONTAINER,'rm','-f',remote],capture_output=True,timeout=15)
@@ -38,7 +38,7 @@ class ReelUploads:
   # Expire only this service’s abandoned temporary sessions, never publishing objects.
   for p in self.staging.iterdir():
    if p.is_dir() and not p.is_symlink() and len(p.name)==32 and all(c in '0123456789abcdef' for c in p.name) and time.time()-p.stat().st_mtime>86400:shutil.rmtree(p)
-  if sum(1 for _ in self.staging.iterdir())>=10:raise ValueError('Upload queue is full. Retry after existing uploads finish.')
+  if sum(1 for p in self.staging.iterdir() if not (p/'result.json').exists())>=10:raise ValueError('Upload queue is full. Retry after existing uploads finish.')
   if shutil.disk_usage(self.root.parent).free<size*2+5*1024**3:raise ValueError('Not enough free space on the primary media drive.')
   ident=uuid.uuid4().hex;folder=self.staging/ident;folder.mkdir();state={'bytes':size,'name':Path(name).name,'received':0};atomic_json(folder/'state.json',state)
   return {'ok':True,'upload_id':ident,'chunk_bytes':CHUNK_BYTES}
