@@ -20,6 +20,6 @@ test('spam is excluded from marketing and mobile operational work',()=>{
 });
 
 test('missing attribution is presented as a successful save',()=>{
-  assert.match(crm,/Guest saved successfully\. Tracking reference kept for later repair\./);
+  assert.match(crm,/Guest saved\. Historical tracking reference is unavailable; booking data is unaffected\./);
   assert.doesNotMatch(crm,/attribution reference preserved but unavailable/);
 });

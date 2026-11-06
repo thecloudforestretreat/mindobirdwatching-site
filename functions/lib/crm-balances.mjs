@@ -27,7 +27,8 @@ export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date
   if(ps.some(p=>money(p.total_booking_price)===null||money(p.total_amount_paid)===null))issues.push('Invoice amounts are incomplete');
   const ledgerTotal=max(dd.map(d=>money(d.total_booking_price)));
   const ledgerPaid=max(dd.map(d=>money(d.total_amount_paid)??money(d.deposit_amount_paid)));
-  const quote=text(r.quote_status)==='accepted'?money(r.accepted_quote_total):null;
+  const acceptedQuote=text(r.accepted_quote_total)?r.accepted_quote_total:r.quoted_amount;
+  const quote=text(r.quote_status)==='accepted'?money(acceptedQuote):null;
   const total=max([ledgerTotal,invoiceTotal,quote]);
   const paid=max([ledgerPaid,invoicePaid===null?(dd.some(d=>money(d.deposit_amount_paid)!==null)?externalDeposit:null):invoicePaid+Math.max(0,externalDeposit-includedDeposit)]);
   const deposit=max([dd.length?externalDeposit:null,ps.length?includedDeposit:null]);
