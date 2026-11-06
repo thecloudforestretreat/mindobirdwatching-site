@@ -334,6 +334,43 @@
     $("batchItems").appendChild(fragment);
     numberBatchRows(); refreshBatchDates();
   }
+  var uploadingRows = new Set();
+  async function uploadVideo(item, file) {
+    var status = item.querySelector('[data-upload-status]'), url = item.querySelector('[data-field="video_url"]'), preview = item.querySelector('[data-upload-preview]');
+    if (!file) return;
+    url.value = ""; preview.hidden = true;
+    if (!/\.mp4$/i.test(file.name) || !file.size || file.size > 1024 * 1024 * 1024) { status.textContent = "Choose an MP4 up to 1 GiB."; return; }
+    if (demoMode) { status.textContent = "Uploads are disabled in preview mode."; return; }
+    uploadingRows.add(item); url.value = ""; preview.hidden = true;
+    item.querySelector('[data-reel-file]').disabled = true;
+    item.querySelector('[data-remove-row]').disabled = true;
+    url.readOnly = true; $("submitBatch").disabled = true;
+    async function send(action, body, extra) {
+      var response = await fetch('/api/admin/reel-uploads?action=' + action, { method: 'POST', headers: Object.assign({ 'content-type': action === 'chunk' ? 'application/octet-stream' : 'application/json' }, extra || {}), body: action === 'chunk' ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000) });
+      var data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Upload failed. No reel was submitted.');
+      return data;
+    }
+    try {
+      status.textContent = "Starting upload…";
+      var session = await send('start', { name: file.name, bytes: file.size });
+      for (var offset = 0; offset < file.size; offset += session.chunk_bytes) {
+        var chunk = await file.slice(offset, offset + session.chunk_bytes).arrayBuffer();
+        var hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', chunk))).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        var result;
+        for (var attempt = 0; attempt < 2; attempt++) {
+          try { result = await send('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
+          catch (error) { if (attempt) throw error; }
+        }
+        status.textContent = "Uploading " + file.name + " · " + Math.floor(result.received / file.size * 100) + "%";
+      }
+      status.textContent = "Upload complete. Checking video format, checksum and backup…";
+      var saved = await send('finish', { upload_id: session.upload_id });
+      url.value = saved.url; preview.src = saved.url; preview.hidden = false;
+      status.textContent = file.name + " ready · " + saved.width + " × " + saved.height + " · " + saved.duration.toFixed(1) + " seconds · original quality preserved. " + (saved.backup_verified ? "Independent backup verified." : "Backup pending: connect the backup drive before removing any originals.") + " Add a description and generate the draft when ready.";
+    } catch (error) { status.textContent = error.message; url.value = ""; }
+    finally { uploadingRows.delete(item); item.querySelector('[data-reel-file]').disabled = false; item.querySelector('[data-remove-row]').disabled = false; url.readOnly = false; $("submitBatch").disabled = uploadingRows.size > 0; }
+  }
   function setBatchStatus(message, tone) { $("batchStatus").textContent = message; $("batchStatus").dataset.tone = tone || ""; }
   function selectedDefaults() { var result = {}; document.querySelectorAll('input[name="platform"]').forEach(function (input) { result[input.value] = input.checked; }); return result; }
   function batchPayload() {
@@ -368,7 +405,9 @@
   }
   async function submitBatch(event) {
     event.preventDefault();
+    if (uploadingRows.size) { setBatchStatus("Wait for video verification to finish.", "error"); return; }
     var payload = batchPayload();
+    if (payload.reels.some(function (r) { return !r.video_url; })) { setBatchStatus("Upload a video for each reel first.", "error"); return; }
     var duplicate = payload.reels.some(function (row, index) { return payload.reels.findIndex(function (candidate) { return candidate.video_url === row.video_url; }) !== index; });
     if (duplicate) { setBatchStatus("Each video URL in the batch must be unique.", "error"); return; }
     var destinations = selectedDefaults();
@@ -567,6 +606,7 @@
     $("composerBackdrop").addEventListener("click", function (event) { if (event.target === event.currentTarget) closeComposer(); });
     $("reviewBackdrop").addEventListener("click", function (event) { if (event.target === event.currentTarget) closeReview(); });
     $("addReelRow").addEventListener("click", addBatchRow);
+    $("batchItems").addEventListener("change", function (event) { if (event.target.matches("[data-reel-file]")) uploadVideo(event.target.closest(".batchItem"), event.target.files[0]); });
     $("batchItems").addEventListener("click", function (event) { var button = event.target.closest("[data-remove-row]"); if (!button) return; button.closest(".batchItem").remove(); numberBatchRows(); refreshBatchDates(); });
     $("batchStartDate").addEventListener("change", function () { refreshBatchDates(); applyTimingGuidance(); });
     $("batchPattern").addEventListener("change", refreshBatchDates);
