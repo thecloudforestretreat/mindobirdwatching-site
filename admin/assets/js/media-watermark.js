@@ -2,7 +2,7 @@
   "use strict";
 
   var WEBSITE="www.mindobirdwatching.com";
-  var LOGO_URL="/assets/images/app/mbw-watermark-logo.png";
+  var LOGO_URL="/assets/images/app/mbw-watermark-logo.png?v=2";
   var logoPromise=null;
 
   function normalized(options){
@@ -39,9 +39,9 @@
 
   function loadImage(source){
     return new Promise(function(resolve,reject){
-      var image=new Image(),objectUrl=typeof source==="string"?"":URL.createObjectURL(source);
-      image.onload=function(){if(objectUrl)URL.revokeObjectURL(objectUrl);resolve(image)};
-      image.onerror=function(){if(objectUrl)URL.revokeObjectURL(objectUrl);reject(new Error("The watermark image could not be loaded."))};
+      var image=new Image(),timer=setTimeout(function(){reject(new Error("Image loading timed out. Retry the download."))},30000),objectUrl=typeof source==="string"?"":URL.createObjectURL(source);
+      image.onload=function(){clearTimeout(timer);if(objectUrl)URL.revokeObjectURL(objectUrl);resolve(image)};
+      image.onerror=function(){clearTimeout(timer);if(objectUrl)URL.revokeObjectURL(objectUrl);reject(new Error("The watermark image could not be loaded."))};
       image.src=objectUrl||source;
     });
   }
