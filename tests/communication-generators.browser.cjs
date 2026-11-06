@@ -12,12 +12,14 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
  
  await page.locator(email?'#guestNameInput':'#guestName').fill('Test Guest');
  if(email){
-  const ids=['tour-hummingbird','tour-bear-half-day','activity-canopy','activity-canyoning','activity-coffee','activity-flora','activity-horseback','activity-macro','activity-orchid','activity-paintball','activity-quad','activity-tubing','activity-mountain-biking','activity-mountain-biking-waterfalls'];
+  const ids=['tour-hummingbird','tour-bear-half-day','tour-custom-half-day','tour-custom-full-day','activity-canopy','activity-canyoning','activity-coffee','activity-flora','activity-horseback','activity-macro','activity-orchid','activity-paintball','activity-quad','activity-tubing','activity-mountain-biking','activity-mountain-biking-waterfalls'];
   for(const id of ids){
    await page.locator('[data-block-id="'+id+'"] input[type=checkbox]').evaluate(el=>{el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));});
   }
   const images=await page.locator(preview+' img').evaluateAll(xs=>xs.map(x=>x.getAttribute('src')));
   for(const suffix of ['hummingbirds','spectacled-bear'])assert(images.some(x=>x.includes('mbw-tour-'+suffix+'-001.jpeg')));
+  for(const file of ['tour001-custom-half-day-tour.png','tour002-custom-full-day-tour.png'])assert(images.some(x=>x.includes(file)),file);
+  assert((await page.locator(preview).innerText()).includes('Price based on the approved custom quote'));
   for(const suffix of ['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001','mountain-biking-001'])assert(images.some(x=>x.includes('mbw-activities-'+suffix+'.jpeg')),suffix);
   await page.locator('[data-block-id="activity-canopy"] [data-override="price"]').evaluate(el=>{el.value='Agreed rate: $28';el.dispatchEvent(new Event('input',{bubbles:true}));});
  }else{
@@ -64,7 +66,7 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
  await page.locator('#communicationBrand').selectOption('choco-andino');
  await page.locator(email?'#languageInput':'#language').selectOption('es');
  assert((await page.locator('#htmlOutput').inputValue()).includes('Experiencias en el Chocó Andino'));assert((await page.locator('#htmlOutput').inputValue()).includes('Facturado por Mindo Bird Watching.'));
- if(email){assert((await page.locator('#htmlOutput').inputValue()).includes('Paseo en cuatrimoto'));assert((await page.locator('#htmlOutput').inputValue()).includes('$110 por persona por sesión privada'));}
+ if(email){assert((await page.locator('#htmlOutput').inputValue()).includes('Paseo en cuatrimoto'));assert((await page.locator('#htmlOutput').inputValue()).includes('$110 por persona por sesión privada'));assert((await page.locator('#htmlOutput').inputValue()).includes('Precio según la cotización personalizada aprobada'));}
  else {assert((await page.locator('#htmlOutput').inputValue()).includes('mbw-activities-macro-001.jpeg'));assert.equal(await page.locator('.itemEditor').last().locator('[data-field=duration]').inputValue(),'Custom');}
  if(!email){
   const total=await page.locator('#totalValue').innerText();await page.locator('#showImages').uncheck();const compact=await page.locator('#htmlOutput').inputValue();assert(!compact.includes('mbw_waterfall_003.jpg'));assert(!compact.includes('mbw-activities-macro-001.jpeg'));assert.equal(await page.locator('#totalValue').innerText(),total);

@@ -1072,11 +1072,17 @@
       }
       function isVehicleItem(item){return /^TRANS/i.test(String(item.productPreset||item.product_selected||item.product||item.name||""))||String(item.type||item.service_type||"").toLowerCase()==="transportation";}
       function vehicleQuantityText(item,language){const qty=Number(item.quantity||1);return String(qty)+" "+(language==="es"?(qty===1?"vehículo":"vehículos"):(qty===1?"vehicle":"vehicles"));}
-      function inboundItemQuantity(item, fallback){return Number(isVehicleItem(item)?(item.vehicle_count||item.quantity||(item.id==="primary"?1:item.guests)||1):(item.quantity||item.guests||fallback||1));}
+      function inboundItemQuantity(item, fallback){
+        if(isVehicleItem(item))return Number(item.vehicle_count||item.quantity||(item.id==="primary"?1:item.guests)||1);
+        const code=(String(item.productPreset||item.product_selected||item.product||item.name||"").match(/^([A-Z0-9-]+)/)||[])[1]||"";
+        if(PRODUCT_PRICING_RULES[code]?.quoteOnly)return 1;
+        return Number(item.quantity||item.guests||fallback||1);
+      }
       function billingQuantityLabel(item){
         const rule = pricingRuleFor(item);
         if(isVehicleItem(item))return 'Vehicles';
         if(!rule) return 'Quantity';
+        if(rule.quoteOnly) return 'Packages';
         if(rule.model === 'per_person') return 'Guests billed';
         if(rule.model === 'per_quad') return 'Quads';
         return 'Quantity';
@@ -1089,8 +1095,11 @@
         if(!rule) return '';
         const adjusted = Number(item.unitPrice || 0) !== Number(rule.price || 0);
         const minimum = rule.minGuests > 1 ? ` · usual minimum ${rule.minGuests}` : '';
-        const status = adjusted ? `Agreed rate entered · catalog reference ${money(rule.price)}` : `Catalog rate ${money(rule.price)}`;
-        return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(isVehicleItem(item)?'per vehicle':pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${adjusted ? 'Adjusted' : 'Standard'}</strong></div>`;
+        const status = rule.quoteOnly
+          ? (adjusted ? `Approved package price entered · starting reference ${money(rule.price)}` : `Starting reference ${money(rule.price)} · enter the approved package price`)
+          : (adjusted ? `Agreed rate entered · catalog reference ${money(rule.price)}` : `Catalog rate ${money(rule.price)}`);
+        const badge = rule.quoteOnly ? (adjusted ? 'Approved quote' : 'Needs quote') : (adjusted ? 'Adjusted' : 'Standard');
+        return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(isVehicleItem(item)?'per vehicle':pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${badge}</strong></div>`;
       }
       function toast(message){
         const el = $('toast');

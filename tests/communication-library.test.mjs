@@ -11,8 +11,16 @@ test('all three brands share exactly the same experience IDs, prices and images'
  assert.equal(lib.brand('unknown').id,'mbw');
 });
 test('every supplied photograph is mapped to a selectable experience and exists',()=>{
- const expected=['mbw-tour-hummingbirds-001.jpeg','mbw-tour-spectacled-bear-001.jpeg',...['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001'].map(x=>'mbw-activities-'+x+'.jpeg')];
+ const expected=['mbw-tour-hummingbirds-001.jpeg','mbw-tour-spectacled-bear-001.jpeg','tour001-custom-half-day-tour.png','tour002-custom-full-day-tour.png',...['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001'].map(x=>'mbw-activities-'+x+'.jpeg')];
  for(const file of expected){const x=lib.catalog.experiences.find(x=>x.image?.endsWith(file));assert.ok(x,file);assert.ok(fs.existsSync(new URL('..'+new URL(x.image).pathname,import.meta.url)),file);}
+});
+test('general custom tours use approved flat quotes in email and itinerary tools',()=>{
+ const options=[],defaults={},rules={},labels={};lib.applyItineraryCatalog(options,defaults,rules,labels);
+ for(const [code,id,duration,start]of [['TOUR001','tour-custom-half-day','Half Day',50],['TOUR002','tour-custom-full-day','Full Day',100]]){
+  const item=lib.byCode(code),preset=item.productPreset;assert.equal(item.id,id);assert.equal(item.model,'flat');assert.equal(item.quoteOnly,true);assert.equal(item.price,start);
+  assert.match(lib.block({},item,'en').price,/approved custom quote/);assert.match(lib.block({},item,'es').price,/cotización personalizada aprobada/);
+  assert.ok(options.includes(preset));assert.equal(defaults[preset].type,'Custom');assert.equal(defaults[preset].duration,duration);assert.equal(rules[code].model,'flat');assert.equal(rules[code].quoteOnly,true);assert.match(labels[preset],/^TOUR00[12] - Tour Personalizado/);
+ }
 });
 test('Staff Info billing units and minimums survive both card languages',()=>{
  assert.equal(lib.byCode('ACT004').model,'per_quad');assert.equal(lib.byCode('ACT011').price,10);assert.equal(lib.byCode('ACT011').minGuests,4);
@@ -23,7 +31,8 @@ test('Staff Info billing units and minimums survive both card languages',()=>{
 test('brand rendering changes identity while retaining real shared contact and omitting unverified socials',()=>{
  for(const id of Object.keys(lib.brands)){
   const b=lib.brand(id),html=lib.header(id,'es')+lib.signature(id,'es',[],'https://wa.me/593969076501')+lib.footer(id);
-  assert.match(html,new RegExp(b.name));assert.ok(html.includes(b.site));assert.ok(html.includes(b.logo));assert.ok(html.includes('mindobirdwatching@gmail.com'));
+  assert.match(html,new RegExp(b.name));assert.ok(html.includes(b.site));assert.ok(html.includes(b.logo));
+  assert.equal(b.email,'mindobirdwatching@gmail.com');
   if(id!=='mbw'){assert.ok(!lib.header(id,'es').includes('Mindo Bird Watching'));assert.ok(html.includes('Facturado por Mindo Bird Watching.'));assert.ok(!html.includes('instagram.com/mindobirdwatching'));}
  }
 });
