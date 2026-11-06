@@ -6,6 +6,6 @@ try{
  globalThis.fetch=async()=>{calls++;return new Response('image',{headers:{'content-type':'image/jpeg'}})};
  for(const bad of [url+'?x=1',url.replace('n8n.','evil.'),url.replace('fill-auto.jpg','original.mp4'),'http://127.0.0.1/private'])assert.equal((await onRequestGet({request:request(bad)})).status,400);
  assert.equal((await onRequestGet({request:request(url,'mindobirdwatching.com')})).status,403);assert.equal(calls,0);
- const response=await onRequestGet({request:request(url)});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.equal(await response.text(),'image');assert.equal(calls,1);
+ const response=await onRequestGet({request:request(url),env:{MBW_MEDIA_DELIVERY_KEY:'test-private-key'}});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.equal(await response.text(),'image');assert.equal(calls,1);
  const ui=readFileSync(new URL('../admin/assets/js/media-studio.js',import.meta.url),'utf8');assert.match(ui,/api\/admin\/media-download\?url=/);assert.match(ui,/width="1024" height="1024"/);console.log('PASS same-origin image download, owned-path allowlist, no arbitrary URLs, video/private-file rejection.');
 }finally{globalThis.fetch=old}

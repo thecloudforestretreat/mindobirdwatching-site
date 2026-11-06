@@ -33,6 +33,19 @@ class Handler(BaseHTTPRequestHandler):
  def error(self,status,message):self.send(status,json.dumps({'ok':False,'message':message}).encode())
  def do_POST(self):
   if not hmac.compare_digest(self.headers.get('X-MBW-Media-Key',''),KEY):return self.error(403,'Not authorized')
+  if self.path==PREFIX+'/download-image':
+   try:
+    guard();size=int(self.headers.get('Content-Length','0'))
+    if not 0<size<=2048:return self.error(400,'Invalid request')
+    data=json.loads(self.rfile.read(size));match=re.fullmatch(r'https://n8n\.mindobirdwatching\.com/media-delivery/v1/([a-f0-9]{32})/(original\.(?:jpg|png|webp)|(?:fill|fit)-(?:auto|center|north|south|east|west)\.jpg)',data.get('url',''))
+    if not match:return self.error(400,'Unsupported image')
+    folder=ROOT/match[1];path=folder/match[2]
+    if folder.is_symlink() or path.is_symlink() or path.stat().st_size>25*1024**2:return self.error(400,'Unsupported image')
+    meta=json.loads((folder/'metadata.json').read_text());mime=meta['mime'] if match[2].startswith('original.') else 'image/jpeg'
+    if mime not in {'image/jpeg','image/png','image/webp'}:return self.error(400,'Unsupported image')
+    return self.send(200,path.read_bytes(),mime)
+   except FileNotFoundError:return self.error(404,'Image not found')
+   except Exception:return self.error(503,'Image download unavailable')
   if self.path.startswith(PREFIX+'/reels/'):
    return self.reel_upload()
   if self.path!=PREFIX+'/upload':return self.error(404,'Not found')
