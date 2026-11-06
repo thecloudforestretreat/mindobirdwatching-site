@@ -3,7 +3,7 @@ const source=readFileSync(new URL('../functions/api/admin/media-download/index.j
 const url='https://n8n.mindobirdwatching.com/media-delivery/v1/'+'a'.repeat(32)+'/fill-auto.jpg';
 function request(u,host='admin.mindobirdwatching.com'){return new Request('https://'+host+'/api/admin/media-download?url='+encodeURIComponent(u))}
 try{
- globalThis.fetch=async()=>{calls++;return new Response('image',{headers:{'content-type':'image/jpeg'}})};
+ globalThis.fetch=async(url,options)=>{assert.equal(options.redirect,'manual','Cloudflare supports manual/follow only');assert.equal(options.method,'POST');calls++;return new Response('image',{headers:{'content-type':'image/jpeg'}})};
  for(const bad of [url+'?x=1',url.replace('n8n.','evil.'),url.replace('fill-auto.jpg','original.mp4'),'http://127.0.0.1/private'])assert.equal((await onRequestGet({request:request(bad)})).status,400);
  assert.equal((await onRequestGet({request:request(url,'mindobirdwatching.com')})).status,403);assert.equal(calls,0);
  const response=await onRequestGet({request:request(url),env:{MBW_MEDIA_DELIVERY_KEY:'test-private-key'}});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.equal(await response.text(),'image');assert.equal(calls,1);
