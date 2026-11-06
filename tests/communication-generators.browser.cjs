@@ -18,7 +18,7 @@ for(const width of [390,1440])for(const tool of ['custom-email-generator','itine
   }
   const images=await page.locator(preview+' img').evaluateAll(xs=>xs.map(x=>x.getAttribute('src')));
   for(const suffix of ['hummingbirds','spectacled-bear'])assert(images.some(x=>x.includes('mbw-tour-'+suffix+'-001.jpeg')));
-  for(const file of ['tour001-custom-half-day-tour.png','tour002-custom-full-day-tour.png'])assert(images.some(x=>x.includes(file)),file);
+  for(const file of ['mbw_tous_custom_half_day_tour_001.jpeg','mbw_tous_custom_full_day_tour_001.jpeg'])assert(images.some(x=>x.includes(file)),file);
   assert((await page.locator(preview).innerText()).includes('Price based on the approved custom quote'));
   for(const suffix of ['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001','mountain-biking-001'])assert(images.some(x=>x.includes('mbw-activities-'+suffix+'.jpeg')),suffix);
   await page.locator('[data-block-id="activity-canopy"] [data-override="price"]').evaluate(el=>{el.value='Agreed rate: $28';el.dispatchEvent(new Event('input',{bubbles:true}));});
