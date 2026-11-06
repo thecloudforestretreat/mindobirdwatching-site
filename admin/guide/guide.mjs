@@ -1,6 +1,6 @@
 import { summarizeGuestDay, summarizeGuestItinerary } from "./pricing.mjs?v=guide-20261031-v43";
 import { mountTripBuilder, renderTripQuoteRequests } from "./trip-builder.mjs";
-import { loadSupplierCommitments, renderSupplierCommitments, saveSupplierCommitment, saveSupplierTransaction } from "./supplier-commitments.mjs?v=guide-20261105-v2";
+import { loadSupplierCommitments, renderSupplierCommitments, saveSupplierCommitment, saveSupplierTransaction } from "./supplier-commitments.mjs?v=guide-20261106-v3";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));

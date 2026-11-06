@@ -11,7 +11,7 @@ test('all three brands share exactly the same experience IDs, prices and images'
  assert.equal(lib.brand('unknown').id,'mbw');
 });
 test('every supplied photograph is mapped to a selectable experience and exists',()=>{
- const expected=['mbw-tour-hummingbirds-001.jpeg','mbw-tour-spectacled-bear-001.jpeg','tour001-custom-half-day-tour.png','tour002-custom-full-day-tour.png',...['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001'].map(x=>'mbw-activities-'+x+'.jpeg')];
+ const expected=['mbw-tour-hummingbirds-001.jpeg','mbw-tour-spectacled-bear-001.jpeg','mbw_tous_custom_half_day_tour_001.jpeg','mbw_tous_custom_full_day_tour_001.jpeg',...['canopy-001','canyoning-001','coffee-tour-002','flora-excursion-001','horseback-riding-001','macro-001','orchid-tour-001','paintball-001','quad-tour-001','tubing-001'].map(x=>'mbw-activities-'+x+'.jpeg')];
  for(const file of expected){const x=lib.catalog.experiences.find(x=>x.image?.endsWith(file));assert.ok(x,file);assert.ok(fs.existsSync(new URL('..'+new URL(x.image).pathname,import.meta.url)),file);}
 });
 test('general custom tours use approved flat quotes in email and itinerary tools',()=>{

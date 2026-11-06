@@ -1,6 +1,6 @@
 const CATEGORIES = new Set(["lodging", "guide", "transportation", "reserve", "activity", "meal", "flight", "other"]);
 const CURRENCIES = new Set(["USD", "EUR", "GBP"]);
-const PAYMENT_STATUSES = new Set(["not_committed", "quoted", "deposit_due", "partially_paid", "paid", "refunded", "credited", "cancelled"]);
+const PAYMENT_STATUSES = new Set(["not_committed", "quoted", "confirmed_no_deposit", "deposit_due", "partially_paid", "paid", "refunded", "credited", "cancelled"]);
 const REFUNDABILITY = new Set(["unknown", "refundable", "partially_refundable", "nonrefundable"]);
 
 const text = (value, max = 500) => String(value ?? "").trim().slice(0, max);
@@ -36,6 +36,7 @@ export function normalizeSupplierCommitment(input = {}, { actor = "", existing =
   if (refundableAmount > amountPaid + 0.009) throw Object.assign(new Error("Refundable amount cannot exceed the amount paid."), { status: 400 });
   if (refundability === "nonrefundable" && refundableAmount > 0) throw Object.assign(new Error("A nonrefundable commitment cannot have a refundable amount."), { status: 400 });
   if (["partially_paid", "paid"].includes(paymentStatus) && amountPaid <= 0) throw Object.assign(new Error("A paid status requires an amount paid."), { status: 400 });
+  if (paymentStatus === "confirmed_no_deposit" && amountPaid > 0) throw Object.assign(new Error("A no-deposit confirmation cannot include an amount paid."), { status: 400 });
 
   const evidenceUrl = text(input.evidence_url ?? existing?.evidence_url, 1000);
   if (evidenceUrl) {

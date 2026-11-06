@@ -139,7 +139,7 @@ const catalog={
         "en": "Custom Half-Day Tour",
         "es": "Tour Personalizado de Medio Día"
       },
-      "image": "https://mindobirdwatching.com/assets/images/tours/custom/tour001-custom-half-day-tour.png",
+      "image": "https://mindobirdwatching.com/assets/images/tours/custom/mbw_tous_custom_half_day_tour_001.jpeg",
       "description": {
         "en": "A flexible private half-day experience planned around the guest’s interests, pace, location and confirmed inclusions. The itinerary and final package price are prepared individually.",
         "es": "Una experiencia privada y flexible de medio día, diseñada según los intereses, el ritmo, el lugar y los servicios confirmados para el visitante. El itinerario y el precio final del paquete se preparan de forma individual."
@@ -169,7 +169,7 @@ const catalog={
         "en": "Custom Full-Day Tour",
         "es": "Tour Personalizado de Día Completo"
       },
-      "image": "https://mindobirdwatching.com/assets/images/tours/custom/tour002-custom-full-day-tour.png",
+      "image": "https://mindobirdwatching.com/assets/images/tours/custom/mbw_tous_custom_full_day_tour_001.jpeg",
       "description": {
         "en": "A flexible private full-day experience planned around the guest’s interests, pace, locations and confirmed inclusions. The itinerary and final package price are prepared individually.",
         "es": "Una experiencia privada y flexible de día completo, diseñada según los intereses, el ritmo, los lugares y los servicios confirmados para el visitante. El itinerario y el precio final del paquete se preparan de forma individual."
