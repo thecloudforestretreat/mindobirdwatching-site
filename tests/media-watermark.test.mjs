@@ -33,16 +33,16 @@ test("Media Studio keeps clean downloads as the default and brands single or ZIP
   const source=fs.readFileSync(path.join(root,"admin/assets/js/media-studio.js"),"utf8");
   assert.match(source,/downloadBranding:\{logo:false,url:false\}/);
   assert.match(source,/preparedSlide\(url,options\)/);
-  assert.match(source,/slides\.map\(function\(url\)\{return preparedSlide\(url,options\)\}\)/);
+  assert.match(source,/blobs\.push\(await preparedSlide\(slides\[i\],options\)\)/);
   assert.match(source,/Publishing images remain unchanged\./);
 });
 
 test("Media Studio loads the watermark helper before the download controller",()=>{
   const html=fs.readFileSync(path.join(root,"admin/media/index.html"),"utf8");
-  assert.match(html,/media-studio\.css\?v=21/);
-  const helper=html.indexOf("media-watermark.js?v=1");
+  assert.match(html,/media-studio\.css\?v=22/);
+  const helper=html.indexOf("media-watermark.js?v=2");
   const analytics=html.indexOf("media-analytics.js?v=6");
-  const controller=html.indexOf("media-studio.js?v=27");
+  const controller=html.indexOf("media-studio.js?v=28");
   assert.ok(helper>=0&&analytics>helper&&controller>analytics);
 });
 
@@ -56,3 +56,11 @@ test("the local watermark logo is the high-resolution 1024px asset",()=>{
   assert.equal(png.readUInt32BE(16),1024);
   assert.equal(png.readUInt32BE(20),1024);
 });
+
+ test("watermark toggles keep the current slide mounted and expose load errors",()=>{
+ const source=fs.readFileSync(path.join(root,"admin/assets/js/media-studio.js"),"utf8");
+ const handler=source.slice(source.indexOf("function bindDownloadBrandControls"),source.indexOf("function bindDownloadBrandControls")+1100);
+ assert.ok(!handler.includes("renderDetail()"));
+ assert.match(handler,/Logo could not load/);
+ assert.match(source,/media-download\?url=/);
+ });
