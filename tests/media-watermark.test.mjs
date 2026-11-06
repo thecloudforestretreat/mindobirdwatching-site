@@ -56,3 +56,11 @@ test("the local watermark logo is the high-resolution 1024px asset",()=>{
   assert.equal(png.readUInt32BE(16),1024);
   assert.equal(png.readUInt32BE(20),1024);
 });
+
+ test("watermark toggles keep the current slide mounted and expose load errors",()=>{
+ const source=fs.readFileSync(path.join(root,"admin/assets/js/media-studio.js"),"utf8");
+ const handler=source.slice(source.indexOf("function bindDownloadBrandControls"),source.indexOf("function bindDownloadBrandControls")+1100);
+ assert.ok(!handler.includes("renderDetail()"));
+ assert.match(handler,/Logo could not load/);
+ assert.match(source,/media-download\?url=/);
+ });
