@@ -17,3 +17,11 @@ Validation gates: original SHA256 equality; 1080×1350 rendition; anonymous HTTP
 `register_reel.py` registers one explicitly selected MP4 from `Mindo Bird Watching/Media/Publishing/Reels/Ready`, verifies H.264/AAC compatibility using existing ffprobe, creates an immutable APFS clone under `Publishing/Media-Studio/Reels`, and independently verifies source and publishing copies on the backup8TB. It does not transcode. The existing constrained HTTPS route serves only registered `original.mp4` objects with streamed GET/HEAD and normal/suffix byte ranges. No public filesystem browser or video-upload endpoint is added.
 
 Reel Studio and the active Reels Admin Gateway accept only the owned opaque MP4 path plus legacy URLs. Normal scheduling, human review, per-platform publication claims and saved IDs remain unchanged. `Ready` placement alone does not submit or approve a reel. The baseline schedule is distinct from evidence-qualified timing recommendations.
+
+### Reel Studio upload
+
+Signed-in owner/agent users can choose an MP4 in Add reels. The admin-only `/api/admin/reel-uploads` bridge sends sequential 8 MiB SHA-256-checked chunks to the private loopback service. Maximum 1 GiB/15 minutes; ffprobe validates H.264/AAC using the existing video runtime. Originals are not transcoded. Uploaded objects use content-based keyed IDs, so repeating an upload never overwrites an existing publishing file or metadata.
+
+Temporary uploads are held outside Immich's library in `.Reel-Uploads` and expire after 24 hours; there are at most ten sessions. Only completed objects are publicly addressable. When the known backup disk is mounted, the complete publishing object is copied and checksum-verified there before returning success. If disconnected, UI clearly reports backup pending; never remove originals until independent backup is verified.
+
+Uploading does not call n8n or create/approve/schedule a post. The user then supplies a description and date and explicitly generates a draft using the existing review flow. Existing URL intake and scheduled records remain supported. Changing a scheduled reel's media remains a separate explicit action.

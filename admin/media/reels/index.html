@@ -145,7 +145,10 @@
     <article class="batchItem">
       <div class="batchItemHeader"><strong>Reel <span data-row-number></span></strong><button class="textButton dangerText" type="button" data-remove-row>Remove</button></div>
       <div class="batchItemFields">
-        <label class="wide"><span>Video delivery URL</span><input type="url" data-field="video_url" placeholder="https://n8n.mindobirdwatching.com/media-delivery/…/original.mp4" required /></label>
+        <label class="wide"><span>Upload reel video</span><input type="file" data-reel-file accept="video/mp4,.mp4" /><small>MP4 · H.264 video + AAC audio · up to 1 GiB and 15 minutes. Original quality is preserved.</small></label>
+        <div class="wide" data-upload-status role="status" aria-live="polite">Choose a video to upload. Uploading does not schedule a post.</div>
+        <video class="wide reviewVideo" data-upload-preview controls muted playsinline preload="metadata" hidden></video>
+        <details class="wide"><summary>Already have a delivery URL?</summary><label><span>Video delivery URL</span><input type="url" data-field="video_url" placeholder="https://n8n.mindobirdwatching.com/media-delivery/…/original.mp4" /></label></details>
         <label class="wide"><span>Short factual description</span><textarea data-field="reel_description" rows="3" maxlength="1200" placeholder="What happens in the reel? Include known birds, activity, or details you want the copy to use." required></textarea></label>
         <label><span>Scheduled date</span><input type="date" data-field="scheduled_date" required /></label>
         <label><span>Scheduled time</span><input type="time" data-field="scheduled_time" required /></label>
@@ -154,6 +157,6 @@
   </template>
 
   <script defer src="/assets/js/admin-nav.js?v=6"></script>
-  <script defer src="/assets/js/reels-studio.js?v=16"></script>
+  <script defer src="/assets/js/reels-studio.js?v=17"></script>
 </body>
 </html>

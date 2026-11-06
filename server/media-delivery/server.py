@@ -2,6 +2,7 @@
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 import os,json,uuid,re,hashlib,hmac,subprocess,threading,urllib.parse,plistlib,time
+from reel_uploads import ReelUploads,LOCK,CHUNK_BYTES
 ROOT=Path(os.environ['MBW_MEDIA_ROOT']);KEY=Path(os.environ['MBW_MEDIA_KEY_FILE']).read_text().strip();PREFIX='/media-delivery';BASE='https://n8n.mindobirdwatching.com'+PREFIX;SCRIPT=Path(__file__).with_name('render.py');LIMIT=12*1024*1024;RENDER=threading.Semaphore(1)
 assert len(KEY)>=40
 
@@ -14,6 +15,13 @@ def render(raw,*args):
   r=subprocess.run(cmd,input=raw,capture_output=True,timeout=90)
   if r.returncode:raise ValueError('Image could not be processed')
   return r.stdout
+def backup_reel(dest):
+ backup=Path('/Volumes/JPG-Backup-8TB')
+ if not backup.is_mount():return None
+ info=plistlib.loads(subprocess.check_output(['/usr/sbin/diskutil','info','-plist',str(backup)],timeout=10))
+ if info.get('VolumeUUID')!='015B7E4D-E501-4EFF-9922-4BDE493B2D71' or info.get('Locked'):return None
+ return backup/dest.relative_to('/Volumes/JPG-Server-8TB')
+UPLOADS=ReelUploads(ROOT.parent/'Reels',KEY,guard,backup_reel)
 class Handler(BaseHTTPRequestHandler):
  server_version='MBWMedia/1'
  def log_message(self,format,*args):pass
@@ -25,6 +33,8 @@ class Handler(BaseHTTPRequestHandler):
  def error(self,status,message):self.send(status,json.dumps({'ok':False,'message':message}).encode())
  def do_POST(self):
   if not hmac.compare_digest(self.headers.get('X-MBW-Media-Key',''),KEY):return self.error(403,'Not authorized')
+  if self.path.startswith(PREFIX+'/reels/'):
+   return self.reel_upload()
   if self.path!=PREFIX+'/upload':return self.error(404,'Not found')
   try:
    guard();size=int(self.headers.get('Content-Length','0'));mime=self.headers.get('Content-Type','').split(';')[0]
@@ -38,6 +48,22 @@ class Handler(BaseHTTPRequestHandler):
     data=render(raw,fit,gravity);(folder/(fit+'-'+gravity+'.jpg')).write_bytes(data)
    self.send(200,json.dumps({'ok':True,'secure_url':BASE+'/v1/'+ident+'/original.'+ext,'original_url':BASE+'/v1/'+ident+'/original.'+ext,'width':info['width'],'height':info['height'],'sha256':meta['sha256'],'public_id':ident}).encode())
   except (ValueError,AssertionError,subprocess.SubprocessError,OSError):self.error(503,'Media server unavailable or image could not be prepared. No carousel was submitted.')
+ def reel_upload(self):
+  try:
+   size=int(self.headers.get('Content-Length','0'));action=self.path.removeprefix(PREFIX+'/reels/')
+   if action not in {'start','chunk','finish'}:return self.error(404,'Not found')
+   if not 0<size<=(CHUNK_BYTES if action=='chunk' else 4096):return self.error(400,'Invalid upload request size')
+   self.connection.settimeout(120)
+   raw=self.rfile.read(size)
+   if len(raw)!=size:return self.error(400,'Incomplete upload request')
+   with LOCK:
+    if action=='chunk':result=UPLOADS.chunk(self.headers.get('X-Upload-Id',''),int(self.headers.get('X-Upload-Offset','-1')),raw,self.headers.get('X-Chunk-SHA256',''))
+    else:
+     data=json.loads(raw)
+     result=UPLOADS.begin(data) if action=='start' else UPLOADS.finish(data.get('upload_id'))
+   self.send(200,json.dumps(result).encode())
+  except (ValueError,KeyError,FileNotFoundError):self.error(400,'Upload could not be verified. Use MP4 with H.264 video and AAC audio, up to 1 GiB and 15 minutes. No draft was submitted.')
+  except Exception:self.error(503,'Upload service or backup verification unavailable. No draft was submitted; retry the upload.')
  def do_HEAD(self):self.do_GET()
  def do_GET(self):
   path=urllib.parse.urlsplit(self.path)
