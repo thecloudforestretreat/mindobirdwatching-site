@@ -19,7 +19,7 @@ function harness({customer=null,refunded=0,applied='',wrongGuest=false,wrongInqu
   else if(p.startsWith('/v1/invoices/in_QA'))out=invoice();
   else throw Error('Unexpected external destination '+p);
   if(key)idempotent.set(key,out);return Response.json(out);
- }};vm.createContext(ctx);vm.runInContext(source.replace('export default {','globalThis.worker = {'),ctx);
+ }};vm.createContext(ctx);vm.runInContext(source.replace('const worker = {','globalThis.worker = {').replace('export default worker;',''),ctx);
  // Local-only QA stubs: these tests never contact accounting, CRM or guest email services.
  ctx.postToAgentActivityLogger=async()=>({ok:true});ctx.syncRevenueAttribution=async()=>({ok:true});ctx.syncCrmInvoiceLedger=async()=>({ok:true});
  const base={language:'en',stripe_environment:'sandbox',tour_code:'MBW004',number_of_people:2,price_override_per_person:99,price_adjustment_per_person:39,pricing_reason:'Historical agreed rate',main_contact_name:'QA Guest',main_contact_email:'qa@example.invalid',main_contact_phone:'+15555550100',whatsapp_number:'+15555550100',pickup_location_label:'QA hotel',pickup_address_or_hotel:'QA hotel',tour_date:'2026-11-12',inquiry_id:'INQ-QA',guest_id:'G-QA',deposit_payment_intent_id:'pi_QA'};

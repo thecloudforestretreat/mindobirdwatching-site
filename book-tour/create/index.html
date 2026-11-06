@@ -1160,6 +1160,12 @@
     return `${els.mainFirstName.value.trim()} ${els.mainLastName.value.trim()}`.trim();
   }
 
+  function invoiceMarketingBrandId() {
+    const inbound = getInboundData();
+    const value = getInboundValue(inbound, "marketing_brand_id", "brand_id", "brandId").toLowerCase();
+    return ["mbw", "mindo-tours", "choco-andino"].includes(value) ? value : "mbw";
+  }
+
   function getDefaultTomorrowISO() {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -1565,14 +1571,17 @@ function createItem(initial = {}) {
       function refreshPricingControls() {
         const selectedTour = getTourByCodeAndLanguage(item.tour_code, item.language);
         const flatPriced = isFlatPriced(selectedTour);
+        const quoteOnly = !!(selectedTour && selectedTour.quote_only);
         const perQuad = !!(selectedTour && selectedTour.pricing_model === "per_quad");
         const quantityLabel = qtyInput.closest('.field').querySelector('label');
         if (quantityLabel) quantityLabel.textContent = isVehicleTour(selectedTour)?"Passengers (one vehicle per line)":perQuad ? "Quantity" : "Number of people";
         if (priceAdjustmentLabel) {
-          priceAdjustmentLabel.textContent = isVehicleTour(selectedTour)?"Price adjustment/vehicle":flatPriced ? "Price adjustment/booking" : perQuad ? "Price adjustment/quad" : "Price adjustment/person";
+          priceAdjustmentLabel.textContent = quoteOnly ? "Adjustment from starting amount" : isVehicleTour(selectedTour)?"Price adjustment/vehicle":flatPriced ? "Price adjustment/booking" : perQuad ? "Price adjustment/quad" : "Price adjustment/person";
         }
         if (pricingHelper) {
-          pricingHelper.textContent = isVehicleTour(selectedTour)?"Each transportation line quotes one vehicle. Passenger count does not multiply the price. Add another transportation line for another vehicle. Adjustments apply to that vehicle.":selectedTour && selectedTour.tour_code === "ACT021"
+          pricingHelper.textContent = quoteOnly
+            ? `Required. Enter the difference between the $${parseTourAmount(selectedTour).toFixed(0)} starting amount and the guest-approved total. Example: an approved $380 full-day quote uses +280. The invoice charges the final total once, not per guest.`
+            : isVehicleTour(selectedTour)?"Each transportation line quotes one vehicle. Passenger count does not multiply the price. Add another transportation line for another vehicle. Adjustments apply to that vehicle.":selectedTour && selectedTour.tour_code === "ACT021"
             ? "Standard price is $110 per person per private session. Add one booking item for each session; Number of people is the participant count for that session."
             : perQuad
             ? "Standard price is $30 per quad. Enter the number of units in Quantity. Adjustments apply per quad."
@@ -1754,9 +1763,10 @@ function createItem(initial = {}) {
   function updateModeUI() {
     const multi = state.items.length > 1;
     const hasQuadRental = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad");
+    const hasQuoteOnly = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.quote_only);
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi || hasQuadRental || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
+    els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
     els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch();
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
@@ -1769,6 +1779,8 @@ function createItem(initial = {}) {
         <br />
         Send Invoice will call <strong>/stripe/api/create-invoice-multi</strong>.
       `;
+    } else if (hasQuoteOnly) {
+      els.actionSummary.textContent = "Custom tours are quote-only. Enter the approved price adjustment and use Send Invoice; public payment links are disabled.";
     } else if (state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked)) {
       els.actionSummary.textContent = "Use Send Invoice to preserve the agreed price and verified deposit credit. Generate Link is disabled.";
     } else if (hasQuadRental) {
@@ -1821,6 +1833,7 @@ function createItem(initial = {}) {
       if (tour && tour.pricing_model === "per_quad" && (!Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) errors.push(`Item ${idx + 1}: Enter a positive whole number of quads.`);
       if (!Number.isInteger(Number(item.quantity))) errors.push(`Item ${idx + 1}: Number of people must be a whole number.`);
       if (tour && Number(tour.max_person) > 0 && Number(item.quantity) > Number(tour.max_person)) errors.push(`Item ${idx + 1}: Maximum ${tour.max_person} people allowed.`);
+      if (tour && tour.requires_price_override && !hasOverridePrice(item)) errors.push(`Item ${idx + 1}: Enter the guest-approved custom-tour price adjustment.`);
 
       if (hasOverridePrice(item)) {
         const overrideValue = Number(item.price_override_per_person);
@@ -1862,6 +1875,8 @@ function createItem(initial = {}) {
       guest_id: els.guestId.value.trim(),
       booking_id: els.bookingId.value.trim(),
       quote_id: els.quoteId.value.trim(),
+      billing_brand_id: "mbw",
+      marketing_brand_id: invoiceMarketingBrandId(),
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -1901,6 +1916,8 @@ function createItem(initial = {}) {
       guest_id: els.guestId.value.trim(),
       booking_id: els.bookingId.value.trim(),
       quote_id: els.quoteId.value.trim(),
+      billing_brand_id: "mbw",
+      marketing_brand_id: invoiceMarketingBrandId(),
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -2067,6 +2084,10 @@ function createItem(initial = {}) {
     }
     if (state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad")) {
       showStatus("Use Send Invoice for quad rentals.", "error");
+      return;
+    }
+    if (state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.quote_only)) {
+      showStatus("Custom tours require a staff-issued invoice using the guest-approved quote.", "error");
       return;
     }
     if (state.items.some(item => hasOverridePrice(item))) {

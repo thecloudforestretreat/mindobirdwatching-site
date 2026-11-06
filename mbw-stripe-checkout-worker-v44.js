@@ -202,6 +202,118 @@ function requireBookingTerms(form, language, deposit = false) {
 
 const TOURS = [
   {
+    "tour_code": "TOUR001",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Custom Half-Day Tour",
+    "service_type": "custom_tour",
+    "pricing_model": "flat",
+    "product_id_live": "prod_Va12buMDOKlHKP",
+    "price_id_live": "price_1UYr0p0wAAlYwqaV3wz9o17z",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Half Day",
+    "pickup_time_local": "Custom",
+    "dropoff_time_local": "Custom",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/tours/custom/tour001-custom-half-day-tour.png",
+    "tour_page_url": "",
+    "description_one_liner": "A flexible private half-day experience planned around the guest's interests, pace, location, and confirmed inclusions. The final itinerary and price are prepared individually.",
+    "use_inline_price": true,
+    "quote_only": true,
+    "requires_price_override": true,
+    "allow_test_product_creation": true
+  },
+  {
+    "tour_code": "TOUR001",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Tour Personalizado de Medio Día",
+    "service_type": "custom_tour",
+    "pricing_model": "flat",
+    "product_id_live": "prod_Va12buMDOKlHKP",
+    "price_id_live": "price_1UYr0p0wAAlYwqaV3wz9o17z",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Medio Día",
+    "pickup_time_local": "Personalizado",
+    "dropoff_time_local": "Personalizado",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/tours/custom/tour001-custom-half-day-tour.png",
+    "tour_page_url": "",
+    "description_one_liner": "Una experiencia privada y flexible de medio día, diseñada según los intereses, el ritmo, el lugar y los servicios confirmados para el visitante. El itinerario y el precio final se preparan de forma individual.",
+    "use_inline_price": true,
+    "quote_only": true,
+    "requires_price_override": true,
+    "allow_test_product_creation": true
+  },
+  {
+    "tour_code": "TOUR002",
+    "language": "en",
+    "status": "active",
+    "tour_title": "Custom Full-Day Tour",
+    "service_type": "custom_tour",
+    "pricing_model": "flat",
+    "product_id_live": "prod_Va1Z7287eckknz",
+    "price_id_live": "price_1UYrWA0wAAlYwqaVaMLnFZst",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$100.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Full Day",
+    "pickup_time_local": "Custom",
+    "dropoff_time_local": "Custom",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/tours/custom/tour002-custom-full-day-tour.png",
+    "tour_page_url": "",
+    "description_one_liner": "A flexible private full-day experience planned around the guest's interests, pace, locations, and confirmed inclusions. The final itinerary and price are prepared individually.",
+    "use_inline_price": true,
+    "quote_only": true,
+    "requires_price_override": true,
+    "allow_test_product_creation": true
+  },
+  {
+    "tour_code": "TOUR002",
+    "language": "es",
+    "status": "active",
+    "tour_title": "Tour Personalizado de Día Completo",
+    "service_type": "custom_tour",
+    "pricing_model": "flat",
+    "product_id_live": "prod_Va1Z7287eckknz",
+    "price_id_live": "price_1UYrWA0wAAlYwqaVaMLnFZst",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$100.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Día Completo",
+    "pickup_time_local": "Personalizado",
+    "dropoff_time_local": "Personalizado",
+    "pickup_window_minutes": 15,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/tours/custom/tour002-custom-full-day-tour.png",
+    "tour_page_url": "",
+    "description_one_liner": "Una experiencia privada y flexible de día completo, diseñada según los intereses, el ritmo, los lugares y los servicios confirmados para el visitante. El itinerario y el precio final se preparan de forma individual.",
+    "use_inline_price": true,
+    "quote_only": true,
+    "requires_price_override": true,
+    "allow_test_product_creation": true
+  },
+  {
     "tour_code": "MBW004",
     "language": "en",
     "status": "active",
@@ -2139,6 +2251,17 @@ function optionalBoolean(v) {
   return false;
 }
 
+function normalizeBrandId(value) {
+  const brand = String(value || "").trim().toLowerCase();
+  return ["mbw", "mindo-tours", "choco-andino"].includes(brand) ? brand : "mbw";
+}
+
+function requireApprovedCustomPrice(tour, overrideAmount, itemLabel = "Custom tour") {
+  if (tour && tour.requires_price_override && overrideAmount === null) {
+    throw new Error(`${itemLabel}: enter the guest-approved final price before creating the invoice.`);
+  }
+}
+
 function firstNonEmptyString(...values) {
   for (const v of values) {
     if (typeof v === "string" && v.trim()) return v.trim();
@@ -3104,7 +3227,7 @@ function getInvoicePaymentIntentId(inv, eventObj) {
   return valid.find(value=>value!==deposit) || valid[0] || "";
 }
 
-export default {
+const worker = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const routePrefix = "/stripe";
@@ -3194,6 +3317,8 @@ export default {
         solo_amount_display: t.solo_amount_display || "",
         guide_cost_per_person: t.guide_cost_per_person || null,
         solo_guide_cost: t.solo_guide_cost || null,
+        quote_only: t.quote_only === true,
+        requires_price_override: t.requires_price_override === true,
       }));
       return new Response(JSON.stringify({ ok: true, tours }, null, 2), {
         status: 200,
@@ -3491,6 +3616,9 @@ export default {
         const isTest = stripeEnv !== "live";
         const tour = findTour(tour_code, language);
         if (!tour) throw new Error("Tour not found for selected language");
+        if (tour.quote_only) {
+          throw new Error("This custom tour requires a staff-issued invoice using the guest-approved quote.");
+        }
         const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, number_of_people, body.quad_count) : null;
         if (Number(tour.max_person) > 0 && number_of_people > Number(tour.max_person)) throw new Error(`Maximum ${tour.max_person} people allowed`);
 
@@ -3694,6 +3822,8 @@ export default {
         const guest_id = validInternalId(body.guest_id, "G");
         const booking_id = optionalString(body.booking_id);
         const quote_id = optionalString(body.quote_id);
+        const marketing_brand_id = normalizeBrandId(firstNonEmptyString(body.marketing_brand_id, body.brand_id, body.brandId));
+        const billing_brand_id = "mbw";
         const deposit_payment_intent_id = optionalString(body.deposit_payment_intent_id);
         const minimum_party_override = optionalBoolean(body.minimum_party_override);
         const minimum_party_override_reason = optionalString(body.minimum_party_override_reason);
@@ -3706,12 +3836,13 @@ export default {
         const isTest = stripeEnv !== "live";
         const tour = findTour(tour_code, language);
         if (!tour) throw new Error("Tour not found for selected language");
+        requireApprovedCustomPrice(tour, price_override_per_person);
         const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, number_of_people, body.quad_count) : null;
         if (Number(tour.max_person) > 0 && number_of_people > Number(tour.max_person)) throw new Error(`Maximum ${tour.max_person} people allowed`);
         const deposit = await validateDepositForInvoice(env, isTest, deposit_payment_intent_id, inquiry_id, tour.currency || "USD", guest_id);
 
         const ids = resolveTourIdsStrict(tour, isTest);
-        if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
+        if (!ids.product_id && !(isTest && tour.allow_test_product_creation)) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
         const minimumPartySize = Number(tour.min_person || 0);
         const isBelowMinimum = Boolean(minimumPartySize && number_of_people < minimumPartySize);
         if (isBelowMinimum && !minimum_party_override) {
@@ -3774,6 +3905,8 @@ export default {
           guest_id,
           booking_id,
           quote_id,
+          billing_brand_id,
+          marketing_brand_id,
           minimum_party_override: isBelowMinimum && minimum_party_override ? "true" : "false",
           minimum_party_override_reason: isBelowMinimum ? minimum_party_override_reason : "",
           minimum_party_original: isBelowMinimum ? String(minimumPartySize) : "",
@@ -3979,6 +4112,8 @@ export default {
         const guest_id = validInternalId(body.guest_id, "G");
         const booking_id = optionalString(body.booking_id);
         const quote_id = optionalString(body.quote_id);
+        const marketing_brand_id = normalizeBrandId(firstNonEmptyString(body.marketing_brand_id, body.brand_id, body.brandId));
+        const billing_brand_id = "mbw";
         const deposit_payment_intent_id = optionalString(body.deposit_payment_intent_id);
         const minimum_party_override = optionalBoolean(body.minimum_party_override);
         const minimum_party_override_reason = optionalString(body.minimum_party_override_reason);
@@ -4004,9 +4139,10 @@ export default {
 
           const tour = findTour(tour_code, language);
           if (!tour) throw new Error(`Tour not found for item ${index + 1}`);
+          requireApprovedCustomPrice(tour, price_override_per_person, `Item ${index + 1}`);
 
           const ids = resolveTourIdsStrict(tour, isTest);
-        if (!ids.product_id) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
+          if (!ids.product_id && !(isTest && tour.allow_test_product_creation)) throw new Error(`Stripe product mapping is required for ${tour_code} before selling it.`);
           const quad_count = tour.pricing_model === "per_quad" ? validatedQuadCount(tour, quantity, raw.quad_count) : null;
           if (Number(tour.max_person) > 0 && quantity > Number(tour.max_person)) throw new Error(`Item ${index + 1}: maximum ${tour.max_person} people allowed`);
           const minimumPartySize = Number(tour.min_person || 0);
@@ -4090,6 +4226,8 @@ export default {
           guest_id,
           booking_id,
           quote_id,
+          billing_brand_id,
+          marketing_brand_id,
           minimum_party_override: belowMinimumItems.length && minimum_party_override ? "true" : "false",
           minimum_party_override_reason: belowMinimumItems.length ? minimum_party_override_reason : "",
           minimum_party_override_items: minimumPartyOverrideSummary,
@@ -4136,6 +4274,8 @@ export default {
           guest_id,
           booking_id,
           quote_id,
+          billing_brand_id,
+          marketing_brand_id,
           minimum_party_override: belowMinimumItems.length && minimum_party_override ? "true" : "false",
           minimum_party_override_reason: belowMinimumItems.length ? minimum_party_override_reason : "",
           minimum_party_override_items: minimumPartyOverrideSummary,
@@ -4202,6 +4342,8 @@ export default {
             guest_id,
             booking_id,
             quote_id,
+            billing_brand_id,
+            marketing_brand_id,
             minimum_party_override: item.isBelowMinimum && minimum_party_override ? "true" : "false",
             minimum_party_override_reason: item.isBelowMinimum ? minimum_party_override_reason : "",
             minimum_party_original: item.isBelowMinimum ? String(item.minimumPartySize) : "",
@@ -4515,11 +4657,23 @@ export default {
       if (!sig) return text("Missing stripe-signature", 400);
 
       const payload = await request.text();
+      const isQueuedDelivery = request.headers.get("x-mbw-queue-delivery") === "1";
       let event;
       try {
         event = await verifyStripeSignature(payload, sig, [env.STRIPE_WEBHOOK_SECRET_TEST, env.STRIPE_WEBHOOK_SECRET]);
       } catch (err) {
         return text(`Webhook signature verification failed: ${err.message}`, 400);
+      }
+
+      if (!isQueuedDelivery && env.STRIPE_WEBHOOK_QUEUE) {
+        await env.STRIPE_WEBHOOK_QUEUE.send({
+          payload,
+          stripe_signature: sig,
+          stripe_event_id: String(event.id || ""),
+          stripe_event_type: String(event.type || ""),
+          received_at: new Date().toISOString(),
+        });
+        return text("queued", 200);
       }
 
       const eventObject = event.data && event.data.object ? event.data.object : {};
@@ -5056,6 +5210,8 @@ export default {
                   const fields = {
                     created_at_iso: formatISOInNY(paidAt),
                     stripe_environment: lineMd.stripe_environment || invMd.stripe_environment || (event.livemode ? "live" : "sandbox"),
+                    billing_brand_id: lineMd.billing_brand_id || invMd.billing_brand_id || "mbw",
+                    marketing_brand_id: lineMd.marketing_brand_id || invMd.marketing_brand_id || "mbw",
                     stripe_event_id: event.id || "",
                     stripe_session_id: "",
                     stripe_payment_intent: paymentIntentId,
@@ -5201,6 +5357,8 @@ export default {
                 const fields = {
                   created_at_iso: formatISOInNY(paidAt),
                   stripe_environment: md.stripe_environment || (event.livemode ? "live" : "sandbox"),
+                  billing_brand_id: md.billing_brand_id || "mbw",
+                  marketing_brand_id: md.marketing_brand_id || "mbw",
                   stripe_event_id: event.id || "",
                   stripe_session_id: "",
                   stripe_payment_intent: paymentIntentId,
@@ -5402,6 +5560,20 @@ export default {
 
       })();
 
+      if (isQueuedDelivery) {
+        try {
+          await processVerifiedWebhookEvent;
+          return text("ok", 200);
+        } catch (err) {
+          console.log("Queued Stripe webhook processing failed", {
+            stripe_event_id: event.id || "",
+            event_type: event.type || "",
+            error: String(err && err.message ? err.message : err),
+          });
+          return text("Queued accounting processing failed; retry required", 500);
+        }
+      }
+
       // Guide tips and paid invoices are completed synchronously so Stripe retries
       // the webhook if accounting, CRM ledger, or notification writes fail. All
       // writes use Stripe identifiers as idempotency keys, so a retry cannot
@@ -5442,4 +5614,58 @@ export default {
 
     return text("Not found", 404);
   },
+  async queue(batch, env, ctx) {
+    for (const message of batch.messages) {
+      const body = message && message.body && typeof message.body === "object" ? message.body : {};
+      const payload = typeof body.payload === "string" ? body.payload : "";
+      const signature = typeof body.stripe_signature === "string" ? body.stripe_signature : "";
+      if (!payload || !signature) {
+        console.log("Discarding malformed Stripe webhook queue message", {
+          queue_message_id: message.id || "",
+          stripe_event_id: body.stripe_event_id || "",
+        });
+        message.ack();
+        continue;
+      }
+      try {
+        console.log("Processing Stripe webhook queue message", {
+          queue_message_id: message.id || "",
+          stripe_event_id: body.stripe_event_id || "",
+          stripe_event_type: body.stripe_event_type || "",
+        });
+        const response = await worker.fetch(
+          new Request("https://mindobirdwatching.com/stripe/webhook", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "stripe-signature": signature,
+              "x-mbw-queue-delivery": "1",
+            },
+            body: payload,
+          }),
+          env,
+          ctx,
+        );
+        if (!response.ok) {
+          throw new Error(`Queued webhook returned HTTP ${response.status}: ${await response.text()}`);
+        }
+        console.log("Stripe webhook queue message completed", {
+          queue_message_id: message.id || "",
+          stripe_event_id: body.stripe_event_id || "",
+          stripe_event_type: body.stripe_event_type || "",
+        });
+        message.ack();
+      } catch (err) {
+        console.log("Stripe webhook queue message will retry", {
+          queue_message_id: message.id || "",
+          stripe_event_id: body.stripe_event_id || "",
+          stripe_event_type: body.stripe_event_type || "",
+          error: String(err && err.message ? err.message : err),
+        });
+        message.retry();
+      }
+    }
+  },
 };
+
+export default worker;
