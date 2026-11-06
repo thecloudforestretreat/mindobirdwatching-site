@@ -33,7 +33,7 @@ test("Media Studio keeps clean downloads as the default and brands single or ZIP
   const source=fs.readFileSync(path.join(root,"admin/assets/js/media-studio.js"),"utf8");
   assert.match(source,/downloadBranding:\{logo:false,url:false\}/);
   assert.match(source,/preparedSlide\(url,options\)/);
-  assert.match(source,/slides\.map\(function\(url\)\{return preparedSlide\(url,options\)\}\)/);
+  assert.match(source,/blobs\.push\(await preparedSlide\(slides\[i\],options\)\)/);
   assert.match(source,/Publishing images remain unchanged\./);
 });
 

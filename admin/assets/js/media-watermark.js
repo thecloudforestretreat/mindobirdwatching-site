@@ -77,7 +77,7 @@
       context.fillStyle="#fff";context.shadowColor="rgba(0,0,0,.72)";context.shadowBlur=Math.max(3,Math.round(fontSize*.12));context.shadowOffsetY=Math.max(2,Math.round(fontSize*.08));context.fillText(WEBSITE,mark.urlX,mark.urlBaseline);context.restore();
     }
     var requested=String(blob.type||"").toLowerCase(),type=["image/jpeg","image/png","image/webp"].includes(requested)?requested:"image/jpeg";
-    return canvasBlob(canvas,type);
+    try { return await canvasBlob(canvas,type); } finally { canvas.width=0;canvas.height=0; }
   }
 
   root.MBWMediaWatermark={render:render,layout:layout,variantSuffix:variantSuffix,website:WEBSITE,logoUrl:LOGO_URL,logoOpacity:.6};
