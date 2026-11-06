@@ -12,7 +12,7 @@ function harness({status='void',fail=false,mismatch=false}={}){
    assert.equal(payload.action,'upsert_payment');writes.push(payload);if(failing)return Response.json({ok:false,error:'QA failure'});
    Object.assign(row,payload.payment);return Response.json({ok:true,record:row});
   }throw Error('Unexpected destination '+url);
- }};vm.createContext(c);vm.runInContext(source.replace('export default {','globalThis.worker = {'),c);
+ }};vm.createContext(c);vm.runInContext(source.replace('const worker = {','globalThis.worker = {').replace('export default worker;',''),c);
  const env={CF_SHARED_SECRET:'QA-secret',STRIPE_SECRET_KEY:'sk_QA',STRIPE_WEBHOOK_SECRET:'QA-signature',CRM_API_URL:'https://qa.invalid/crm'};
  return {row,calls,writes,invoice,recover(){failing=false;},manual:(token='QA-secret',id='INQ-QA')=>c.worker.fetch(new Request('https://qa.invalid/api/invoices/reconcile',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({inquiry_id:id})}),env,{}),event:(type='invoice.voided',live=true)=>{const t=Math.floor(Date.now()/1000),body=JSON.stringify({id:'evt_QA',created:t,type,livemode:live,data:{object:{object:'invoice',id:'in_QA'}}}),sig=createHmac('sha256','QA-signature').update(t+'.'+body).digest('hex');return c.worker.fetch(new Request('https://qa.invalid/webhook',{method:'POST',headers:{'stripe-signature':`t=${t},v1=${sig}`},body}),env,{waitUntil(){throw Error('Must be synchronous');}});}};
 }

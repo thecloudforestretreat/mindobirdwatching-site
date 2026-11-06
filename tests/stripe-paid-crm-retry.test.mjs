@@ -24,7 +24,7 @@ async function scenario({fail='none',eventType='invoice.paid',identity=true}={})
     }
     throw Error('Unexpected test destination '+address);
   }};
-  vm.createContext(context);vm.runInContext(source.replace('export default {','globalThis.worker = {'),context);
+  vm.createContext(context);vm.runInContext(source.replace('const worker = {','globalThis.worker = {').replace('export default worker;',''),context);
   const env={STRIPE_SECRET_KEY:'sk_QA_ONLY',STRIPE_WEBHOOK_SECRET:secret,GSHEET_WEBAPP_URL:'https://qa.invalid/sheets',CRM_API_URL:'https://qa.invalid/crm'};
   const send=async()=>{const timestamp=Math.floor(Date.now()/1000),event={id:'evt_QA',created:timestamp,livemode:true,type:eventType,data:{object:eventType==='invoice_payment.paid'?{object:'invoice_payment',invoice:'in_QA'}:{object:'invoice',id:'in_QA'}}};const body=JSON.stringify(event);const signature=createHmac('sha256',secret).update(timestamp+'.'+body).digest('hex');return context.worker.fetch(new Request('https://qa.invalid/webhook',{method:'POST',headers:{'stripe-signature':`t=${timestamp},v1=${signature}`},body}),env,{waitUntil(){throw Error('Paid event must be awaited');}});};
   return {send,calls,payments,recover(){failing='none';}};

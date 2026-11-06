@@ -22,7 +22,7 @@ function harness({status='quoted',payment='unpaid',existing=false,crmFailure=fal
   if(address==='https://qa.invalid/logger'){const body=JSON.parse(options.body);logged.set(body.fields.stripe_payment_intent,body.fields);return Response.json({ok:true});}
   throw Error('Unexpected destination '+address);
  }};
- vm.createContext(context);vm.runInContext(source.replace('export default {','globalThis.worker = {'),context);
+ vm.createContext(context);vm.runInContext(source.replace('const worker = {','globalThis.worker = {').replace('export default worker;',''),context);
  const env={STRIPE_SECRET_KEY:'sk_QA',STRIPE_SECRET_KEY_TEST:'sk_test_QA',STRIPE_WEBHOOK_SECRET:secret,STRIPE_WEBHOOK_SECRET_TEST:secret,CRM_API_URL:'https://qa.invalid/crm',GSHEET_WEBAPP_URL:'https://qa.invalid/logger'};
  const create=body=>context.worker.fetch(new Request('https://qa.invalid/stripe/api/create-deposit-session',{method:'POST',body:JSON.stringify({inquiry_id:record.inquiry_id,...body})}),env,{});
  const webhook=async({live=true,paid=true,currency='usd',amount=10000,sourceSystem='mbw_usd_deposit'}={})=>{
