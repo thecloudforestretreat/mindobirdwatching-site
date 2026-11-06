@@ -72,6 +72,7 @@ if (!code.includes("action === 'publish_overdue'")) {
 `;
   code = code.replace(retryNeedle, recovery + retryNeedle);
 }
+code = code.replace("if (!/^https:\\/\\/res\\.cloudinary\\.com\\/[^/]+\\/video\\/upload\\/.+\\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(videoUrl)) return response(false, 'Enter a valid Cloudinary video URL ending in MP4, MOV, or M4V.');","if (!(/^https:\\/\\/n8n\\.mindobirdwatching\\.com\\/media-delivery\\/v1\\/[a-f0-9]{32}\\/original\\.mp4$/.test(videoUrl) || /^https:\\/\\/res\\.cloudinary\\.com\\/[^/]+\\/video\\/upload\\/.+\\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(videoUrl))) return response(false, 'Enter a supported HTTPS video delivery URL.');").replace("A Cloudinary video URL is required.","A video delivery URL is required.");
 plan.parameters.jsCode = code;
 
 if (!plan.parameters.jsCode.includes("truthy(row.post_to_x) ? row.x_caption : ''")) {

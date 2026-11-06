@@ -51,7 +51,7 @@ function validTime(value) {
 function validVideoUrl(value) {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && ALLOWED_VIDEO_HOSTS.has(url.hostname) && /\.(?:mp4|mov|m4v)(?:$|[?#])/i.test(url.pathname + url.search);
+    return /^https:\/\/n8n\.mindobirdwatching\.com\/media-delivery\/v1\/[a-f0-9]{32}\/original\.mp4$/.test(value) || (url.protocol === "https:" && ALLOWED_VIDEO_HOSTS.has(url.hostname) && /\.(?:mp4|mov|m4v)(?:$|[?#])/i.test(url.pathname + url.search));
   } catch {
     return false;
   }
@@ -99,7 +99,7 @@ function normalizeReel(input, timezone) {
   const scheduledDate = clean(input.scheduled_date, 10);
   const scheduledTime = clean(input.scheduled_time, 5);
   const reelTimezone = ALLOWED_TIMEZONES.has(input.timezone) ? input.timezone : timezone;
-  if (!validVideoUrl(videoUrl)) throw new Error("Each reel needs a Cloudinary HTTPS video URL ending in MP4, MOV, or M4V.");
+  if (!validVideoUrl(videoUrl)) throw new Error("Each reel needs a supported HTTPS video URL from the media delivery service.");
   if (description.length < 8) throw new Error("Each reel needs a factual description of at least 8 characters.");
   if (!validDate(scheduledDate) || !validTime(scheduledTime)) throw new Error("Each reel needs a valid scheduled date and time.");
   if (!futureEastern(scheduledDate, scheduledTime)) throw new Error("Choose a future Eastern date and time.");
@@ -223,7 +223,7 @@ export async function onRequestPost({ request, env }) {
       payload.edits = edits;
     } else if (action === "replace_media") {
       const videoUrl = clean(input.video_url, 1000);
-      if (!validVideoUrl(videoUrl)) return json(request, { ok: false, message: "Enter a Cloudinary HTTPS video URL ending in MP4, MOV, or M4V." }, 400);
+      if (!validVideoUrl(videoUrl)) return json(request, { ok: false, message: "Enter a supported HTTPS video URL from the media delivery service." }, 400);
       payload.video_url = videoUrl;
     }
   }
