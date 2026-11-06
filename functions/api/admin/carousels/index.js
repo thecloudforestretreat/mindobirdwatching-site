@@ -5,27 +5,28 @@ function h(request){const o=request.headers.get("origin")||"";return{"content-ty
 function out(request,body,status=200){return new Response(JSON.stringify(body),{status,headers:h(request)})}function clean(v,n=5000){return String(v==null?"":v).trim().slice(0,n)}function bool(v){return v===true||["true","1","yes","on"].includes(clean(v,10).toLowerCase())}function date(v){return /^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+"T12:00:00Z"))}function time(v){return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(v)}
 function nyToday(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),p={};for(const x of parts)p[x.type]=x.value;return `${p.year}-${p.month}-${p.day}`}
 function futureEastern(dateValue,timeValue){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()),p={};for(const x of parts)p[x.type]=x.value;return `${dateValue}T${timeValue}`>`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`}
-function cloudinaryDelivery(url,fit,gravity="auto"){const safeGravity=["auto","center","north","south","east","west"].includes(gravity)?gravity:"auto";return url.replace("/upload/","/upload/"+(fit==="fill"?`c_fill,g_${safeGravity}`:"c_pad,b_rgb:f7f4e8")+",h_1350,w_1080,q_auto,f_auto/")}
+const LOCAL_MEDIA=/^https:\/\/n8n\.mindobirdwatching\.com\/media-delivery\/v1\/[a-f0-9]{32}\/original\.(?:jpg|png|webp)$/;
+function cloudinaryDelivery(url,fit,gravity="auto"){if(LOCAL_MEDIA.test(url))return url.replace(/original\.(?:jpg|png|webp)$/,fit+"-"+gravity+".jpg");const safeGravity=["auto","center","north","south","east","west"].includes(gravity)?gravity:"auto";return url.replace("/upload/","/upload/"+(fit==="fill"?`c_fill,g_${safeGravity}`:"c_pad,b_rgb:f7f4e8")+",h_1350,w_1080,q_auto,f_auto/")}
 async function workflow(request,env,payload){if(!env.N8N_ADMIN_CAROUSELS_WEBHOOK_URL)return{error:out(request,{ok:false,message:"N8N_ADMIN_CAROUSELS_WEBHOOK_URL is not configured."},503)};try{const r=await fetch(env.N8N_ADMIN_CAROUSELS_WEBHOOK_URL,{method:"POST",headers:{"content-type":"application/json","x-mbw-request-id":payload.request_id},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)}),t=await r.text();if(!r.ok)throw new Error("Carousel workflow returned "+r.status+": "+t.slice(0,200));return{data:JSON.parse(t||"{}")}}catch(e){console.error("Carousel workflow failed",{action:payload.action,message:e.message});return{error:out(request,{ok:false,message:"The Carousel workflow is temporarily unavailable."},502)}}}
 async function upload(request,env,form){
+  // Only the authenticated admin origin can reach the private upload bridge.
+  if(new URL(request.url).origin!==ADMIN_ORIGIN)return out(request,{ok:false,message:"Use the signed-in Carousel Studio to upload images."},403);
   const files=form.getAll("images").filter(v=>v&&typeof v.arrayBuffer==="function");
   if(files.length<1||files.length>10)return out(request,{ok:false,message:"Upload between 1 and 10 images."},400);
-  const cloud=clean(env.CLOUDINARY_CLOUD_NAME||"dd25hpdx3",80),preset=clean(env.CLOUDINARY_CAROUSEL_UPLOAD_PRESET,120);
-  if(!preset)return out(request,{ok:false,message:"CLOUDINARY_CAROUSEL_UPLOAD_PRESET is not configured."},503);
+  if(!env.MBW_MEDIA_DELIVERY_KEY)return out(request,{ok:false,message:"Local media delivery is not configured yet."},503);
   const images=[];
   for(let i=0;i<files.length;i++){
     const f=files[i];
     if(!["image/jpeg","image/png","image/webp"].includes(f.type)||f.size>12*1024*1024)return out(request,{ok:false,message:`${f.name} must be JPG, PNG, or WebP and no larger than 12 MB.`},400);
-    const fd=new FormData();fd.append("file",f,f.name);fd.append("upload_preset",preset);fd.append("folder","mbw/carousels/intake");
     try{
-      const r=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud)}/image/upload`,{method:"POST",body:fd,signal:AbortSignal.timeout(60000)});
+      const r=await fetch("https://n8n.mindobirdwatching.com/media-delivery/upload",{method:"POST",headers:{"content-type":f.type,"user-agent":"MBW-Carousel-Studio/1.0","x-mbw-media-key":env.MBW_MEDIA_DELIVERY_KEY},body:await f.arrayBuffer(),signal:AbortSignal.timeout(90000)});
       const d=await r.json();
-      if(!r.ok){const reason=clean(d?.error?.message,240);return out(request,{ok:false,message:`Image ${i+1} could not be uploaded${reason?": "+reason:" (storage service returned "+r.status+")"}.`},502)}
-      if(typeof d.secure_url!=="string"||!d.secure_url.startsWith("https://res.cloudinary.com/"))return out(request,{ok:false,message:`Image ${i+1}: storage service returned an invalid upload response.`},502);
-      images.push({order:i+1,secure_url:d.secure_url,original_url:d.secure_url,width:d.width,height:d.height,public_id:d.public_id});
+      if(!r.ok||d.ok===false)return out(request,{ok:false,message:clean(d.message,240)||"The Mac mini could not prepare this image."},503);
+      if(!LOCAL_MEDIA.test(d.secure_url)||!Number.isFinite(d.width)||!Number.isFinite(d.height))return out(request,{ok:false,message:"The media server returned an invalid upload response."},502);
+      images.push({order:i+1,secure_url:d.secure_url,original_url:d.secure_url,width:d.width,height:d.height,public_id:d.public_id,sha256:d.sha256});
     }catch(error){
       const timeout=["TimeoutError","AbortError"].includes(error?.name);
-      return out(request,{ok:false,message:timeout?`Image ${i+1} upload timed out. Your carousel has not been submitted.`:`Image ${i+1} upload could not reach the storage service. Your carousel has not been submitted.`},timeout?504:502);
+      return out(request,{ok:false,message:timeout?`Image ${i+1} preparation timed out. Your carousel has not been submitted.`:"The Mac mini media server is unavailable. Check that the mini and primary 8 TB drive are online."},timeout?504:503);
     }
   }
   return out(request,{ok:true,images});
@@ -51,7 +52,7 @@ export async function onRequestPost({request,env}){
     const seen=new Set(),normalized=[];
     for(let i=0;i<images.length;i++){
       const image=images[i]||{},url=clean(image.original_url,1200),fit=["fill","fit"].includes(image.fit_mode)?image.fit_mode:"fit",gravity=["auto","center","north","south","east","west"].includes(image.crop_gravity)?image.crop_gravity:"auto";
-      try{const parsed=new URL(url);if(parsed.protocol!=="https:"||parsed.hostname!=="res.cloudinary.com")throw new Error("invalid")}catch{return{error:out(request,{ok:false,message:"Every image must be a Cloudinary HTTPS URL."},400)}}
+      try{const parsed=new URL(url);if(parsed.protocol!=="https:"||(parsed.hostname!=="res.cloudinary.com"&&!LOCAL_MEDIA.test(url)))throw new Error("invalid")}catch{return{error:out(request,{ok:false,message:"Every image must come from the approved media delivery service."},400)}}
       if(seen.has(url))return{error:out(request,{ok:false,message:"Carousel images must be unique."},400)};
       seen.add(url);
       normalized.push({order:i+1,original_url:url,delivery_url:cloudinaryDelivery(url,fit,gravity),fit_mode:fit,crop_gravity:gravity,content_type:clean(image.content_type,40)||"other",width:Number(image.width)||0,height:Number(image.height)||0,file_name:clean(image.file_name,220)});
