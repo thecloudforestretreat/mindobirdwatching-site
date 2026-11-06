@@ -1909,7 +1909,7 @@
           const nextVersion = Math.max(Number(current.itinerary_version || 0),state.itineraryVersion) + 1;
           const updatedAt = new Date().toISOString();
           const itinerary = {...getFormData(),source:'guest_crm',inquiryId:state.inquiryId,itineraryVersion:nextVersion,itineraryStatus:'draft',itineraryUpdatedAt:updatedAt};
-          const record = {...current,itinerary_json:JSON.stringify(itinerary),itinerary_updated_at:updatedAt,itinerary_version:String(nextVersion),itinerary_status:'draft',updated_at:updatedAt};
+          const record = {...current,marketing_brand_id:itinerary.brandId||'mbw',billing_brand_id:itinerary.billingBrandId||'mbw',itinerary_json:JSON.stringify(itinerary),itinerary_updated_at:updatedAt,itinerary_version:String(nextVersion),itinerary_status:'draft',updated_at:updatedAt};
           await crmApi('update_inquiry',{record,inquiry_row:record});
           const verifiedList = await crmApi('list_inquiries');
           const verifiedRecords = Array.isArray(verifiedList) ? verifiedList : (verifiedList.records || verifiedList.data || verifiedList.inquiries || []);

@@ -4740,6 +4740,8 @@ const worker = {
         const fields = {
           created_at_iso: formatISOInNY(createdAt),
           stripe_environment: md.stripe_environment || (event.livemode ? "live" : "sandbox"),
+          billing_brand_id: md.billing_brand_id || "mbw",
+          marketing_brand_id: normalizeBrandId(firstNonEmptyString(md.marketing_brand_id, md.brand_id, md.brandId)),
           stripe_event_id: event.id || "",
           stripe_session_id: session.id || "",
           stripe_payment_intent: session.payment_intent || "",
@@ -4866,6 +4868,8 @@ const worker = {
           const current = await lookupCrmInquiry(env,inquiryId);
           if (!current || String(current.guest_id) !== checkoutGuestId) throw new Error("Deposit CRM identity unavailable");
           const patch = {inquiry_id:inquiryId,guest_id:checkoutGuestId,
+            billing_brand_id: fields.billing_brand_id,
+            marketing_brand_id: fields.marketing_brand_id,
             payment_status: String(current.payment_status || "").toLowerCase() === "paid" ? "paid" : "deposit_paid",
             payment_method:"Stripe",
             internal_notes: appendTermsAcceptanceNote(
@@ -4948,6 +4952,8 @@ const worker = {
               if (md.deposit_type) piMetadata.set("metadata[deposit_type]", String(md.deposit_type));
               if (md.deposit_amount) piMetadata.set("metadata[deposit_amount]", String(md.deposit_amount));
               if (md.source_system) piMetadata.set("metadata[source_system]", String(md.source_system));
+              piMetadata.set("metadata[billing_brand_id]", fields.billing_brand_id || "mbw");
+              piMetadata.set("metadata[marketing_brand_id]", fields.marketing_brand_id || "mbw");
               if (isDeposit && session.payment_status === "paid") piMetadata.set("metadata[deposit_status]", "available");
               if (termsAcceptance) {
                 piMetadata.set("metadata[terms_consent]", termsAcceptance.status);
@@ -5013,6 +5019,8 @@ const worker = {
               const bookingPayload = {
                 booking_status: "confirmed",
                 payment_source: "stripe_checkout",
+                billing_brand_id: fields.billing_brand_id || "mbw",
+                marketing_brand_id: fields.marketing_brand_id || "mbw",
                 stripe_event_id: event.id || "",
                 stripe_session_id: session.id || "",
                 payment_intent_id: session.payment_intent || "",
@@ -5318,6 +5326,8 @@ const worker = {
                     const bookingPayload = {
                       booking_status: "confirmed",
                       payment_source: "stripe_invoice",
+                      billing_brand_id: lineMd.billing_brand_id || invMd.billing_brand_id || "mbw",
+                      marketing_brand_id: lineMd.marketing_brand_id || invMd.marketing_brand_id || "mbw",
                       stripe_event_id: event.id || "",
                       stripe_session_id: "",
                       payment_intent_id: paymentIntentId,
@@ -5462,6 +5472,8 @@ const worker = {
                     const bookingPayload = {
                     booking_status: "confirmed",
                     payment_source: "stripe_invoice",
+                    billing_brand_id: md.billing_brand_id || "mbw",
+                    marketing_brand_id: md.marketing_brand_id || "mbw",
                     stripe_event_id: event.id || "",
                     stripe_session_id: "",
                     payment_intent_id: paymentIntentId,
