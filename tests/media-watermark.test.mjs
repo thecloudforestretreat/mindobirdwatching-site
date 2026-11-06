@@ -40,9 +40,9 @@ test("Media Studio keeps clean downloads as the default and brands single or ZIP
 test("Media Studio loads the watermark helper before the download controller",()=>{
   const html=fs.readFileSync(path.join(root,"admin/media/index.html"),"utf8");
   assert.match(html,/media-studio\.css\?v=22/);
-  const helper=html.indexOf("media-watermark.js?v=2");
+  const helper=html.indexOf("media-watermark.js?v=3");
   const analytics=html.indexOf("media-analytics.js?v=6");
-  const controller=html.indexOf("media-studio.js?v=28");
+  const controller=html.indexOf("media-studio.js?v=29");
   assert.ok(helper>=0&&analytics>helper&&controller>analytics);
 });
 
@@ -64,3 +64,9 @@ test("the local watermark logo is the high-resolution 1024px asset",()=>{
  assert.match(handler,/Logo could not load/);
  assert.match(source,/media-download\?url=/);
  });
+
+test("embedded logo preserves exact original PNG without another network request",()=>{
+ assert.ok(watermark.logoUrl.startsWith("data:image/png;base64,"));
+ const decoded=Buffer.from(watermark.logoUrl.split(",")[1],"base64");
+ assert.deepEqual(decoded,fs.readFileSync(path.join(root,"admin/assets/images/app/mbw-watermark-logo.png")));
+});
