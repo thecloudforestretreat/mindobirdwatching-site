@@ -83,6 +83,27 @@
     if (platformSelected(row, "tiktok") && (!has(row.tiktok_caption) || !has(row.tiktok_hashtags))) return false;
     return true;
   }
+  function reelTitle(row) {
+    return clean(row.youtube_title) || clean(row.activity_name) || clean(row.reel_description) || "Untitled reel";
+  }
+  function instagramWordCount(value) {
+    var body = clean(value).split(/\n\s*\n(?=#)/)[0];
+    return body ? body.split(/\s+/).filter(Boolean).length : 0;
+  }
+  function updateCaptionCount() {
+    var input = document.querySelector('[data-review-field="instagram_caption_final"]');
+    var note = document.querySelector('[data-caption-count]');
+    if (!input || !note) return;
+    var count = instagramWordCount(input.value);
+    note.textContent = count + " words · 35–100 required, excluding hashtags" + (count < 35 ? " · Add " + (35 - count) + " or more words before approval." : count > 100 ? " · Remove at least " + (count - 100) + " words before approval." : " · Length ready for review.");
+    note.setAttribute("data-valid", String(count >= 35 && count <= 100));
+    var warning = document.querySelector('[data-copy-validation-notice]');
+    if (warning && state.selected) {
+      var issues = copyValidationIssues(Object.assign({}, state.selected, reviewEdits()));
+      warning.textContent = issues.join(" ");
+      warning.hidden = issues.length === 0;
+    }
+  }
   function copyValidationIssues(row) {
     var issues = [];
     var instagramSelected = platformSelected(row, "instagram") || platformSelected(row, "facebook");
@@ -249,7 +270,7 @@
     var youtube = youtubeUrl(row);
     return '<article class="reelCard" data-reel-id="' + esc(id) + '">' +
       '<div class="videoShell"><video src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls aria-label="Preview ' + esc(id) + '"></video><div class="videoMeta"><span>REEL</span><span>' + esc(clean(row.location) || "Mindo") + "</span></div></div>" +
-      '<div class="reelBody"><header class="reelHeader"><div><h3>' + esc(clean(row.activity_name) || clean(row.reel_description) || "Untitled reel") + '</h3><span class="reelId">' + esc(id ? "#" + id : "Unassigned") + '</span></div><span class="statusBadge" data-tone="' + info.tone + '">' + esc(info.label) + '</span></header>' +
+      '<div class="reelBody"><header class="reelHeader"><div><h3>' + esc(reelTitle(row)) + '</h3><span class="reelId">' + esc(id ? "#" + id : "Unassigned") + '</span></div><span class="statusBadge" data-tone="' + info.tone + '">' + esc(info.label) + '</span></header>' +
       '<div class="reelSummary"><div class="scheduleLine">' + esc(scheduledValue(row) || "No schedule yet") + '</div><p class="descriptionClamp">' + esc(row.reel_description || row.blurb || "No description supplied.") + '</p><div class="platformRow">' + platformMarkup(row) + '</div></div>' +
       '<footer class="reelFooter"><span class="qualityScore">' + esc(formatQuality(row)) + '</span><div class="cardActions">' + (youtube ? '<a class="smallButton" href="' + esc(youtube) + '" target="_blank" rel="noopener noreferrer">YouTube ↗</a>' : "") + '<button class="smallButton primary" type="button" data-review-id="' + esc(id) + '">' + esc(primaryAction) + '</button></div></footer></div></article>';
   }
@@ -486,17 +507,19 @@
       : copyIsApproved(row) ? ""
       : isStaleGeneration(row)
         ? "Copy generation timed out before it finished. The reel was not approved or published. Regenerate it to start one protected attempt."
+        : !validationIssues.length && /^COPY REVIEW REQUIRED:\s*instagram_length_outside_\d+_\d+$/.test(clean(row.error_message)) ? ""
         : clean(row.error_message || row.supervision_notes);
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
-    $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
+    $("reviewTitle").textContent = reelTitle(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
       mediaEditor(row) +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
-      (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
+      (reviewNotice ? '<div class="warningBox"' + (validationIssues.length ? ' data-copy-validation-notice' : '') + '>' + esc(reviewNotice) + "</div>" : "") +
       (platformSelected(row, "tiktok") ? '<div class="infoBox"><strong>TikTok copy only.</strong> The caption and hashtags are prepared here, but this workflow does not publish to TikTok.</div>' : "") +
       scheduleEditor(row) +
       copyField("Original description", "reel_description", row.reel_description, true) +
       copyField("Instagram / Facebook caption", "instagram_caption_final", row.instagram_caption_final, true) +
+      '<small data-caption-count role="status" aria-live="polite"></small>' +
       copyField("Instagram hashtags", "instagram_hashtags", row.instagram_hashtags, false) +
       copyField("TikTok caption", "tiktok_caption", row.tiktok_caption, true) +
       copyField("TikTok hashtags", "tiktok_hashtags", row.tiktok_hashtags, false) +
@@ -510,7 +533,7 @@
       (group === "review" ? '<button class="button buttonPrimary" type="button" data-action="approve">Approve & schedule</button>' : "") +
       (isOverdue(row) ? '<button class="button buttonPrimary" type="button" data-action="publish-overdue">Publish now</button>' : isStaleGeneration(row) ? '<button class="button buttonPrimary" type="button" data-action="regenerate">Regenerate copy</button>' : group === "failed" && !reconciliationPlatforms(row).length ? '<button class="button buttonPrimary" type="button" data-action="retry">Retry missing platforms</button>' : "") +
       (youtube ? '<button class="button buttonGhost" type="button" data-copy-youtube>Copy YouTube URL</button>' : "");
-    $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden";
+    $("reviewBackdrop").hidden = false; document.body.style.overflow = "hidden"; updateCaptionCount();
   }
   function closeReview() { $("reviewBackdrop").hidden = true; document.body.style.overflow = ""; state.selected = null; }
   function reviewEdits() {
@@ -617,6 +640,7 @@
     $("searchInput").addEventListener("input", function (event) { state.query = clean(event.target.value); renderCards(); });
     document.querySelectorAll(".statusTab").forEach(function (button) { button.addEventListener("click", function () { state.activeStatus = button.dataset.status; syncTabs(); renderCards(); }); });
     $("reelsGrid").addEventListener("click", function (event) { var button = event.target.closest("[data-review-id]"); if (button) openReview(button.dataset.reviewId); });
+    $("reviewContent").addEventListener("input", function (event) { if (event.target.matches('[data-review-field="instagram_caption_final"]')) updateCaptionCount(); });
     $("reviewContent").addEventListener("click", async function (event) {
       var action = event.target.closest("[data-action]");
       if (action) { await reviewAction(action.dataset.action); return; }
