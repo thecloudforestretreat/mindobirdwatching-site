@@ -69,6 +69,7 @@
 
     .statusRow{
       margin-top: 12px;
+      margin-bottom: 16px;
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -145,7 +146,7 @@
     }
 
     .section{
-      margin-top: 16px;
+      margin-top: 18px;
       padding-top: 14px;
       border-top: 1px solid var(--line);
     }
@@ -153,14 +154,14 @@
     .cards{
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 16px;
     }
 
     /* Card */
     .cardItem{
       border: 1px solid var(--line);
       border-radius: 18px;
-      background: rgba(255,255,255,.70);
+      background: var(--card);
       box-shadow: var(--shadow);
       overflow:hidden;
       min-width: 0;
@@ -174,16 +175,17 @@
       height:100%;
       padding: 12px;
       box-sizing:border-box;
-      background: rgba(255,255,255,.55);
+      background: var(--card);
     }
 
     .thumb{
       width: 100%;
-      height: 190px;
-      padding: 0;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      padding: 8px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.85);
+      background: var(--card-strong);
       box-shadow: none;
       display:flex;
       align-items:center;
@@ -195,11 +197,11 @@
     .thumb img{
       width:100%;
       height:100%;
-      object-fit: cover;
+      object-fit: contain;
       object-position: center;
-      border-radius: 13px;
+      border-radius: 10px;
       display:block;
-      background: rgba(244,248,241,.9);
+      background: transparent;
     }
 
     .names{
@@ -250,7 +252,7 @@
       cursor: pointer;
     }
     .camBtn:focus-visible{
-      outline: 2px solid rgba(3,78,162,.35);
+      outline: 2px solid rgba(13,89,37,.35);
       outline-offset: 2px;
       border-radius: 14px;
     }
@@ -289,7 +291,10 @@
     }
 
     /* Turn the semantic month table into a 4 × 3 visual card grid. */
-    .calendarTableWrap{ overflow: visible; }
+    .calendarTableWrap{
+      overflow: visible;
+      margin: 18px 0 16px;
+    }
     .calendarTableWrap .simpleTable{
       display:block;
       background:transparent;
@@ -308,7 +313,7 @@
     .calendarTableWrap .simpleTable tbody{
       display:grid;
       grid-template-columns:repeat(4, minmax(0, 1fr));
-      gap:12px;
+      gap:16px;
     }
     .calendarTableWrap .simpleTable tr{
       display:flex;
@@ -318,13 +323,10 @@
       padding:14px;
       box-sizing:border-box;
       border:1px solid var(--line);
-      border-top:4px solid #639b6d;
       border-radius:16px;
-      background:rgba(255,255,255,.76);
+      background:var(--card-strong);
       box-shadow:var(--shadow);
     }
-    .calendarTableWrap .simpleTable tr:nth-child(-n+5){ border-top-color:#4f86c6; }
-    .calendarTableWrap .simpleTable tr:nth-child(n+6):nth-child(-n+9){ border-top-color:#d4a72c; }
     .calendarTableWrap .simpleTable th,
     .calendarTableWrap .simpleTable td{
       display:block;
@@ -334,15 +336,15 @@
       background:transparent;
     }
     .calendarTableWrap .simpleTable th a{
-      color:var(--green, #176b37);
-      font-family:var(--font-heading, Georgia, serif);
+      color:var(--forest);
+      font-family:var(--font-head);
       font-size:18px;
       font-weight:950;
       line-height:1.15;
       text-decoration:none;
     }
     .calendarTableWrap .simpleTable th a:hover{ text-decoration:underline; }
-    .calendarTableWrap .simpleTable th a:focus-visible{ outline:3px solid rgba(3,78,162,.3); outline-offset:3px; }
+    .calendarTableWrap .simpleTable th a:focus-visible{ outline:3px solid rgba(13,89,37,.35); outline-offset:3px; }
     .calendarTableWrap .simpleTable td:nth-child(2){
       align-self:flex-start;
       padding:6px 9px;
@@ -360,12 +362,16 @@
       font-size:12.5px;
       line-height:1.5;
     }
+    .sourceNote{
+      margin: 0 0 4px;
+      line-height: 1.65;
+    }
 
     /* 12 months: four columns by three rows on desktop */
     .months{
       display:grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      gap: 16px;
       overflow: visible;
       padding: 0;
       margin: 0;
@@ -373,9 +379,8 @@
 
     .month{
       border: 1px solid var(--line);
-      border-top: 4px solid var(--green, #176b37);
       border-radius: 16px;
-      background: rgba(255,255,255,.76);
+      background: var(--card-strong);
       box-shadow: var(--shadow);
       padding: 14px;
       text-align:left;
@@ -393,17 +398,13 @@
 
     .month:hover{
       transform: translateY(-2px);
-      border-color: rgba(20,96,47,.35);
+      border-color: rgba(13,89,37,.35);
     }
 
     .month:focus-visible{
-      outline: 3px solid rgba(3,78,162,.3);
+      outline: 3px solid rgba(13,89,37,.35);
       outline-offset: 2px;
     }
-
-    .month--wet{ border-top-color:#4f86c6; }
-    .month--lower{ border-top-color:#d4a72c; }
-    .month--middle{ border-top-color:#639b6d; }
 
     .monthGroup{
       font-size: 10.5px;
@@ -415,7 +416,7 @@
 
     .mLabel{
       font-size: 18px;
-      color: var(--green, #176b37);
+      color: var(--forest);
       margin: 0;
       font-weight: 950;
       letter-spacing: -0.01em;
@@ -583,7 +584,7 @@
       white-space: normal;
     }
     .linkCard:focus-visible{
-      outline: 2px solid rgba(3,78,162,.35);
+      outline: 2px solid rgba(13,89,37,.35);
       outline-offset: 2px;
     }
 
@@ -643,7 +644,7 @@
 
       .thumb{
         width: 100%;
-        height: 210px;
+        height: auto;
         border-radius: 14px;
       }
 
@@ -696,7 +697,7 @@
       .calendarTableWrap .simpleTable tr{ min-height:126px; }
 
       .thumb{
-        height: min(68vw, 300px);
+        height: auto;
       }
 
       /* Phone: one easy-to-scan month per row */
