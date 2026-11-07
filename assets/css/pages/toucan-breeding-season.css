@@ -1,0 +1,189 @@
+body[data-page-variant="toucan_breeding"] .carouselSlide img {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  background: transparent;
+  transform: scale(1.01);
+}
+
+body[data-page-variant="toucan_breeding"] .toucanTimingBoard {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--forest) 24%, var(--line));
+  border-radius: calc(var(--r) + 4px);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(215, 183, 48, .18), transparent 31%),
+    linear-gradient(145deg, rgba(255, 255, 255, .94), rgba(239, 246, 229, .9));
+  box-shadow: var(--shadow);
+}
+
+body[data-page-variant="toucan_breeding"] .timingFactGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+
+body[data-page-variant="toucan_breeding"] .timingFact {
+  min-width: 0;
+  padding: 18px;
+}
+
+body[data-page-variant="toucan_breeding"] .timingFact + .timingFact {
+  border-left: 1px solid var(--line);
+}
+
+body[data-page-variant="toucan_breeding"] .timingFactValue {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--forest);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+body[data-page-variant="toucan_breeding"] .timingFactLabel {
+  display: block;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+body[data-page-variant="toucan_breeding"] .timingSpeciesPanel {
+  padding: 20px;
+}
+
+body[data-page-variant="toucan_breeding"] .timingLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 15px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+body[data-page-variant="toucan_breeding"] .timingLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+body[data-page-variant="toucan_breeding"] .timingLegend i {
+  width: 22px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--forest);
+}
+
+body[data-page-variant="toucan_breeding"] .timingLegend .limited i { background: #d9ad31; }
+body[data-page-variant="toucan_breeding"] .timingLegend .unknown i { background: #a9b2ad; }
+
+body[data-page-variant="toucan_breeding"] .timingSpeciesList {
+  display: grid;
+  gap: 10px;
+}
+
+body[data-page-variant="toucan_breeding"] .timingSpeciesRow {
+  display: grid;
+  grid-template-columns: minmax(165px, .8fr) minmax(230px, 1.35fr) minmax(180px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid rgba(34, 76, 45, .12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .72);
+}
+
+body[data-page-variant="toucan_breeding"] .timingSpeciesName {
+  color: var(--forest);
+  font-weight: 800;
+}
+
+body[data-page-variant="toucan_breeding"] .timingSignal {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--forest);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+body[data-page-variant="toucan_breeding"] .timingSignal--limited {
+  background: #f1d477;
+  color: #3f340d;
+}
+
+body[data-page-variant="toucan_breeding"] .timingSignal--unknown {
+  background: #e2e7e4;
+  color: #435149;
+}
+
+body[data-page-variant="toucan_breeding"] .timingEvidence {
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+body[data-page-variant="toucan_breeding"] .timingCaution {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0 0;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: rgba(7, 94, 49, .08);
+  color: var(--text);
+  font-size: .86rem;
+  line-height: 1.5;
+}
+
+body[data-page-variant="toucan_breeding"] .timingCaution strong { color: var(--forest); }
+
+@media (max-width: 860px) {
+  body[data-page-variant="toucan_breeding"] .timingFactGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingFact:nth-child(3) {
+    border-left: 0;
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingFact:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingSpeciesRow {
+    grid-template-columns: minmax(145px, .75fr) minmax(210px, 1.25fr);
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingEvidence {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page-variant="toucan_breeding"] .timingFactGrid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingFact + .timingFact {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingSpeciesPanel { padding: 14px; }
+
+  body[data-page-variant="toucan_breeding"] .timingSpeciesRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  body[data-page-variant="toucan_breeding"] .timingEvidence { grid-column: auto; }
+}
