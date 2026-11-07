@@ -152,51 +152,54 @@
 
     .cards{
       display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
     }
 
     /* Card */
     .cardItem{
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: 18px;
       background: rgba(255,255,255,.70);
       box-shadow: var(--shadow);
       overflow:hidden;
+      min-width: 0;
     }
 
     .cardTop{
-      display:grid;
-      grid-template-columns: 180px 1fr auto;
-      gap: 16px;
-      align-items:center;
-      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      align-items:stretch;
+      height:100%;
+      padding: 12px;
+      box-sizing:border-box;
       background: rgba(255,255,255,.55);
-      border-bottom: 1px solid var(--line);
     }
 
     .thumb{
-      width: 160px;
-      height: 160px;
-      padding: 10px;
-      border-radius: 24px;
+      width: 100%;
+      height: 190px;
+      padding: 0;
+      border-radius: 14px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow);
+      box-shadow: none;
       display:flex;
       align-items:center;
       justify-content:center;
       box-sizing: border-box;
       text-decoration: none;
+      overflow:hidden;
     }
     .thumb img{
       width:100%;
       height:100%;
-      object-fit: contain;
+      object-fit: cover;
       object-position: center;
-      border-radius: 14px;
+      border-radius: 13px;
       display:block;
-      background: transparent;
+      background: rgba(244,248,241,.9);
     }
 
     .names{
@@ -204,24 +207,30 @@
       flex-direction: column;
       gap: 6px;
       min-width: 0;
+      flex:1;
     }
 
     .nameEn{
       font-weight: 950;
       color: var(--ink);
+      font-size: 16px;
       letter-spacing: -0.01em;
       line-height: 1.2;
       display:flex;
       align-items:center;
       gap: 10px;
       flex-wrap: wrap;
+      margin: 0;
     }
 
     .nameEs{
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
+      margin: 0;
     }
+
+    .photoCredit{ margin: 2px 0 0; }
 
     /* Camera link: no pill outline */
     .camBtn{
@@ -248,22 +257,24 @@
 
     .metaRight{
       display:flex;
-      flex-direction: column;
-      align-items:flex-end;
+      flex-direction: row;
+      align-items:center;
+      justify-content:flex-start;
       gap: 10px;
+      margin-top:auto;
     }
 
     .catPill{
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      padding: 8px 10px;
+      padding: 7px 9px;
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.65);
       box-shadow: var(--shadow);
       font-weight: 900;
-      font-size: 12.5px;
+      font-size: 11.5px;
       color: var(--ink);
       line-height: 1;
       white-space: nowrap;
@@ -271,16 +282,90 @@
 
     /* Months wrapper */
     .monthsWrap{
-      padding: 14px;
-      background: rgba(255,255,255,.55);
+      padding: 0;
+      background: transparent;
       overflow: visible;
+      margin: 18px 0;
     }
 
-    /* 6 + 6 on desktop/tablet */
+    /* Turn the semantic month table into a 4 × 3 visual card grid. */
+    .calendarTableWrap{ overflow: visible; }
+    .calendarTableWrap .simpleTable{
+      display:block;
+      background:transparent;
+    }
+    .calendarTableWrap .simpleTable thead{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+    .calendarTableWrap .simpleTable tbody{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:12px;
+    }
+    .calendarTableWrap .simpleTable tr{
+      display:flex;
+      flex-direction:column;
+      gap:9px;
+      min-height:142px;
+      padding:14px;
+      box-sizing:border-box;
+      border:1px solid var(--line);
+      border-top:4px solid #639b6d;
+      border-radius:16px;
+      background:rgba(255,255,255,.76);
+      box-shadow:var(--shadow);
+    }
+    .calendarTableWrap .simpleTable tr:nth-child(-n+5){ border-top-color:#4f86c6; }
+    .calendarTableWrap .simpleTable tr:nth-child(n+6):nth-child(-n+9){ border-top-color:#d4a72c; }
+    .calendarTableWrap .simpleTable th,
+    .calendarTableWrap .simpleTable td{
+      display:block;
+      width:auto;
+      padding:0;
+      border:0;
+      background:transparent;
+    }
+    .calendarTableWrap .simpleTable th a{
+      color:var(--green, #176b37);
+      font-family:var(--font-heading, Georgia, serif);
+      font-size:18px;
+      font-weight:950;
+      line-height:1.15;
+      text-decoration:none;
+    }
+    .calendarTableWrap .simpleTable th a:hover{ text-decoration:underline; }
+    .calendarTableWrap .simpleTable th a:focus-visible{ outline:3px solid rgba(3,78,162,.3); outline-offset:3px; }
+    .calendarTableWrap .simpleTable td:nth-child(2){
+      align-self:flex-start;
+      padding:6px 9px;
+      border:1px solid rgba(13,89,37,.14);
+      border-radius:999px;
+      background:rgba(13,89,37,.08);
+      font-size:12px;
+      font-weight:850;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .calendarTableWrap .simpleTable td:nth-child(3){
+      margin-top:auto;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.5;
+    }
+
+    /* 12 months: four columns by three rows on desktop */
     .months{
       display:grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
       overflow: visible;
       padding: 0;
       margin: 0;
@@ -288,21 +373,71 @@
 
     .month{
       border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,.65);
-      padding: 12px 10px;
-      text-align:center;
+      border-top: 4px solid var(--green, #176b37);
+      border-radius: 16px;
+      background: rgba(255,255,255,.76);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      text-align:left;
       box-sizing: border-box;
       min-width: 0;
+      min-height: 150px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap: 9px;
+      color: var(--ink);
+      text-decoration:none;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .month:hover{
+      transform: translateY(-2px);
+      border-color: rgba(20,96,47,.35);
+    }
+
+    .month:focus-visible{
+      outline: 3px solid rgba(3,78,162,.3);
+      outline-offset: 2px;
+    }
+
+    .month--wet{ border-top-color:#4f86c6; }
+    .month--lower{ border-top-color:#d4a72c; }
+    .month--middle{ border-top-color:#639b6d; }
+
+    .monthGroup{
+      font-size: 10.5px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
     .mLabel{
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      font-weight: 900;
+      font-size: 18px;
+      color: var(--green, #176b37);
+      margin: 0;
+      font-weight: 950;
       letter-spacing: -0.01em;
-      white-space: nowrap;
+      line-height:1.15;
+    }
+
+    .mRain{
+      display:inline-flex;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(13,89,37,.08);
+      border: 1px solid rgba(13,89,37,.14);
+      font-size: 12px;
+      font-weight: 850;
+      line-height:1;
+    }
+
+    .mPlan{
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+      margin-top:auto;
     }
 
     /* Base: same bubble size for all statuses */
@@ -463,6 +598,14 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .cards{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .calendarTableWrap .simpleTable tbody{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+
       .ctaButtons{
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -498,36 +641,23 @@
         align-items: stretch;
       }
 
-      .cardTop{
-        grid-template-columns: 160px 1fr;
-        grid-template-rows: auto auto;
-        align-items:start;
-      }
-
       .thumb{
-        width: 140px;
-        height: 140px;
-        border-radius: 22px;
-      }
-
-      .metaRight{
-        grid-column: 1 / -1;
-        flex-direction: row;
-        align-items:center;
-        justify-content:flex-start;
+        width: 100%;
+        height: 210px;
+        border-radius: 14px;
       }
 
       /* Mobile: EN, ES, then camera */
       .names{ gap: 6px; }
       .camBtn{ width: 42px; height: 42px; border-radius: 14px; }
 
-      /* Mobile: still no horizontal scroll for months */
+      /* Tablet: two columns by six rows */
       .months{
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
       }
 
-      .month{ padding: 11px 9px; }
+      .month{ min-height: 138px; }
 
       .mVal{
         padding: 10px 14px;
@@ -551,13 +681,27 @@
       }
 
       .filters{
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 10px;
       }
 
-      /* 4 columns => 3 rows for months, still no scroll */
+      .cards{
+        grid-template-columns: 1fr;
+      }
+
+      .calendarTableWrap .simpleTable tbody{
+        grid-template-columns:1fr;
+      }
+
+      .calendarTableWrap .simpleTable tr{ min-height:126px; }
+
+      .thumb{
+        height: min(68vw, 300px);
+      }
+
+      /* Phone: one easy-to-scan month per row */
       .months{
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         gap: 8px;
       }
 
