@@ -1395,7 +1395,9 @@
         if(!saved) throw new Error("Save not verified. Your edits are kept; the CRM did not return the saved inquiry.");
         const fingerprint=row=>serializeTourItems(normalizeTourItems(row));
         if(fingerprint(saved)!==fingerprint(requested)) throw new Error("Activity save not verified. Your edits are kept; the CRM returned different services. Do not refresh before reviewing.");
-        return {...requested,...saved};
+        const verified={...requested,...saved};
+        delete verified.lifecycle_override;
+        return verified;
       }
       function canPreserveUnavailableReference(error){
         return els.modeInput.value==="update"&&/contact_intent_not_found/i.test(clean(error&&error.message));
@@ -1476,7 +1478,8 @@
         }
       }
       function startNewRecord(){ resetCommunicationContext(null); resetStripeDeposits(); renderRequestedServices({}); referenceMatch=null; referenceGeneration++; referenceStatus("Paste an ID or a guest message containing one Reference / Referencia."); state.selectedId=""; state.tourItems=[]; fillQuoteOptions({}); state.interactions=[]; state.assignments=[]; state.bookings=[]; state.payments=[]; state.editingPaymentId=""; fields.filter(id=>!["apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","inlineSearchInput","inlineStatusFilter","sortInput","sortDirectionInput"].includes(id)).forEach(id=>{ if(els[id]) els[id].value=""; }); if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=""; els.modeInput.value="create"; els.sourceInput.value="manual_whatsapp"; updateReferenceReminder(); els.recordStatusInput.value="new"; els.quoteStatusInput.value="not_sent"; els.paymentStatusInput.value="unpaid"; els.serviceTypeInput.value="Birdwatching"; els.priorityInput.value="auto"; els.availabilityInput.value="pending"; els.groupingPreferenceInput.value="unknown"; els.groupingStatusInput.value="unmatched"; els.transportInput.value="Unknown"; els.followupInput.value=datePlusDays(3); renderTourItems(); renderPaymentLedger(); updateStatusField(); updateStatusMessageButton(); toggleReviewActions({status:"new"}); toggleInvoiceActions({status:"new",payment_status:"unpaid"}); setView("intake"); renderDuplicateNotice(); renderPayload(); setTimeout(()=>els.firstNameInput.focus(),80); window.scrollTo({top:0,behavior:"smooth"}); showToast("Ready for new guest"); }
-      function buildSavePayload(){ const mode=els.modeInput.value; const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; if(mode==="create"){ const existing=findExistingGuest(record); if(existing&&existing.guest_id){ record.guest_id=existing.guest_id; action="create_returning_inquiry"; } } return {action,record,guest_row:buildGuestRow(record),inquiry_row:record}; }
+      function shouldReopenLifecycle(record,nextStatus){ const previous=normalizeStatus(record&&record.status); const next=normalizeStatus(nextStatus); return ["cancelled","canceled","did_not_book"].includes(previous)&&!isClosedStatus(next); }
+      function buildSavePayload(){ const mode=els.modeInput.value; const selected=getSelected(); const record=formRecord(); let action="create_guest_and_inquiry"; if(mode==="returning") action="create_returning_inquiry"; if(mode==="update") action="update_inquiry"; if(mode==="create"){ const existing=findExistingGuest(record); if(existing&&existing.guest_id){ record.guest_id=existing.guest_id; action="create_returning_inquiry"; } } if(mode==="update"&&shouldReopenLifecycle(selected,record.status)) record.lifecycle_override="Yes"; return {action,record,guest_row:buildGuestRow(record),inquiry_row:{...record}}; }
       const startNewRecordWithoutBrand=startNewRecord;
       startNewRecord=function(){ startNewRecordWithoutBrand(); els.marketingBrandInput.value="mbw"; els.billingBrandDisplay.value="Mindo Bird Watching"; };
       function formRecord(){
