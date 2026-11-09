@@ -2566,9 +2566,13 @@ async function syncCrmInvoiceLedger(env, payload) {
   if (!inquiryId || !guestId || !invoiceId) return { ok: false, skipped: true, error: "ledger_identity_missing" };
   const bookingId = String(payload.booking_id || "").trim() || `B-${inquiryId.replace(/^INQ-/, "")}`;
   const total = Number(payload.total_booking_price || 0);
-  const paid = Number(payload.total_amount_paid || 0);
-  const remaining = Math.max(0, payload.balance_remaining == null ? total - paid : Number(payload.balance_remaining || 0));
-  const fullyPaid = remaining <= 0.005 && paid > 0;
+  const creditedPaid = Number(payload.total_amount_paid || 0);
+  const depositApplied = Number(payload.deposit_amount_paid || 0);
+  const additionalPaid = payload.additional_amount_paid == null
+    ? Math.max(0, creditedPaid - depositApplied)
+    : Number(payload.additional_amount_paid || 0);
+  const remaining = Math.max(0, payload.balance_remaining == null ? total - creditedPaid : Number(payload.balance_remaining || 0));
+  const fullyPaid = remaining <= 0.005 && creditedPaid > 0;
   const booking = {
     booking_id: bookingId,
     inquiry_id: inquiryId,
@@ -2595,7 +2599,7 @@ async function syncCrmInvoiceLedger(env, payload) {
     booking_id: bookingId,
     inquiry_id: inquiryId,
     guest_id: guestId,
-    payment_status: fullyPaid ? "paid" : paid > 0 ? "partial" : "unpaid",
+    payment_status: fullyPaid ? "paid" : creditedPaid > 0 ? "partial" : "unpaid",
     payment_date: payload.payment_date || "",
     payment_method: "Stripe",
     paid_to: "Mindo Bird Watching",
@@ -2603,9 +2607,11 @@ async function syncCrmInvoiceLedger(env, payload) {
     invoice_id: invoiceId,
     transaction_id: payload.transaction_id || "",
     total_booking_price: total,
-    deposit_amount_paid: Number(payload.deposit_amount_paid || 0),
-    additional_amount_paid: Number(payload.additional_amount_paid || 0),
-    total_amount_paid: paid,
+    deposit_amount_paid: depositApplied,
+    additional_amount_paid: additionalPaid,
+    // This CRM row represents the invoice payment event. The applied deposit
+    // already has its own ledger row and must not be counted a second time.
+    total_amount_paid: additionalPaid,
     balance_remaining: remaining,
     is_fully_paid: fullyPaid ? "Yes" : "No",
     notes: payload.notes || "Automatically synchronized from Stripe invoice lifecycle.",

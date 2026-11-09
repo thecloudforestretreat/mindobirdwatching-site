@@ -4,6 +4,12 @@ const sum=values=>values.reduce((s,n)=>s+(n??0),0);
 const max=values=>values.some(n=>n!==null)?Math.max(...values.filter(n=>n!==null)):null;
 const day=v=>/^\d{4}-\d{2}-\d{2}$/.test(text(v).slice(0,10))?text(v).slice(0,10):'';
 const psAlias=p=>[['invoice_id',p.invoice_id],['invoice_no',p.invoice_no],['transaction_id',p.transaction_id],['payment_id',p.payment_id]].filter(([,v])=>text(v)).map(([k,v])=>k+':'+text(v).toUpperCase().replace(/[^A-Z0-9]/g,''));
+const depositAliases=d=>{
+ const values=[d.stripe_payment_intent_id,d.payment_intent_id,d.transaction_id,d.invoice_id,d.payment_id,d.deposit_id].map(text).filter(Boolean);
+ const aliases=new Set(values.map(v=>v.toUpperCase().replace(/[^A-Z0-9]/g,'')));
+ for(const value of values){const match=value.match(/pi_[A-Za-z0-9]+/i);if(match)aliases.add(match[0].toUpperCase().replace(/[^A-Z0-9]/g,''));}
+ return [...aliases];
+};
 const terminal=r=>/^(void|uncollectible|cancelled|refunded)$/i.test(text(r.payment_status));
 export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date()}={}){
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
@@ -16,21 +22,37 @@ export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date
    const alias=psAlias(p);const existing=[...unique.entries()].find(([,row])=>psAlias(row).some(v=>alias.includes(v)));const canonical=existing?.[0]||key;const old=unique.get(canonical);if(!old||text(p.created_at)>text(old.created_at)||(text(p.created_at)===text(old.created_at)&&terminal(p)))unique.set(canonical,p);
   }
   const ps=[...unique.values()].filter(p=>!terminal(p));
-  const depUnique=new Map();for(const d of ds){const key=text(d.stripe_payment_intent_id)||text(d.deposit_id);if(key)depUnique.set(key,d);}
+  const depUnique=new Map();for(const d of ds){
+   const aliases=depositAliases(d);if(!aliases.length)continue;
+   const existing=[...depUnique.entries()].find(([,row])=>depositAliases(row).some(v=>aliases.includes(v)));
+   const canonical=existing?.[0]||aliases[0];
+   const old=depUnique.get(canonical);
+   if(!old||text(d.updated_at)>text(old.updated_at)||text(d.created_at)>text(old.created_at))depUnique.set(canonical,d);
+  }
   const dd=[...depUnique.values()];
   if(dd.length>1)issues.push('Multiple accounting deposits require review');
   // Accounting totals are cumulative snapshots, never additional payments.
   const externalDeposit=sum(dd.map(d=>money(d.deposit_amount_paid)));
   const includedDeposit=sum(ps.map(p=>money(p.deposit_amount_paid)));
   const invoiceTotal=ps.length&&ps.every(p=>money(p.total_booking_price)!==null)?sum(ps.map(p=>money(p.total_booking_price))):null;
-  const invoicePaid=ps.length&&ps.every(p=>money(p.total_amount_paid)!==null)?sum(ps.map(p=>money(p.total_amount_paid))):null;
+  const paymentCash=p=>{
+   const totalPaid=money(p.total_amount_paid),additional=money(p.additional_amount_paid),included=money(p.deposit_amount_paid);
+   if(totalPaid===null)return null;
+   if(externalDeposit>0&&included!==null&&included>0){
+    if(additional!==null&&Math.abs(totalPaid-additional)<=0.01)return totalPaid;
+    if(additional!==null&&Math.abs(totalPaid-(additional+included))<=0.01)return additional;
+    return Math.max(0,Math.round((totalPaid-included)*100)/100);
+   }
+   return totalPaid;
+  };
+  const invoicePaid=ps.length&&ps.every(p=>paymentCash(p)!==null)?sum(ps.map(paymentCash)):null;
   if(ps.some(p=>money(p.total_booking_price)===null||money(p.total_amount_paid)===null))issues.push('Invoice amounts are incomplete');
   const ledgerTotal=max(dd.map(d=>money(d.total_booking_price)));
   const ledgerPaid=max(dd.map(d=>money(d.total_amount_paid)??money(d.deposit_amount_paid)));
   const acceptedQuote=text(r.accepted_quote_total)?r.accepted_quote_total:r.quoted_amount;
   const quote=text(r.quote_status)==='accepted'?money(acceptedQuote):null;
   const total=max([ledgerTotal,invoiceTotal,quote]);
-  const paid=max([ledgerPaid,invoicePaid===null?(dd.some(d=>money(d.deposit_amount_paid)!==null)?externalDeposit:null):invoicePaid+Math.max(0,externalDeposit-includedDeposit)]);
+  const paid=max([ledgerPaid,invoicePaid===null?(dd.some(d=>money(d.deposit_amount_paid)!==null)?externalDeposit:null):invoicePaid+externalDeposit]);
   const deposit=max([dd.length?externalDeposit:null,ps.length?includedDeposit:null]);
   let balance=total!==null&&paid!==null?Math.max(0,Math.round((total-paid)*100)/100):null;
   if(total!==null&&paid!==null&&paid>total){issues.push('Recorded payments exceed booking total');balance=null;}
