@@ -72,11 +72,11 @@
   }
 
   function injectHeaderCss() {
-    if (document.getElementById("mbwHeaderCSS")) return;
     var url = "/assets/css/header.css?v=" + encodeURIComponent(VERSION);
     var existing = hasStylesheetContaining("/assets/css/header.css");
 
     if (existing) {
+      existing.setAttribute("href", url);
       return existing;
     }
 
@@ -84,7 +84,6 @@
   }
 
   function injectFontAssets() {
-    if (document.getElementById("mbwFonts")) return;
     addLink("preconnect", "https://fonts.googleapis.com");
     addLink("preconnect", "https://fonts.gstatic.com", { crossorigin: "" });
 
@@ -95,6 +94,10 @@
   }
 
   function injectIconsAndManifest() {
+    addLink("icon", "/assets/images/favicons/favicon-96x96.png", {
+      type: "image/png",
+      sizes: "96x96"
+    });
     addLink("icon", "/favicon.ico");
     addLink("icon", "/favicon.svg", { type: "image/svg+xml" });
     addLink("apple-touch-icon", "/apple-touch-icon.png");
