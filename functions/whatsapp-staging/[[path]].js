@@ -17,7 +17,7 @@ export async function onRequest({request}) {
  for(const name of ['Accept','Content-Type','X-Pilot-Token','X-MBW-Staff-Profile']){const value=request.headers.get(name);if(value)headers.set(name,value);}
  if(request.method==='POST')headers.set('Origin',UPSTREAM);
  try {
-  const response=await fetch(UPSTREAM+url.pathname+url.search,{method:request.method,headers,body:request.method==='POST'?request.body:undefined,redirect:'manual',signal:AbortSignal.timeout(110000)});
+  const response=await fetch(UPSTREAM+url.pathname+url.search,{method:request.method,headers,body:request.method==='POST'?request.body:undefined,redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(110000)});
   if(response.headers.get('X-MBW-WhatsApp-Staging')!=='1')return fail(503,'Staging is unavailable. Check that the Mac is awake and online, then retry.');
   if(response.status>=300&&response.status<400)return fail(502,'Staging connection needs attention. Refresh MBW Admin and retry.');
   if(response.status>=500)return fail(503,'The staging service is unavailable. Unsaved edits remain on this device.');
