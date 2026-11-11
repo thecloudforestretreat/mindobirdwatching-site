@@ -15,9 +15,10 @@ export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date
    const key=text(p.invoice_id)||text(p.invoice_no)||text(p.transaction_id)||text(p.payment_id);if(!key){issues.push('Unidentified payment needs review');continue;}
    const alias=psAlias(p);const existing=[...unique.entries()].find(([,row])=>psAlias(row).some(v=>alias.includes(v)));const canonical=existing?.[0]||key;const old=unique.get(canonical);if(!old||text(p.created_at)>text(old.created_at)||(text(p.created_at)===text(old.created_at)&&terminal(p)))unique.set(canonical,p);
   }
-  const ps=[...unique.values()].filter(p=>!terminal(p));
   const depUnique=new Map();for(const d of ds){const key=text(d.stripe_payment_intent_id)||text(d.deposit_id);if(key)depUnique.set(key,d);}
   const dd=[...depUnique.values()];
+  const depositAliases=new Set(dd.flatMap(d=>[d.stripe_payment_intent_id,d.deposit_id].map(v=>text(v).toUpperCase().replace(/[^A-Z0-9]/g,'')).filter(Boolean)));
+  const ps=[...unique.values()].filter(p=>!terminal(p)&&!psAlias(p).some(alias=>depositAliases.has(alias.slice(alias.indexOf(':')+1))));
   if(dd.length>1)issues.push('Multiple accounting deposits require review');
   // Accounting totals are cumulative snapshots, never additional payments.
   const externalDeposit=sum(dd.map(d=>money(d.deposit_amount_paid)));
