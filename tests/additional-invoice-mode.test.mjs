@@ -49,9 +49,11 @@ function harness() {
     ${extractFunction("rawAcceptedQuoteMismatch")}
     ${extractFunction("acceptedQuoteMismatch")}
     ${extractFunction("additionalInvoiceMetadata")}
+    ${extractFunction("isPriorInvoiceStatus")}
     ${extractFunction("isPreviouslyBookedImportedItem")}
+    ${extractFunction("isPreviouslyBookedInboundItem")}
     ${extractFunction("additionalInvoiceHasPriorBookedItems")}
-    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, additionalInvoiceHasPriorBookedItems };
+    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, isPreviouslyBookedInboundItem, additionalInvoiceHasPriorBookedItems };
   `, context);
   return context;
 }
@@ -100,10 +102,26 @@ test("additional invoices reject items already booked on the paid invoice", () =
   assert.equal(context.qa.additionalInvoiceHasPriorBookedItems(), false);
 });
 
+test("paid-booking imports distinguish prior services from new quoted add-ons", () => {
+  const context = harness();
+  const inbound = [
+    { product_selected: "MBW006", status: "booked" },
+    { product_selected: "MBW011", status: "quoted" },
+    { product_selected: "MEAL001", status: "quoted" },
+  ];
+
+  const excluded = inbound.filter(context.qa.isPreviouslyBookedInboundItem);
+  const newItems = inbound.filter(item => !context.qa.isPreviouslyBookedInboundItem(item));
+
+  assert.deepEqual(JSON.parse(JSON.stringify(excluded.map(item => item.product_selected))), ["MBW006"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(newItems.map(item => item.product_selected))), ["MBW011", "MEAL001"]);
+});
+
 test("checkout scripts parse with the additional-invoice control", () => {
   for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
     if (match[1].trim()) new Function(match[1]);
   }
   assert.match(html, /Create a separate invoice for approved additional services/);
   assert.match(html, /Prior paid invoice/);
+  assert.match(html, /excluded automatically/);
 });
