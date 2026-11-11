@@ -119,6 +119,43 @@ test("meal add-ons are staff-only, bilingual, and invoice at the catalog price p
   assert.equal(line.get("quantity"), "3");
 });
 
+test("within-Mindo transportation is staff-only and cannot bill the US$1 reference amount", async () => {
+  const h = harness();
+  for (const language of ["en", "es"]) {
+    const publicResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}`), h.env, {});
+    const publicBody = await publicResponse.json();
+    assert.equal(publicBody.tours.some((item) => item.tour_code === "TRANS007"), false);
+
+    const staffResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}&scope=staff`), h.env, {});
+    const staffBody = await staffResponse.json();
+    const item = staffBody.tours.find((tour) => tour.tour_code === "TRANS007");
+    assert(item, `TRANS007:${language} missing`);
+    assert.equal(item.amount_display, "$1.00");
+    assert.equal(item.pricing_model, "flat");
+    assert.equal(item.invoice_only, true);
+    assert.equal(item.requires_price_override, true);
+  }
+
+  const missingPrice = await h.call("create-invoice", { ...base, tour_code: "TRANS007" });
+  assert.equal(missingPrice.response.status, 400);
+  assert.match(missingPrice.body.error, /guest-approved final price/i);
+  assert.equal(h.calls.length, 0);
+
+  const invoice = await h.call("create-invoice", {
+    ...base,
+    tour_code: "TRANS007",
+    price_override_per_person: 18,
+    price_adjustment_per_person: 17,
+    pricing_reason: "within_mindo_transportation",
+  });
+  assert.equal(invoice.response.status, 200, JSON.stringify(invoice.body));
+  assert.equal(invoice.body.amount_before_deposit, 18);
+  const line = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(line.get("price_data[product]"), "prod_VbtFWOohDnGtww");
+  assert.equal(line.get("price_data[unit_amount]"), "1800");
+  assert.equal(line.get("quantity"), "1");
+});
+
 test("public checkout cannot charge a custom tour starting amount", async () => {
   const h = harness();
   const result = await h.call("create-checkout-session", base);
