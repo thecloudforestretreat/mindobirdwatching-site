@@ -1241,7 +1241,9 @@ function createItem(initial = {}) {
     item_notes: initial.item_notes || "",
     price_override_per_person: initial.price_override_per_person || "",
     pricing_reason: initial.pricing_reason || "",
-    pricing_notes: initial.pricing_notes || ""
+    pricing_notes: initial.pricing_notes || "",
+    source_status: initial.source_status || "",
+    source_tour_code: initial.source_tour_code || initial.tour_code || ""
   };
 }
 
@@ -1404,7 +1406,9 @@ function createItem(initial = {}) {
       item_notes: notes,
       price_override_per_person: adjustment ? String(adjustment) : "",
       pricing_reason: adjustment ? "CRM quoted price" : "",
-      pricing_notes: adjustment ? `Imported quoted price: $${quotedPrice} ${isVehicleTour(tour)?"per vehicle":"per person"}` : ""
+      pricing_notes: adjustment ? `Imported quoted price: $${quotedPrice} ${isVehicleTour(tour)?"per vehicle":"per person"}` : "",
+      source_status: String(item.status || "").trim().toLowerCase(),
+      source_tour_code: tourCode
     });
   }
 
@@ -1460,6 +1464,14 @@ function createItem(initial = {}) {
 
   function acceptedQuoteMismatch() {
     return rawAcceptedQuoteMismatch() && !state.additionalInvoiceMode;
+  }
+
+  function isPreviouslyBookedImportedItem(item) {
+    return ["booked", "paid", "completed", "fully_paid"].includes(String(item && item.source_status || "").toLowerCase());
+  }
+
+  function additionalInvoiceHasPriorBookedItems() {
+    return state.additionalInvoiceMode && state.items.some(isPreviouslyBookedImportedItem);
   }
 
   function applyInboundPrefill() {
@@ -1686,6 +1698,9 @@ function createItem(initial = {}) {
 
       tourSelect.addEventListener("change", e => {
         updateItem(item.id, "tour_code", e.target.value);
+        if (item.source_status && e.target.value !== item.source_tour_code) {
+          updateItem(item.id, "source_status", "");
+        }
         refreshMeta();
         refreshPricingControls();
       });
@@ -1784,6 +1799,9 @@ function createItem(initial = {}) {
           <br />
           Price: <span class="money">${priceLine}</span>
           ${internalPricingLine}
+          ${state.additionalInvoiceMode && isPreviouslyBookedImportedItem(item)
+            ? `<br /><strong style="color:#a33125;">Already booked on the prior invoice — remove this item or change it to a new add-on before sending.</strong>`
+            : ""}
         </div>
       `;
 
@@ -1828,18 +1846,27 @@ function createItem(initial = {}) {
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
     els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || hasInvoiceOnly || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
-    els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch();
+    const hasPriorBookedItems = additionalInvoiceHasPriorBookedItems();
+    els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch() || hasPriorBookedItems;
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
 
     if (state.additionalInvoiceMode) {
-      els.actionSummary.innerHTML = `
-        Additional invoice mode is active.
-        <br />
-        Send Invoice creates a separate Stripe invoice for the items below.
-        <br />
-        Prior paid invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> remains unchanged.
-      `;
+      els.actionSummary.innerHTML = hasPriorBookedItems
+        ? `
+          Additional invoice mode is active, but the invoice is not ready.
+          <br />
+          Remove or replace each item marked <strong>Already booked on the prior invoice</strong>.
+          <br />
+          Prior paid invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> remains unchanged.
+        `
+        : `
+          Additional invoice mode is active.
+          <br />
+          Send Invoice creates a separate Stripe invoice for the new items below.
+          <br />
+          Prior paid invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> remains unchanged.
+        `;
     } else if (multi) {
       els.actionSummary.innerHTML = `
         Multi-item mode is active.
@@ -1886,6 +1913,7 @@ function createItem(initial = {}) {
     const errors = [];
     if(acceptedQuoteMismatch())errors.push("Item prices do not match the accepted CRM quote. Review the prices or update the agreed quote in CRM before invoicing.");
     if(state.additionalInvoiceMode && !state.additionalInvoiceEligible)errors.push("Additional invoice mode requires a verified prior paid invoice.");
+    if(additionalInvoiceHasPriorBookedItems())errors.push("Remove or replace items already booked on the prior paid invoice. An additional invoice may contain only new services.");
 
     state.items.forEach((item, idx) => {
       if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);

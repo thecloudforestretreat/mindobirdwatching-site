@@ -26,6 +26,7 @@ function harness() {
     additionalInvoiceMode: false,
     priorInvoiceNo: "",
     priorPaymentStatus: "",
+    items: [],
   };
   const els = {
     additionalInvoiceMode: { checked: false },
@@ -48,7 +49,9 @@ function harness() {
     ${extractFunction("rawAcceptedQuoteMismatch")}
     ${extractFunction("acceptedQuoteMismatch")}
     ${extractFunction("additionalInvoiceMetadata")}
-    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata };
+    ${extractFunction("isPreviouslyBookedImportedItem")}
+    ${extractFunction("additionalInvoiceHasPriorBookedItems")}
+    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, additionalInvoiceHasPriorBookedItems };
   `, context);
   return context;
 }
@@ -78,6 +81,23 @@ test("unpaid CRM quotes cannot use additional-invoice mode", () => {
   assert.equal(context.els.additionalInvoicePanel.hidden, true);
   assert.equal(context.qa.acceptedQuoteMismatch(), true);
   assert.deepEqual(JSON.parse(JSON.stringify(context.qa.additionalInvoiceMetadata())), {});
+});
+
+test("additional invoices reject items already booked on the paid invoice", () => {
+  const context = harness();
+  context.qa.applyPriorInvoiceContext({ payment_status: "paid", invoice_no: "MBW-0143" });
+  context.state.additionalInvoiceMode = true;
+  context.state.items = [
+    { tour_code: "MBW006", source_status: "booked" },
+    { tour_code: "MBW011", source_status: "quoted" },
+  ];
+
+  assert.equal(context.qa.isPreviouslyBookedImportedItem(context.state.items[0]), true);
+  assert.equal(context.qa.isPreviouslyBookedImportedItem(context.state.items[1]), false);
+  assert.equal(context.qa.additionalInvoiceHasPriorBookedItems(), true);
+
+  context.state.items.shift();
+  assert.equal(context.qa.additionalInvoiceHasPriorBookedItems(), false);
 });
 
 test("checkout scripts parse with the additional-invoice control", () => {
