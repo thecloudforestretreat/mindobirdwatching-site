@@ -1164,6 +1164,8 @@
       function comparableEmail(record){ return clean(record.email_normalized||record.email).toLowerCase(); }
       function comparablePhone(record){ return clean(record.phone_normalized||record.phone_number||record.phone_raw).replace(/\D/g,""); }
       function referenceIds(value){return [...new Set(Array.from(String(value||"").matchAll(/ci_[A-Za-z0-9_-]{4,120}/gi),match=>match[0]))];}
+      function primaryReferenceId(value){const ids=referenceIds(value);return ids[ids.length-1]||"";}
+      function recordReferenceIds(record){return referenceIds([record&&record.contact_intent_id,record&&record.internal_notes].filter(Boolean).join("\n"));}
       function sameGuestIdentity(a,b){
         const emailA=comparableEmail(a),emailB=comparableEmail(b),phoneA=comparablePhone(a),phoneB=comparablePhone(b);
         return Boolean((emailA&&emailB&&emailA===emailB)||(phoneA&&phoneB&&phoneA===phoneB));
@@ -1179,7 +1181,9 @@
       function findReferenceOwner(record){
         const ids=referenceIds(record&&record.contact_intent_id);
         if(!ids.length)return null;
-        return state.records.find(item=>item.inquiry_id!==record.inquiry_id&&referenceIds(item.contact_intent_id).some(id=>ids.includes(id)))||null;
+        const owner=state.records.find(item=>item.inquiry_id!==record.inquiry_id&&recordReferenceIds(item).some(id=>ids.includes(id)))||null;
+        if(!owner||!isArchivedStatus(owner)||!clean(owner.superseded_by_inquiry_id))return owner;
+        return state.records.find(item=>item.inquiry_id===owner.superseded_by_inquiry_id)||owner;
       }
       function canonicalRecordsForStats(records){
         const result=[];
@@ -1398,11 +1402,9 @@
       function referenceStatus(text){const node=document.getElementById("referenceStatus");if(node)node.textContent=text;}
       function missingManualWhatsappReference(){return clean(els.sourceInput?.value)==="manual_whatsapp"&&!clean(els.referenceIdInput?.value);}
       function updateReferenceReminder(){if(missingManualWhatsappReference())referenceStatus("No Reference ID: this WhatsApp inquiry will be saved without attribution.");else if(!clean(els.referenceIdInput?.value))referenceStatus("Optional. Existing attribution is preserved.");}
-      function preservedReferenceList(raw,saved){const value=clean(raw),parts=value.split("|").map(clean);return value===clean(saved)&&parts.length>1&&parts.every(part=>Boolean(referenceId(part)));}
       async function resolveReference(){
         const raw=clean(els.referenceIdInput.value);
         if(!raw){referenceMatch=null;updateReferenceReminder();return null;}
-        if(preservedReferenceList(raw,getSelected()?.contact_intent_id)){referenceMatch=null;referenceStatus("Existing merged references preserved.");return null;}
         const id=referenceId(raw);
         if(!id){referenceStatus("Paste one ci_... ID, Reference / Referencia, or a message containing exactly one reference.");throw new Error("Invalid Reference ID");}
         if(referenceMatch&&referenceMatch.contact_intent_id===id)return referenceMatch;
@@ -1976,7 +1978,7 @@
       function queueLabel(value){const labels={all:"All Records",upcoming7:"Upcoming 7",followups:"Follow-ups",urgent:"Urgent",new:"New",contacted:"Contacted",planning:"Planning",qualified:"Qualified",followUp:"Follow Up",activePipeline:"Active Pipeline",quoted:"Quoted",depositPending:"Deposit Pending",depositPaid:"Deposit Paid",paymentPending:"Payment Pending",booked:"Booked",completed:"Completed",cancelled:"Cancelled",didNotBook:"Did Not Book",duplicate:"Duplicate"};return labels[value]||"Current";}
       function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
       function fillForm(r){ resetCommunicationContext(r); if(!r)return; referenceMatch=null; referenceGeneration++; if(els.referenceIdInput)els.referenceIdInput.value=r.contact_intent_id||""; referenceStatus(r.contact_intent_id?"Saved reference; checked again on save.":"Paste an ID or a guest message containing one Reference / Referencia."); if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); if(els.assignmentTourItem)renderAssignmentTourItems(els.assignmentTourItem.value); state.tourFormSnapshot=tourFormSnapshot(); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
-      const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);els.marketingBrandInput.value=clean(record?.marketing_brand_id||record?.brand_id||record?.brandId)||"mbw";els.billingBrandDisplay.value="Mindo Bird Watching";fillQuoteOptions(record);updateItineraryActions(record);state.toolHandoffSnapshot=toolHandoffSnapshot()};
+      const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);if(record&&els.referenceIdInput){const primary=primaryReferenceId(record.contact_intent_id);const count=recordReferenceIds(record).length;els.referenceIdInput.value=primary;referenceStatus(primary?("Saved primary reference; "+count+" linked reference"+(count===1?"":"s")+" preserved in the audit trail."):"Paste an ID or a guest message containing one Reference / Referencia.");}els.marketingBrandInput.value=clean(record?.marketing_brand_id||record?.brand_id||record?.brandId)||"mbw";els.billingBrandDisplay.value="Mindo Bird Watching";fillQuoteOptions(record);updateItineraryActions(record);state.toolHandoffSnapshot=toolHandoffSnapshot()};
       function renderDetail(){ const r=getSelected()||{}; renderTable(els.detailTable,r,["inquiry_id","guest_id","is_archived","archive_reason","full_name","phone_number","email","marketing_brand_id","billing_brand_id","tour_type","guest_count","requested_date","priority","status","quote_status","payment_status","availability_status"]); renderTable(els.actionTable,r,["archived_at","completed_date","invoice_no","date_paid","payment_method","service_type","product_selected","followup_date","last_contacted_at","duration_preference","transportation_needed","pickup_location","grouping_preference","grouping_status","quoted_amount","quote_sent_at","quote_sent_channel","quote_notes","notes","internal_notes","created_at","updated_at"]); }
       function workspaceContextHtml(record,label){ return `<div class="workspaceContext"><div><h2>${esc(record.full_name||"Guest")}</h2><p>${esc(label)} · ${esc(record.inquiry_id||"")} · ${esc(record.phone_number||record.email||"No contact information")}</p></div><span class="contextBadge">${esc(labelStatus(record.status||"new"))}</span></div>`; }
       function renderWorkspaces(){
@@ -2297,7 +2299,11 @@
       }
       function updateDuplicateActionButtons(record){ const restore=isArchivedStatus(record); [els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean).forEach(button=>{ button.textContent=restore?"Restore Record":"Mark Duplicate"; button.classList.toggle("dangerBtn",!restore); }); }
       function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
-      function mergeReferenceValues(records){return [...new Set(records.flatMap(record=>referenceIds(record.contact_intent_id)))].join("|");}
+      function mergeReferenceValues(records){
+        const ordered=records.slice().sort((a,b)=>String(a.created_at||"").localeCompare(String(b.created_at||"")));
+        const ids=[...new Set(ordered.flatMap(record=>recordReferenceIds(record)))];
+        return {primary:primaryReferenceId(ordered.map(record=>record.contact_intent_id||"").join("|")),all:ids};
+      }
       function mergeTextValues(values){const out=[];values.map(clean).filter(Boolean).forEach(value=>{if(!out.some(existing=>existing===value||existing.includes(value)))out.push(value);});return out.join("\n\n");}
       function mergedTourItemKey(item){return [productCodeFromValue(item.product_selected),toDateValue(item.date||item.tour_date),clean(item.tour||item.service_type).toLowerCase()].join("|");}
       function mergeInquiryRecords(canonical,records){
@@ -2306,15 +2312,16 @@
         family.flatMap(record=>normalizeTourItems(record)).forEach(item=>{const key=mergedTourItemKey(item);if(!key||seen.has(key))return;seen.add(key);items.push(item);});
         const dates=items.map(item=>toDateValue(item.date||item.tour_date)).filter(Boolean).sort();
         const references=mergeReferenceValues(family);
+        const historyMarker=references.all.length?"[MBW_REFERENCE_HISTORY] "+references.all.join(" | "):"";
         const merged=Object.assign({},canonical,{
-          contact_intent_id:references||canonical.contact_intent_id||"",
+          contact_intent_id:references.primary||primaryReferenceId(canonical.contact_intent_id),
           requested_date_start:dates[0]||canonical.requested_date_start||canonical.requested_date||"",
           requested_date_end:dates[dates.length-1]||canonical.requested_date_end||canonical.requested_date||"",
           requested_date:dates[0]||canonical.requested_date||"",
           requested_date_text:dates.length>1&&dates[0]!==dates[dates.length-1]?dates[0]+" to "+dates[dates.length-1]:(dates[0]||canonical.requested_date_text||""),
           notes:mergeTextValues(family.map(record=>record.notes)),
           message_questions:mergeTextValues(family.map(record=>record.message_questions)),
-          internal_notes:mergeTextValues([canonical.internal_notes,"Consolidated same-trip submissions on "+datePlusDays(0)+".",...family.filter(record=>record.inquiry_id!==canonical.inquiry_id).map(record=>record.internal_notes)]),
+          internal_notes:mergeTextValues([canonical.internal_notes,"Consolidated same-trip submissions on "+datePlusDays(0)+".",historyMarker,...family.filter(record=>record.inquiry_id!==canonical.inquiry_id).map(record=>record.internal_notes)]),
           tour_items:serializeTourItems(items),
           tour_items_json:serializeTourItems(items),
           tour_count:String(items.length),
@@ -2372,7 +2379,7 @@
           state.selectedId=next?next.inquiry_id:"";
           fillForm(next);
           render();
-          showToast(canonical?"Same-trip submissions consolidated: "+(normalizeTourItems(mergedSaved).length)+" services and "+referenceIds(mergedSaved.contact_intent_id).length+" references preserved.":"Selected record archived; other guest tours remain active");
+          showToast(canonical?"Same-trip submissions consolidated: "+(normalizeTourItems(mergedSaved).length)+" services and "+recordReferenceIds(mergedSaved).length+" references preserved.":"Selected record archived; other guest tours remain active");
         }catch(error){
           saveLocalRecords();
           render();
