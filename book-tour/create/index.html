@@ -626,7 +626,7 @@
             Create a separate invoice for approved additional services
           </label>
           <div class="hint" style="margin-top:8px;">
-            Use this only when the prior invoice has already been paid. The paid invoice remains unchanged, and this invoice contains only the new items listed below.
+            Use this only when the prior invoice has already been paid. Previously booked items are excluded automatically, and this invoice contains only the new items listed below.
           </div>
         </div>
 
@@ -856,7 +856,8 @@
     additionalInvoiceEligible: false,
     additionalInvoiceMode: false,
     priorInvoiceNo: "",
-    priorPaymentStatus: ""
+    priorPaymentStatus: "",
+    excludedPriorInvoiceItems: []
   };
 
   const els = {
@@ -1466,8 +1467,16 @@ function createItem(initial = {}) {
     return rawAcceptedQuoteMismatch() && !state.additionalInvoiceMode;
   }
 
+  function isPriorInvoiceStatus(value) {
+    return ["booked", "paid", "completed", "fully_paid"].includes(String(value || "").toLowerCase());
+  }
+
   function isPreviouslyBookedImportedItem(item) {
-    return ["booked", "paid", "completed", "fully_paid"].includes(String(item && item.source_status || "").toLowerCase());
+    return isPriorInvoiceStatus(item && item.source_status);
+  }
+
+  function isPreviouslyBookedInboundItem(item) {
+    return isPriorInvoiceStatus(item && item.status);
   }
 
   function additionalInvoiceHasPriorBookedItems() {
@@ -1495,9 +1504,19 @@ function createItem(initial = {}) {
     const guestId = getInboundValue(data, "guest_id", "guestId");
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
     const quoteId = getInboundValue(data, "quote_id", "quoteId");
-    const inboundItems = parseInboundTourItems(data);
+    const allInboundItems = parseInboundTourItems(data);
 
     applyPriorInvoiceContext(data);
+    state.excludedPriorInvoiceItems = state.additionalInvoiceEligible
+      ? allInboundItems.filter(isPreviouslyBookedInboundItem)
+      : [];
+    const inboundItems = state.additionalInvoiceEligible
+      ? allInboundItems.filter(item => !isPreviouslyBookedInboundItem(item))
+      : allInboundItems;
+    if (state.excludedPriorInvoiceItems.length) {
+      const excludedCount = state.excludedPriorInvoiceItems.length;
+      els.priorInvoiceDetails.textContent = `Prior invoice ${state.priorInvoiceNo} is recorded as paid. ${excludedCount} previously booked item${excludedCount === 1 ? " was" : "s were"} excluded automatically.`;
+    }
 
     setFieldValue(els.mainFirstName, firstName);
     setFieldValue(els.mainLastName, lastName);
@@ -1526,6 +1545,16 @@ function createItem(initial = {}) {
       renderItems();
       renderSummary();
       updateModeUI();
+    } else if (state.additionalInvoiceEligible && state.excludedPriorInvoiceItems.length) {
+      state.items = [createItem({
+        language,
+        tour_date: tourDate || getDefaultTomorrowISO(),
+        quantity: quantity || 1
+      })];
+      applyAcceptedQuote(data);
+      renderItems();
+      renderSummary();
+      updateModeUI();
     } else if (state.items.length) {
       Object.assign(state.items[0], {
         language,
@@ -1542,11 +1571,15 @@ function createItem(initial = {}) {
 
     if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
       const missingItems = inboundItems.filter(item => !inboundTourCode(item, language));
-      showStatus(missingItems.length
-        ? `Guest details imported. ${missingItems.length} service item(s) need an exact Stripe product selection.`
-        : inboundItems.length
-          ? `Guest details and ${inboundItems.length} service items imported from CRM.`
-          : (tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice."), "info");
+      showStatus(state.excludedPriorInvoiceItems.length
+        ? inboundItems.length
+          ? `Guest details and ${inboundItems.length} new service item${inboundItems.length === 1 ? "" : "s"} imported. ${state.excludedPriorInvoiceItems.length} previously booked item${state.excludedPriorInvoiceItems.length === 1 ? "" : "s"} from ${state.priorInvoiceNo} excluded automatically.`
+          : `Guest details imported. Previously booked items from ${state.priorInvoiceNo} were excluded. Add only the new services for this invoice.`
+        : missingItems.length
+          ? `Guest details imported. ${missingItems.length} service item(s) need an exact Stripe product selection.`
+          : inboundItems.length
+            ? `Guest details and ${inboundItems.length} service items imported from CRM.`
+            : (tourCode || !tourText ? "Guest details imported from CRM." : "Guest details imported from CRM. Please select the exact tour before creating the invoice."), "info");
     }
     if (inquiryId) lookupDeposit();
   }
@@ -1867,6 +1900,14 @@ function createItem(initial = {}) {
           <br />
           Prior paid invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> remains unchanged.
         `;
+    } else if (state.additionalInvoiceEligible) {
+      els.actionSummary.innerHTML = `
+        Prior invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> is already paid.
+        <br />
+        Previously booked items were excluded from this invoice.
+        <br />
+        Confirm <strong>Create a separate invoice for approved additional services</strong> above to enable Send Invoice.
+      `;
     } else if (multi) {
       els.actionSummary.innerHTML = `
         Multi-item mode is active.
