@@ -1163,6 +1163,32 @@
       function handleTourItemClick(event){ const button=event.target.closest("[data-tour-action]"); if(!button) return; const card=button.closest(".tourItem"); state.tourItems=collectTourItems().filter(item=>item.id!==card.dataset.id); renderTourItems(); renderPayload(); }
       function comparableEmail(record){ return clean(record.email_normalized||record.email).toLowerCase(); }
       function comparablePhone(record){ return clean(record.phone_normalized||record.phone_number||record.phone_raw).replace(/\D/g,""); }
+      function referenceIds(value){return [...new Set(Array.from(String(value||"").matchAll(/ci_[A-Za-z0-9_-]{4,120}/gi),match=>match[0]))];}
+      function sameGuestIdentity(a,b){
+        const emailA=comparableEmail(a),emailB=comparableEmail(b),phoneA=comparablePhone(a),phoneB=comparablePhone(b);
+        return Boolean((emailA&&emailB&&emailA===emailB)||(phoneA&&phoneB&&phoneA===phoneB));
+      }
+      function dayDistance(a,b){const left=isoDayNumber(a),right=isoDayNumber(b);return left===null||right===null?null:Math.abs(left-right);}
+      function createdDay(value){return toDateValue(value)||toDateValue(String(value||"").slice(0,10));}
+      function samePlanningWindow(a,b){
+        if(!sameGuestIdentity(a,b)||isArchivedStatus(a)||isArchivedStatus(b)||isClosedStatus(a.status)||isClosedStatus(b.status))return false;
+        const tourGap=dayDistance(a.requested_date||a.requested_date_start,b.requested_date||b.requested_date_start);
+        const submittedGap=dayDistance(createdDay(a.created_at),createdDay(b.created_at));
+        return tourGap!==null&&tourGap<=14&&(submittedGap===null||submittedGap<=14);
+      }
+      function findReferenceOwner(record){
+        const ids=referenceIds(record&&record.contact_intent_id);
+        if(!ids.length)return null;
+        return state.records.find(item=>item.inquiry_id!==record.inquiry_id&&referenceIds(item.contact_intent_id).some(id=>ids.includes(id)))||null;
+      }
+      function canonicalRecordsForStats(records){
+        const result=[];
+        records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)).forEach(record=>{
+          if(result.some(existing=>samePlanningWindow(existing,record)))return;
+          result.push(record);
+        });
+        return result;
+      }
       function activeOtherRecords(record){ return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item)&&!isClosedStatus(item.status)); }
       function identityRecords(record){ return state.records.filter(item=>item.inquiry_id!==record.inquiry_id&&!isArchivedStatus(item)); }
       function findExistingGuest(record){
@@ -1190,7 +1216,7 @@
         })||null;
       }
       function findDuplicateRecords(record){ const email=comparableEmail(record); const phone=comparablePhone(record); const name=clean(record.full_name).toLowerCase(); const date=toDateValue(record.requested_date||record.requested_date_start); return activeOtherRecords(record).filter(item=>{ const sameEmail=email&&comparableEmail(item)===email; const samePhone=phone&&comparablePhone(item)===phone; const sameNameDate=name&&date&&clean(item.full_name).toLowerCase()===name&&toDateValue(item.requested_date||item.requested_date_start)===date; return sameEmail||samePhone||sameNameDate; }); }
-      function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(duplicates.length?duplicates:matches).slice(0,3); const duplicateMode=duplicates.length>0; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${duplicateMode?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${duplicateMode?"Review the matching record before saving another copy.":"This guest has another trip. Keep each trip as a separate record."}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
+      function renderDuplicateNotice(){ if(!els.duplicateNotice) return; const record=formRecord(); const matches=findDuplicateRecords(record); if(!matches.length){ els.duplicateNotice.hidden=true; els.duplicateNotice.classList.remove("show"); els.duplicateNotice.innerHTML=""; return; } const referenceOwner=findReferenceOwner(record); const sameTrip=matches.filter(item=>samePlanningWindow(item,record)); const recordDate=toDateValue(record.requested_date||record.requested_date_start); const duplicates=matches.filter(item=>sourceIdentityMatch(item,record)||(recordDate&&toDateValue(item.requested_date||item.requested_date_start)===recordDate)); const shown=(referenceOwner?[referenceOwner]:(sameTrip.length?sameTrip:(duplicates.length?duplicates:matches))).slice(0,3); const mode=referenceOwner?"reference":sameTrip.length?"trip":duplicates.length?"duplicate":"returning"; const message=mode==="reference"?"This Reference ID already belongs to an inquiry. Open that record instead of creating another one.":mode==="trip"?"These submissions appear to belong to the same travel plan. Use Mark Duplicate on the weaker record to consolidate its tours and references into the strongest inquiry.":mode==="duplicate"?"Review the matching record before saving another copy.":"This guest has another trip outside the current planning window; keep it separate."; els.duplicateNotice.hidden=false; els.duplicateNotice.classList.add("show"); els.duplicateNotice.innerHTML=`<strong>${mode==="reference"?"Reference already used:":mode==="trip"?"Same trip likely:":mode==="duplicate"?"Possible duplicate submission:":"Returning guest:"}</strong> ${shown.map(r=>esc(r.full_name||"Guest")+" ("+esc(r.requested_date||r.requested_date_start||"No date")+")").join(", ")}. ${message}<br>${shown.map(r=>`<button type="button" data-id="${esc(r.inquiry_id)}">Review ${esc(r.requested_date||r.requested_date_start||"record")}</button>`).join("")}`; els.duplicateNotice.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>selectRecord(btn.dataset.id))); }
       // Project scheduled work for display only; never rewrite enquiry or pricing data.
       function calendarAssignmentsForRecord(record){
         const seen=new Set();
@@ -1444,6 +1470,15 @@
               :"Reference was not found. Saving this record without website attribution.");
           }
           if(attribution){Object.assign(payload.record,attribution);Object.assign(payload.inquiry_row,attribution);}
+          const referenceOwner=findReferenceOwner(payload.record);
+          if(isCreate&&referenceOwner){
+            state.selectedId=referenceOwner.inquiry_id;
+            fillForm(referenceOwner);
+            saveLocalRecords();
+            render();
+            showToast("Not saved: this Reference ID is already linked to an inquiry. The existing record is now open.");
+            return;
+          }
           const duplicate=findBookingDuplicate(payload.record);
           if(isCreate&&duplicate){
             state.selectedId=duplicate.inquiry_id;
@@ -1640,7 +1675,7 @@
       function getFiltered(){const q=(clean(els.searchInput.value)||clean(els.inlineSearchInput.value)).toLowerCase(),vf=els.viewFilter.value;let arr=state.records.slice();if(q)arr=arr.filter(r=>JSON.stringify(r).toLowerCase().includes(q));const status=clean(els.statusFilter.value)||clean(els.inlineStatusFilter.value),rep=clean(els.repFilter.value)||clean(els.inlineRepFilter.value);if(status)arr=arr.filter(r=>normalizeStatus(r.status)===status);if(rep)arr=arr.filter(r=>rep==="unassigned"?!clean(r.assigned_to):normalizeRep(r.assigned_to)===rep);if(els.quoteFilter.value)arr=arr.filter(r=>r.quote_status===els.quoteFilter.value);if(els.paymentFilter.value)arr=arr.filter(r=>normalizePayment(r.payment_status)===els.paymentFilter.value);const direct={new:"new",contacted:"contacted",planning:"planning",qualified:"qualified",followUp:"follow_up",paymentPending:"payment_pending",completed:"completed",cancelled:"cancelled",didNotBook:"did_not_book",spam:"spam",duplicate:"duplicate"};if(direct[vf])arr=arr.filter(r=>normalizeStatus(r.status)===direct[vf]);if(vf==="upcoming7")arr=arr.filter(r=>!isClosedStatus(r.status)&&isUpcoming7(r));if(vf==="followups")arr=arr.filter(r=>!isClosedStatus(r.status)&&isFollowupDue(r));if(vf==="urgent")arr=arr.filter(r=>!isClosedStatus(r.status)&&normalizePriority(r.priority||autoPriority(r.requested_date))==="urgent");if(vf==="activePipeline")arr=arr.filter(r=>["contacted","planning","qualified","follow_up"].includes(normalizeStatus(r.status)));if(vf==="quoted")arr=arr.filter(r=>!isClosedStatus(r.status)&&(r.quote_status==="sent"||normalizeStatus(r.status)==="quoted"));if(vf==="depositPending")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending"));if(vf==="depositPaid")arr=arr.filter(r=>!isClosedStatus(r.status)&&(normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid"));if(vf==="booked")arr=arr.filter(r=>normalizeStatus(r.status)==="booked");if(["upcoming7","followups","urgent","new","contacted","planning","qualified","followUp","activePipeline","quoted","depositPending","depositPaid","paymentPending","booked"].includes(vf))arr=arr.filter(r=>!isPastTourRecord(r));if(!q&&vf!=="duplicate"&&status!=="duplicate")arr=arr.filter(r=>!isArchivedStatus(r));const sort=els.sortInput.value||"created_at",dir=els.sortDirectionInput.value==="asc"?1:-1;arr.sort((a,b)=>compareRecords(a,b,sort,dir));return arr;}
       const getFilteredBase=getFiltered;
       getFiltered=function(){ let arr=getFilteredBase(); const filter=clean(els.followupFilter&&els.followupFilter.value); if(filter) arr=arr.filter(record=>followupState(record).kind===filter); if((els.viewFilter.value||state.activeQueue)==="followups") arr.sort(compareFollowups); return arr; };
-      function renderStats(){const records=state.records.filter(r=>!isArchivedStatus(r)),operational=records.filter(r=>!isPastTourRecord(r)),active=operational.filter(r=>!isClosedStatus(r.status));const stats={total:records.length,upcoming7:active.filter(isUpcoming7).length,new:operational.filter(r=>normalizeStatus(r.status)==="new").length,contacted:operational.filter(r=>normalizeStatus(r.status)==="contacted").length,planning:operational.filter(r=>normalizeStatus(r.status)==="planning").length,qualified:operational.filter(r=>normalizeStatus(r.status)==="qualified").length,followUp:operational.filter(r=>normalizeStatus(r.status)==="follow_up").length,quoted:active.filter(r=>r.quote_status==="sent"||normalizeStatus(r.status)==="quoted").length,depositPending:active.filter(r=>normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending").length,depositPaid:active.filter(r=>normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid").length,paymentPending:active.filter(r=>normalizePayment(r.payment_status)==="payment_pending"||normalizeStatus(r.status)==="payment_pending").length,booked:operational.filter(r=>normalizeStatus(r.status)==="booked").length,completed:records.filter(r=>normalizeStatus(r.status)==="completed").length,cancelled:records.filter(r=>normalizeStatus(r.status)==="cancelled").length,didNotBook:records.filter(r=>normalizeStatus(r.status)==="did_not_book").length,spam:records.filter(r=>normalizeStatus(r.status)==="spam").length};els.statTotal.textContent=stats.total;els.statUpcoming.textContent=stats.upcoming7;els.statNew.textContent=stats.new;els.statContacted.textContent=stats.contacted;els.statPlanning.textContent=stats.planning;els.statQualified.textContent=stats.qualified;els.statFollowUp.textContent=stats.followUp;els.statPaymentPending.textContent=stats.paymentPending;els.statQuoted.textContent=stats.quoted;els.statDepositPending.textContent=stats.depositPending;els.statDepositPaid.textContent=stats.depositPaid;els.statBooked.textContent=stats.booked;els.statCompleted.textContent=stats.completed;els.statCancelled.textContent=stats.cancelled;els.statDidNotBook.textContent=stats.didNotBook;document.getElementById("statSpam").textContent=stats.spam;document.querySelectorAll("[data-stat-key]").forEach(el=>{el.textContent=stats[el.dataset.statKey]??0;});}
+      function renderStats(){const records=canonicalRecordsForStats(state.records.filter(r=>!isArchivedStatus(r))),operational=records.filter(r=>!isPastTourRecord(r)),active=operational.filter(r=>!isClosedStatus(r.status));const stats={total:records.length,upcoming7:active.filter(isUpcoming7).length,new:operational.filter(r=>normalizeStatus(r.status)==="new").length,contacted:operational.filter(r=>normalizeStatus(r.status)==="contacted").length,planning:operational.filter(r=>normalizeStatus(r.status)==="planning").length,qualified:operational.filter(r=>normalizeStatus(r.status)==="qualified").length,followUp:operational.filter(r=>normalizeStatus(r.status)==="follow_up").length,quoted:active.filter(r=>r.quote_status==="sent"||normalizeStatus(r.status)==="quoted").length,depositPending:active.filter(r=>normalizePayment(r.payment_status)==="deposit_pending"||normalizeStatus(r.status)==="deposit_pending").length,depositPaid:active.filter(r=>normalizePayment(r.payment_status)==="deposit_paid"||normalizeStatus(r.status)==="deposit_paid").length,paymentPending:active.filter(r=>normalizePayment(r.payment_status)==="payment_pending"||normalizeStatus(r.status)==="payment_pending").length,booked:operational.filter(r=>normalizeStatus(r.status)==="booked").length,completed:records.filter(r=>normalizeStatus(r.status)==="completed").length,cancelled:records.filter(r=>normalizeStatus(r.status)==="cancelled").length,didNotBook:records.filter(r=>normalizeStatus(r.status)==="did_not_book").length,spam:records.filter(r=>normalizeStatus(r.status)==="spam").length};els.statTotal.textContent=stats.total;els.statUpcoming.textContent=stats.upcoming7;els.statNew.textContent=stats.new;els.statContacted.textContent=stats.contacted;els.statPlanning.textContent=stats.planning;els.statQualified.textContent=stats.qualified;els.statFollowUp.textContent=stats.followUp;els.statPaymentPending.textContent=stats.paymentPending;els.statQuoted.textContent=stats.quoted;els.statDepositPending.textContent=stats.depositPending;els.statDepositPaid.textContent=stats.depositPaid;els.statBooked.textContent=stats.booked;els.statCompleted.textContent=stats.completed;els.statCancelled.textContent=stats.cancelled;els.statDidNotBook.textContent=stats.didNotBook;document.getElementById("statSpam").textContent=stats.spam;document.querySelectorAll("[data-stat-key]").forEach(el=>{el.textContent=stats[el.dataset.statKey]??0;});}
       function newYorkDate(){ const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()); const map=Object.fromEntries(parts.map(part=>[part.type,part.value])); return map.year+"-"+map.month+"-"+map.day; }
       function isoDayNumber(value){ const iso=toDateValue(value); if(!iso) return null; const parts=iso.split("-").map(Number); return Date.UTC(parts[0],parts[1]-1,parts[2])/86400000; }
       function followupState(record){ const status=normalizeStatus(record&&record.status); if(isClosedStatus(status)) return {kind:"suppressed",label:""}; const date=toDateValue(record&&record.followup_date); if(!date) return {kind:"none",label:"No follow-up"}; const diff=isoDayNumber(date)-isoDayNumber(newYorkDate()); const display=parseDateOnly(date).toLocaleDateString("en-US",{month:"short",day:"numeric"}); if(diff<0) return {kind:"overdue",label:"Overdue · "+Math.abs(diff)+" day"+(Math.abs(diff)===1?"":"s"),date}; if(diff===0) return {kind:"today",label:"Follow up today",date}; return {kind:"upcoming",label:"Follow up "+display,date}; }
@@ -2253,6 +2288,31 @@
       }
       function updateDuplicateActionButtons(record){ const restore=isArchivedStatus(record); [els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean).forEach(button=>{ button.textContent=restore?"Restore Record":"Mark Duplicate"; button.classList.toggle("dangerBtn",!restore); }); }
       function canonicalRecordScore(record){ let score=0; if(toDateValue(record.requested_date||record.requested_date_start)) score+=40; if(!["","new","duplicate"].includes(normalizeStatus(record._source_status||record.status))) score+=30; if(clean(record.last_contacted_at)) score+=20; if(clean(record.next_action)) score+=10; if(!["","unknown"].includes(clean(record.grouping_preference).toLowerCase())) score+=10; return score; }
+      function mergeReferenceValues(records){return [...new Set(records.flatMap(record=>referenceIds(record.contact_intent_id)))].join("|");}
+      function mergeTextValues(values){const out=[];values.map(clean).filter(Boolean).forEach(value=>{if(!out.some(existing=>existing===value||existing.includes(value)))out.push(value);});return out.join("\n\n");}
+      function mergedTourItemKey(item){return [productCodeFromValue(item.product_selected),toDateValue(item.date||item.tour_date),clean(item.tour||item.service_type).toLowerCase()].join("|");}
+      function mergeInquiryRecords(canonical,records){
+        const family=[canonical,...records.filter(record=>record.inquiry_id!==canonical.inquiry_id)];
+        const seen=new Set(),items=[];
+        family.flatMap(record=>normalizeTourItems(record)).forEach(item=>{const key=mergedTourItemKey(item);if(!key||seen.has(key))return;seen.add(key);items.push(item);});
+        const dates=items.map(item=>toDateValue(item.date||item.tour_date)).filter(Boolean).sort();
+        const references=mergeReferenceValues(family);
+        const merged=Object.assign({},canonical,{
+          contact_intent_id:references||canonical.contact_intent_id||"",
+          requested_date_start:dates[0]||canonical.requested_date_start||canonical.requested_date||"",
+          requested_date_end:dates[dates.length-1]||canonical.requested_date_end||canonical.requested_date||"",
+          requested_date:dates[0]||canonical.requested_date||"",
+          requested_date_text:dates.length>1&&dates[0]!==dates[dates.length-1]?dates[0]+" to "+dates[dates.length-1]:(dates[0]||canonical.requested_date_text||""),
+          notes:mergeTextValues(family.map(record=>record.notes)),
+          message_questions:mergeTextValues(family.map(record=>record.message_questions)),
+          internal_notes:mergeTextValues([canonical.internal_notes,"Consolidated same-trip submissions on "+datePlusDays(0)+".",...family.filter(record=>record.inquiry_id!==canonical.inquiry_id).map(record=>record.internal_notes)]),
+          tour_items:serializeTourItems(items),
+          tour_items_json:serializeTourItems(items),
+          tour_count:String(items.length),
+          updated_at:new Date().toISOString()
+        });
+        return merged;
+      }
       function chooseCanonicalRecord(records){ return records.slice().sort((a,b)=>canonicalRecordScore(b)-canonicalRecordScore(a)||String(a.created_at||"").localeCompare(String(b.created_at||"")))[0]||null; }
       function inferRestoredStatus(record){
         const valid=value=>{if(!clean(value))return "";const status=normalizeStatus(value);return ["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book"].includes(status)?status:"";};
@@ -2268,21 +2328,28 @@
         const current=getSelected()||formRecord();
         if(!current||!current.inquiry_id){ showToast("Select a record first"); return; }
         const name=current.full_name||"this guest";
-        const targets=state.records.filter(record=>record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current));
-        const canonical=targets.length>1?chooseCanonicalRecord(targets):null;
-        const archiveTargets=canonical?targets.filter(record=>record.inquiry_id!==canonical.inquiry_id):targets;
-        const count=Math.max(archiveTargets.length,1);
+        const sameTrip=state.records.filter(record=>record.inquiry_id===current.inquiry_id||sameSourceSubmissionClone(record,current)||samePlanningWindow(record,current));
+        const canonical=sameTrip.length>1?chooseCanonicalRecord(sameTrip):null;
+        const archiveTargets=canonical?sameTrip.filter(record=>record.inquiry_id!==canonical.inquiry_id):[current];
+        const count=archiveTargets.length;
         const prompt=canonical
-          ?"Keep the strongest "+name+" record active and archive its "+count+" incomplete source clone"+(count===1?"":"s")+"?"
-          :"Mark only this selected record for "+name+" as a duplicate? Other tours and records for this guest will remain active.";
+          ?"Consolidate "+count+" same-trip submission"+(count===1?"":"s")+" for "+name+" into "+(canonical.requested_date||canonical.inquiry_id)+"? Tours, notes, and every Reference ID will be preserved; the extra rows will be archived."
+          :"Mark only this selected record for "+name+" as a duplicate? It will remain in the audit trail.";
         if(!window.confirm(prompt)) return;
         const today=datePlusDays(0);
-        const note="Marked duplicate on "+today+". Kept for audit trail.";
-        const archivedTargets=(archiveTargets.length?archiveTargets:[current]).map(record=>archiveDuplicateRecord(record,note));
+        const note=canonical?"Merged into "+canonical.inquiry_id+" on "+today+". Kept for audit trail.":"Marked duplicate on "+today+". Kept for audit trail.";
+        const archivedTargets=archiveTargets.map(record=>Object.assign(archiveDuplicateRecord(record,note),{superseded_by_inquiry_id:canonical?canonical.inquiry_id:""}));
         const buttons=[els.markDuplicateBtn,els.detailMarkDuplicateBtn].filter(Boolean);
-        buttons.forEach(button=>{button.disabled=true;button.dataset.originalText=button.textContent;button.textContent="Archiving…";});
-        let saved=0;
+        buttons.forEach(button=>{button.disabled=true;button.dataset.originalText=button.textContent;button.textContent=canonical?"Consolidating…":"Archiving…";});
+        let saved=0,mergedSaved=canonical;
         try{
+          if(canonical){
+            const merged=mergeInquiryRecords(canonical,sameTrip);
+            const response=await api("update_inquiry",{record:merged,inquiry_row:merged});
+            mergedSaved=normalizeCrmRecord(savedInquiryFromResponse(response,merged));
+            const canonicalIndex=state.records.findIndex(record=>record.inquiry_id===canonical.inquiry_id);
+            if(canonicalIndex>=0)state.records[canonicalIndex]=mergedSaved;
+          }
           for(const archived of archivedTargets){
             await api("update_inquiry",{record:archived,inquiry_row:archived});
             const index=state.records.findIndex(record=>record.inquiry_id===archived.inquiry_id);
@@ -2292,15 +2359,15 @@
           saveLocalRecords();
           state.activeQueue="all";
           els.viewFilter.value="all";
-          const next=(canonical&&state.records.find(record=>record.inquiry_id===canonical.inquiry_id))||state.records.find(record=>!isArchivedStatus(record));
+          const next=canonical?mergedSaved:state.records.find(record=>!isArchivedStatus(record));
           state.selectedId=next?next.inquiry_id:"";
           fillForm(next);
           render();
-          showToast(saved>1?saved+" source-clone records archived":"Selected record archived; other guest tours remain active");
+          showToast(canonical?"Same-trip submissions consolidated: "+(normalizeTourItems(mergedSaved).length)+" services and "+referenceIds(mergedSaved.contact_intent_id).length+" references preserved.":"Selected record archived; other guest tours remain active");
         }catch(error){
           saveLocalRecords();
           render();
-          showToast((saved?saved+" records archived; ":"")+"duplicate save failed: "+error.message);
+          showToast((saved?saved+" records archived; ":"")+"duplicate consolidation failed: "+error.message);
         }finally{
           buttons.forEach(button=>{button.disabled=false;button.textContent=button.dataset.originalText||"Mark Duplicate";});
         }
