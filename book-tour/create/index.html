@@ -1184,7 +1184,7 @@
     const all = [];
 
     for (const lang of langs) {
-      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}&v=37`, {
+      const res = await fetch(`/stripe/api/tours?lang=${encodeURIComponent(lang)}&scope=staff&v=38`, {
         cache: "no-store"
       });
       const data = await res.json();
@@ -1764,9 +1764,10 @@ function createItem(initial = {}) {
     const multi = state.items.length > 1;
     const hasQuadRental = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.pricing_model === "per_quad");
     const hasQuoteOnly = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.quote_only);
+    const hasInvoiceOnly = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.invoice_only);
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
+    els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || hasInvoiceOnly || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
     els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch();
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;

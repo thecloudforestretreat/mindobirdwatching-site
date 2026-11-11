@@ -8,6 +8,14 @@ function source(html,name){const start=html.indexOf('function '+name+'(');assert
 const clean=v=>String(v??'').trim();
 function handoff(items,saved){const store=new Map(),record={guest_count:3,quoted_amount:'465',requested_date:'2099-11-26',full_name:'QA',...saved};const c={clean,formRecord:()=>record,getSelected:()=>record,guidePlanForRecord:()=>null,collectTourItems:()=>[],normalizeTourItems:()=>items,itineraryItemsFromForm:()=>items,itineraryProduct:x=>x,itineraryServiceType:i=>i.service_type,dedupeNoteText:clean,toDateValue:clean,toolRecord:r=>r,isPackagePriceItem:item=>String(item.product_selected||'').startsWith('TOUR00'),localStorage:{setItem:(k,v)=>store.set(k,v)},URLSearchParams,showToast(){},window:{open(){}}};vm.createContext(c);for(const name of ['isTransportItem','vehicleQuantity','billingQuantity','openItineraryTool','openSavedItinerary'])vm.runInContext(source(crm,name),c);return {c,store}}
 const bird={product_selected:'MBW004',guests:3,price:'60'},night={product_selected:'MBW016',guests:3,price:'35'},car={product_selected:'TRANS06',vehicle_count:1,price:'180'};
+test('meal add-ons are bilingual per-person itinerary products',()=>{
+ assert.match(itinerary,/"MEAL001 - Breakfast"/);
+ assert.match(itinerary,/"MEAL002 - Lunch"/);
+ assert.match(itinerary,/"MEAL001": \{model:"per_person", price:5, minGuests:1\}/);
+ assert.match(itinerary,/"MEAL002": \{model:"per_person", price:15, minGuests:1\}/);
+ assert.match(itinerary,/"MEAL001 - Breakfast": "MEAL001 - Desayuno"/);
+ assert.match(itinerary,/"MEAL002 - Lunch": "MEAL002 - Almuerzo"/);
+});
 for(const method of ['openItineraryTool','openSavedItinerary']){
  test(method+' never multiplies the accepted trip total as a missing service rate',()=>{const {c,store}=handoff([{...bird,price:''},night,car]);c[method]();const d=JSON.parse(store.get('mbwItineraryGeneratorDraft'));assert.equal(d.items[0].unitPrice,'');assert.equal(d.items.reduce((n,i)=>n+i.quantity*Number(i.unitPrice),0),285);assert.equal(d.items[2].quantity,1)});
  test(method+' retains explicit service rates and zero rates',()=>{const {c,store}=handoff([bird,night,car,{...night,price:0}]);c[method]();const d=JSON.parse(store.get('mbwItineraryGeneratorDraft'));assert.deepEqual(d.items.map(i=>i.unitPrice),[60,35,180,0]);assert.equal(d.items.reduce((n,i)=>n+i.quantity*i.unitPrice,0),465)});

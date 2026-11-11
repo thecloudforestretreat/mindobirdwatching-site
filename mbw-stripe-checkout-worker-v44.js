@@ -314,6 +314,110 @@ const TOURS = [
     "allow_test_product_creation": true
   },
   {
+    "tour_code": "MEAL001",
+    "language": "en",
+    "status": "staff_only",
+    "tour_title": "Breakfast",
+    "service_type": "meal",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VbsdvHlaLF57CX",
+    "price_id_live": "price_1UaesJ0wAAlYwqaV2fxXapUZ",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$5.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Add-on",
+    "pickup_time_local": "Confirmed with itinerary",
+    "dropoff_time_local": "Confirmed with itinerary",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Optional breakfast add-on, charged per person and available when confirmed as part of the itinerary.",
+    "use_inline_price": false,
+    "invoice_only": true
+  },
+  {
+    "tour_code": "MEAL001",
+    "language": "es",
+    "status": "staff_only",
+    "tour_title": "Desayuno",
+    "service_type": "meal",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VbsdvHlaLF57CX",
+    "price_id_live": "price_1UaesJ0wAAlYwqaV2fxXapUZ",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$5.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Adicional",
+    "pickup_time_local": "Confirmado con el itinerario",
+    "dropoff_time_local": "Confirmado con el itinerario",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Desayuno opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
+    "use_inline_price": false,
+    "invoice_only": true
+  },
+  {
+    "tour_code": "MEAL002",
+    "language": "en",
+    "status": "staff_only",
+    "tour_title": "Lunch",
+    "service_type": "meal",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VbseeHeJuD8Dw2",
+    "price_id_live": "price_1Uaesv0wAAlYwqaVJ9uO2OTs",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$15.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Add-on",
+    "pickup_time_local": "Confirmed with itinerary",
+    "dropoff_time_local": "Confirmed with itinerary",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Optional lunch add-on, charged per person and available when confirmed as part of the itinerary.",
+    "use_inline_price": false,
+    "invoice_only": true
+  },
+  {
+    "tour_code": "MEAL002",
+    "language": "es",
+    "status": "staff_only",
+    "tour_title": "Almuerzo",
+    "service_type": "meal",
+    "pricing_model": "per_person",
+    "product_id_live": "prod_VbseeHeJuD8Dw2",
+    "price_id_live": "price_1Uaesv0wAAlYwqaVJ9uO2OTs",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$15.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Adicional",
+    "pickup_time_local": "Confirmado con el itinerario",
+    "dropoff_time_local": "Confirmado con el itinerario",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Almuerzo opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
+    "use_inline_price": false,
+    "invoice_only": true
+  },
+  {
     "tour_code": "MBW004",
     "language": "en",
     "status": "active",
@@ -2292,7 +2396,7 @@ async function setInvoiceItemPriceData(env, isTest, form, item, unitAmountCents)
 }
 
 function findTour(tour_code, language) {
-  return TOURS.find((t) => t.status === "active" && t.tour_code === tour_code && t.language === language);
+  return TOURS.find((t) => ["active", "staff_only"].includes(t.status) && t.tour_code === tour_code && t.language === language);
 }
 
 function isFlatPriced(tour) {
@@ -3297,7 +3401,8 @@ const worker = {
 
     if (path === "/api/tours" && request.method === "GET") {
       const lang = (url.searchParams.get("lang") || "en").toLowerCase();
-      const tours = TOURS.filter((t) => t.status === "active" && t.language === lang).map((t) => ({
+      const staffScope = url.searchParams.get("scope") === "staff";
+      const tours = TOURS.filter((t) => (t.status === "active" || (staffScope && t.status === "staff_only")) && t.language === lang).map((t) => ({
         tour_code: t.tour_code,
         language: t.language,
         tour_title: t.tour_title,
@@ -3319,6 +3424,7 @@ const worker = {
         solo_guide_cost: t.solo_guide_cost || null,
         quote_only: t.quote_only === true,
         requires_price_override: t.requires_price_override === true,
+        invoice_only: t.invoice_only === true,
       }));
       return new Response(JSON.stringify({ ok: true, tours }, null, 2), {
         status: 200,
@@ -3616,6 +3722,9 @@ const worker = {
         const isTest = stripeEnv !== "live";
         const tour = findTour(tour_code, language);
         if (!tour) throw new Error("Tour not found for selected language");
+        if (tour.invoice_only) {
+          throw new Error("This add-on requires a staff-issued invoice.");
+        }
         if (tour.quote_only) {
           throw new Error("This custom tour requires a staff-issued invoice using the guest-approved quote.");
         }

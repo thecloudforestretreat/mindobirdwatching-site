@@ -89,6 +89,36 @@ test("custom products are bilingual, flat priced and marked quote-only", async (
   }
 });
 
+test("meal add-ons are staff-only, bilingual, and invoice at the catalog price per guest", async () => {
+  const h = harness();
+  for (const language of ["en", "es"]) {
+    const publicResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}`), h.env, {});
+    const publicBody = await publicResponse.json();
+    assert.equal(publicBody.tours.some((item) => item.tour_code.startsWith("MEAL")), false);
+
+    const staffResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}&scope=staff`), h.env, {});
+    const staffBody = await staffResponse.json();
+    for (const [code, amount] of [["MEAL001", "$5.00"], ["MEAL002", "$15.00"]]) {
+      const item = staffBody.tours.find((tour) => tour.tour_code === code);
+      assert(item, `${code}:${language} missing`);
+      assert.equal(item.amount_display, amount);
+      assert.equal(item.pricing_model, "per_person");
+      assert.equal(item.invoice_only, true);
+    }
+  }
+
+  const checkout = await h.call("create-checkout-session", { ...base, tour_code: "MEAL001" });
+  assert.equal(checkout.response.status, 400);
+  assert.match(checkout.body.error, /staff-issued invoice/i);
+  assert.equal(h.calls.length, 0);
+
+  const invoice = await h.call("create-invoice", { ...base, tour_code: "MEAL001" });
+  assert.equal(invoice.response.status, 200, JSON.stringify(invoice.body));
+  const line = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(line.get("pricing[price]"), "price_1UaesJ0wAAlYwqaV2fxXapUZ");
+  assert.equal(line.get("quantity"), "3");
+});
+
 test("public checkout cannot charge a custom tour starting amount", async () => {
   const h = harness();
   const result = await h.call("create-checkout-session", base);
