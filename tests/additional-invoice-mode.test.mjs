@@ -32,6 +32,7 @@ function harness() {
     additionalInvoiceMode: { checked: false },
     additionalInvoicePanel: { hidden: true },
     priorInvoiceDetails: { textContent: "" },
+    applyDeposit: { checked: true, disabled: false },
   };
   const context = vm.createContext({
     state,
@@ -52,13 +53,14 @@ function harness() {
     ${extractFunction("isPriorInvoiceStatus")}
     ${extractFunction("isPreviouslyBookedImportedItem")}
     ${extractFunction("isPreviouslyBookedInboundItem")}
+    ${extractFunction("enableVerifiedAdditionalInvoice")}
     ${extractFunction("additionalInvoiceHasPriorBookedItems")}
-    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, isPreviouslyBookedInboundItem, additionalInvoiceHasPriorBookedItems };
+    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, isPreviouslyBookedInboundItem, enableVerifiedAdditionalInvoice, additionalInvoiceHasPriorBookedItems };
   `, context);
   return context;
 }
 
-test("paid CRM invoices require a deliberate additional-invoice confirmation", () => {
+test("paid CRM invoices are eligible for a separate additional invoice", () => {
   const context = harness();
   context.qa.applyPriorInvoiceContext({ payment_status: "paid", invoice_no: "MBW-0143" });
   assert.equal(context.state.additionalInvoiceEligible, true);
@@ -74,6 +76,23 @@ test("paid CRM invoices require a deliberate additional-invoice confirmation", (
     prior_payment_status: "paid",
     original_accepted_total: 198,
   });
+});
+
+test("verified paid bookings auto-enable only when old items were excluded and new items remain", () => {
+  const context = harness();
+  context.qa.applyPriorInvoiceContext({ payment_status: "paid", invoice_no: "MBW-0143" });
+
+  assert.equal(context.qa.enableVerifiedAdditionalInvoice([{ status: "booked" }], [{ status: "quoted" }]), true);
+  assert.equal(context.state.additionalInvoiceMode, true);
+  assert.equal(context.els.additionalInvoiceMode.checked, true);
+  assert.equal(context.els.applyDeposit.checked, false);
+  assert.equal(context.els.applyDeposit.disabled, true);
+  assert.equal(context.qa.acceptedQuoteMismatch(), false);
+
+  assert.equal(context.qa.enableVerifiedAdditionalInvoice([], [{ status: "quoted" }]), false);
+  assert.equal(context.state.additionalInvoiceMode, false);
+  assert.equal(context.els.additionalInvoiceMode.checked, false);
+  assert.equal(context.els.applyDeposit.disabled, false);
 });
 
 test("unpaid CRM quotes cannot use additional-invoice mode", () => {

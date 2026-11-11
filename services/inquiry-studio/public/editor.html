@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
   
   <script src="/assets/js/site-config.js?v=20260719" defer></script>
-  <script src="/assets/js/email-blocks.js?v=20260804-bear-price-image-sync" defer></script>
+  <script src="/assets/js/email-blocks.js?v=20261111-meal-addons" defer></script>
   <style>
 .adminGlobalNav,#siteHeader,#siteFooter,.adminTop a[href="/"]{display:none!important} .shell{max-width:none!important} .pilotCustom{background:#fff8db;padding:12px;border-radius:12px;margin:12px 0} 
     :root{
@@ -872,6 +872,8 @@ experiences waiting for you in Mindo.</textarea>
         if(/mbw015|butterfly|mariposa/.test(text)) return "activity-butterfly";
         if(/mbw013|waterfall|cascada/.test(text)) return "activity-waterfall";
         if(/mbw011|chocolate|cacao/.test(text)) return "activity-chocolate";
+        if(/meal001|breakfast|desayuno/.test(text)) return "meal-breakfast";
+        if(/meal002|lunch|almuerzo/.test(text)) return "meal-lunch";
         if(/trans\d+|transport|quito.*mindo|mindo.*quito/.test(text)) return "transport-quito";
         if(/activity|actividad/.test(text)) return "activities-more";
         return "";
@@ -972,6 +974,7 @@ experiences waiting for you in Mindo.</textarea>
           groups: {
             tours: { label: "Tours" },
             activities: { label: "Actividades" },
+            meals: { label: "Comidas" },
             planning: { label: "Planificación" },
             social: { label: "Reseñas / Redes" }
           },
@@ -1089,6 +1092,20 @@ experiences waiting for you in Mindo.</textarea>
               primaryCta: "Ver tour",
               secondaryCta: "Ver video"
             },
+            "meal-breakfast": {
+              eyebrow: "Adicional opcional del itinerario",
+              title: "Desayuno",
+              description: "Se puede agregar desayuno para los huéspedes confirmados cuando se coordina con anticipación como parte del itinerario.",
+              price: "$5 por persona",
+              duration: "Adicional"
+            },
+            "meal-lunch": {
+              eyebrow: "Adicional opcional del itinerario",
+              title: "Almuerzo",
+              description: "Se puede agregar almuerzo para los huéspedes confirmados cuando se coordina con anticipación como parte del itinerario.",
+              price: "$15 por persona",
+              duration: "Adicional"
+            },
             "activities-more": {
               eyebrow: "Más en Mindo",
               title: "Otras opciones de actividades",
@@ -1203,7 +1220,7 @@ experiences waiting for you in Mindo.</textarea>
         fallback.blocks.forEach(block => { if(!mergedById.has(block.id)) mergedById.set(block.id, block); });
         const desiredOrder = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more", "meal-breakfast", "meal-lunch",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];
@@ -1436,6 +1453,7 @@ experiences waiting for you in Mindo.</textarea>
           groups:[
             { id:"tours", label:"Tours" },
             { id:"activities", label:"Activities" },
+            { id:"meals", label:"Meals" },
             { id:"planning", label:"Planning" },
             { id:"included", label:"Included" },
             { id:"nextSteps", label:"Next Steps" },
@@ -1626,6 +1644,28 @@ experiences waiting for you in Mindo.</textarea>
               primaryCta:"View Activities"
             },
             {
+              id:"meal-breakfast",
+              group:"meals",
+              type:"info",
+              eyebrow:"Optional itinerary add-on",
+              title:"Breakfast",
+              description:"Breakfast can be added for confirmed guests when it is arranged in advance as part of the itinerary.",
+              price:"$5 per person",
+              duration:"Add-on",
+              image:"https://mindobirdwatching.com/assets/images/food/mbw_breakfast_001.jpeg"
+            },
+            {
+              id:"meal-lunch",
+              group:"meals",
+              type:"info",
+              eyebrow:"Optional itinerary add-on",
+              title:"Lunch",
+              description:"Lunch can be added for confirmed guests when it is arranged in advance as part of the itinerary.",
+              price:"$15 per person",
+              duration:"Add-on",
+              image:"https://mindobirdwatching.com/assets/images/food/mbw_lunch_chicken_001.jpeg"
+            },
+            {
               id:"transport-quito",
               group:"planning",
               type:"info",
@@ -1771,12 +1811,12 @@ experiences waiting for you in Mindo.</textarea>
         }
 
         loadFirstAvailableScript([
-          "/assets/js/email-blocks.js?v=20260804-selected-products",
-          "/custom-email-generator/assets/js/email-blocks.js?v=20260804-selected-products",
-          "email-blocks.js?v=20260804-selected-products",
-          "assets/js/email-blocks.js?v=20260804-selected-products",
-          "../assets/js/email-blocks.js?v=20260804-selected-products",
-          "../../assets/js/email-blocks.js?v=20260804-selected-products",
+          "/assets/js/email-blocks.js?v=20261111-meal-addons",
+          "/custom-email-generator/assets/js/email-blocks.js?v=20261111-meal-addons",
+          "email-blocks.js?v=20261111-meal-addons",
+          "assets/js/email-blocks.js?v=20261111-meal-addons",
+          "../assets/js/email-blocks.js?v=20261111-meal-addons",
+          "../../assets/js/email-blocks.js?v=20261111-meal-addons",
         ], () => done(), () => !!window.MBW_EMAIL_BLOCKS);
       }
 
@@ -2172,7 +2212,7 @@ experiences waiting for you in Mindo.</textarea>
       function blockPriority(block){
         const canonical = [
           "tour-jewels", "tour-andean", "tour-full-day", "tour-bear-half-day", "tour-bear-full-day", "tour-custom", "birding-beyond-lodge",
-          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more",
+          "night-walk", "activity-waterfall", "activity-butterfly", "activity-chocolate", "activities-more", "meal-breakfast", "meal-lunch",
           "transport-quito", "lodging-recommendations", "lodging-mindo-glambird", "bird-quest",
           "included", "next-steps", "social-links", "video-week"
         ];

@@ -288,6 +288,9 @@
           "TRANS04 - Airport Pick Up",
           "TRANS05 - Custom",
           "TRANS06 - Quito -> Mindo -> Quito",
+          "TRANS007 - Within Mindo Transportation",
+          "MEAL001 - Breakfast",
+          "MEAL002 - Lunch",
           "DEP001 - Reservation Deposit",
           "ACT002 - Waterfalls",
           "ACT003 - Nambillo Waterfall",
@@ -311,7 +314,7 @@
       const POPULAR_PRODUCT_CODES=new Set(["MBW004","MBW005","MBW006","MBW019","MBW016","TRANS06"]);
       const PRODUCT_EMOJI_BY_CODE={
         MBW002:"🐦",MBW004:"🐥",MBW005:"🐓",MBW006:"🦜",MBW007:"🐦",MBW008:"🐦",MBW009:"🌿",MBW010:"🐦",MBW011:"🍫",MBW012:"☕",MBW013:"💧",MBW014:"🧗",MBW015:"🦋",MBW016:"🦉",MBW017:"🐦",MBW019:"🪽",
-        TRANS01:"🚘",TRANS02:"🚘",TRANS03:"🚘",TRANS04:"🚘",TRANS05:"🚘",TRANS06:"🚘",DEP001:"🧾",
+        TRANS01:"🚘",TRANS02:"🚘",TRANS03:"🚘",TRANS04:"🚘",TRANS05:"🚘",TRANS06:"🚘",TRANS007:"🚐",MEAL001:"🍳",MEAL002:"🍽️",DEP001:"🧾",
         ACT002:"💧",ACT003:"💧",ACT004:"🛞",ACT009:"🪻",ACT010:"🐸",ACT011:"🛟",ACT013:"🧗",ACT015:"🔫",ACT016:"🐎",ACT017:"🚵",ACT018:"🎢",ACT019:"🚵",ACT020:"🚵",ACT021:"🪲",
         OSO001:"🐻",OSO002:"🐻",ACCOM01:"🏨",OTHER:"✨"
       };
@@ -342,6 +345,9 @@
           "TRANS04": "Airport Pick Up",
           "TRANS05": "Custom",
           "TRANS06": "Quito -> Mindo -> Quito",
+          "TRANS007": "Within Mindo Transportation",
+          "MEAL001": "Breakfast",
+          "MEAL002": "Lunch",
           "DEP001": "Reservation Deposit",
           "ACT002": "Waterfalls",
           "ACT003": "Nambillo Waterfall",
@@ -384,6 +390,9 @@
           "TRANS04": "99",
           "TRANS05": "100",
           "TRANS06": "180",
+          "TRANS007": "1",
+          "MEAL001": "5",
+          "MEAL002": "15",
           "DEP001": "100",
           "ACT002": "10",
           "ACT003": "10",
@@ -425,6 +434,9 @@
           "TRANS04": "Transportation",
           "TRANS05": "Transportation",
           "TRANS06": "Transportation",
+          "TRANS007": "Transportation",
+          "MEAL001": "Meal",
+          "MEAL002": "Meal",
           "DEP001": "Deposit",
           "ACT002": "Activity",
           "ACT003": "Activity",
@@ -496,7 +508,7 @@
       function itineraryItemsFromForm(additional){
         const primary=primaryTourItemFromForm();
         const extras=(additional||collectTourItems()).map(normalizeTourItem).filter(item=>clean(item.id)!=="primary"&&!sameTourItem(item,primary));
-        return [primary].concat(extras).filter(validTourItem);
+        return [primary].concat(extras).filter(item=>validTourItem(item)&&productCodeFromValue(item.product_selected||item.tour)!=="TRANS007");
       }
       function recordItineraryItems(record){
         if(!record) return [];
@@ -513,6 +525,8 @@
         if(value==="chocolate tour") return {tour:"Chocolate Tour",service_type:"Activity",product_selected:"MBW011 - Chocolate Tour"};
         if(value==="orchid garden tour") return {tour:"Orchid Garden Tour",service_type:"Activity",product_selected:"ACT009 - Orchid Garden Tour"};
         if(value==="coffee tour") return {tour:"Coffee Tour",service_type:"Activity",product_selected:"MBW012 - Coffee Tour"};
+        if(value==="breakfast") return {tour:"Breakfast",service_type:"Meal",product_selected:"MEAL001 - Breakfast",duration:"Add-on"};
+        if(value==="lunch") return {tour:"Lunch",service_type:"Meal",product_selected:"MEAL002 - Lunch",duration:"Add-on"};
         if(value==="accommodation assistance") return {tour:"Accommodation Assistance",service_type:"Accommodation",product_selected:"ACCOM01 - Accommodation Booking"};
         if(value==="transportation requested") return {tour:"Transportation Requested",service_type:"Transportation",product_selected:""};
         if(value==="additional birding day") return {tour:"Additional Birding Day",service_type:"Birdwatching",product_selected:"",duration:"Full Day"};
@@ -587,7 +601,14 @@
         try{const saved=await saveRecord();if(!saved){els.quoteSentAtInput.value=previous.sent;els.quoteStatusInput.value=previous.quote;els.recordStatusInput.value=previous.status;updateStatusField();}}
         finally{els.markQuotesSentBtn.disabled=false;}
       }
-      function tourItemHtml(item,index){ const tourOptions=["","Half-Day Birdwatching","Full-Day Birdwatching","Additional Birding Day","Night Walk","Chocolate Tour","Orchid Garden Tour","Coffee Tour","Transportation Requested","Accommodation Assistance","Specialty Wildlife","Other Activity or Tour","Other"]; const serviceOptions=["","Birdwatching","Activity","Specialty Wildlife","Transportation","Accommodation","Custom"]; const productOptions=[""].concat(MBW_PRODUCT_OPTIONS); const statusOptions=["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","booked","completed","cancelled","did_not_book","duplicate"]; const heading=[item.tour||productTitle(item.product_selected)||`Service ${index+2}`,item.service_type].filter(Boolean).join(" · "); return `<article class="tourItem" data-id="${esc(item.id)}" data-pricing-unit="${isTransportItem(item)?"vehicle":"person"}"><div class="tourItemTop"><strong>${esc(heading)}</strong><button type="button" data-tour-action="remove">Remove</button></div><div class="tourItemGrid"><label class="field">Specific Request<select data-tour-field="tour">${optionsHtml(tourOptions,item.tour)}</select></label><label class="field">Service Type<select data-tour-field="service">${optionsHtml(serviceOptions,item.service_type)}</select></label><label class="field">Product / Service<select data-tour-field="product">${optionsHtml(productOptions,item.product_selected)}</select></label><label class="field">Date<input type="date" data-tour-field="date" value="${esc(item.date||item.tour_date)}"></label><label class="field"><span data-quantity-label>${isTransportItem(item)?"Vehicles":"Guests"}</span><input data-tour-field="guests" value="${esc(isTransportItem(item)?vehicleQuantity(item):item.guests)}" placeholder="${isTransportItem(item)?"1":"2"}"></label><label class="field"><span data-price-label>${isTransportItem(item)?"Price per vehicle":"Price per person"}</span><input data-tour-field="price" inputmode="decimal" value="${esc(item.price)}" placeholder="Optional"></label><label class="field">Duration<select data-tour-field="duration">${optionsHtml(["","Half Day","Full Day","Flexible","Evening activity"],item.duration)}</select></label><label class="field">Calendar status<select data-tour-field="status">${optionsHtml(statusOptions,item.status)}</select></label><label class="field">Pickup<input data-tour-field="pickup" value="${esc(item.pickup_location)}" placeholder="Hotel or meeting point"></label><label class="field tourItemNotes">Notes<input data-tour-field="notes" value="${esc(item.notes)}" placeholder="Optional"></label></div></article>`; }
+      function tourItemHtml(item,index){
+        const tourOptions=["","Half-Day Birdwatching","Full-Day Birdwatching","Additional Birding Day","Night Walk","Chocolate Tour","Orchid Garden Tour","Coffee Tour","Breakfast","Lunch","Transportation Requested","Accommodation Assistance","Specialty Wildlife","Other Activity or Tour","Other"];
+        const serviceOptions=["","Birdwatching","Activity","Meal","Specialty Wildlife","Transportation","Accommodation","Custom"];
+        const productOptions=[""].concat(MBW_PRODUCT_OPTIONS);
+        const statusOptions=["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","booked","completed","cancelled","did_not_book","duplicate"];
+        const heading=[item.tour||productTitle(item.product_selected)||`Service ${index+2}`,item.service_type].filter(Boolean).join(" · ");
+        return `<article class="tourItem" data-id="${esc(item.id)}" data-pricing-unit="${isTransportItem(item)?"vehicle":"person"}"><div class="tourItemTop"><strong>${esc(heading)}</strong><button type="button" data-tour-action="remove">Remove</button></div><div class="tourItemGrid"><label class="field">Specific Request<select data-tour-field="tour">${optionsHtml(tourOptions,item.tour)}</select></label><label class="field">Service Type<select data-tour-field="service">${optionsHtml(serviceOptions,item.service_type)}</select></label><label class="field">Product / Service<select data-tour-field="product">${optionsHtml(productOptions,item.product_selected)}</select></label><label class="field">Date<input type="date" data-tour-field="date" value="${esc(item.date||item.tour_date)}"></label><label class="field"><span data-quantity-label>${isTransportItem(item)?"Vehicles":"Guests"}</span><input data-tour-field="guests" value="${esc(isTransportItem(item)?vehicleQuantity(item):item.guests)}" placeholder="${isTransportItem(item)?"1":"2"}"></label><label class="field"><span data-price-label>${isTransportItem(item)?"Price per vehicle":"Price per person"}</span><input data-tour-field="price" inputmode="decimal" value="${esc(item.price)}" placeholder="Optional"></label><label class="field">Duration<select data-tour-field="duration">${optionsHtml(["","Half Day","Full Day","Flexible","Evening activity","Add-on"],item.duration)}</select></label><label class="field">Calendar status<select data-tour-field="status">${optionsHtml(statusOptions,item.status)}</select></label><label class="field">Pickup<input data-tour-field="pickup" value="${esc(item.pickup_location)}" placeholder="Hotel or meeting point"></label><label class="field tourItemNotes">Notes<input data-tour-field="notes" value="${esc(item.notes)}" placeholder="Optional"></label></div></article>`;
+      }
       function optionsHtml(options,value){const selected=clean(value),rows=options.slice(),machineLabels=new Set(["new","contacted","planning","qualified","quoted","follow_up","deposit_pending","deposit_paid","payment_pending","booked","completed","cancelled","did_not_book","duplicate","unpaid","paid","no_payment_required","refunded","not_sent","sent","accepted","declined"]);if(selected&&!rows.some(option=>{const opt=clean(option);return opt===selected||opt.startsWith(selected+" -")||selected.startsWith(opt+" -");}))rows.splice(rows[0]===""?1:0,0,selected);return rows.map(option=>{const opt=clean(option),isSelected=opt===selected||(selected&&opt.startsWith(selected+" -"))||(opt&&selected.startsWith(opt+" -")),label=machineLabels.has(opt)?labelStatus(opt):(option?productOptionLabel(option):"Select");return `<option value="${esc(option)}" ${isSelected?"selected":""}>${esc(label)}</option>`;}).join("");}
       function handleTourItemInput(event){ const field=event&&event.target&&event.target.closest("[data-tour-field]"); if(field&&(field.dataset.tourField==="product"||field.dataset.tourField==="tour")){ const card=field.closest(".tourItem"); const productField=card&&card.querySelector('[data-tour-field="product"]'); const serviceField=card&&card.querySelector('[data-tour-field="service"]'); const durationField=card&&card.querySelector('[data-tour-field="duration"]'); const tourField=card&&card.querySelector('[data-tour-field="tour"]'); if(field.dataset.tourField==="tour"){ const allocation=requestAllocation(tourField.value); if(allocation){ setSelectValue(serviceField,allocation.service_type); setSelectValue(productField,allocation.product_selected); if(allocation.duration)setSelectValue(durationField,allocation.duration); } }else if(clean(productField.value)){ setSelectValue(serviceField,deriveServiceType(productField.value)); } const priceInput=card&&card.querySelector('[data-tour-field="price"]'); if(priceInput&&!clean(priceInput.value)) priceInput.value=standardPriceForProduct(productField.value,tourField.value); } const changedCard=field&&field.closest(".tourItem");if(changedCard)updateTransportLabels(changedCard);state.tourItems=collectTourItems(); renderPayload(); }
       function handleTourItemClick(event){ const button=event.target.closest("[data-tour-action]"); if(!button) return; const card=button.closest(".tourItem"); state.tourItems=collectTourItems().filter(item=>item.id!==card.dataset.id); renderTourItems(); renderPayload(); }
@@ -1307,7 +1328,7 @@
       function normalizePayment(value){ const payment=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(payment==="deposit_sent") return "deposit_pending"; return payment||"unpaid"; }
       function normalizePriority(value){ const priority=clean(value).toLowerCase(); return ["urgent","high","normal"].includes(priority)?priority:""; }
       function autoPriority(value){ const d=parseDateOnly(value); if(!d) return "normal"; const today=parseDateOnly(datePlusDays(0)); const diff=(d-today)/86400000; if(diff>=0&&diff<=3) return "urgent"; if(diff>=0&&diff<=7) return "high"; return "normal"; }
-      function normalizeTourCategory(value){const original=clean(value),tour=original.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(!tour)return"";if(tour.includes("multi")||tour.includes("varios dias"))return"Multi Day";if(tour.includes("transport"))return"Transportation";if(tour.includes("accommod")||tour.includes("alojamiento"))return"Accommodation";if(tour.includes("tour + activ")||tour.includes("tour and activ")||tour.includes("combination")||tour.includes("combinacion"))return"Tour + Activity";if(tour.includes("activit")||tour.includes("actividades")||tour.includes("night")||tour.includes("nocturna"))return"Activity";if(tour.includes("bird")||tour.includes("half")||tour.includes("full")||tour.includes("medio dia")||tour.includes("dia completo")||tour.includes("quito a mindo")||tour.includes("specialty")||tour.includes("insect")||tour.includes("macro")||tour.includes("bear")||tour.includes("oso")||tour.includes("andean")||tour.includes("jewels"))return"Birdwatching";if(tour.includes("not sure")||tour.includes("no estoy seguro")||tour==="other")return"Other";return original;}
+      function normalizeTourCategory(value){const original=clean(value),tour=original.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(!tour)return"";if(tour.includes("multi")||tour.includes("varios dias"))return"Multi Day";if(tour.includes("breakfast")||tour.includes("lunch")||tour.includes("meal")||tour.includes("desayuno")||tour.includes("almuerzo")||tour.includes("comida"))return"Meal";if(tour.includes("transport"))return"Transportation";if(tour.includes("accommod")||tour.includes("alojamiento"))return"Accommodation";if(tour.includes("tour + activ")||tour.includes("tour and activ")||tour.includes("combination")||tour.includes("combinacion"))return"Tour + Activity";if(tour.includes("activit")||tour.includes("actividades")||tour.includes("night")||tour.includes("nocturna"))return"Activity";if(tour.includes("bird")||tour.includes("half")||tour.includes("full")||tour.includes("medio dia")||tour.includes("dia completo")||tour.includes("quito a mindo")||tour.includes("specialty")||tour.includes("insect")||tour.includes("macro")||tour.includes("bear")||tour.includes("oso")||tour.includes("andean")||tour.includes("jewels"))return"Birdwatching";if(tour.includes("not sure")||tour.includes("no estoy seguro")||tour==="other")return"Other";return original;}
       function normalizeDuration(value){ const duration=clean(value).toLowerCase(); if(duration.includes("full")) return "Full Day"; if(duration.includes("half")) return "Half Day"; if(duration.includes("flex")) return "Flexible"; return ""; }
       function normalizeTransportation(value){ const transport=clean(value).toLowerCase(); if(transport==="yes") return "Yes"; if(transport==="no") return "No"; return "Unknown"; }
       function statusClass(status){ return "status-"+normalizeStatus(status).replace(/_/g,"-"); }
@@ -2027,7 +2048,7 @@
       function buildDepositLink(r){ const inquiryId=clean(r&&r.inquiry_id); if(!inquiryId) return ""; const url=new URL("https://mindobirdwatching.com/book-tour/deposit/"); url.searchParams.set("inquiry_id",inquiryId); return url.toString(); }
       function copyDepositLink(){ const r=normalizeCrmRecord(formRecord()); const link=buildDepositLink(r); if(!link){ showToast("Save the CRM record before copying a deposit link"); return; } copyPlainText(link).then(()=>showToast("Personalized $100 deposit link copied")).catch(()=>showToast("Could not copy deposit link")); }
       function tsvCell(value){ return String(value||"").replace(/\t/g," ").replace(/\r?\n/g," ").trim(); }
-      function deriveServiceType(tour){ const code=productCodeFromValue(tour); if(code&&MBW_PRODUCT_SERVICE_BY_CODE[code]) return MBW_PRODUCT_SERVICE_BY_CODE[code]; const t=clean(tour).toLowerCase(); if(t.includes("insect")||t.includes("macro")||t.includes("bear")||t.includes("oso")) return "Specialty Wildlife"; if(t.includes("transport")) return "Transportation"; if(t.includes("night")||t.includes("waterfall")||t.includes("chocolate")||t.includes("coffee")||t.includes("butterfly")||t.includes("frog")||t.includes("quad")||t.includes("canopy")||t.includes("tubing")||t.includes("canyoning")||t.includes("paintball")) return "Activity"; if(t.includes("custom")) return "Custom"; return "Birdwatching"; }
+      function deriveServiceType(tour){ const code=productCodeFromValue(tour); if(code&&MBW_PRODUCT_SERVICE_BY_CODE[code]) return MBW_PRODUCT_SERVICE_BY_CODE[code]; const t=clean(tour).toLowerCase(); if(t.includes("breakfast")||t.includes("lunch")||t.includes("meal")||t.includes("desayuno")||t.includes("almuerzo")||t.includes("comida")) return "Meal"; if(t.includes("insect")||t.includes("macro")||t.includes("bear")||t.includes("oso")) return "Specialty Wildlife"; if(t.includes("transport")) return "Transportation"; if(t.includes("night")||t.includes("waterfall")||t.includes("chocolate")||t.includes("coffee")||t.includes("butterfly")||t.includes("frog")||t.includes("quad")||t.includes("canopy")||t.includes("tubing")||t.includes("canyoning")||t.includes("paintball")) return "Activity"; if(t.includes("custom")) return "Custom"; return "Birdwatching"; }
       function deriveProductCode(tour){ const code=productCodeFromValue(tour); return code ? productLabelFromCode(code) : ""; }
       function moveCalendar(months){ const d=new Date(state.calendarDate); d.setMonth(d.getMonth()+months,1); state.calendarDate=d; render(); }
       function uniqueGuestSummary(rows){

@@ -333,9 +333,11 @@ const TOURS = [
     "dropoff_time_local": "Confirmed with itinerary",
     "pickup_window_minutes": 0,
     "timezone": "America/Guayaquil",
-    "hero_image_url": "",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/food/mbw_breakfast_001.jpeg",
     "tour_page_url": "",
     "description_one_liner": "Optional breakfast add-on, charged per person and available when confirmed as part of the itinerary.",
+    "guide_cost_per_person": 5,
+    "default_provider": "Vendor",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -359,9 +361,11 @@ const TOURS = [
     "dropoff_time_local": "Confirmado con el itinerario",
     "pickup_window_minutes": 0,
     "timezone": "America/Guayaquil",
-    "hero_image_url": "",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/food/mbw_breakfast_001.jpeg",
     "tour_page_url": "",
     "description_one_liner": "Desayuno opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
+    "guide_cost_per_person": 5,
+    "default_provider": "Vendor",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -385,9 +389,11 @@ const TOURS = [
     "dropoff_time_local": "Confirmed with itinerary",
     "pickup_window_minutes": 0,
     "timezone": "America/Guayaquil",
-    "hero_image_url": "",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/food/mbw_lunch_chicken_001.jpeg",
     "tour_page_url": "",
     "description_one_liner": "Optional lunch add-on, charged per person and available when confirmed as part of the itinerary.",
+    "guide_cost_per_person": 15,
+    "default_provider": "Vendor",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -411,9 +417,11 @@ const TOURS = [
     "dropoff_time_local": "Confirmado con el itinerario",
     "pickup_window_minutes": 0,
     "timezone": "America/Guayaquil",
-    "hero_image_url": "",
+    "hero_image_url": "https://mindobirdwatching.com/assets/images/food/mbw_lunch_chicken_001.jpeg",
     "tour_page_url": "",
     "description_one_liner": "Almuerzo opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
+    "guide_cost_per_person": 15,
+    "default_provider": "Vendor",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -844,6 +852,8 @@ const TOURS = [
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
     "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
+    "guide_cost_per_person": 10,
+    "default_provider": "Vendor",
     "use_inline_price": true
   },
   {
@@ -869,6 +879,8 @@ const TOURS = [
     "hero_image_url": "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-12-ChocolateTour.jpg",
     "tour_page_url": "https://mindobirdwatching.com/activities/",
     "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
+    "guide_cost_per_person": 10,
+    "default_provider": "Vendor",
     "use_inline_price": true
   },
   {
@@ -3081,12 +3093,77 @@ function splitFeeProportionally(totalFeeCents, lineAmountsCents) {
   return rounded;
 }
 
-function isAccountingServiceLine(line) {
+function stripeLinePriceId(line) {
+  const item = line || {};
+  return String(
+    item.metadata?.price_id ||
+    item.price?.id ||
+    item.pricing?.price_details?.price ||
+    ""
+  );
+}
+
+function stripeLineProductId(line) {
+  const item = line || {};
+  const priceProduct = item.price?.product;
+  const pricingProduct = item.pricing?.price_details?.product;
+  return String(
+    item.metadata?.product_id ||
+    (typeof priceProduct === "object" ? priceProduct?.id : priceProduct) ||
+    (typeof pricingProduct === "object" ? pricingProduct?.id : pricingProduct) ||
+    ""
+  );
+}
+
+function catalogTourForAccountingLine(line, isTest = false) {
+  const priceId = stripeLinePriceId(line);
+  const productId = stripeLineProductId(line);
+  const matches = TOURS.filter((tour) => {
+    if (!["active", "staff_only"].includes(tour.status)) return false;
+    const wantedPrice = isTest ? tour.price_id_test : tour.price_id_live;
+    const wantedProduct = isTest ? tour.product_id_test : tour.product_id_live;
+    return Boolean((priceId && wantedPrice === priceId) || (productId && wantedProduct === productId));
+  });
+  if (!matches.length) return null;
+  const language = String(line?.metadata?.language || "en").toLowerCase();
+  return matches.find((tour) => tour.language === language) || matches.find((tour) => tour.language === "en") || matches[0];
+}
+
+function accountingLineMetadata(line, invoiceMetadata = {}, isTest = false) {
+  const item = line || {};
+  const existing = item.metadata || {};
+  const tour = catalogTourForAccountingLine(item, isTest);
+  if (!tour) return { ...invoiceMetadata, ...existing };
+  const quantity = Math.max(1, Number(existing.number_of_people || item.quantity || 1) || 1);
+  const amountCents = Number(item.amount || 0);
+  const unitAmount = amountCents > 0 ? amountCents / quantity / 100 : parseAmountDisplayToCents(tour.amount_display) / 100;
+  const guideCost = guideCostSummary(tour, quantity);
+  return {
+    ...invoiceMetadata,
+    tour_code: tour.tour_code,
+    tour_title: tour.tour_title,
+    service_type: tour.service_type || "",
+    language: tour.language || "en",
+    pricing_model: tour.pricing_model || "per_person",
+    product_id: stripeLineProductId(item),
+    price_id: stripeLinePriceId(item),
+    number_of_people: String(quantity),
+    standard_price_per_person: dollarsToDisplay(parseAmountDisplayToCents(tour.amount_display) / 100),
+    final_price_per_person: dollarsToDisplay(unitAmount),
+    guide_pay_model: guideCost.payModel,
+    guide_rate_per_person: guideCost.ratePerPerson ? dollarsToDisplay(guideCost.ratePerPerson) : "",
+    guide_payout_total: guideCost.total ? dollarsToDisplay(guideCost.total) : "",
+    default_provider: tour.default_provider || "",
+    ...existing,
+  };
+}
+
+function isAccountingServiceLine(line, isTest = false) {
   const item = line || {};
   const md = item.metadata || {};
   const amountCents = Number(item.amount || 0);
   if (!(amountCents > 0)) return false;
-  return Boolean(md.item_index || md.tour_code || md.tour_title || md.service_type);
+  return Boolean(md.item_index || md.tour_code || md.tour_title || md.service_type || catalogTourForAccountingLine(item, isTest));
 }
 
 function buildTourKey(invoiceId, itemIndex, tourCode, tourDate, quantity) {
@@ -5368,10 +5445,10 @@ const worker = {
               }
 
               const lines = inv.lines && Array.isArray(inv.lines.data) ? inv.lines.data : [];
-              const serviceLines = lines.filter(isAccountingServiceLine);
+              const serviceLines = lines.filter((line) => isAccountingServiceLine(line, isTest));
               const hasExcludedInvoiceLines = serviceLines.length !== lines.length;
               const isMultiItem = String(invMd.booking_mode || "") === "multi_item" && serviceLines.length > 1;
-              const shouldLogPerService = serviceLines.length > 0 && (isMultiItem || hasExcludedInvoiceLines);
+              const shouldLogPerService = serviceLines.length > 1 || (serviceLines.length > 0 && (isMultiItem || hasExcludedInvoiceLines));
               const depositAppliedCents = parseAmountDisplayToCents(invMd.deposit_applied_amount || "");
               const serviceTotalCents = serviceLines.length
                 ? serviceLines.reduce((sum, line) => sum + Number(line.amount || 0), 0)
@@ -5407,7 +5484,7 @@ const worker = {
 
                 for (let i = 0; i < serviceLines.length; i++) {
                   const line = serviceLines[i] || {};
-                  const lineMd = line.metadata || {};
+                  const lineMd = accountingLineMetadata(line, invMd, isTest);
                   const linePriceId = lineMd.price_id || (line.price && line.price.id ? line.price.id : line.pricing && line.pricing.price_details && line.pricing.price_details.price ? line.pricing.price_details.price : "");
                   const lineProductId = lineMd.product_id || (line.price && line.price.product ? line.price.product : line.pricing && line.pricing.price_details && line.pricing.price_details.product ? line.pricing.price_details.product : "");
                   const lineQty = lineMd.number_of_people || (line.quantity != null ? String(line.quantity) : "");
@@ -5440,7 +5517,7 @@ const worker = {
                     party_size: lineQty,
                     service_type: lineMd.service_type || "",
                     tour_title: lineMd.tour_title || "",
-                    tour_guide: "",
+                    tour_guide: lineMd.default_provider || "",
                     payment_method: "Stripe",
                     invoice_id: inv.id || "",
                     transaction_id: paymentIntentId,
@@ -5562,7 +5639,9 @@ const worker = {
                   }
                 }
               } else {
-                const md = invMd;
+                const md = serviceLines.length === 1
+                  ? accountingLineMetadata(serviceLines[0], invMd, isTest)
+                  : invMd;
                 const amountPaidCents = inv.amount_paid != null ? Number(inv.amount_paid) : null;
                 const fields = {
                   created_at_iso: formatISOInNY(paidAt),
@@ -5589,7 +5668,7 @@ const worker = {
                   party_size: md.number_of_people ? String(md.number_of_people) : "",
                   service_type: md.service_type || "",
                   tour_title: md.tour_title || "",
-                  tour_guide: "",
+                  tour_guide: md.default_provider || "",
                   payment_method: "Stripe",
                   invoice_id: inv.id || "",
                   transaction_id: paymentIntentId,
@@ -5713,7 +5792,8 @@ const worker = {
                   }
                 }
               }
-              const firstServiceMetadata = serviceLines.length ? (serviceLines[0].metadata || {}) : invMd;
+              const serviceMetadata = serviceLines.map((line) => accountingLineMetadata(line, invMd, isTest));
+              const firstServiceMetadata = serviceMetadata.length ? serviceMetadata[0] : invMd;
               const paidCrmLedgerResult = await syncCrmInvoiceLedger(env, {
                 inquiry_id: firstServiceMetadata.inquiry_id || invMd.inquiry_id || "",
                 guest_id: firstServiceMetadata.guest_id || invMd.guest_id || "",
@@ -5728,10 +5808,10 @@ const worker = {
                 balance_remaining: Number(inv.amount_remaining || 0) / 100,
                 payment_date: formatDateNY(paidAt),
                 tour_date_start: firstServiceMetadata.tour_date || "",
-                tour_date_end: serviceLines.length ? (serviceLines.map(line => String((line.metadata || {}).tour_date || "")).filter(Boolean).sort().slice(-1)[0] || firstServiceMetadata.tour_date || "") : firstServiceMetadata.tour_date || "",
+                tour_date_end: serviceMetadata.length ? (serviceMetadata.map(lineMd => String(lineMd.tour_date || "")).filter(Boolean).sort().slice(-1)[0] || firstServiceMetadata.tour_date || "") : firstServiceMetadata.tour_date || "",
                 party_size: firstServiceMetadata.number_of_people || "",
                 service_type: serviceLines.length > 1 ? "Multi Item" : firstServiceMetadata.service_type || "",
-                product_selected: serviceLines.map(line => String((line.metadata || {}).tour_code || "")).filter(Boolean).join(" | ") || firstServiceMetadata.tour_code || "",
+                product_selected: serviceMetadata.map(lineMd => String(lineMd.tour_code || "")).filter(Boolean).join(" | ") || firstServiceMetadata.tour_code || "",
                 pickup_location: firstServiceMetadata.pickup_location_label || invMd.pickup_location_label || "",
                 currency: inv.currency ? String(inv.currency).toUpperCase() : "USD",
                 notes: "Stripe invoice paid and synchronized from webhook.",
@@ -5754,7 +5834,7 @@ const worker = {
                 currency: inv.currency ? String(inv.currency).toUpperCase() : "USD",
                 email: guestEmail,
                 phone_number: guestPhone,
-                product_selected: serviceLines.map(line => String((line.metadata || {}).tour_code || "")).filter(Boolean).join(" | ") || firstServiceMetadata.tour_code || "",
+                product_selected: serviceMetadata.map(lineMd => String(lineMd.tour_code || "")).filter(Boolean).join(" | ") || firstServiceMetadata.tour_code || "",
               });
               console.log("Invoice conversion attribution synchronized", JSON.stringify(invoiceAttributionResult));
             } catch (err) {

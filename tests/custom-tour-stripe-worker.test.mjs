@@ -119,6 +119,49 @@ test("meal add-ons are staff-only, bilingual, and invoice at the catalog price p
   assert.equal(line.get("quantity"), "3");
 });
 
+test("manual Stripe catalog lines recover complete accounting metadata", () => {
+  const { context } = harness();
+  const breakfast = {
+    amount: 1000,
+    quantity: 2,
+    price: {
+      id: "price_1UaesJ0wAAlYwqaV2fxXapUZ",
+      product: { id: "prod_VbsdvHlaLF57CX" },
+    },
+    metadata: {},
+  };
+  assert.equal(context.isAccountingServiceLine(breakfast, false), true);
+  const metadata = context.accountingLineMetadata(breakfast, {
+    inquiry_id: "INQ-QA",
+    guest_id: "G-QA",
+    invoice_context: "additional_services",
+  }, false);
+  assert.equal(metadata.tour_code, "MEAL001");
+  assert.equal(metadata.tour_title, "Breakfast");
+  assert.equal(metadata.service_type, "meal");
+  assert.equal(metadata.number_of_people, "2");
+  assert.equal(metadata.standard_price_per_person, "5.00");
+  assert.equal(metadata.final_price_per_person, "5.00");
+  assert.equal(metadata.guide_rate_per_person, "5.00");
+  assert.equal(metadata.guide_payout_total, "10.00");
+  assert.equal(metadata.default_provider, "Vendor");
+  assert.equal(metadata.inquiry_id, "INQ-QA");
+  assert.equal(metadata.guest_id, "G-QA");
+  assert.equal(metadata.invoice_context, "additional_services");
+});
+
+test("meal catalog records expose the approved images and internal vendor costs", async () => {
+  const { context, env } = harness();
+  const response = await context.worker.fetch(new Request("https://example.test/stripe/api/tours?lang=en&scope=staff"), env, {});
+  const body = await response.json();
+  const breakfast = body.tours.find((tour) => tour.tour_code === "MEAL001");
+  const lunch = body.tours.find((tour) => tour.tour_code === "MEAL002");
+  assert.equal(breakfast.hero_image_url, "https://mindobirdwatching.com/assets/images/food/mbw_breakfast_001.jpeg");
+  assert.equal(lunch.hero_image_url, "https://mindobirdwatching.com/assets/images/food/mbw_lunch_chicken_001.jpeg");
+  assert.equal(breakfast.guide_cost_per_person, 5);
+  assert.equal(lunch.guide_cost_per_person, 15);
+});
+
 test("within-Mindo transportation is staff-only and cannot bill the US$1 reference amount", async () => {
   const h = harness();
   for (const language of ["en", "es"]) {
