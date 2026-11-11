@@ -144,13 +144,13 @@ test("manual Stripe catalog lines recover complete accounting metadata", () => {
   assert.equal(metadata.final_price_per_person, "5.00");
   assert.equal(metadata.guide_rate_per_person, "5.00");
   assert.equal(metadata.guide_payout_total, "10.00");
-  assert.equal(metadata.default_provider, "Other");
+  assert.equal(metadata.default_provider, "");
   assert.equal(metadata.inquiry_id, "INQ-QA");
   assert.equal(metadata.guest_id, "G-QA");
   assert.equal(metadata.invoice_context, "additional_services");
 });
 
-test("meal catalog records expose the approved images and internal vendor costs", async () => {
+test("meal catalog records expose the approved images and assigned-guide costs", async () => {
   const { context, env } = harness();
   const response = await context.worker.fetch(new Request("https://example.test/stripe/api/tours?lang=en&scope=staff"), env, {});
   const body = await response.json();

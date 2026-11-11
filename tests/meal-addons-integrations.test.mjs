@@ -33,6 +33,8 @@ test("meal blocks use the approved images in every email generator build", () =>
     assert.match(source, /meal-lunch/);
     assert.match(source, /assets\/images\/food\/mbw_breakfast_001\.jpeg/);
     assert.match(source, /assets\/images\/food\/mbw_lunch_chicken_001\.jpeg/);
+    assert.match(source, /paid with the tour invoice or in cash at the location/);
+    assert.match(source, /chicken, pork, or trout/);
   }
 });
 
