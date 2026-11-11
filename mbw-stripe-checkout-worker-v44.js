@@ -337,7 +337,7 @@ const TOURS = [
     "tour_page_url": "",
     "description_one_liner": "Optional breakfast add-on, charged per person and available when confirmed as part of the itinerary.",
     "guide_cost_per_person": 5,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -365,7 +365,7 @@ const TOURS = [
     "tour_page_url": "",
     "description_one_liner": "Desayuno opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
     "guide_cost_per_person": 5,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -393,7 +393,7 @@ const TOURS = [
     "tour_page_url": "",
     "description_one_liner": "Optional lunch add-on, charged per person and available when confirmed as part of the itinerary.",
     "guide_cost_per_person": 15,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -421,7 +421,7 @@ const TOURS = [
     "tour_page_url": "",
     "description_one_liner": "Almuerzo opcional, cobrado por persona y disponible cuando se confirma como parte del itinerario.",
     "guide_cost_per_person": 15,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": false,
     "invoice_only": true
   },
@@ -853,7 +853,7 @@ const TOURS = [
     "tour_page_url": "https://mindobirdwatching.com/activities/",
     "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
     "guide_cost_per_person": 10,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": true
   },
   {
@@ -880,7 +880,7 @@ const TOURS = [
     "tour_page_url": "https://mindobirdwatching.com/activities/",
     "description_one_liner": "Discover the story of Ecuadorian cacao during this engaging chocolate experience in Mindo. Learn how cacao grows on the tree and follow the full process that transforms cacao beans into chocolate. Through a hands-on demonstration you will see the traditional techniques used to ferment, roast, grind, and prepare chocolate. Finish the experience with a tasting",
     "guide_cost_per_person": 10,
-    "default_provider": "Vendor",
+    "default_provider": "Other",
     "use_inline_price": true
   },
   {

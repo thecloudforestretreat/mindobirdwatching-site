@@ -144,7 +144,7 @@ test("manual Stripe catalog lines recover complete accounting metadata", () => {
   assert.equal(metadata.final_price_per_person, "5.00");
   assert.equal(metadata.guide_rate_per_person, "5.00");
   assert.equal(metadata.guide_payout_total, "10.00");
-  assert.equal(metadata.default_provider, "Vendor");
+  assert.equal(metadata.default_provider, "Other");
   assert.equal(metadata.inquiry_id, "INQ-QA");
   assert.equal(metadata.guest_id, "G-QA");
   assert.equal(metadata.invoice_context, "additional_services");
