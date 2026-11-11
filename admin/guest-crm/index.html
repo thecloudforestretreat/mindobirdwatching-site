@@ -1450,6 +1450,15 @@
             state.records=applyDuplicateFamilyArchives(dedupeRecords(mergeLiveWithLocal(incoming)));
             payload=buildSavePayload();
           }
+          const existingReferenceOwner=isCreate?findReferenceOwner(payload.record):null;
+          if(existingReferenceOwner){
+            state.selectedId=existingReferenceOwner.inquiry_id;
+            fillForm(existingReferenceOwner);
+            saveLocalRecords();
+            render();
+            showToast("Not saved: this Reference ID is already linked to an inquiry. The existing record is now open.");
+            return;
+          }
           let attribution=null,attributionWarning="";
           try{attribution=await resolveReference();}
           catch(error){
