@@ -1877,7 +1877,7 @@
         const record=getSelected();
         if(!record){ setPaymentSummaryLocked(false); els.paymentLedgerSummary.textContent="No ledger entries"; els.paymentLedgerList.innerHTML='<div class="paymentLedgerEmpty">Save or select an inquiry to load its invoices.</div>'; els.paymentLedgerWarning.hidden=true; return; }
         const rows=(state.payments||[]).filter(item=>(record.guest_id&&clean(item.guest_id)===clean(record.guest_id))||clean(item.inquiry_id)===clean(record.inquiry_id)).sort(comparePaymentRecency);
-        const total=rows.filter(item=>!invoiceIsNonPayable(item)).reduce((sum,item)=>sum+Number(item.total_amount_paid||item.additional_amount_paid||item.deposit_amount_paid||0),0);
+        const total=rows.filter(item=>!invoiceIsNonPayable(item)).reduce((sum,item)=>sum+paymentLedgerCashAmount(item,rows),0);
         els.paymentLedgerSummary.textContent=rows.length?`${rows.length} invoice${rows.length===1?"":"s"} saved · ${money(total)} received`:"No ledger entries";
         els.paymentLedgerList.innerHTML=rows.length?rows.map(item=>paymentLedgerRowHtml(item,record)).join(""):'<div class="paymentLedgerEmpty">No ledger entry exists yet. Stripe and Zelle payments will appear here without replacing earlier invoices.</div>';
         const thisInquiry=rows.filter(item=>clean(item.inquiry_id)===clean(record.inquiry_id)&&!invoiceIsNonPayable(item));
@@ -1898,6 +1898,18 @@
         const source=clean(item.invoice_id||item.transaction_id||item.invoice_no||item.created_at||"payment");
         return "PAY-"+source.replace(/[^A-Za-z0-9_-]/g,"-");
       }
+      function paymentLedgerNumber(value){const cleaned=String(value??"").replace(/[$,\s]/g,"");if(!cleaned)return null;const parsed=Number(cleaned);return Number.isFinite(parsed)?parsed:null;}
+      function paymentLedgerCashAmount(item,rows){
+        const additional=paymentLedgerNumber(item.additional_amount_paid),deposit=paymentLedgerNumber(item.deposit_amount_paid),total=paymentLedgerNumber(item.total_amount_paid),booking=paymentLedgerNumber(item.total_booking_price);
+        if(additional!==null&&additional>0)return additional;
+        if(deposit!==null&&deposit>0)return total!==null&&total>deposit+.009?total-deposit:(total??deposit);
+        if(total===null)return 0;
+        const inquiry=clean(item.inquiry_id),siblingDeposit=rows.filter(row=>row!==item&&clean(row.inquiry_id)===inquiry&&!invoiceIsNonPayable(row)).reduce((sum,row)=>{
+          const rowDeposit=paymentLedgerNumber(row.deposit_amount_paid),rowAdditional=paymentLedgerNumber(row.additional_amount_paid),rowTotal=paymentLedgerNumber(row.total_amount_paid);
+          return sum+(rowDeposit!==null&&rowDeposit>0&&(!rowAdditional||rowAdditional<=.009)&&rowTotal!==null&&rowTotal<=rowDeposit+.009?rowDeposit:0);
+        },0);
+        return siblingDeposit>0&&booking!==null&&booking>siblingDeposit&&total>=booking-.009?Math.max(0,total-siblingDeposit):total;
+      }
       function paymentLedgerRowHtml(item,record){
         const id=paymentRowId(item);
         if(invoiceIsNonPayable(item)) return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||id)}</strong><span>${esc(labelStatus(item.payment_status))} · ${normalizePayment(item.payment_status)==="uncollectible"?"Review before collection":"Not payable"}</span><span>Historical invoice retained. Guest booking and deposits are unchanged.</span></div>`;
@@ -1907,7 +1919,8 @@
           const statuses=["unpaid","deposit_pending","deposit_paid","payment_pending","partial","paid","refunded"];
           return `<div class="paymentLedgerRow"><div class="paymentLedgerEdit" data-payment-id="${esc(id)}"><div class="field"><label>Invoice number</label><input data-payment-field="invoice_no" value="${esc(item.invoice_no||"")}" /></div><div class="field"><label>Payment date</label><input data-payment-field="payment_date" type="date" value="${esc(toDateValue(item.payment_date||item.created_at))}" /></div><div class="field"><label>Payment method</label><select data-payment-field="payment_method"><option value=""></option>${methods.map(value=>`<option${value===method?" selected":""}>${esc(value)}</option>`).join("")}</select></div><div class="field"><label>Payment status</label><select data-payment-field="payment_status">${statuses.map(value=>`<option value="${esc(value)}"${value===status?" selected":""}>${esc(labelStatus(value))}</option>`).join("")}</select></div><p class="paymentLedgerEditNote">This updates the CRM ledger and latest-payment summary. It does not rename the original Stripe invoice or accounting-sheet row.</p><div class="paymentLedgerEditActions"><button type="button" data-payment-action="cancel">Cancel</button><button class="primary" type="button" data-payment-action="save">Save Invoice Changes</button></div></div></div>`;
         }
-        return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||item.payment_id||"Payment")}</strong><span>${esc(displayDate(item.payment_date||item.created_at)||"Date pending")}</span><span>${esc(labelStatus(item.payment_status||"unpaid"))} · ${esc(item.payment_method||"Method pending")}</span><span>${esc(money(item.total_amount_paid||item.additional_amount_paid||item.deposit_amount_paid||0))}${clean(item.inquiry_id)===clean(record.inquiry_id)?" · This booking":" · Prior booking"}</span><button type="button" data-payment-action="edit" data-payment-id="${esc(id)}">Edit</button></div>`;
+        const rows=(state.payments||[]).filter(row=>(record.guest_id&&clean(row.guest_id)===clean(record.guest_id))||clean(row.inquiry_id)===clean(record.inquiry_id));
+        return `<div class="paymentLedgerRow"><strong>${esc(item.invoice_no||item.invoice_id||item.payment_id||"Payment")}</strong><span>${esc(displayDate(item.payment_date||item.created_at)||"Date pending")}</span><span>${esc(labelStatus(item.payment_status||"unpaid"))} · ${esc(item.payment_method||"Method pending")}</span><span>${esc(money(paymentLedgerCashAmount(item,rows)))}${clean(item.inquiry_id)===clean(record.inquiry_id)?" · This booking":" · Prior booking"}</span><button type="button" data-payment-action="edit" data-payment-id="${esc(id)}">Edit</button></div>`;
       }
       function comparePaymentRecency(a,b){
         const dateCompare=String(b.payment_date||"").localeCompare(String(a.payment_date||""));

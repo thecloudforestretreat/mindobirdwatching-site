@@ -30,7 +30,12 @@ export function buildBalances({inquiries=[],payments=[],deposits=[],now=new Date
   const acceptedQuote=text(r.accepted_quote_total)?r.accepted_quote_total:r.quoted_amount;
   const quote=text(r.quote_status)==='accepted'?money(acceptedQuote):null;
   const total=max([ledgerTotal,invoiceTotal,quote]);
-  const paid=max([ledgerPaid,invoicePaid===null?(dd.some(d=>money(d.deposit_amount_paid)!==null)?externalDeposit:null):invoicePaid+Math.max(0,externalDeposit-includedDeposit)]);
+  const depositNotRepresentedInInvoice=Math.max(0,externalDeposit-includedDeposit);
+  const invoiceAppearsCumulative=invoicePaid!==null&&invoiceTotal!==null&&invoicePaid>=invoiceTotal-.01;
+  const combinedInvoicePaid=invoicePaid===null
+   ?(dd.some(d=>money(d.deposit_amount_paid)!==null)?externalDeposit:null)
+   :invoicePaid+(invoiceAppearsCumulative?0:depositNotRepresentedInInvoice);
+  const paid=max([ledgerPaid,combinedInvoicePaid]);
   const deposit=max([dd.length?externalDeposit:null,ps.length?includedDeposit:null]);
   let balance=total!==null&&paid!==null?Math.max(0,Math.round((total-paid)*100)/100):null;
   if(total!==null&&paid!==null&&paid>total){issues.push('Recorded payments exceed booking total');balance=null;}
