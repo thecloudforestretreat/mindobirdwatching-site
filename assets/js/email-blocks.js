@@ -29,6 +29,7 @@ window.MBW_EMAIL_BLOCKS = {
   groups: [
     { id: "tours", label: "Tours" },
     { id: "activities", label: "Activities" },
+    { id: "meals", label: "Meals" },
     { id: "planning", label: "Planning" },
     { id: "social", label: "Social / Reviews" }
   ],
@@ -219,6 +220,36 @@ window.MBW_EMAIL_BLOCKS = {
       url: "https://mindobirdwatching.com/activities/",
       video: "",
       primaryCta: "View Activities",
+      secondaryCta: ""
+    },
+    {
+      id: "meal-breakfast",
+      group: "meals",
+      type: "info",
+      eyebrow: "Optional itinerary add-on",
+      title: "Breakfast",
+      description: "Breakfast can be added for confirmed guests when it is arranged in advance as part of the itinerary.",
+      price: "$5 per person",
+      duration: "Add-on",
+      image: "https://mindobirdwatching.com/assets/images/food/mbw_breakfast_001.jpeg",
+      url: "",
+      video: "",
+      primaryCta: "",
+      secondaryCta: ""
+    },
+    {
+      id: "meal-lunch",
+      group: "meals",
+      type: "info",
+      eyebrow: "Optional itinerary add-on",
+      title: "Lunch",
+      description: "Lunch can be added for confirmed guests when it is arranged in advance as part of the itinerary.",
+      price: "$15 per person",
+      duration: "Add-on",
+      image: "https://mindobirdwatching.com/assets/images/food/mbw_lunch_chicken_001.jpeg",
+      url: "",
+      video: "",
+      primaryCta: "",
       secondaryCta: ""
     },
     {

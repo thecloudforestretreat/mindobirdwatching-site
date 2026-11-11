@@ -1479,6 +1479,21 @@ function createItem(initial = {}) {
     return isPriorInvoiceStatus(item && item.status);
   }
 
+  function enableVerifiedAdditionalInvoice(excludedItems, newItems) {
+    const safeToEnable = state.additionalInvoiceEligible &&
+      Array.isArray(excludedItems) && excludedItems.length > 0 &&
+      Array.isArray(newItems) && newItems.length > 0;
+    state.additionalInvoiceMode = safeToEnable;
+    els.additionalInvoiceMode.checked = safeToEnable;
+    if (safeToEnable) {
+      els.applyDeposit.checked = false;
+      els.applyDeposit.disabled = true;
+    } else {
+      els.applyDeposit.disabled = false;
+    }
+    return safeToEnable;
+  }
+
   function additionalInvoiceHasPriorBookedItems() {
     return state.additionalInvoiceMode && state.items.some(isPreviouslyBookedImportedItem);
   }
@@ -1513,6 +1528,7 @@ function createItem(initial = {}) {
     const inboundItems = state.additionalInvoiceEligible
       ? allInboundItems.filter(item => !isPreviouslyBookedInboundItem(item))
       : allInboundItems;
+    enableVerifiedAdditionalInvoice(state.excludedPriorInvoiceItems, inboundItems);
     if (state.excludedPriorInvoiceItems.length) {
       const excludedCount = state.excludedPriorInvoiceItems.length;
       els.priorInvoiceDetails.textContent = `Prior invoice ${state.priorInvoiceNo} is recorded as paid. ${excludedCount} previously booked item${excludedCount === 1 ? " was" : "s were"} excluded automatically.`;
@@ -1906,7 +1922,7 @@ function createItem(initial = {}) {
         <br />
         Previously booked items were excluded from this invoice.
         <br />
-        Confirm <strong>Create a separate invoice for approved additional services</strong> above to enable Send Invoice.
+        Select the newly approved services above, then confirm <strong>Create a separate invoice for approved additional services</strong> to enable Send Invoice.
       `;
     } else if (multi) {
       els.actionSummary.innerHTML = `

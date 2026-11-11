@@ -16,21 +16,10 @@ test('meal add-ons are bilingual per-person itinerary products',()=>{
  assert.match(itinerary,/"MEAL001 - Breakfast": "MEAL001 - Desayuno"/);
  assert.match(itinerary,/"MEAL002 - Lunch": "MEAL002 - Almuerzo"/);
 });
-test('within-Mindo transportation requires a final rate and remains one vehicle',()=>{
- assert.match(itinerary,/"TRANS007 - Within Mindo Transportation"/);
- assert.match(itinerary,/"TRANS007": \{model:"flat", price:1, minGuests:0, requiresOverride:true\}/);
- assert.match(itinerary,/"TRANS007 - Within Mindo Transportation": "TRANS007 - Transporte dentro de Mindo"/);
- const rules={TRANS007:{model:'flat',price:1,minGuests:0,requiresOverride:true}};
- const c={PRODUCT_PRICING_RULES:rules,$:()=>({value:4}),inferProductPreset:item=>item.productPreset||item.product_selected,productCodeFromPreset:value=>(String(value).match(/^([A-Z0-9-]+)/)||[])[1]||'',money:value=>'$'+Number(value).toFixed(2),escapeHtml:String};
- vm.createContext(c);
- for(const name of ['pricingRuleFor','billingQuantityFor','isVehicleItem','billingQuantityLabel','pricingModelLabel','catalogMetaMarkup'])vm.runInContext(source(itinerary,name),c);
- const item={product_selected:'TRANS007 - Within Mindo Transportation',productPreset:'TRANS007 - Within Mindo Transportation',quantity:1,unitPrice:1,type:'Transportation'};
- assert.equal(c.billingQuantityFor(rules.TRANS007),1);
- assert.equal(c.billingQuantityLabel(item),'Vehicles');
- assert.match(c.catalogMetaMarkup(item),/Needs final price/);
- item.unitPrice=18;
- assert.match(c.catalogMetaMarkup(item),/Final price entered/);
- assert.match(c.catalogMetaMarkup(item),/reference \$1\.00/);
+test('TRANS007 remains staff-only and is excluded from the guest itinerary generator',()=>{
+ assert.doesNotMatch(itinerary,/"TRANS007 - Within Mindo Transportation"/);
+ assert.doesNotMatch(itinerary,/"TRANS007": \{model:/);
+ assert.doesNotMatch(itinerary,/"TRANS007 - Transporte dentro de Mindo"/);
 });
 for(const method of ['openItineraryTool','openSavedItinerary']){
  test(method+' never multiplies the accepted trip total as a missing service rate',()=>{const {c,store}=handoff([{...bird,price:''},night,car]);c[method]();const d=JSON.parse(store.get('mbwItineraryGeneratorDraft'));assert.equal(d.items[0].unitPrice,'');assert.equal(d.items.reduce((n,i)=>n+i.quantity*Number(i.unitPrice),0),285);assert.equal(d.items[2].quantity,1)});
