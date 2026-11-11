@@ -1,0 +1,2530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Tour Confirmation Generator</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0D5925" />
+  <link rel="canonical" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/header.css?v=1" />
+  <script src="/assets/js/head.js" defer></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+
+  <style>
+    :root{
+      --mbw-green:#075f28;
+      --mbw-green-dark:#06481f;
+      --mbw-red:#df2c1d;
+      --mbw-yellow:#fff3bd;
+      --mbw-soft:#eef7ed;
+      --mbw-panel:#ffffff;
+      --mbw-border:rgba(7,25,35,.14);
+      --mbw-shadow:0 18px 55px rgba(7,25,35,.10);
+    }
+
+    body{ padding-bottom:0; }
+    .container{ max-width: 1680px; }
+    .page{ margin-top:18px; padding:18px; }
+    .page.card{
+      background:linear-gradient(180deg, rgba(246,250,240,.9), rgba(237,244,228,.92));
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+    }
+
+    .adminTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .adminTitle{ display:flex; align-items:flex-start; gap:12px; min-width:0; }
+    .adminLogo{
+      width:48px;
+      height:48px;
+      border-radius:999px;
+      object-fit:cover;
+      border:1px solid rgba(7,25,35,.12);
+      box-shadow:0 8px 24px rgba(7,25,35,.12);
+      flex:0 0 auto;
+    }
+    .adminTitle h1{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:24px;
+      line-height:1.1;
+      letter-spacing:-.03em;
+      font-weight:950;
+      text-transform:uppercase;
+    }
+    .adminTitle p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      max-width:88ch;
+    }
+    .adminActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .btnAdmin{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      color:var(--ink);
+      box-shadow:var(--shadow);
+      min-height:44px;
+      padding:11px 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+      font-family:var(--font-body);
+      text-decoration:none;
+    }
+    .btnAdmin.primary{ background:var(--forest); color:#fff; border-color:rgba(13,89,37,.35); }
+    .btnAdmin.danger{ background:#d83d3d; color:#fff; border-color:rgba(216,61,61,.35); }
+    .btnAdmin:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .appGrid{
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .sidePanel,
+    .controlPanel,
+    .previewPanel{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(255,255,255,.74);
+      box-shadow:var(--shadow);
+    }
+    .sidePanel{ padding:14px; position:sticky; top:92px; }
+    .panelTitle{
+      margin:0 0 12px;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-weight:950;
+      font-size:14px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .tabs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+    .tabBtn{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.7);
+      padding:9px 8px;
+      font-weight:900;
+      color:var(--ink);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .tabBtn.active{ background:rgba(13,89,37,.13); border-color:rgba(13,89,37,.34); color:var(--forest); }
+    .searchBox{ position:relative; margin-bottom:12px; }
+    .searchBox input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.75);
+      padding:12px 12px;
+      font:inherit;
+      font-weight:800;
+      outline:none;
+    }
+    .records{ display:grid; gap:10px; max-height:58vh; overflow:auto; padding-right:2px; }
+    .recordBtn{
+      appearance:none;
+      text-align:left;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:rgba(255,255,255,.78);
+      padding:12px;
+      cursor:pointer;
+      display:grid;
+      gap:7px;
+      box-shadow:0 8px 20px rgba(7,25,35,.05);
+    }
+    .recordBtn.active{ border-color:rgba(13,89,37,.45); background:linear-gradient(135deg, rgba(13,89,37,.10), rgba(255,255,255,.78)); }
+    .recordMain{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .recordName{ font-weight:950; color:var(--ink); line-height:1.25; }
+    .recordDate{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 9px;
+      border-radius:999px;
+      font-size:11.5px;
+      font-weight:950;
+      background:rgba(255,243,189,.9);
+      color:#7a5400;
+      white-space:nowrap;
+    }
+    .statusPill.generated{ background:rgba(220,245,225,.9); color:#14612b; }
+    .statusPill.sent{ background:rgba(220,235,255,.9); color:#174d8c; }
+    .emptyState{ color:var(--muted); font-weight:800; font-size:13px; line-height:1.5; padding:12px; }
+    .sideFooter{ margin-top:12px; color:var(--muted); font-size:12.5px; font-weight:800; }
+
+    .mainStack{ display:grid; gap:16px; min-width:0; }
+    .controlPanel{ padding:14px; }
+    .controlGrid{
+      display:grid;
+      grid-template-columns:1.3fr .7fr .7fr;
+      gap:12px;
+      align-items:end;
+    }
+    .field{ display:grid; gap:6px; min-width:0; }
+    .field label{
+      display:block;
+      color:var(--ink);
+      font-size:12.5px;
+      font-weight:950;
+      line-height:1.2;
+    }
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:rgba(255,255,255,.82);
+      color:var(--ink);
+      min-height:42px;
+      padding:10px 11px;
+      font:inherit;
+      font-size:13.5px;
+      font-weight:800;
+      outline:none;
+      box-shadow:0 8px 18px rgba(7,25,35,.04);
+    }
+    .field textarea{ min-height:70px; resize:vertical; line-height:1.45; }
+    .field input[type="date"]{
+      -webkit-appearance:none;
+      appearance:none;
+      display:block;
+      max-width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+    .field input[type="date"]::-webkit-date-and-time-value{
+      text-align:left;
+      min-height:20px;
+    }
+    .editGrid{
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .editGrid .span2{ grid-column:span 2; }
+    .editGrid .span3{ grid-column:span 3; }
+    .editGrid .span6{ grid-column:1 / -1; }
+    .editGrid .span4{ grid-column:1 / -1; }
+    .miniNote{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.45;
+      font-weight:800;
+    }
+    .confirmationChooser{
+      grid-column:1 / -1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:10px;
+      border:1px solid rgba(13,89,37,.18);
+      border-radius:14px;
+      background:rgba(237,244,230,.72);
+    }
+    .confirmationChooser strong{ color:var(--forest); font-size:12.5px; }
+    .confirmationTab{
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:var(--ink);
+      padding:8px 12px;
+      font:inherit;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .confirmationTab.active{ background:var(--forest); color:#fff; border-color:var(--forest); }
+
+    .previewPanel{ padding:14px; min-width:0; }
+    .previewTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .previewTop h2{
+      margin:0;
+      color:var(--forest);
+      font-family:var(--font-body);
+      font-size:14px;
+      font-weight:950;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .snapshotNotice{margin:0 0 14px;padding:10px 12px;border:1px solid #bdd5c3;border-radius:10px;font-size:13px;line-height:1.5;overflow-wrap:anywhere;background:#f0f7f1;}
+    .snapshotNotice[data-warning="true"]{color:#8b1c16;background:#fff1ef;border-color:#e7aaa4;}
+    .snapshotNotice[hidden]{display:none;}
+    .controlGrid [aria-invalid="true"]{border-color:#c5372b;background:#fff5f3;box-shadow:0 0 0 1px #c5372b;}
+    .previewHint{ color:var(--muted); font-size:12.5px; font-weight:800; }
+    .previewShell{
+      width:100%;
+      overflow:auto;
+      border:1px solid rgba(7,25,35,.12);
+      border-radius:18px;
+      background:#f6f8f3;
+      padding:14px;
+    }
+    .previewScale{
+      position:relative;
+      width:1920px;
+      height:1080px;
+      transform-origin:top left;
+      overflow:visible;
+    }
+
+    .certificate{
+      width:1920px;
+      height:1080px;
+      position:relative;
+      overflow:hidden;
+      background:#edf4e6;
+      color:var(--mbw-green);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .certificate *{ box-sizing:border-box; }
+    .certBg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:0;
+    }
+    .certOverlay{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      background:linear-gradient(90deg, rgba(255,255,255,.25) 0%, rgba(255,255,255,.08) 54%, rgba(255,255,255,.16) 100%);
+    }
+    .certificate.nightWalkMode .certOverlay{
+      background:linear-gradient(90deg, rgba(3,18,16,.72) 0%, rgba(4,25,21,.66) 54%, rgba(2,13,12,.74) 100%);
+    }
+    .certificate.nightWalkMode .certTitle,
+    .certificate.nightWalkMode .dateIssuedBox,
+    .certificate.nightWalkMode .infoBlock,
+    .certificate.nightWalkMode .certLabel,
+    .certificate.nightWalkMode .certValue,
+    .certificate.nightWalkMode .noteLine,
+    .certificate.nightWalkMode .footerIg,
+    .certificate.nightWalkMode .footerWeb{
+      color:#fff;
+      text-shadow:0 2px 4px rgba(0,0,0,.55);
+    }
+    .certLogo{
+      position:absolute;
+      left:62px;
+      top:58px;
+      width:330px;
+      height:330px;
+      object-fit:contain;
+      z-index:2;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,.16));
+    }
+    .certTitle{
+      position:absolute;
+      z-index:2;
+      left:585px;
+      top:112px;
+      width:760px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:90px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    .dateIssuedBox{
+      position:absolute;
+      z-index:2;
+      left:805px;
+      top:235px;
+      min-width:270px;
+      text-align:center;
+      color:var(--mbw-green);
+      font-size:34px;
+      line-height:1;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+    }
+    .guideImage{
+      position:absolute;
+      z-index:6;
+      left:1180px;
+      top:140px;
+      width:700px;
+      height:1000px;
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-size:contain;
+      filter:drop-shadow(0 14px 16px rgba(0,0,0,.15));
+      pointer-events:none;
+    }
+    .certificate.nightWalkMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      border-radius:50%;
+      background-size:cover;
+      box-shadow:0 0 18px rgba(255,255,255,.72);
+      filter:none;
+    }
+    .certificate.standardArtMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      background-position:center center;
+      background-size:contain;
+      filter:none;
+    }
+    .certificate.birdwatchingArtMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      background-position:center center;
+      background-size:contain;
+      filter:none;
+    }
+    .certificate.activitiesArtMode .guideImage{
+      left:1329px;
+      top:239px;
+      width:472px;
+      height:472px;
+      background-position:center center;
+      background-size:contain;
+      filter:none;
+    }
+    .mindoLetters{
+      position:absolute;
+      z-index:5;
+      left:1158px;
+      top:530px;
+      width:720px;
+      height:auto;
+      object-fit:contain;
+      pointer-events:none;
+    }
+    .infoBlock{
+      position:absolute;
+      z-index:3;
+      left:220px;
+      top:420px;
+      width:640px;
+      display:grid;
+      grid-template-columns:185px 1fr;
+      gap:12px 18px;
+      align-items:start;
+      color:var(--mbw-green);
+    }
+    .certLabel{
+      font-size:25px;
+      line-height:1.12;
+      font-weight:950;
+      text-align:left;
+      white-space:nowrap;
+      padding-top:4px;
+    }
+    .certValue{
+      display:inline-block;
+      width:max-content;
+      max-width:455px;
+      color:var(--mbw-green);
+      font-size:30px;
+      line-height:1.12;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+      word-break:normal;
+    }
+    .certValue.small{ font-size:27px; }
+    .certValue.big{ font-size:36px; text-transform:uppercase; }
+    .certValue.wrap{ white-space:normal; max-width:455px; }
+    .qrBox{
+      position:absolute;
+      z-index:4;
+      left:875px;
+      top:555px;
+      width:174px;
+      height:174px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 5px 12px rgba(0,0,0,.08);
+    }
+    .qrBox img,
+    .qrBox canvas{ width:160px !important; height:160px !important; }
+    .noteLine{
+      position:absolute;
+      z-index:4;
+      left:220px;
+      top:950px;
+      color:var(--mbw-green);
+      font-size:25px;
+      line-height:1.1;
+      font-weight:950;
+      padding:0;
+      border:0;
+      background:transparent;
+      max-width:720px;
+      white-space:normal;
+    }
+    .footerIg{
+      position:absolute;
+      z-index:4;
+      left:132px;
+      bottom:44px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      color:var(--mbw-green);
+      font-size:36px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerIg img{ width:49px; height:49px; object-fit:contain; }
+    .footerWeb{
+      position:absolute;
+      z-index:4;
+      left:675px;
+      bottom:44px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      color:var(--mbw-green);
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+    .footerWeb img{ width:49px; height:49px; border-radius:999px; object-fit:cover; }
+
+    .previewExportActions{
+      justify-content:flex-start;
+      margin-top:12px;
+    }
+
+    .mobileTools{
+      display:none;
+      margin-bottom:12px;
+      gap:10px;
+      grid-template-columns:1fr 1fr;
+    }
+
+    @media (max-width:1200px){
+      .appGrid{ grid-template-columns:320px minmax(0,1fr); }
+      .editGrid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:1 / -1; }
+    }
+    @media (max-width:980px){
+      .appGrid{ grid-template-columns:1fr; }
+      .sidePanel{ position:relative; top:auto; }
+      .records{ max-height:300px; }
+      .controlGrid{ grid-template-columns:1fr; }
+      .adminActions{ width:100%; justify-content:stretch; }
+      .adminActions .btnAdmin{ flex:1 1 150px; }
+      .mobileTools{ display:grid; }
+    }
+    @media (max-width:640px){
+      html, body{ overflow-x:hidden; }
+      .container{ padding:14px; }
+      .page{ padding:12px; }
+      .adminTitle h1{ font-size:19px; }
+      .adminLogo{ width:42px; height:42px; }
+      .tabs{ grid-template-columns:1fr; }
+      .editGrid{ grid-template-columns:1fr; }
+      .editGrid .span2,
+      .editGrid .span3,
+      .editGrid .span4,
+      .editGrid .span6{ grid-column:auto; }
+      .btnAdmin{ width:100%; }
+      .mobileTools{ grid-template-columns:1fr; }
+      .previewShell{ padding:8px; border-radius:14px; }
+    }
+  
+
+    /* =========================================================
+       2026-08-28 ADMIN LAYOUT REPAIR
+       Define the page tokens locally and keep the confirmation
+       workspace independent from public-site container changes.
+       ========================================================= */
+    :root{
+      --forest:#075f28;
+      --ink:#071923;
+      --muted:rgba(7,25,35,.70);
+      --line:rgba(7,25,35,.14);
+      --r:18px;
+      --shadow:0 18px 55px rgba(7,25,35,.10);
+      --font-body:Arial, Helvetica, sans-serif;
+    }
+    html, body{ width:100%; min-height:100%; overflow-x:hidden; }
+    body[data-admin-layout="confirmation"]{
+      margin:0;
+      background:#C7DAAC;
+      color:var(--ink);
+    }
+    body[data-admin-layout="confirmation"] > .container{
+      width:min(calc(100% - 32px), 1640px);
+      max-width:none;
+      margin:0 auto;
+      padding:0;
+    }
+    body[data-admin-layout="confirmation"] .page{
+      width:100%;
+      margin:16px 0 32px;
+      padding:18px;
+    }
+    body[data-admin-layout="confirmation"] .appGrid{
+      width:100%;
+      display:grid;
+      grid-template-columns:minmax(280px, 320px) minmax(0, 1fr);
+      gap:16px;
+      align-items:start;
+    }
+    body[data-admin-layout="confirmation"] .mainStack,
+    body[data-admin-layout="confirmation"] .controlPanel,
+    body[data-admin-layout="confirmation"] .previewPanel,
+    body[data-admin-layout="confirmation"] .previewShell{
+      min-width:0;
+      max-width:100%;
+    }
+    body[data-admin-layout="confirmation"] .sidePanel{ top:82px; }
+    body[data-admin-layout="confirmation"] .previewShell{
+      width:100%;
+      overflow:auto;
+    }
+
+    @media (max-width:1180px){
+      body[data-admin-layout="confirmation"] > .container{
+        width:min(calc(100% - 28px), 1120px);
+      }
+      body[data-admin-layout="confirmation"] .appGrid{
+        grid-template-columns:minmax(250px, 300px) minmax(0, 1fr);
+      }
+      body[data-admin-layout="confirmation"] .controlGrid{
+        grid-template-columns:1fr 1fr;
+      }
+      body[data-admin-layout="confirmation"] .controlGrid > :first-child{
+        grid-column:1 / -1;
+      }
+      body[data-admin-layout="confirmation"] .editGrid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+      body[data-admin-layout="confirmation"] .editGrid .span2,
+      body[data-admin-layout="confirmation"] .editGrid .span3,
+      body[data-admin-layout="confirmation"] .editGrid .span4,
+      body[data-admin-layout="confirmation"] .editGrid .span6{
+        grid-column:auto;
+      }
+      body[data-admin-layout="confirmation"] .editGrid .span6,
+      body[data-admin-layout="confirmation"] .confirmationChooser{
+        grid-column:1 / -1;
+      }
+    }
+
+    @media (max-width:900px){
+      body[data-admin-layout="confirmation"] > .container{ width:calc(100% - 24px); }
+      body[data-admin-layout="confirmation"] .page{ margin-top:12px; padding:12px; }
+      body[data-admin-layout="confirmation"] .appGrid{ grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .sidePanel{ position:static; }
+      body[data-admin-layout="confirmation"] .records{ max-height:360px; }
+      body[data-admin-layout="confirmation"] .adminTop{ display:grid; grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .adminActions{ width:100%; justify-content:stretch; }
+      body[data-admin-layout="confirmation"] .adminActions .btnAdmin{ flex:1 1 180px; }
+    }
+
+    @media (max-width:620px){
+      body[data-admin-layout="confirmation"] > .container{ width:calc(100% - 16px); }
+      body[data-admin-layout="confirmation"] .page{ padding:10px; }
+      body[data-admin-layout="confirmation"] .adminLogo{ width:42px; height:42px; }
+      body[data-admin-layout="confirmation"] .adminTitle h1{ font-size:20px; }
+      body[data-admin-layout="confirmation"] .controlGrid,
+      body[data-admin-layout="confirmation"] .editGrid{ grid-template-columns:1fr; }
+      body[data-admin-layout="confirmation"] .controlGrid > :first-child,
+      body[data-admin-layout="confirmation"] .editGrid .span6,
+      body[data-admin-layout="confirmation"] .confirmationChooser{ grid-column:auto; }
+      body[data-admin-layout="confirmation"] .adminActions .btnAdmin{ width:100%; flex-basis:100%; }
+      body[data-admin-layout="confirmation"] .previewShell{ padding:8px; }
+    }
+
+  </style>
+<link rel="stylesheet" href="/assets/css/admin.css?v=hub-pilot-20260928">
+</head>
+
+<body data-admin-layout="confirmation">
+<div data-admin-nav data-admin-page="confirmation" data-admin-nav-ready="true"><nav class="adminGlobalNav" aria-label="Admin pages"><div class="adminGlobalNav__inner"><span class="adminGlobalNav__label"><img class="adminGlobalNav__logo" src="https://mindobirdwatching.com/assets/images/logo/mbw-logo-mark-1024.png" alt=""><span>MBW Admin</span></span><div class="adminGlobalNav__links">
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/">Admin Hub</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/guest-crm/" data-category="guests" target="_blank" rel="noopener noreferrer">Guest CRM</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/marketing/" data-category="marketing" target="_blank" rel="noopener noreferrer">Marketing</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/reports/" data-category="reports" target="_blank" rel="noopener noreferrer">Reports</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/staff-info/" data-category="staff" target="_blank" rel="noopener noreferrer">Staff Info Library</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/custom-email-generator/" data-category="guests" target="_blank" rel="noopener noreferrer">Custom Email Generator</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/itinerary-generator/" data-category="guests" target="_blank" rel="noopener noreferrer">Itinerary Generator</a>
+<a class="adminGlobalNav__link adminGlobalNav__external" href="https://mindobirdwatching.com/book-tour/create/" data-category="guests" target="_blank" rel="noopener noreferrer">Stripe Invoice</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/zelle-invoice-generator/" data-category="guests" target="_blank" rel="noopener noreferrer">Zelle Invoice Generator</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/tour-confirmation-generator/" data-category="guests" aria-current="page">Tour Confirmation Generator</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/birding/" data-category="resources" target="_blank" rel="noopener noreferrer">Birding</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/recommendations/" data-category="resources" target="_blank" rel="noopener noreferrer">Recommendations</a>
+<a class="adminGlobalNav__link" href="https://admin.mindobirdwatching.com/media/" data-category="resources" target="_blank" rel="noopener noreferrer">Media</a>
+<a class="adminGlobalNav__link adminGlobalNav__external" href="https://admin.mindobirdwatching.com/inquiry-studio/" data-category="guests" target="_blank" rel="noopener noreferrer" title="Protected pilot — uses your MBW Admin login">Inquiry Studio — Pilot</a>
+</div></div></nav></div>
+  <div class="container">
+    <div id="siteHeader"></div>
+
+    <main class="page card" aria-label="MBW Classic Tour Confirmation Generator">
+      <div class="adminTop">
+        <div class="adminTitle">
+          <img class="adminLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching logo" />
+          <div>
+            <h1>MBW Classic Tour Confirmation Generator</h1>
+            <p>Select a booking from Google Sheets, preview the final 1920x1080 confirmation, then export the image or PDF from the preview area.</p>
+          </div>
+        </div>
+        <div class="adminActions">
+          <button class="btnAdmin primary" type="button" id="manualEntryBtn">New Manual Confirmation</button>
+          <button class="btnAdmin" type="button" id="refreshBtn">Refresh Data</button>
+        </div>
+      </div>
+
+      <div class="mobileTools">
+        <button class="btnAdmin" type="button" id="jumpPreviewBtn">Jump to Preview</button>
+        <button class="btnAdmin" type="button" id="jumpListBtn">Jump to List</button>
+      </div>
+
+      <div class="appGrid">
+        <aside class="sidePanel" id="listPanel" aria-label="Tour confirmation list">
+          <h2 class="panelTitle">Tour Confirmations</h2>
+          <div class="tabs" role="group" aria-label="Status filter">
+            <button class="tabBtn active" type="button" data-status="all">All</button>
+            <button class="tabBtn" type="button" data-status="Pending">Pending</button>
+            <button class="tabBtn" type="button" data-status="Generated">Generated</button>
+          </div>
+          <div class="searchBox">
+            <input id="searchInput" type="search" placeholder="Search by guest, date, guide..." autocomplete="off" />
+          </div>
+          <div class="records" id="records"></div>
+          <div class="sideFooter" id="listCount">Loading confirmations...</div>
+        </aside>
+
+        <section class="mainStack" id="previewPanelAnchor">
+          <section class="controlPanel" aria-label="Confirmation details">
+            <h2 class="panelTitle">Confirmation Details</h2>
+            <p id="snapshotNotice" class="snapshotNotice" role="status" hidden></p>
+            <p id="confirmationErrors" class="snapshotNotice" data-warning="true" role="alert" hidden></p>
+            <div class="controlGrid">
+              <div class="field"><label for="languageInput">Confirmation language / Idioma</label><select id="languageInput"><option value="en">English</option><option value="es">Español</option></select></div>
+              <div class="field">
+                <label for="bookingSelect">Select Confirmation</label>
+                <select id="bookingSelect"></select>
+              </div>
+              <div class="field">
+                <label for="statusInput">Status</label>
+                <select id="statusInput">
+                  <option>Pending</option>
+                  <option>Generated</option>
+                  <option>Sent</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="guideInput">Guide</label>
+                <select id="guideInput"></select>
+              </div>
+              <div class="field" id="customGuideField" hidden>
+                <label for="customGuideInput">Custom Guide Name</label>
+                <input id="customGuideInput" type="text" placeholder="Enter guide or driver name" />
+              </div>
+            </div>
+
+            <div class="editGrid">
+              <div class="field span2">
+                <label for="dateIssuedInput">Date Issued</label>
+                <input id="dateIssuedInput" type="date" />
+              </div>
+              <div class="field span2">
+                <label for="guestsInput">Guest Name(s)</label>
+                <input id="guestsInput" type="text" placeholder="Primary guest + other guest names" />
+              </div>
+              <div class="field span2">
+                <label for="guestPhoneInput">Guest Phone</label>
+                <input id="guestPhoneInput" type="text" placeholder="+1 555 000 0000" />
+              </div>
+              <div class="field span2">
+                <label for="tourDateInput">Tour Date</label>
+                <input id="tourDateInput" type="date" />
+              </div>
+              <div class="field span2">
+                <label for="contactInput">Guide Phone</label>
+                <input id="contactInput" type="text" placeholder="+593 98 600 5054" />
+                <span class="hint"></span>
+              </div>
+              <div class="field">
+                <label for="lengthInput">Length</label>
+                <select id="lengthInput">
+                  <option>2 hrs</option>
+                  <option>3 hrs</option>
+                  <option>Half Day</option>
+                  <option selected>Full Day</option>
+                  <option>Multi Day</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="pickupTimeInput">Pickup Time</label>
+                <select id="pickupTimeInput"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour1Input">Tour Type 1</label>
+                <select id="tour1Input"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour2Input">Tour Type 2</label>
+                <select id="tour2Input"></select>
+              </div>
+              <div class="field span2">
+                <label for="tour3Input">Tour Type 3</label>
+                <select id="tour3Input"></select>
+              </div>
+              <div class="confirmationChooser" id="confirmationChooser">
+                <strong>Confirmations:</strong>
+                <span id="confirmationTabs">Select one or more tours</span>
+              </div>
+              <div class="field span3">
+                <label for="tourTypeInput">Tour Type Display</label>
+                <input id="tourTypeInput" type="text" placeholder="Jewels of the Morning Forest + Night Walk" />
+              </div>
+              <div class="field span3">
+                <label for="transportationInput">Transportation</label>
+                <input id="transportationInput" type="text" placeholder="Quito -> Mindo -> Quito" />
+              </div>
+              <div class="field span3">
+                <label for="pickupLocationInput">Pickup Location</label>
+                <input id="pickupLocationInput" type="text" placeholder="Hotel or pickup location" />
+              </div>
+              <div class="field span3">
+                <label for="qrInput">QR Code URL</label>
+                <input id="qrInput" type="text" placeholder="https://mindobirdwatching.com/..." />
+              </div>
+              <div class="field span6">
+                <label for="notesInput">Notes</label>
+                <textarea id="notesInput" placeholder="We will pick you up at your location latest 3:00 am."></textarea>
+              </div>
+            </div>
+            <p class="miniNote">Edits here affect the preview and exports. Sheet status updates will connect in the next Apps Script step.</p>
+            <div class="adminActions" style="margin-top:12px; justify-content:flex-start;">
+              <button class="btnAdmin primary" type="button" id="markGeneratedBtn">Save and Mark Generated</button>
+              <button class="btnAdmin danger" type="button" id="markSentBtn">Mark as Sent</button>
+            </div>
+          </section>
+
+          <section class="previewPanel" aria-label="1920 by 1080 confirmation preview">
+            <div class="previewTop">
+              <h2>Preview 1920x1080</h2>
+              <div class="previewHint" id="previewHint">Ready</div>
+            </div>
+            <div class="previewShell" id="previewShell">
+              <div class="previewScale" id="previewScale">
+                <div class="certificate" id="certificate">
+                  <img class="certBg" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_tour_confirmation_background.png" alt="" crossorigin="anonymous" />
+                  <div class="certOverlay" aria-hidden="true"></div>
+                  <img class="certLogo" src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="Mindo Bird Watching" crossorigin="anonymous" />
+                  <div class="certTitle">TOUR CONFIRMATION</div>
+                  <div class="dateIssuedBox">Date Issued: <span id="outDateIssued">06/17/2026</span></div>
+                  <div class="guideImage" id="outGuideImage" role="img" aria-label="Guide"></div>
+                  <img class="mindoLetters" src="https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png" alt="Mindo" crossorigin="anonymous" />
+
+                  <div class="infoBlock">
+                    <div class="certLabel">Guest(s):</div>
+                    <div class="certValue" id="outGuests">Alisha Riasati & Jesse Best</div>
+
+                    <div class="certLabel">Guest Phone:</div>
+                    <div class="certValue small" id="outGuestPhone">+1 555 000 0000</div>
+
+                    <div class="certLabel">Tour Date:</div>
+                    <div class="certValue" id="outTourDate">Saturday, June 20th, 2026</div>
+
+                    <div class="certLabel">Guide:</div>
+                    <div class="certValue" id="outGuide">Chicho</div>
+
+                    <div class="certLabel">Contact #:</div>
+                    <div class="certValue small" id="outContact">+593 98 600 5054</div>
+
+                    <div class="certLabel">Tour Type:</div>
+                    <div class="certValue small wrap" id="outTourType">Quest for Five Toucans & the Andean Cock-of-the-Rock</div>
+
+                    <div class="certLabel">Length:</div>
+                    <div class="certValue big" id="outLength">FULL DAY</div>
+
+                    <div class="certLabel">Transportation:</div>
+                    <div class="certValue small wrap" id="outTransportation">Pick Up</div>
+
+                    <div class="certLabel">Pickup Time:</div>
+                    <div class="certValue small" id="outPickupTime">5:00 AM</div>
+
+                    <div class="certLabel">Pickup Location:</div>
+                    <div class="certValue small wrap" id="outPickupLocation">Friends hotel and Rooftop - QUITO</div>
+                  </div>
+
+                  <div class="qrBox" id="qrBox"></div>
+                  <div class="noteLine" id="outNotes">***We will pick you up at your location latest 3:00 am.***</div>
+
+                  <div class="footerIg">
+                    <img src="https://mindobirdwatching.com/assets/images/tour-confirmation/icon_ig.png" alt="Instagram" crossorigin="anonymous" />
+                    <span>@mindobirdwatching</span>
+                  </div>
+                  <div class="footerWeb">
+                    <img src="https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png" alt="" crossorigin="anonymous" />
+                    <span>www.mindobirdwatching.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="adminActions previewExportActions">
+              <button class="btnAdmin primary" type="button" id="exportPngBtn">Export JPG 1920x1080</button>
+              <button class="btnAdmin primary" type="button" id="openImageBtn">Open Image / Save to Photos</button>
+              <button class="btnAdmin primary" type="button" id="exportPdfBtn">Export PDF</button>
+              <button class="btnAdmin primary" type="button" id="exportAllJpgBtn">Download All JPGs</button>
+              <button class="btnAdmin primary" type="button" id="exportAllPdfBtn">Download All PDF</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <div id="siteFooter"></div>
+  </div>
+
+  <script>
+    window.MBW_CONFIRMATION_CONFIG = {
+      appScriptUrl: "https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec",
+      defaultQrUrl: "https://www.mindobirdwatching.com/",
+      defaultGuideImage: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png",
+      birdwatchingGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png",
+      activitiesGuideImage: "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_activities_001.png",
+      nightWalkImage: "https://mindobirdwatching.com/assets/images/pages/activities/MBW-Activities-13-NightWalk.jpg",
+      nightWalkGuide: "Neicer",
+      nightWalkGuidePhone: "+593 98 095 5817",
+      fallbackData: {
+        confirmations: [
+          {
+            rowNumber: 2,
+            "confirmation_id": "TC-0001",
+            "invoice_no": "MBW-0031",
+            "tour_confirmation_status": "Pending",
+            "date_issued": "06/17/2026",
+            "guests": "2",
+            "guest_name": "Alisha Riasati",
+            "other_guest_names": "Jesse Best",
+            "guest_phone": "+1 555 000 0000",
+            "tour_date": "6/20/2026",
+            "tour_guide": "Chicho",
+            "guide_phone": "+593 98 600 5054",
+            "tour_type_1": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_type_2": "",
+            "tour_type_3": "",
+            "combined_tour_display": "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+            "tour_length": "Full Day",
+            "transportation": "Quito -> Mindo -> Quito:\nFriends hotel and Rooftop - QUITO",
+            "notes": "We will pick you up at your location latest 3:00 am.",
+            "pickup_time": "3:00 AM",
+            "pickup_location": "Friends hotel and Rooftop - QUITO",
+            "qr_code_url": "https://www.mindobirdwatching.com/",
+            "confirmation_image_url": "",
+            "confirmation_pdf_url": "",
+            "date_generated": ""
+          }
+        ],
+        guides: [
+          { "guide": "Chicho", "guide_phone": "+593 98 600 5054", "image_url": "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+          { "guide": "Neicer", "guide_phone": "+593 98 095 5817", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Anderson", "guide_phone": "+593 99 078 5026", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Abel", "guide_phone": "+593 99 098 0074", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Juan", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Javier", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+          { "guide": "Other", "guide_phone": "", "image_url": "https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
+        ],
+        tours: []
+      }
+    };
+
+    (function(){
+      "use strict";
+
+      const state = {
+        data: null,
+        records: [],
+        guides: [],
+        tours: [],
+        activeIndex: 0,
+        activeStatus: "all",
+        search: "",
+        qr: null,
+        confirmationDrafts: [],
+        activeConfirmation: 0,
+        switchingConfirmation: false
+      };
+      const BUILT_IN_GUIDES = [
+        { guide:"Chicho", guide_phone:"+593 98 600 5054", image_url:"https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_image_chicho.png" },
+        { guide:"Neicer", guide_phone:"+593 98 095 5817", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Anderson", guide_phone:"+593 99 078 5026", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Abel", guide_phone:"+593 99 098 0074", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Juan", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Javier", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" },
+        { guide:"Other", guide_phone:"", image_url:"https://mindobirdwatching.com/assets/images/pages/activities/mbw_tour_confirmation_birdwatching_001.png" }
+      ];
+
+      const els = {};
+
+      document.addEventListener("DOMContentLoaded", init);
+      window.addEventListener("resize", setPreviewScale);
+
+      function init(){
+        cacheEls();
+        renderPickupTimeOptions();
+        bindEvents();
+        setPreviewScale();
+        loadData();
+        setInterval(renderSnapshotNotice,60000);
+        document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderSnapshotNotice();});
+      }
+
+      function cacheEls(){
+        const ids = [
+          "languageInput", "records", "listCount", "searchInput", "bookingSelect", "statusInput", "guideInput", "customGuideField", "customGuideInput", "manualEntryBtn",
+          "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput",
+          "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput",
+          "outDateIssued", "outGuests", "outGuestPhone", "outTourDate", "outGuide", "outContact", "outTourType", "outLength", "outTransportation", "outPickupTime", "outPickupLocation", "outNotes", "outGuideImage",
+          "qrBox", "previewShell", "previewScale", "certificate", "previewHint", "exportPngBtn", "openImageBtn", "exportPdfBtn", "exportAllJpgBtn", "exportAllPdfBtn", "refreshBtn", "markGeneratedBtn", "markSentBtn",
+          "confirmationChooser", "confirmationTabs", "snapshotNotice", "confirmationErrors",
+          "jumpPreviewBtn", "jumpListBtn", "previewPanelAnchor", "listPanel"
+        ];
+        ids.forEach(id => els[id] = document.getElementById(id));
+      }
+
+      function bindEvents(){
+        document.querySelectorAll(".tabBtn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.activeStatus = btn.dataset.status || "all";
+            renderRecords();
+          });
+        });
+
+        els.searchInput.addEventListener("input", () => {
+          state.search = els.searchInput.value.trim().toLowerCase();
+          renderRecords();
+        });
+
+        els.bookingSelect.addEventListener("change", () => {
+          if(els.bookingSelect.value === "manual"){
+            startManualConfirmation();
+            return;
+          }
+          const row = Number(els.bookingSelect.value);
+          const idx = state.records.findIndex(r => Number(r.rowNumber) === row);
+          if(idx >= 0) selectRecord(idx);
+        });
+
+        ["languageInput", "statusInput", "guideInput", "customGuideInput", "dateIssuedInput", "guestsInput", "guestPhoneInput", "tourDateInput", "contactInput", "lengthInput", "pickupTimeInput", "tour1Input", "tour2Input", "tour3Input", "tourTypeInput", "transportationInput", "pickupLocationInput", "qrInput", "notesInput"].forEach(id => {
+          els[id].addEventListener("input", updatePreviewFromForm);
+          els[id].addEventListener("change", updatePreviewFromForm);
+        });
+
+        els.languageInput.addEventListener("change",()=>{state.confirmationDrafts.forEach(draft=>{draft.language=els.languageInput.value;});updatePreviewFromForm();});
+        els.guideInput.addEventListener("change", onGuideChange);
+        ["tour1Input", "tour2Input", "tour3Input"].forEach(id => els[id].addEventListener("change", onTourPartsChange));
+        els.tourTypeInput.addEventListener("input", updatePreviewFromForm);
+        els.refreshBtn.addEventListener("click", loadData);
+        els.manualEntryBtn.addEventListener("click", startManualConfirmation);
+        els.exportPngBtn.addEventListener("click", exportPng);
+        if(els.openImageBtn) els.openImageBtn.addEventListener("click", openImageForSaving);
+        els.exportPdfBtn.addEventListener("click", exportPdf);
+        els.exportAllJpgBtn.addEventListener("click", exportAllJpgs);
+        els.exportAllPdfBtn.addEventListener("click", exportAllPdf);
+        els.markGeneratedBtn.addEventListener("click", () => updateStatus("Generated"));
+        els.markSentBtn.addEventListener("click", () => updateStatus("Sent"));
+        els.jumpPreviewBtn.addEventListener("click", () => els.previewPanelAnchor.scrollIntoView({behavior:"smooth", block:"start"}));
+        els.jumpListBtn.addEventListener("click", () => els.listPanel.scrollIntoView({behavior:"smooth", block:"start"}));
+      }
+
+      function setPreviewScale(){
+        if(!els.previewShell || !els.previewScale) return;
+        const available = Math.max(280, els.previewShell.clientWidth - 30);
+        const scale = Math.min(1, available / 1920);
+        els.previewScale.style.transform = "scale(" + scale + ")";
+        els.previewScale.style.width = Math.ceil(1920 * scale) + "px";
+        els.previewScale.style.height = Math.ceil(1080 * scale) + "px";
+        els.previewShell.style.minHeight = "0";
+      }
+
+      function val(row, keys, fallback){
+        if(!row) return fallback || "";
+        for(const key of keys){
+          if(Object.prototype.hasOwnProperty.call(row, key) && String(row[key] || "").trim() !== ""){
+            return row[key];
+          }
+        }
+        return fallback || "";
+      }
+
+      function statusOf(row){
+        return val(row, ["tour_confirmation_status", "Status"], "Pending");
+      }
+
+      function guideNameOf(row){
+        return val(row, ["tour_guide", "Guide"], "Chicho");
+      }
+
+      function guidePhoneOf(row){
+        return val(row, ["guide_phone", "Contact #"], "");
+      }
+
+      function guestDisplayOf(row){
+        const primary = val(row, ["guest_name", "Guest Name", "Guest Name(s)"], "");
+        const others = val(row, ["other_guest_names", "Other Guest Names"], "");
+        const legacy = val(row, ["Guests"], "");
+        const countOnly = val(row, ["guests"], "");
+        const parts = [primary, others].map(v => String(v || "").trim()).filter(Boolean);
+        if(parts.length) return parts.join(" & ");
+        if(legacy && !/^\d+$/.test(String(legacy).trim())) return legacy;
+        if(countOnly && !/^\d+$/.test(String(countOnly).trim())) return countOnly;
+        return "";
+      }
+
+      function guestPhoneOf(row){
+        return val(row, ["guest_phone", "Guest Phone", "Guest Phone #", "guest_phone_number"], "");
+      }
+
+      function dateIssuedOf(row){
+        return val(row, ["date_issued", "Date Issued"], "");
+      }
+
+      function tourDateOf(row){
+        return val(row, ["tour_date", "Tour Date"], "");
+      }
+
+      function tourLengthOf(row){
+        return val(row, ["tour_length", "Length"], "Full Day");
+      }
+
+      function pickupTimeOf(row){
+        return val(row, ["pickup_time", "Pickup Time"], "3:00 AM");
+      }
+
+      function pickupLocationOf(row){
+        return val(row, ["pickup_location", "Pickup Location"], "");
+      }
+
+      function qrUrlOf(row){
+        return val(row, ["qr_code_url", "QR Code URL"], window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+      }
+
+      function notesOf(row){
+        return val(row, ["notes", "Notes"], "");
+      }
+
+      function transportOf(row){
+        return val(row, ["transportation", "Transportation"], "");
+      }
+
+      function loadData(){
+        setHint("Loading sheet data...");
+        jsonp(window.MBW_CONFIRMATION_CONFIG.appScriptUrl, { action:"data" })
+          .then(data => {
+            if(!data || !Array.isArray(data.confirmations)) throw new Error("Invalid data response");
+            setHint("Loaded from Google Sheet");
+            hydrateData(data);
+          })
+          .catch(() => {
+            setHint("Preview mode. Check Apps Script JSONP endpoint if Google Sheet data does not load.");
+            hydrateData(window.MBW_CONFIRMATION_CONFIG.fallbackData);
+          });
+      }
+
+      function hydrateData(data){
+        state.data = data;
+        state.records = (data.confirmations || []).filter(r => hasUsefulRecord(r));
+        const incomingGuides = (data.guides || []).filter(g => String(val(g, ["guide", "Guide"], "") || "").trim() !== "");
+        const incomingNames = new Set(incomingGuides.map(g => String(val(g, ["guide", "Guide"], "")).toLowerCase()));
+        state.guides = incomingGuides.concat(BUILT_IN_GUIDES.filter(g => !incomingNames.has(g.guide.toLowerCase())));
+        state.tours = (data.tours || []).map(t => val(t, ["tour_name", "Tour Name", "tour", "Tour", "name", "Name"], "")).filter(Boolean);
+        renderGuideOptions();
+        renderTourOptions();
+        renderBookingOptions();
+        renderRecords();
+        if(hasInboundCrmRecord()){
+          startManualConfirmation();
+          applyInboundCrmRecord();
+        }
+        else if(state.records.length){ selectRecord(0); }
+        else { fillForm({}); updatePreviewFromForm(); }
+      }
+
+      function hasUsefulRecord(r){
+        return ["confirmation_id", "invoice_no", "guest_name", "other_guest_names", "guest_phone", "tour_date", "tour_guide", "tour_type_1", "combined_tour_display", "tour_confirmation_status", "Guests", "Tour Date", "Guide", "Tour Type 1", "Combined Tour Display", "Status"].some(k => String(r[k] || "").trim() !== "");
+      }
+
+      function renderGuideOptions(){
+        els.guideInput.innerHTML = "";
+        state.guides.forEach(g => {
+          const name = val(g, ["guide", "Guide"], "");
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          els.guideInput.appendChild(opt);
+        });
+        if(!state.guides.length){
+          ["Chicho", "Neicer", "Anderson", "Abel", "Other"].forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            els.guideInput.appendChild(opt);
+          });
+        }
+      }
+
+      function renderTourOptions(){
+        const tourSelects = [els.tour1Input, els.tour2Input, els.tour3Input].filter(Boolean);
+        const fallbackTours = [
+          "Cloud Forest Icons Tour",
+          "Jewels of the Morning Forest",
+          "Dance of the Andean Cock-of-the-Rock",
+          "Quest for Five Toucans & the Andean Cock-of-the-Rock",
+          "Custom Half Day",
+          "Custom Full Day",
+          "Flora Excursion",
+          "Solo Birdwatching Experience",
+          "Chocolate Tour",
+          "Coffee Tour",
+          "Waterfall Hike",
+          "Canopy/Ziplining",
+          "Butterfly Garden",
+          "Hummingbird Tour",
+          "Night Walk",
+          "Night Walk $30 legacy price",
+          "Half-Day to Full-Day Extension",
+          "Waterfalls",
+          "Nambillo Waterfall",
+          "Quad Tour",
+          "Orchid Garden Tour",
+          "Frog Concert",
+          "Mindo River Tubing",
+          "Canyoning",
+          "Paintball",
+          "Horseback Riding",
+          "Mountain Biking",
+          "Double Extreme Swing",
+          "Extreme Bike – Sky Bike",
+          "Sky Ride",
+          "Private Insect & Macro Wildlife Search",
+          "Extended Half-Day Spectacled Bear Tour",
+          "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour",
+          "Tubing - 1 Person",
+          "Tubing - Group/Bundle",
+          "Tubing - Large Group/Bundle",
+          "Stripe Test Product",
+          "Extended Tour Upgrade"
+];
+        const tours = state.tours.length ? state.tours.slice() : fallbackTours.slice();
+        const hummingbirdIndex = tours.findIndex(name => /hummingbird|colibr/i.test(String(name || "")));
+        if(hummingbirdIndex >= 0) tours[hummingbirdIndex] = "Hummingbird Tour";
+        else {
+          const nightWalkIndex = tours.findIndex(name => /night\s*walk/i.test(String(name || "")));
+          tours.splice(nightWalkIndex >= 0 ? nightWalkIndex : tours.length, 0, "Hummingbird Tour");
+        }
+        if(!tours.some(name => /night\s*walk/i.test(String(name || "")))) tours.push("Night Walk");
+        if(!tours.some(name => /insect|macro/i.test(String(name || "")))) tours.push("Private Insect & Macro Wildlife Search");
+        tourSelects.forEach((select, idx) => {
+          const current = select.value;
+          select.innerHTML = "";
+          const empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = idx === 0 ? "Select tour" : "None";
+          select.appendChild(empty);
+          tours.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+          });
+          select.value = current;
+        });
+      }
+
+      function renderPickupTimeOptions(){
+        if(!els.pickupTimeInput) return;
+        const flexible = document.createElement("option");
+        flexible.value = "Flexible";
+        flexible.textContent = "Flexible";
+        els.pickupTimeInput.appendChild(flexible);
+        const times = [];
+        for(let hour = 3; hour <= 12; hour++){
+          for(let min of [0, 15, 30, 45]){
+            if(hour === 12 && min > 0) continue;
+            const label = hour + ":" + String(min).padStart(2, "0") + " AM";
+            times.push(label);
+          }
+        }
+        for(let hour = 1; hour <= 11; hour++){
+          for(let min of [0, 15, 30, 45]){
+            times.push(hour + ":" + String(min).padStart(2, "0") + " PM");
+          }
+        }
+        times.push("12:00 PM");
+        times.forEach(time => {
+          const opt = document.createElement("option");
+          opt.value = time;
+          opt.textContent = time;
+          els.pickupTimeInput.appendChild(opt);
+        });
+      }
+
+      function renderBookingOptions(){
+        els.bookingSelect.innerHTML = "";
+        const manualOption = document.createElement("option");
+        manualOption.value = "manual";
+        manualOption.textContent = "Manual / New Confirmation";
+        els.bookingSelect.appendChild(manualOption);
+        state.records.forEach((r, idx) => {
+          const opt = document.createElement("option");
+          opt.value = r.rowNumber || idx;
+          opt.textContent = labelForRecord(r);
+          els.bookingSelect.appendChild(opt);
+        });
+      }
+
+      function renderRecords(){
+        const filtered = filteredRecords();
+        els.records.innerHTML = "";
+        if(!filtered.length){
+          const div = document.createElement("div");
+          div.className = "emptyState";
+          div.textContent = "No confirmations match this filter.";
+          els.records.appendChild(div);
+        } else {
+          filtered.forEach(item => {
+            const r = item.record;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "recordBtn" + (item.index === state.activeIndex ? " active" : "");
+            btn.innerHTML = "<div class='recordMain'><div><div class='recordName'></div><div class='recordDate'></div></div><span class='statusPill'></span></div>";
+            btn.querySelector(".recordName").textContent = guestDisplayOf(r) || val(r, ["invoice_no"], "") || "Unnamed confirmation";
+            btn.querySelector(".recordDate").textContent = formatTourDateShort(tourDateOf(r));
+            const pill = btn.querySelector(".statusPill");
+            const status = statusOf(r);
+            pill.textContent = status;
+            pill.classList.toggle("generated", status === "Generated");
+            pill.classList.toggle("sent", status === "Sent");
+            btn.addEventListener("click", () => selectRecord(item.index));
+            els.records.appendChild(btn);
+          });
+        }
+        els.listCount.textContent = "Total: " + state.records.length + " confirmations";
+      }
+
+      function filteredRecords(){
+        return state.records.map((record, index) => ({record, index})).filter(item => {
+          const r = item.record;
+          const statusOk = state.activeStatus === "all" || String(statusOf(r)) === state.activeStatus;
+          const hay = [guestDisplayOf(r), guestPhoneOf(r), tourDateOf(r), guideNameOf(r), statusOf(r), tourDisplay(r), val(r, ["invoice_no"], ""), val(r, ["confirmation_id"], "")].join(" ").toLowerCase();
+          const searchOk = !state.search || hay.includes(state.search);
+          return statusOk && searchOk;
+        });
+      }
+
+      function selectRecord(index){
+        els.languageInput.value="en";
+        state.confirmationSnapshotCreatedAt=undefined;
+        renderSnapshotNotice();
+        state.activeIndex = index;
+        const r = state.records[index] || {};
+        fillForm(r);
+        els.bookingSelect.value = r.rowNumber || index;
+        renderRecords();
+        updatePreviewFromForm();
+      }
+
+      function startManualConfirmation(){
+        els.languageInput.value="en";
+        state.confirmationSnapshotCreatedAt=undefined;
+        renderSnapshotNotice();
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = "";
+        els.guestPhoneInput.value = "";
+        els.tourDateInput.value = "";
+        setSelectValue(els.guideInput, "Chicho");
+        els.contactInput.value = contactForGuide("Chicho") || "+593 98 600 5054";
+        setSelectValue(els.lengthInput, "Full Day");
+        setSelectValue(els.pickupTimeInput, "5:00 AM");
+        setSelectValue(els.tour1Input, "");
+        setSelectValue(els.tour2Input, "");
+        setSelectValue(els.tour3Input, "");
+        els.tourTypeInput.value = "";
+        els.transportationInput.value = "Pick Up";
+        els.pickupLocationInput.value = "";
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = "";
+        rebuildConfirmations(true);
+        renderRecords();
+        updatePreviewFromForm();
+        setHint("Manual confirmation ready — enter guest and tour details");
+      }
+
+      function getInboundValue(data, keys, fallback){
+        for(const key of keys){
+          if(data[key] !== undefined && data[key] !== null && String(data[key]).trim() !== "") return String(data[key]).trim();
+        }
+        return fallback || "";
+      }
+
+      function getInboundData(){
+        const params = new URLSearchParams(window.location.search);
+        const data = {};
+        params.forEach((value, key) => { data[key] = value; });
+        const inquiry=String(data.inquiry_id||"").trim(),guest=String(data.guest_id||"").trim();
+        if(params.has("handoff")){
+          try {
+            const token=String(data.handoff||"");
+            if(!/^[a-zA-Z0-9-]{16,80}$/.test(token))throw new Error("Invalid handoff");
+            const snapshot=JSON.parse(localStorage.getItem("mbwTourConfirmationHandoff:"+token)||"null");
+            const draft=snapshot?.draft;
+            if(snapshot?.version!==1||!draft||!inquiry||!guest||String(draft.inquiry_id||"").trim()!==inquiry||String(draft.guest_id||"").trim()!==guest)throw new Error("Missing handoff");
+            return Object.assign({},draft,{source:"guest_crm",inquiry_id:inquiry,guest_id:guest,_confirmation_snapshot_created_at:snapshot.createdAt||""});
+          } catch(_) { return {handoff_error:"This confirmation draft is unavailable in this browser. Reopen it from the guest's CRM record."}; }
+        }
+        if(!inquiry)return data;
+        ["mbwTourConfirmationDraft", "mbwSelectedCrmRecord", "mbwGuestCrmSelectedRecord"].forEach(key => {
+          try {
+            const stored = JSON.parse(localStorage.getItem(key) || "{}");
+            if(String(stored.inquiry_id||"").trim()!==inquiry || (guest&&String(stored.guest_id||"").trim()!==guest))return;
+            Object.keys(stored).forEach(storedKey => {
+              if(data[storedKey] === undefined || data[storedKey] === "") data[storedKey] = stored[storedKey];
+            });
+          } catch(_) {}
+        });
+        return data;
+      }
+
+      function confirmationSnapshotNotice(createdAt,now=Date.now()){
+        const stamp=typeof createdAt==="string"&&createdAt.trim()?Date.parse(createdAt):NaN;
+        if(!Number.isFinite(stamp)||stamp>now+60000)return {warning:true,text:"Draft age unknown. Reopen from CRM to use current booking details."};
+        const label=new Intl.DateTimeFormat("en-US",{timeZone:"America/Guayaquil",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(stamp));
+        const warning=now-stamp>=24*60*60*1000;
+        return {warning,text:(warning?"Draft is over 24 hours old. ":"")+"Opened from CRM: "+label+" (Mindo time). "+(warning?"Reopen from CRM before using current booking details.":"Fixed snapshot; reopen from CRM after booking changes.")};
+      }
+
+      function renderSnapshotNotice(){
+        if(!els.snapshotNotice)return;
+        const active=state.confirmationSnapshotCreatedAt!==undefined;
+        els.snapshotNotice.hidden=!active;
+        if(!active){els.snapshotNotice.textContent="";return;}
+        const notice=confirmationSnapshotNotice(state.confirmationSnapshotCreatedAt);
+        els.snapshotNotice.textContent=notice.text;
+        els.snapshotNotice.dataset.warning=String(notice.warning);
+      }
+
+      function hasInboundCrmRecord(){
+        const data = getInboundData();
+        return Boolean(data.handoff_error || getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName", "email", "phone", "phone_number", "requested_date", "tour_date", "date"], ""));
+      }
+
+      function normalizeInboundTourText(value){
+        return String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
+      }
+
+      function displayTourFromCrm(tourText){
+        const normalized = normalizeInboundTourText(tourText);
+        if(!normalized) return "";
+        const knownCodes={mbw004:"Jewels of the Morning Forest",mbw005:"Dance of the Andean Cock-of-the-Rock",mbw006:"Quest for Five Toucans & the Andean Cock-of-the-Rock",mbw016:"Night Walk"};
+        if(knownCodes[normalized])return knownCodes[normalized];
+        if(normalized.includes("act021")) return "Private Insect & Macro Wildlife Search";
+        if(normalized.includes("act015")) return "Paintball";
+        if(normalized.includes("act013")) return "Canyoning";
+        if(normalized.includes("act011")) return "Mindo River Tubing";
+        if(normalized.includes("act009")) return "Orchid Garden Tour";
+        if(normalized.includes("act004")) return "Quad Tour";
+        if(normalized.includes("trans06")) return "Quito → Mindo → Quito Transportation";
+        if(normalized.includes("trans01")) return "Quito → Mindo Transportation";
+        if(normalized.includes("trans02")) return "Mindo → Quito Transportation";
+        if(normalized.includes("oso001")) return "Extended Half-Day Spectacled Bear Tour";
+        if(normalized.includes("oso002")) return "Full-Day Spectacled Bear, Condor and Andean Wildlife Tour";
+        if(normalized.includes("insect") || normalized.includes("macro")) return "Private Insect & Macro Wildlife Search";
+        if(normalized.includes("mbw019") || normalized.includes("hummingbird") || normalized.includes("colibri")) return "Hummingbird Tour";
+        if(normalized.includes("night walk")) return "Night Walk";
+        if(normalized.includes("jewels") || normalized.includes("morning forest")) return "Jewels of the Morning Forest";
+        if(normalized.includes("five") || normalized.includes("toucan") || normalized.includes("quest") || normalized.includes("full day")) return "Quest for Five Toucans & the Andean Cock-of-the-Rock";
+        if(normalized.includes("andean") || normalized.includes("cock")) return "Dance of the Andean Cock-of-the-Rock";
+        if(normalized.includes("half day")) return "Half Day Birdwatching Tour";
+        if(normalized.includes("tour activities")) return "Tour + Activities";
+        return tourText;
+      }
+
+      function lengthFromCrm(tourText, durationText){
+        const text=normalizeInboundTourText(tourText);
+        const duration=String(durationText||"").trim();
+        if(duration){
+          const normalized=normalizeInboundTourText(duration);
+          if(text.includes("night walk")&&["evening","evening activity"].includes(normalized))return "Night Walk";
+          return duration;
+        }
+        if(text.includes("insect")||text.includes("macro"))return "Flexible";
+        if(text.includes("mbw019")||text.includes("hummingbird")||text.includes("colibri"))return "3 hrs";
+        if(text.includes("night walk")||text.includes("mbw016"))return "Night Walk";
+        if(text.includes("half")||text.includes("jewels")||text.includes("mbw004")||text.includes("mbw005")||text.includes("dance of the andean"))return "Half Day";
+        if(text.includes("full")||text.includes("mbw006")||text.includes("quest for five"))return "Full Day";
+        return "";
+      }
+
+      function pickupTimeFromCrm(tourText, durationText){
+        const text = normalizeInboundTourText([tourText, durationText].filter(Boolean).join(" "));
+        if(text.includes("mbw019") || text.includes("hummingbird") || text.includes("colibri")) return "11:00 AM";
+        if(text.includes("night walk")) return "7:00 PM";
+        if(text.includes("full") || text.includes("quest") || text.includes("toucan")) return "5:00 AM";
+        if(text.includes("andean") || text.includes("cock")) return "5:00 AM";
+        if(text.includes("jewels")) return "6:00 AM";
+        return "5:00 AM";
+      }
+
+      function inboundTourItems(data){
+        const source=getInboundValue(data,["tour_items_json","tour_items"],"");
+        if(!source) return [];
+        try{ const parsed=JSON.parse(source); return Array.isArray(parsed)?parsed.filter(Boolean):[]; }
+        catch(error){ return []; }
+      }
+
+      function inboundItemTour(item){
+        return displayTourFromCrm(item.product_selected||item.product||item.tour||item.tour_type||item.name||"");
+      }
+
+      function confirmationAssignmentTime(value){
+        const match=String(value||"").match(/^(\d{1,2}):(\d{2})$/);
+        if(!match||Number(match[1])>23||Number(match[2])>59)return "";
+        const hour=Number(match[1]);return (hour%12||12)+":"+match[2]+(hour<12?" AM":" PM");
+      }
+
+      function confirmationDraftFromInboundItem(item,common){
+        const tour=inboundItemTour(item)||"Custom Service";
+        const assignment=item.confirmation_assignment||{};
+        const savedGuide=String(assignment.provider_name||"").trim();
+        const guide="Other";
+        const draft=defaultDraftForTour(tour,null);
+        draft.tour=tour;
+        draft.display=tour;
+        draft.date=toDateInputValue(item.date||item.tour_date||common.tourDate);
+        draft.guide=guide;
+        draft.customGuideName=savedGuide;
+        draft.contact=String(assignment.provider_phone||"").trim()||(savedGuide?contactForGuide(savedGuide):"");
+        draft.length=lengthFromCrm(tour,item.duration||item.duration_preference)||"To be confirmed";
+        draft.pickupTime=confirmationAssignmentTime(assignment.start_time)||"To be confirmed";
+        draft.transportation=normalizeTransportation(item.transportation_needed||common.transportation)||"Pick Up";
+        draft.pickupLocation=assignment.pickup_location||item.pickup_location||item.pickup||common.pickup||"";
+        draft.notes=[item.notes||"",assignment.start_time?"Service time (Mindo, Ecuador): "+assignment.start_time+(assignment.end_time?"–"+assignment.end_time:""):"Start time to be confirmed",assignment.trip_direction?"Transport leg: "+assignment.trip_direction:"",(assignment.dropoff_location||item.dropoff_location)?"Drop-off: "+(assignment.dropoff_location||item.dropoff_location):""].filter(Boolean).join(" · ");
+        return draft;
+      }
+
+      function applyInboundCrmRecord(){
+        const data = getInboundData();
+        state.confirmationSnapshotCreatedAt=data.handoff_error?undefined:(data._confirmation_snapshot_created_at||"");
+        renderSnapshotNotice();
+        const fullName = getInboundValue(data, ["full_name", "name", "guest", "guest_name", "guestName"], "");
+        const phone = getInboundValue(data, ["guest_phone", "phone", "phone_number", "guestPhone", "phone_normalized"], "");
+        const tourDate = getInboundValue(data, ["tour_date", "requested_date", "requested_date_start", "date"], "");
+        const tourText = getInboundValue(data, ["tour", "tour_type", "tour_interest"], "");
+        const duration = getInboundValue(data, ["duration_preference", "duration"], "");
+        const pickup = getInboundValue(data, ["pickup_location", "pickup", "pickupLocation", "pickup_address_or_hotel"], "");
+        const transportation = getInboundValue(data, ["transportation", "transportation_needed"], "");
+        const displayTour = displayTourFromCrm(tourText);
+        const displayLength = data.handoff_error ? "To be confirmed" : lengthFromCrm(tourText, duration) || "Full Day";
+        const items=inboundTourItems(data);
+        if(!items.length&&displayTour)items.push({tour:displayTour,date:tourDate,duration,pickup_location:pickup});
+
+        state.activeIndex = -1;
+        els.bookingSelect.value = "manual";
+        els.statusInput.value = "Pending";
+        els.dateIssuedInput.value = toDateInputValue(todayMDY());
+        els.guestsInput.value = fullName;
+        els.guestPhoneInput.value = phone;
+        els.tourDateInput.value = toDateInputValue(tourDate);
+        setSelectValue(els.guideInput, "Other");
+        els.customGuideInput.value = "";
+        els.contactInput.value = "";
+        setSelectValue(els.lengthInput, displayLength);
+        setSelectValue(els.pickupTimeInput, data.handoff_error ? "To be confirmed" : pickupTimeFromCrm(tourText, duration));
+        const itemTours=items.map(inboundItemTour);
+        setSelectValue(els.tour1Input, itemTours[0]||displayTour);
+        setSelectValue(els.tour2Input, itemTours[1]||"");
+        setSelectValue(els.tour3Input, itemTours[2]||"");
+        els.tourTypeInput.value = displayTour || tourText || "";
+        els.transportationInput.value = data.handoff_error ? "" : normalizeTransportation(transportation);
+        els.pickupLocationInput.value = pickup;
+        els.qrInput.value = window.MBW_CONFIRMATION_CONFIG.defaultQrUrl;
+        els.notesInput.value = "";
+        rebuildConfirmations(true);
+        if(items.length){
+          const common={tourDate,pickup,transportation};
+          state.confirmationDrafts=items.map(item=>confirmationDraftFromInboundItem(item,common));
+          state.activeConfirmation=0;
+          loadActiveDraft();
+          renderConfirmationTabs();
+        }
+        renderRecords();
+        updatePreviewFromForm();
+        setHint(data.handoff_error || (items.length?`Loaded ${items.length} scheduled service${items.length===1?"":"s"} from the CRM. Review guide and pickup details before exporting.`:"Loaded from selected CRM record. Review guide, pickup time, and tour details before exporting."));
+      }
+
+      function fillForm(r){
+        els.statusInput.value = statusOf(r);
+        els.guideInput.value = guideNameOf(r);
+        els.dateIssuedInput.value = toDateInputValue(dateIssuedOf(r) || todayMDY());
+        els.guestsInput.value = guestDisplayOf(r);
+        els.guestPhoneInput.value = guestPhoneOf(r);
+        els.tourDateInput.value = toDateInputValue(tourDateOf(r));
+        els.contactInput.value = guidePhoneOf(r) || contactForGuide(els.guideInput.value) || "";
+        els.lengthInput.value = normalizeLength(tourLengthOf(r));
+        setSelectValue(els.pickupTimeInput, normalizePickupTime(pickupTimeOf(r)));
+        setSelectValue(els.tour1Input, val(r, ["tour_type_1", "Tour Type 1"], ""));
+        setSelectValue(els.tour2Input, val(r, ["tour_type_2", "Tour Type 2"], ""));
+        setSelectValue(els.tour3Input, val(r, ["tour_type_3", "Tour Type 3"], ""));
+        els.tourTypeInput.value = tourDisplay(r);
+        els.transportationInput.value = buildTransportation(r);
+        els.pickupLocationInput.value = pickupLocationOf(r);
+        els.qrInput.value = qrUrlOf(r);
+        els.notesInput.value = notesOf(r) || buildDefaultNote(r);
+        rebuildConfirmations(true);
+      }
+
+      function selectedTours(){
+        const seen = new Set();
+        return [els.tour1Input.value, els.tour2Input.value, els.tour3Input.value]
+          .map(v => String(v || "").trim())
+          .filter(v => v && !/^none$/i.test(v))
+          .filter(v => {
+            const key = v.toLowerCase();
+            if(seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+      }
+
+      function tourCategory(tour){
+        const text = normalizeInboundTourText(tour);
+        if(text.includes("insect") || text.includes("macro")) return "activity";
+        if(text.includes("night walk")) return "night";
+        if(text.includes("bear")) return "bear";
+        if(text.includes("transport") || text.includes("trans06")) return "transportation";
+        if(/chocolate|coffee|waterfall|canopy|ziplin|butterfly|canyon|frog|insect|macro|activity|activities|nature excursion/.test(text)) return "activity";
+        return "birding";
+      }
+
+      function defaultTimeForTour(tour){
+        const text = String(tour || "");
+        const normalized = normalizeInboundTourText(text);
+        if(/\bmbw[\s-]*0*04\b/i.test(text)) return "6:00 AM";
+        if(/\bmbw[\s-]*0*05\b/i.test(text) || /\bmbw[\s-]*0*06\b/i.test(text)) return "5:00 AM";
+        if(normalized.includes("night walk")) return "7:00 PM";
+        if(normalized.includes("bear")) return "6:00 AM";
+        if(tourCategory(tour) === "activity") return "Flexible";
+        return "5:00 AM";
+      }
+
+      function defaultDraftForTour(tour, previous){
+        const category = tourCategory(tour);
+        const night = category === "night";
+        const guide = night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuide : category === "transportation" ? "Juan" : category === "bear" ? "Other" : (previous && previous.guide) || els.guideInput.value || "Chicho";
+        return {
+          tour,
+          language: (previous && previous.language) || els.languageInput.value || "en",
+          display: tour,
+          guide,
+          customGuideName:"",
+          contact: contactForGuide(guide) || (night ? window.MBW_CONFIRMATION_CONFIG.nightWalkGuidePhone : ""),
+          date:els.tourDateInput.value||"",
+          length: night ? "2 hrs" : ((previous && previous.length) || els.lengthInput.value || "Full Day"),
+          pickupTime: defaultTimeForTour(tour),
+          transportation: "Pick Up",
+          pickupLocation: (previous && previous.pickupLocation) || els.pickupLocationInput.value || "",
+          notes: (previous && previous.notes) || els.notesInput.value || ""
+        };
+      }
+
+      function saveActiveDraft(){
+        if(state.switchingConfirmation || !state.confirmationDrafts.length) return;
+        const draft = state.confirmationDrafts[state.activeConfirmation];
+        if(!draft) return;
+        draft.language = els.languageInput.value;
+        draft.guide = els.guideInput.value;
+        draft.customGuideName = els.guideInput.value === "Other" ? els.customGuideInput.value.trim() : "";
+        draft.contact = els.contactInput.value;
+        draft.date = els.tourDateInput.value;
+        draft.length = els.lengthInput.value;
+        draft.pickupTime = els.pickupTimeInput.value;
+        draft.transportation = els.transportationInput.value;
+        draft.pickupLocation = els.pickupLocationInput.value;
+        draft.notes = els.notesInput.value;
+        draft.display = els.tourTypeInput.value || draft.tour;
+      }
+
+      function loadActiveDraft(){
+        const draft = state.confirmationDrafts[state.activeConfirmation];
+        if(!draft) return;
+        state.switchingConfirmation = true;
+        els.languageInput.value = draft.language || "en";
+        setSelectValue(els.guideInput, draft.guide);
+        els.customGuideInput.value = draft.customGuideName || "";
+        els.customGuideField.hidden = draft.guide !== "Other";
+        els.contactInput.value = draft.contact || contactForGuide(draft.guide) || "";
+        els.tourDateInput.value = draft.date || els.tourDateInput.value;
+        setSelectValue(els.lengthInput, draft.length);
+        setSelectValue(els.pickupTimeInput, draft.pickupTime);
+        els.tourTypeInput.value = draft.display || draft.tour;
+        els.transportationInput.value = draft.transportation || "Pick Up";
+        els.pickupLocationInput.value = draft.pickupLocation || "";
+        els.notesInput.value = draft.notes || "";
+        state.switchingConfirmation = false;
+      }
+
+      function rebuildConfirmations(reset){
+        const tours = selectedTours();
+        const previousDrafts = reset ? [] : state.confirmationDrafts.slice();
+        if(!reset) saveActiveDraft();
+        state.confirmationDrafts = tours.map(tour => {
+          const existing = previousDrafts.find(d => d.tour.toLowerCase() === tour.toLowerCase());
+          return existing || defaultDraftForTour(tour, previousDrafts[0]);
+        });
+        state.activeConfirmation = Math.min(state.activeConfirmation, Math.max(0, state.confirmationDrafts.length - 1));
+        if(state.confirmationDrafts.length) loadActiveDraft();
+        else els.tourTypeInput.value = "";
+        renderConfirmationTabs();
+      }
+
+      function renderConfirmationTabs(){
+        if(!els.confirmationTabs) return;
+        els.confirmationTabs.innerHTML = "";
+        if(!state.confirmationDrafts.length){
+          els.confirmationTabs.textContent = "Select one or more tours";
+          return;
+        }
+        state.confirmationDrafts.forEach((draft, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "confirmationTab" + (index === state.activeConfirmation ? " active" : "");
+          button.textContent = (index + 1) + ". " + draft.tour;
+          button.addEventListener("click", () => switchConfirmation(index));
+          els.confirmationTabs.appendChild(button);
+        });
+      }
+
+      function switchConfirmation(index){
+        if(index === state.activeConfirmation || !state.confirmationDrafts[index]) return;
+        saveActiveDraft();
+        state.activeConfirmation = index;
+        loadActiveDraft();
+        renderConfirmationTabs();
+        updatePreviewFromForm();
+      }
+
+      function onGuideChange(){
+        const guide = els.guideInput.value;
+        const isOther = guide === "Other";
+        els.customGuideField.hidden = !isOther;
+        const contact = contactForGuide(guide);
+        els.contactInput.placeholder = isOther ? "Enter guide phone number" : "+593 98 600 5054";
+        if(isOther){
+          els.customGuideInput.value = "";
+          els.contactInput.value = "";
+          els.customGuideInput.focus();
+        } else if(contact){
+          els.contactInput.value = contact;
+        }
+        updatePreviewFromForm();
+      }
+
+      function onTourPartsChange(){
+        rebuildConfirmations(false);
+        updatePreviewFromForm();
+      }
+
+      function isNightWalkSelected(){
+        return /night\s*walk/i.test(String(els.tourTypeInput.value || ""));
+      }
+
+      function selectedTourText(){
+        return String(els.tourTypeInput.value || "").toLowerCase();
+      }
+
+      function isBirdwatchingSelected(){
+        const text = selectedTourText();
+        return /bird|cock[-\s]*of[-\s]*the[-\s]*rock|toucan|jewels|morning forest/.test(text);
+      }
+
+      function isActivitySelected(){
+        return tourCategory(els.tourTypeInput.value) === "activity";
+      }
+
+      function confirmationImageFor(guide){
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        if(isNightWalkSelected()) return config.nightWalkImage;
+        if(isBirdwatchingSelected()) return String(guide || "").toLowerCase() === "chicho" ? config.defaultGuideImage : config.birdwatchingGuideImage;
+        if(isActivitySelected()) return config.activitiesGuideImage;
+        return imageForGuide(guide);
+      }
+
+      function applyNightWalkDefaults(force){
+        if(!isNightWalkSelected()) return;
+        const config = window.MBW_CONFIRMATION_CONFIG;
+        if(!els.guideInput.value || force) setSelectValue(els.guideInput, config.nightWalkGuide);
+        if(!els.contactInput.value || force) els.contactInput.value = contactForGuide(els.guideInput.value) || config.nightWalkGuidePhone;
+        setSelectValue(els.lengthInput, "2 hrs");
+        if(force || !els.pickupTimeInput.value) setSelectValue(els.pickupTimeInput, "7:00 PM");
+        if(force || !els.transportationInput.value) els.transportationInput.value = "Pick Up";
+      }
+
+      function confirmationSpanish(){return els.languageInput?.value==="es";}
+      function confirmationText(value){
+        if(!confirmationSpanish())return value;
+        const translations={"TOUR CONFIRMATION":"CONFIRMACIÓN DEL TOUR","Date Issued:":"Fecha de emisión:","Guest(s):":"Visitantes:","Guest Phone:":"Teléfono:","Tour Date:":"Fecha del tour:","Guide:":"Guía:","Contact #:":"Contacto:","Tour Type:":"Tour:","Length:":"Duración:","Transportation:":"Transporte:","Pickup Time:":"Hora de salida:","Pickup Location:":"Recogida:","Full Day":"Día completo","Half Day":"Medio día","Multi Day":"Varios días","Evening activity":"Actividad nocturna","2 hrs":"2 horas","3 hrs":"3 horas","Flexible":"Flexible","Pick Up":"Recogida","Yes":"Sí","No":"No","To be confirmed":"Por confirmar","Guide to be confirmed":"Guía por confirmar","Transportation details":"Detalles del transporte","Night Walk":"Caminata nocturna","Hummingbird Tour":"Tour de colibríes","Custom Half Day":"Tour personalizado de medio día","Custom Full Day":"Tour personalizado de día completo","Solo Birdwatching Experience":"Experiencia individual de avistamiento de aves","Flora Excursion":"Excursión de flora","Cloud Forest Icons Tour":"Tour de especies emblemáticas del bosque nublado","Canopy/Ziplining":"Canopy / tirolesa","Horseback Riding":"Cabalgata","Waterfalls":"Cascadas","Nambillo Waterfall":"Cascada Nambillo","Frog Concert":"Concierto de ranas","Accommodation Booking":"Reserva de alojamiento","Half Day Birdwatching Tour":"Avistamiento de aves de medio día","Private Insect & Macro Wildlife Search":"Búsqueda privada de insectos y fauna para macrofotografía","Orchid Garden Tour":"Tour del jardín de orquídeas","Quad Tour":"Tour en cuatrimoto","Mindo River Tubing":"Tubing en el río Mindo","Canyoning":"Barranquismo","Tour + Activities":"Tour y actividades","Transportation":"Transporte","Quito → Mindo → Quito Transportation":"Transporte Quito → Mindo → Quito","Quito → Mindo Transportation":"Transporte Quito → Mindo","Mountain Biking":"Ciclismo de montaña","Chocolate Tour":"Tour de chocolate","Coffee Tour":"Tour de café","Waterfall Hike":"Caminata a las cascadas","Butterfly Garden":"Mariposario","Jewels of the Morning Forest":"Joyas del bosque matutino","Dance of the Andean Cock-of-the-Rock":"Danza del gallito de la peña","Quest for Five Toucans & the Andean Cock-of-the-Rock":"Cinco tucanes y el gallito de la peña","Extended Half-Day Spectacled Bear Tour":"Tour de oso de anteojos de medio día extendido","Full-Day Spectacled Bear, Condor and Andean Wildlife Tour":"Tour de día completo: oso de anteojos, cóndor y fauna andina"};
+        const candidate=String(value).replace(/^(?:MBW|ACT|OSO|TRANS|ACCOM)\d+\s*[-–]\s*/i,"");
+        const key=Object.keys(translations).find(key=>key.toLowerCase()===candidate.toLowerCase());
+        return key?translations[key]:value;
+      }
+      function confirmationNote(value){
+        if(!confirmationSpanish())return value;
+        // Translate only generator-owned note labels. Preserve names, addresses and staff text.
+        return String(value).replace(/Service time \(Mindo, Ecuador\): /g,"Horario (Mindo, Ecuador): ").replace(/Start time to be confirmed/g,"Hora de inicio por confirmar").replace(/Transport leg: /g,"Trayecto: ").replace(/Drop-off: /g,"Destino: ");
+      }
+      function updateConfirmationLanguage(){
+        const certificate=document.getElementById("certificate");
+        if(!certificate)return;
+        certificate.lang=confirmationSpanish()?"es":"en";
+        certificate.querySelector(".certTitle").textContent=confirmationText("TOUR CONFIRMATION");
+        certificate.querySelector(".certTitle").style.fontSize=confirmationSpanish()?"72px":"";
+        certificate.querySelector(".certTitle").style.left=confirmationSpanish()?"430px":"";
+        certificate.querySelector(".certTitle").style.width=confirmationSpanish()?"1100px":"";
+        certificate.querySelector(".dateIssuedBox").firstChild.textContent=confirmationText("Date Issued:")+" ";
+        const labels=["Guest(s):","Guest Phone:","Tour Date:","Guide:","Contact #:","Tour Type:","Length:","Transportation:","Pickup Time:","Pickup Location:"];
+        certificate.querySelectorAll(".certLabel").forEach((label,index)=>{label.textContent=confirmationText(labels[index]);});
+      }
+
+      function updatePreviewFromForm(){
+        updateConfirmationLanguage();
+        if(state.validationShown)renderConfirmationValidation();
+        const selectedGuide = els.guideInput.value || "Chicho";
+        const guide = selectedGuide === "Other" ? (els.customGuideInput.value.trim() || "Guide to be confirmed") : selectedGuide;
+        const nightWalk = isNightWalkSelected();
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(selectedGuide).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
+        const certificate = document.getElementById("certificate");
+        if(certificate){
+          certificate.classList.toggle("nightWalkMode", nightWalk);
+          certificate.classList.toggle("standardArtMode", !nightWalk);
+          certificate.classList.toggle("birdwatchingArtMode", birdwatchingArt);
+          certificate.classList.toggle("activitiesArtMode", activitiesArt);
+        }
+        els.outDateIssued.textContent = confirmationSpanish()?parseDate(els.dateIssuedInput.value || todayMDY()).toLocaleDateString("es-EC"):formatDateIssued(els.dateIssuedInput.value || todayMDY());
+        els.outGuests.textContent = els.guestsInput.value || "Guest Name";
+        els.outGuestPhone.textContent = els.guestPhoneInput.value || "";
+        els.outTourDate.textContent = formatTourDateLong(els.tourDateInput.value || "");
+        els.outGuide.textContent = confirmationText(guide);
+        els.outContact.textContent = els.contactInput.value || contactForGuide(selectedGuide) || "";
+        els.outTourType.textContent = confirmationText(els.tourTypeInput.value || "Tour Type");
+        els.outLength.textContent = confirmationText(els.lengthInput.value || "Full Day").toUpperCase();
+        const transport = els.transportationInput.value || "Transportation details";
+        const pickupTime = normalizePickupTime(els.pickupTimeInput.value) || els.pickupTimeInput.value || "To be confirmed";
+        const pickupLocation = els.pickupLocationInput.value || "";
+        els.outTransportation.textContent = confirmationText(transport);
+        els.outPickupTime.textContent = confirmationText(pickupTime);
+        els.outPickupLocation.textContent = pickupLocation || confirmationText("To be confirmed");
+        els.outNotes.textContent = formatNote(confirmationNote(els.notesInput.value || ""));
+        setGuideImage(confirmationImageFor(selectedGuide));
+        renderQr(els.qrInput.value || window.MBW_CONFIRMATION_CONFIG.defaultQrUrl);
+        saveActiveDraft();
+      }
+
+      function renderQr(url){
+        if(!window.QRCode || !els.qrBox) return;
+        els.qrBox.innerHTML = "";
+        state.qr = new QRCode(els.qrBox, {
+          text: url,
+          width: 160,
+          height: 160,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      function exportPng(){
+        if(!validateCurrentConfirmation()) return;
+        setHint("Preparing clean 1920x1080 JPG...");
+        renderExportCanvas()
+          .then(canvas => {
+            const link = document.createElement("a");
+            link.download = fileBaseName() + ".jpg";
+            link.href = canvas.toDataURL("image/jpeg", 0.96);
+            link.click();
+            setHint("JPG exported");
+          })
+          .catch(err => setHint("JPG export failed: " + err.message));
+      }
+
+      function openImageForSaving(){
+        if(!validateCurrentConfirmation()) return;
+        setHint("Preparing image...");
+        renderExportCanvas()
+          .then(canvas => new Promise(resolve => canvas.toBlob(blob => resolve({ canvas, blob }), "image/jpeg", 0.96)))
+          .then(({ canvas, blob }) => {
+            if(!blob){
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.96);
+              const win = window.open();
+              if(win) win.document.write("<img src='" + dataUrl + "' style='width:100%;height:auto;'>");
+              setHint("Image opened");
+              return;
+            }
+
+            const file = new File([blob], fileBaseName() + ".jpg", { type:"image/jpeg" });
+            if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+              navigator.share({ files:[file], title:"MBW Tour Confirmation" })
+                .then(() => setHint("Share sheet opened"))
+                .catch(() => openBlobInNewTab(blob));
+            } else {
+              openBlobInNewTab(blob);
+            }
+          })
+          .catch(err => setHint("Image export failed: " + err.message));
+      }
+
+      function openBlobInNewTab(blob){
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, "_blank");
+        if(!win){
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileBaseName() + ".jpg";
+          link.click();
+        }
+        setHint("Image opened. On iPhone, use Share or long-press to save to Photos.");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+
+      function exportPdf(){
+        if(!validateCurrentConfirmation()) return;
+        setHint("Preparing clean PDF...");
+        renderExportCanvas()
+          .then(canvas => {
+            const img = canvas.toDataURL("image/jpeg", 0.96);
+            const jsPDF = window.jspdf && window.jspdf.jsPDF;
+            if(!jsPDF) throw new Error("PDF library did not load");
+            const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+            pdf.addImage(img, "JPEG", 0, 0, 1920, 1080);
+            pdf.save(fileBaseName() + ".pdf");
+            setHint("PDF exported");
+          })
+          .catch(err => setHint("PDF export failed: " + err.message));
+      }
+
+      function confirmationMissingFields(){
+        const missing=[];
+        const require=(id,label)=>{if(!els[id].value.trim())missing.push({id,label});};
+        require("guestsInput","guest name");
+        require("tourDateInput","tour date");
+        require("tourTypeInput","tour");
+        require("guideInput","guide");
+        if(els.guideInput.value==="Other")require("customGuideInput","custom guide name");
+        require("contactInput","guide phone");
+        if(!els.lengthInput.value.trim()||els.lengthInput.value==="To be confirmed")missing.push({id:"lengthInput",label:"tour duration"});
+        if(!els.pickupTimeInput.value.trim()||els.pickupTimeInput.value==="To be confirmed")missing.push({id:"pickupTimeInput",label:"start / pickup time"});
+        require("pickupLocationInput","pickup / meeting location");
+        return missing;
+      }
+
+      function renderConfirmationValidation(){
+        const missing=confirmationMissingFields();
+        const ids=new Set(missing.map(field=>field.id));
+        ["guestsInput","tourDateInput","tourTypeInput","guideInput","customGuideInput","contactInput","lengthInput","pickupTimeInput","pickupLocationInput"].forEach(id=>{
+          if(ids.has(id))els[id].setAttribute("aria-invalid","true");
+          else els[id].removeAttribute("aria-invalid");
+        });
+        els.confirmationErrors.hidden=!missing.length;
+        els.confirmationErrors.textContent=missing.length?"Before exporting, add: "+missing.map(field=>field.label).join(", ")+".":"";
+        return missing;
+      }
+
+      function validateCurrentConfirmation(){
+        state.validationShown=true;
+        const missing=renderConfirmationValidation();
+        if(missing.length){
+          setHint(els.confirmationErrors.textContent);
+          els[missing[0].id].focus();
+          return false;
+        }
+        return true;
+      }
+
+      async function renderAllConfirmationCanvases(){
+        saveActiveDraft();
+        const original = state.activeConfirmation;
+        const select=index=>{
+          state.activeConfirmation=index;
+          loadActiveDraft();
+          renderConfirmationTabs();
+          updatePreviewFromForm();
+        };
+        // Validate the whole set before rendering any files; leave an incomplete service selected.
+        for(let index=0;index<state.confirmationDrafts.length;index++){
+          select(index);
+          if(!validateCurrentConfirmation())throw new Error("Confirmation "+(index+1)+" is incomplete");
+        }
+        const rendered=[];
+        try {
+          for(let index=0;index<state.confirmationDrafts.length;index++){
+            select(index);
+            rendered.push({canvas:await renderExportCanvas(),name:fileBaseName()});
+          }
+          return rendered;
+        } finally {
+          select(original);
+        }
+      }
+
+      async function exportAllJpgs(){
+        if(state.confirmationDrafts.length < 2){
+          exportPng();
+          return;
+        }
+        setHint("Preparing all confirmation JPGs...");
+        try{
+          const rendered = await renderAllConfirmationCanvases();
+          rendered.forEach((item, index) => {
+            setTimeout(() => {
+              const link = document.createElement("a");
+              link.download = item.name + ".jpg";
+              link.href = item.canvas.toDataURL("image/jpeg", 0.96);
+              link.click();
+            }, index * 250);
+          });
+          setHint(rendered.length + " JPG confirmations downloaded");
+        } catch(err){
+          setHint("All JPG export failed: " + err.message);
+        }
+      }
+
+      async function exportAllPdf(){
+        if(state.confirmationDrafts.length < 2){
+          exportPdf();
+          return;
+        }
+        setHint("Preparing multi-page PDF...");
+        try{
+          const rendered = await renderAllConfirmationCanvases();
+          const jsPDF = window.jspdf && window.jspdf.jsPDF;
+          if(!jsPDF) throw new Error("PDF library did not load");
+          const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[1920,1080] });
+          rendered.forEach((item, index) => {
+            if(index) pdf.addPage([1920,1080], "landscape");
+            pdf.addImage(item.canvas.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, 1920, 1080);
+          });
+          pdf.save(fileBaseNameBase() + "-all-tours.pdf");
+          setHint(rendered.length + "-page PDF exported");
+        } catch(err){
+          setHint("All PDF export failed: " + err.message);
+        }
+      }
+
+      function renderExportCanvas(){
+        const imageUrls = getExportImageUrls();
+        const nightWalk = isNightWalkSelected();
+        const guideName = els.guideInput.value || "Chicho";
+        const birdwatchingArt = !nightWalk && isBirdwatchingSelected() && String(guideName).toLowerCase() !== "chicho";
+        const activitiesArt = !nightWalk && isActivitySelected();
+        return Promise.all([
+          loadExportImage(imageUrls.background),
+          loadExportImage(imageUrls.logo),
+          loadExportImage(imageUrls.guide),
+          loadExportImage(imageUrls.mindo),
+          loadExportImage(imageUrls.instagram)
+        ]).then(([bg, logo, guide, mindo, instagram]) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1920;
+          canvas.height = 1080;
+          const ctx = canvas.getContext("2d");
+
+          ctx.fillStyle = "#edf4e6";
+          ctx.fillRect(0, 0, 1920, 1080);
+          drawCover(ctx, bg, 0, 0, 1920, 1080);
+
+          const grad = ctx.createLinearGradient(0, 0, 1920, 0);
+          grad.addColorStop(0, nightWalk ? "rgba(3,18,16,0.72)" : "rgba(255,255,255,0.25)");
+          grad.addColorStop(0.54, nightWalk ? "rgba(4,25,21,0.66)" : "rgba(255,255,255,0.08)");
+          grad.addColorStop(1, nightWalk ? "rgba(2,13,12,0.74)" : "rgba(255,255,255,0.16)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1920, 1080);
+
+          drawContain(ctx, logo, 62, 58, 330, 330);
+          drawContain(ctx, mindo, 1158, 530, 720, getContainHeight(mindo, 720));
+          if(nightWalk){
+            drawCoverCircle(ctx, guide, 1329, 239, 472);
+          } else if(activitiesArt){
+            drawContain(ctx, guide, 1256, 100, 525, 750);
+          } else if(birdwatchingArt){
+            drawContain(ctx, guide, 1168, 7, 700, 1000);
+          } else {
+            drawContain(ctx, guide, 1180, 140, 700, 1000);
+          }
+
+          ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.font = "950 "+(confirmationSpanish()?72:90)+"px Arial, Helvetica, sans-serif";
+          ctx.fillText(confirmationText("TOUR CONFIRMATION"), confirmationSpanish()?980:965, 112, confirmationSpanish()?1100:1500);
+          ctx.font = "950 34px Arial, Helvetica, sans-serif";
+          ctx.fillText(confirmationText("Date Issued:")+" " + (els.outDateIssued.textContent || ""), 940, 245);
+
+          drawInfoText(ctx, nightWalk);
+          drawQrToCanvas(ctx);
+          drawFooter(ctx, instagram, logo, nightWalk);
+
+          return canvas;
+        });
+      }
+
+      function getExportImageUrls(){
+        return {
+          background: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_tour_confirmation_background.png",
+          logo: "https://mindobirdwatching.com/assets/images/tour-confirmation/logo_mbw.png",
+          guide: getGuideImageUrlFromStyle() || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage,
+          mindo: "https://mindobirdwatching.com/assets/images/tour-confirmation/mbw_mindo_letters.png",
+          instagram: "https://mindobirdwatching.com/assets/images/tour-confirmation/icon_ig.png"
+        };
+      }
+
+      function loadExportImage(url){
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Could not load image: " + url));
+          img.src = url;
+        });
+      }
+
+      function drawCover(ctx, img, x, y, w, h){
+        const ir = img.width / img.height;
+        const br = w / h;
+        let sw = img.width, sh = img.height, sx = 0, sy = 0;
+        if(ir > br){
+          sw = img.height * br;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / br;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      }
+
+      function drawContain(ctx, img, x, y, w, h){
+        const scale = Math.min(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = x + (w - dw) / 2;
+        const dy = y + (h - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function drawCoverCircle(ctx, img, x, y, size){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.clip();
+        drawCover(ctx, img, x, y, size, size);
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.78)";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2 - 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function getContainHeight(img, targetWidth){
+        if(!img || !img.width) return 360;
+        return targetWidth * (img.height / img.width);
+      }
+
+      function drawInfoText(ctx, nightWalk){
+        const labelX = 220;
+        const valueX = 423;
+        const rows = [
+          { label:"Guest(s):", value:els.outGuests.textContent || "", y:420, valueSize:30, maxWidth:520 },
+          { label:"Guest Phone:", value:els.outGuestPhone.textContent || "", y:470, valueSize:27, maxWidth:430 },
+          { label:"Tour Date:", value:els.outTourDate.textContent || "", y:520, valueSize:30, maxWidth:540 },
+          { label:"Guide:", value:els.outGuide.textContent || "", y:570, valueSize:30, maxWidth:400 },
+          { label:"Contact #:", value:els.outContact.textContent || "", y:620, valueSize:27, maxWidth:430 },
+          { label:"Tour Type:", value:els.outTourType.textContent || "", y:670, valueSize:27, maxWidth:455 },
+          { label:"Length:", value:els.outLength.textContent || "", y:760, valueSize:36, maxWidth:420 },
+          { label:"Transportation:", value:getPlainText(els.outTransportation), y:800, valueSize:27, maxWidth:475 },
+          { label:"Pickup Time:", value:getPlainText(els.outPickupTime), y:845, valueSize:27, maxWidth:475 },
+          { label:"Pickup Location:", value:getPlainText(els.outPickupLocation), y:890, valueSize:24, maxWidth:475 }
+        ];
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
+
+        rows.forEach(row => {
+          ctx.font = "950 25px Arial, Helvetica, sans-serif";
+          ctx.fillText(confirmationText(row.label), labelX, row.y + 4);
+          ctx.font = "950 " + row.valueSize + "px Arial, Helvetica, sans-serif";
+          wrapCanvasText(ctx, row.value, valueX, row.y, row.maxWidth, Math.round(row.valueSize * 1.08));
+        });
+
+        ctx.font = "950 25px Arial, Helvetica, sans-serif";
+        ctx.fillText(els.outNotes.textContent || "", 220, 950);
+      }
+
+      function getPlainText(el){
+        return String(el ? el.innerText || el.textContent || "" : "").replace(/\s+\n/g, "\n").trim();
+      }
+
+      function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+        const paragraphs = String(text || "").split("\n");
+        let yy = y;
+        paragraphs.forEach((paragraph, pIndex) => {
+          const words = paragraph.split(/\s+/).filter(Boolean);
+          let line = "";
+          words.forEach(word => {
+            const test = line ? line + " " + word : word;
+            if(ctx.measureText(test).width > maxWidth && line){
+              ctx.fillText(line, x, yy);
+              yy += lineHeight;
+              line = word;
+            } else {
+              line = test;
+            }
+          });
+          if(line){
+            ctx.fillText(line, x, yy);
+            yy += lineHeight;
+          }
+          if(pIndex < paragraphs.length - 1) yy += Math.round(lineHeight * 0.12);
+        });
+      }
+
+      function drawQrToCanvas(ctx){
+        const qrCanvas = els.qrBox ? els.qrBox.querySelector("canvas") : null;
+        const qrImg = els.qrBox ? els.qrBox.querySelector("img") : null;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(875, 555, 174, 174);
+        if(qrCanvas){
+          ctx.drawImage(qrCanvas, 882, 562, 160, 160);
+        } else if(qrImg){
+          ctx.drawImage(qrImg, 882, 562, 160, 160);
+        }
+      }
+
+      function drawFooter(ctx, instagram, logo, nightWalk){
+        ctx.fillStyle = nightWalk ? "#ffffff" : "#075f28";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "950 36px Arial, Helvetica, sans-serif";
+        drawContain(ctx, instagram, 132, 987, 49, 49);
+        ctx.fillText("@mindobirdwatching", 203, 1012);
+        drawContain(ctx, logo, 675, 987, 49, 49);
+        ctx.font = "950 34px Arial, Helvetica, sans-serif";
+        ctx.fillText("www.mindobirdwatching.com", 742, 1012);
+      }
+
+      function updateStatus(status){
+        const r = state.records[state.activeIndex];
+        if(!r || !r.rowNumber){
+          setHint("No sheet row selected");
+          return;
+        }
+        els.statusInput.value = status;
+        r.tour_confirmation_status = status;
+        renderRecords();
+        setHint("Status changed in preview. Apps Script update endpoint comes next.");
+      }
+
+      function jsonp(baseUrl, params){
+        return new Promise((resolve, reject) => {
+          const cbName = "mbwJsonp_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+          const url = new URL(baseUrl);
+          Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
+          url.searchParams.set("callback", cbName);
+          const script = document.createElement("script");
+          const timer = setTimeout(() => cleanup(new Error("Request timed out")), 12000);
+          window[cbName] = data => cleanup(null, data);
+          script.onerror = () => cleanup(new Error("Could not load Apps Script data"));
+          script.src = url.toString();
+          document.body.appendChild(script);
+          function cleanup(err, data){
+            clearTimeout(timer);
+            delete window[cbName];
+            if(script.parentNode) script.parentNode.removeChild(script);
+            if(err) reject(err); else resolve(data);
+          }
+        });
+      }
+
+      function waitForImages(){
+        const imgs = Array.from(els.certificate.querySelectorAll("img"));
+        const imagePromises = imgs.map(img => {
+          if(img.complete && img.naturalWidth !== 0) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        });
+
+        const guideUrl = getGuideImageUrlFromStyle();
+        if(guideUrl){
+          imagePromises.push(preloadImage(guideUrl));
+        }
+
+        return Promise.all(imagePromises);
+      }
+
+      function preloadImage(url){
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = url;
+        });
+      }
+
+      function setGuideImage(url){
+        const safeUrl = url || window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+        if(!els.outGuideImage) return;
+        els.outGuideImage.style.backgroundImage = "url('" + safeUrl.replace(/'/g, "%27") + "')";
+        els.outGuideImage.dataset.src = safeUrl;
+      }
+
+      function getGuideImageUrlFromStyle(){
+        return els.outGuideImage ? (els.outGuideImage.dataset.src || "") : "";
+      }
+
+      function labelForRecord(r){
+        const guest = guestDisplayOf(r) || val(r, ["invoice_no"], "Unnamed");
+        const date = formatTourDateShort(tourDateOf(r));
+        return date ? guest + " - " + date : guest;
+      }
+
+      function contactForGuide(name){
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? normalizeGuidePhone(val(g, ["guide_phone", "Contact #"], "")) : "";
+      }
+
+      function normalizeGuidePhone(value){
+        const clean = String(value || "").trim();
+        if(/^593[\s-]/.test(clean)) return "+" + clean;
+        return clean;
+      }
+
+      function imageForGuide(name){
+        if(["neicer","anderson","abel"].includes(String(name || "").toLowerCase())){
+          return window.MBW_CONFIRMATION_CONFIG.birdwatchingGuideImage;
+        }
+        const g = state.guides.find(item => String(val(item, ["guide", "Guide"], "")).toLowerCase() === String(name || "").toLowerCase());
+        return g ? val(g, ["image_url", "Image URL"], window.MBW_CONFIRMATION_CONFIG.defaultGuideImage) : window.MBW_CONFIRMATION_CONFIG.defaultGuideImage;
+      }
+
+      function tourDisplay(r){
+        const combined = val(r, ["combined_tour_display", "Combined Tour Display"], "");
+        if(combined) return combined;
+        return [val(r, ["tour_type_1", "Tour Type 1"], ""), val(r, ["tour_type_2", "Tour Type 2"], ""), val(r, ["tour_type_3", "Tour Type 3"], "")].filter(Boolean).join(" + ");
+      }
+
+      function buildTransportation(r){
+        const transport = transportOf(r);
+        return normalizeTransportation(transport);
+      }
+
+      function normalizeTransportation(value){
+        const clean = String(value || "").trim();
+        if(!clean || /^(yes|no)$/i.test(clean)) return "Pick Up";
+        const firstLine = clean.split(/\r?\n/)[0].trim();
+        if(/^yes/i.test(firstLine)) return "Pick Up";
+        return firstLine || "Pick Up";
+      }
+
+      function buildDefaultNote(r){
+        const time = pickupTimeOf(r);
+        if(time) return "We will pick you up at your location latest " + time.toLowerCase() + ".";
+        return "We will pick you up at your location latest 3:00 am.";
+      }
+
+      function formatNote(text){
+        const clean = String(text || "").trim();
+        if(!clean) return "";
+        if(clean.startsWith("***") && clean.endsWith("***")) return clean;
+        return "***" + clean + "***";
+      }
+
+      function normalizeLength(value){
+        const v = String(value || "").toLowerCase();
+        if(v.includes("2 hr") || v.includes("2 hour")) return "2 hrs";
+        if(v.includes("half")) return "Half Day";
+        if(v.includes("multi")) return "Multi Day";
+        return "Full Day";
+      }
+
+      function buildTransportationDisplay(transport, pickupLocation){
+        const cleanTransport = String(transport || "").trim();
+        const cleanPickup = String(pickupLocation || "").trim();
+        if(cleanTransport && cleanPickup && !cleanTransport.toLowerCase().includes(cleanPickup.toLowerCase())){
+          return escapeHtml(cleanTransport).replace(/\n/g, "<br>") + "<br>" + escapeHtml(cleanPickup);
+        }
+        return escapeHtml(cleanTransport || cleanPickup || "Transportation details").replace(/\n/g, "<br>");
+      }
+
+      function formatDateIssued(value){
+        const d = parseDate(value);
+        if(!d) return value || todayMDY();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function toDateInputValue(value){
+        const d = parseDate(value);
+        if(!d) return "";
+        return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+      }
+
+      function normalizePickupTime(value){
+        const d = String(value || "").trim().toUpperCase().replace(/\s+/g, " ");
+        const m = d.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+        if(!m) return d || "3:00 AM";
+        return Number(m[1]) + ":" + m[2] + " " + m[3];
+      }
+
+      function setSelectValue(select, value){
+        if(!select) return;
+        const clean = String(value || "");
+        if(clean && !Array.from(select.options).some(opt => opt.value === clean)){
+          const opt = document.createElement("option");
+          opt.value = clean;
+          opt.textContent = clean;
+          select.appendChild(opt);
+        }
+        select.value = clean;
+      }
+
+      function formatTourDateShort(value){
+        const d = parseDate(value);
+        if(!d) return value || "";
+        return d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      }
+
+      function formatTourDateLong(value){
+        const d = parseDate(value);
+        if(!d) return value || "Tour Date";
+        if(confirmationSpanish())return d.toLocaleDateString("es-EC",{day:"numeric",month:"long",year:"numeric"});
+        const weekday = d.toLocaleDateString("en-US", { weekday:"long" });
+        const month = d.toLocaleDateString("en-US", { month:"long" });
+        return weekday + ", " + month + " " + ordinal(d.getDate()) + ", " + d.getFullYear();
+      }
+
+      function parseDate(value){
+        if(!value) return null;
+        const s = String(value).trim();
+        const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if(iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function ordinal(n){
+        const j = n % 10, k = n % 100;
+        if(j === 1 && k !== 11) return n + "st";
+        if(j === 2 && k !== 12) return n + "nd";
+        if(j === 3 && k !== 13) return n + "rd";
+        return n + "th";
+      }
+
+      function todayMDY(){
+        const d = new Date();
+        return String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getDate()).padStart(2,"0") + "/" + d.getFullYear();
+      }
+
+      function fileBaseName(){
+        const tour = (els.tourTypeInput.value || "tour").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,45);
+        return fileBaseNameBase() + "-" + tour;
+      }
+
+      function fileBaseNameBase(){
+        const guest = (els.guestsInput.value || "tour-confirmation").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
+        const date = (els.tourDateInput.value || todayMDY()).replace(/[^0-9]+/g,"-").replace(/^-|-$/g,"");
+        return "mbw-tour-confirmation-" + guest + "-" + date;
+      }
+
+      function escapeHtml(str){
+        return String(str || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]));
+      }
+
+      function setHint(text){
+        if(els.previewHint) els.previewHint.textContent = text;
+      }
+    })();
+  </script>
+<script defer src="/assets/js/admin-nav.js?v=studio-remote-20260928"></script>
+</body>
+</html>
