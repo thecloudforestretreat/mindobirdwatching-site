@@ -2591,6 +2591,7 @@ function routeInvoicesToCrm_(ss) {
     }
 
     if (!existingPayments[paymentId]) {
+      const paymentAmounts = invoicePaymentBreakdown_(row);
       appendObject_(payments, {
         payment_id: paymentId,
         booking_id: bookingId,
@@ -2605,10 +2606,10 @@ function routeInvoicesToCrm_(ss) {
         transaction_id: row.transaction_id,
         payment_reference_note: row.payment_reference_note,
         total_booking_price: amountFromInvoiceRow_(row),
-        deposit_amount_paid: "",
-        additional_amount_paid: "",
-        total_amount_paid: row.amount_received,
-        balance_remaining: "",
+        deposit_amount_paid: paymentAmounts.deposit,
+        additional_amount_paid: paymentAmounts.additional,
+        total_amount_paid: paymentAmounts.total,
+        balance_remaining: cleanMoneyValue_(row.amount_remaining),
         is_fully_paid: row.date_paid || row.amount_received ? "Yes" : "No",
         notes: row.notes
       });
@@ -2711,10 +2712,14 @@ function repairCrmBookingAndPaymentPricesFromInvoices() {
     const amount = invoice ? amountFromInvoiceRow_(invoice) : "";
     if (!amount) return;
 
-    const totalPaid = cleanMoneyValue_(row.total_amount_paid) || cleanMoneyValue_(invoice.amount_received);
+    const paymentAmounts = invoicePaymentBreakdown_(invoice);
+    const totalPaid = paymentAmounts.total || cleanMoneyValue_(row.total_amount_paid);
     const updated = Object.assign({}, row, {
       total_booking_price: amount,
+      deposit_amount_paid: paymentAmounts.deposit,
+      additional_amount_paid: paymentAmounts.additional,
       total_amount_paid: totalPaid,
+      balance_remaining: cleanMoneyValue_(invoice.amount_remaining),
       is_fully_paid: totalPaid && Number(totalPaid) >= Number(amount) ? "Yes" : row.is_fully_paid
     });
     writeObjectToRow_(payments, idx + 2, updated);
@@ -2725,6 +2730,19 @@ function amountFromInvoiceRow_(row) {
   return cleanMoneyValue_(row.final_invoice_total) ||
     cleanMoneyValue_(row.expected_total_with_tip) ||
     cleanMoneyValue_(row.amount_received);
+}
+
+function invoicePaymentBreakdown_(row) {
+  const totalText = cleanMoneyValue_(row.amount_received);
+  const depositText = cleanMoneyValue_(row.deposit_applied_amount);
+  const total = Number(totalText || 0);
+  const deposit = Number(depositText || 0);
+  const additional = Math.max(0, total - deposit);
+  return {
+    total: totalText,
+    deposit: depositText,
+    additional: totalText ? String(additional.toFixed(2)) : ""
+  };
 }
 
 function cleanMoneyValue_(value) {
