@@ -156,6 +156,61 @@ test("within-Mindo transportation is staff-only and cannot bill the US$1 referen
   assert.equal(line.get("quantity"), "1");
 });
 
+test("additional-services invoices preserve the prior paid invoice context", async () => {
+  const h = harness();
+  const result = await h.call("create-invoice-multi", {
+    ...base,
+    invoice_context: "additional_services",
+    prior_invoice_no: "MBW-0143",
+    prior_payment_status: "paid",
+    original_accepted_total: 198,
+    items: [
+      { tour_code: "MEAL001", language: "en", quantity: 2, tour_date: "2026-11-12" },
+      {
+        tour_code: "TRANS007",
+        language: "en",
+        quantity: 2,
+        tour_date: "2026-11-12",
+        price_override_per_person: 5,
+        price_adjustment_per_person: 4,
+        pricing_reason: "within_mindo_transportation",
+      },
+    ],
+  });
+  assert.equal(result.response.status, 200, JSON.stringify(result.body));
+  assert.equal(result.body.amount_before_deposit, 15);
+  assert.equal(result.body.invoice_context, "additional_services");
+  assert.equal(result.body.prior_invoice_no, "MBW-0143");
+
+  const invoice = h.calls.find((call) => call.pathname === "/v1/invoices").form;
+  assert.equal(invoice.get("metadata[invoice_context]"), "additional_services");
+  assert.equal(invoice.get("metadata[prior_invoice_no]"), "MBW-0143");
+  assert.equal(invoice.get("metadata[prior_payment_status]"), "paid");
+  assert.equal(invoice.get("metadata[original_accepted_total]"), "198.00");
+
+  const lines = h.calls.filter((call) => call.pathname === "/v1/invoiceitems").map((call) => call.form);
+  assert.equal(lines.length, 2);
+  assert(lines.every((line) => line.get("metadata[prior_invoice_no]") === "MBW-0143"));
+});
+
+test("additional-services invoices reject an unpaid or missing prior invoice before Stripe writes", async () => {
+  for (const invalid of [
+    { prior_invoice_no: "", prior_payment_status: "paid", original_accepted_total: 198 },
+    { prior_invoice_no: "MBW-0143", prior_payment_status: "payment_pending", original_accepted_total: 198 },
+    { prior_invoice_no: "MBW-0143", prior_payment_status: "paid", original_accepted_total: "" },
+  ]) {
+    const h = harness();
+    const result = await h.call("create-invoice-multi", {
+      ...base,
+      invoice_context: "additional_services",
+      ...invalid,
+      items: [{ tour_code: "MEAL001", language: "en", quantity: 2, tour_date: "2026-11-12" }],
+    });
+    assert.equal(result.response.status, 400);
+    assert.equal(h.calls.length, 0);
+  }
+});
+
 test("public checkout cannot charge a custom tour starting amount", async () => {
   const h = harness();
   const result = await h.call("create-checkout-session", base);
