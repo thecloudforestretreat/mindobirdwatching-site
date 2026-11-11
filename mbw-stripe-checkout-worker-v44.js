@@ -2420,6 +2420,31 @@ function requireApprovedCustomPrice(tour, overrideAmount, itemLabel = "Custom to
   }
 }
 
+function validatedInvoiceContext(body) {
+  const invoiceContext = optionalString(body && body.invoice_context);
+  if (!invoiceContext) {
+    return {
+      invoice_context: "",
+      prior_invoice_no: "",
+      prior_payment_status: "",
+      original_accepted_total: "",
+    };
+  }
+  if (invoiceContext !== "additional_services") throw new Error("Invalid invoice context.");
+  const priorInvoiceNo = optionalString(body.prior_invoice_no);
+  const priorPaymentStatus = optionalString(body.prior_payment_status).toLowerCase();
+  const originalAcceptedTotal = optionalWholeDollarAmount(body.original_accepted_total);
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(priorInvoiceNo)) throw new Error("A valid prior invoice number is required for an additional invoice.");
+  if (!["paid", "fully_paid"].includes(priorPaymentStatus)) throw new Error("The prior invoice must be recorded as paid before creating an additional invoice.");
+  if (originalAcceptedTotal === null) throw new Error("The original accepted total is required for an additional invoice.");
+  return {
+    invoice_context: invoiceContext,
+    prior_invoice_no: priorInvoiceNo,
+    prior_payment_status: priorPaymentStatus,
+    original_accepted_total: dollarsToDisplay(originalAcceptedTotal),
+  };
+}
+
 function firstNonEmptyString(...values) {
   for (const v of values) {
     if (typeof v === "string" && v.trim()) return v.trim();
@@ -3990,6 +4015,7 @@ const worker = {
         const deposit_payment_intent_id = optionalString(body.deposit_payment_intent_id);
         const minimum_party_override = optionalBoolean(body.minimum_party_override);
         const minimum_party_override_reason = optionalString(body.minimum_party_override_reason);
+        const invoiceContext = validatedInvoiceContext(body);
 
         if (price_override_per_person !== null && !pricing_reason) {
           throw new Error("Pricing reason is required when using a price override.");
@@ -4078,6 +4104,7 @@ const worker = {
           guide_rate_per_person: invoiceGuideCost.ratePerPerson ? dollarsToDisplay(invoiceGuideCost.ratePerPerson) : "",
           guide_payout_total: invoiceGuideCost.total ? dollarsToDisplay(invoiceGuideCost.total) : "",
           fees_charged_to_guide: invoiceGuideCost.total ? "0.00" : "",
+          ...invoiceContext,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(language),
           deposit_payment_intent_id: deposit ? deposit.id : "",
@@ -4218,7 +4245,9 @@ const worker = {
           product_selected: tour.tour_code || "",
           pickup_location: pickup_location_label || pickup_address_or_hotel || "",
           currency: (finalized.currency || "usd").toUpperCase(),
-          notes: "Stripe invoice created; payment status will update from the paid webhook.",
+          notes: invoiceContext.invoice_context === "additional_services"
+            ? `Additional-services Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
+            : "Stripe invoice created; payment status will update from the paid webhook.",
         });
 
         return json({
@@ -4232,6 +4261,7 @@ const worker = {
           guest_id,
           booking_id,
           quote_id,
+          ...invoiceContext,
           minimum_party_override: isBelowMinimum && minimum_party_override,
           minimum_party_override_reason: isBelowMinimum ? minimum_party_override_reason : "",
           deposit_applied_amount: deposit ? Number(deposit.amount_received || deposit.amount || 0) / 100 : 0,
@@ -4280,6 +4310,7 @@ const worker = {
         const deposit_payment_intent_id = optionalString(body.deposit_payment_intent_id);
         const minimum_party_override = optionalBoolean(body.minimum_party_override);
         const minimum_party_override_reason = optionalString(body.minimum_party_override_reason);
+        const invoiceContext = validatedInvoiceContext(body);
         const dueDaysRaw = body.invoice_due_days != null ? Number(body.invoice_due_days) : 1;
         const invoice_due_days = Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : 1;
 
@@ -4402,6 +4433,7 @@ const worker = {
             : "",
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
+          ...invoiceContext,
         };
 
         let customer = deposit && deposit.customer ? deposit.customer : null;
@@ -4451,6 +4483,7 @@ const worker = {
           stripe_customer_id: customer.id,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
+          ...invoiceContext,
         };
 
         const invForm = new URLSearchParams();
@@ -4515,6 +4548,7 @@ const worker = {
             guide_rate_per_person: item.guideCost.ratePerPerson ? dollarsToDisplay(item.guideCost.ratePerPerson) : "",
             guide_payout_total: item.guideCost.total ? dollarsToDisplay(item.guideCost.total) : "",
             fees_charged_to_guide: item.guideCost.total ? "0.00" : "",
+            ...invoiceContext,
           };
 
           const itemForm = new URLSearchParams();
@@ -4618,7 +4652,9 @@ const worker = {
           product_selected: normalizedItems.map(item => item.tour_code).filter(Boolean).join(" | "),
           pickup_location: pickup_location_label || pickup_address_or_hotel || "",
           currency: (finalized.currency || "usd").toUpperCase(),
-          notes: "Multi-item Stripe invoice created; payment status will update from the paid webhook.",
+          notes: invoiceContext.invoice_context === "additional_services"
+            ? `Additional-services multi-item Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
+            : "Multi-item Stripe invoice created; payment status will update from the paid webhook.",
         });
 
         return json({
@@ -4634,6 +4670,7 @@ const worker = {
           guest_id,
           booking_id,
           quote_id,
+          ...invoiceContext,
           minimum_party_override: belowMinimumItems.length > 0 && minimum_party_override,
           minimum_party_override_reason: belowMinimumItems.length ? minimum_party_override_reason : "",
           minimum_party_override_items: minimumPartyOverrideSummary,

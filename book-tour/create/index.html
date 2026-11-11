@@ -618,6 +618,18 @@
           <button id="depositLookupBtn" class="action-btn secondary" type="button" style="margin-top:12px;" disabled>Check for deposit</button>
         </div>
 
+        <div class="payPanel" id="additionalInvoicePanel" style="margin:4px 0 18px;padding:14px;background:rgba(255,255,255,.72);" hidden>
+          <div class="section-title" style="margin-top:0;">Additional invoice</div>
+          <div id="priorInvoiceDetails" class="hint"></div>
+          <label style="display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-weight:800;">
+            <input id="additionalInvoiceMode" type="checkbox" style="width:auto;margin-top:3px;" />
+            Create a separate invoice for approved additional services
+          </label>
+          <div class="hint" style="margin-top:8px;">
+            Use this only when the prior invoice has already been paid. The paid invoice remains unchanged, and this invoice contains only the new items listed below.
+          </div>
+        </div>
+
         <div class="grid-2">
           <div class="field">
             <label class="req" for="mainFirstName">Main contact first name</label>
@@ -840,7 +852,11 @@
     lastInvoiceFingerprint: "",
     lastInvoiceResult: null,
     deposit: null,
-    acceptedQuoteTotal: null
+    acceptedQuoteTotal: null,
+    additionalInvoiceEligible: false,
+    additionalInvoiceMode: false,
+    priorInvoiceNo: "",
+    priorPaymentStatus: ""
   };
 
   const els = {
@@ -873,6 +889,9 @@
     depositDetails: document.getElementById("depositDetails"),
     applyDeposit: document.getElementById("applyDeposit"),
     depositLookupBtn: document.getElementById("depositLookupBtn"),
+    additionalInvoicePanel: document.getElementById("additionalInvoicePanel"),
+    additionalInvoiceMode: document.getElementById("additionalInvoiceMode"),
+    priorInvoiceDetails: document.getElementById("priorInvoiceDetails"),
     defaultLanguage: document.getElementById("defaultLanguage"),
     pickupLocationLabel: document.getElementById("pickupLocationLabel"),
     pickupAddress: document.getElementById("pickupAddress"),
@@ -894,6 +913,15 @@
     els.statusBox.className = "status";
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   function clearDeposit(message) {
     state.deposit = null;
     els.applyDeposit.checked = false;
@@ -906,8 +934,8 @@
 
   function renderDeposit(deposit) {
     state.deposit = deposit;
-    els.applyDeposit.disabled = deposit.can_apply === false;
-    els.applyDeposit.checked = deposit.can_apply !== false;
+    els.applyDeposit.disabled = deposit.can_apply === false || state.additionalInvoiceMode;
+    els.applyDeposit.checked = deposit.can_apply !== false && !state.additionalInvoiceMode;
     const paidDate = deposit.created_at ? new Date(deposit.created_at).toLocaleDateString() : "Unknown date";
     els.depositDetails.innerHTML = `
       <strong>Verified deposit found:</strong> ${deposit.currency} ${Number(deposit.amount || 0).toFixed(2)}
@@ -1385,9 +1413,37 @@ function createItem(initial = {}) {
     return getInboundValue(data,"quote_status")==="accepted" && Number.isInteger(total) && total>0 ? total : null;
   }
 
+  function applyPriorInvoiceContext(data) {
+    const paymentStatus = getInboundValue(data, "payment_status").toLowerCase();
+    const priorInvoiceNo = getInboundValue(data, "invoice_no", "invoice_number");
+    state.priorPaymentStatus = paymentStatus;
+    state.priorInvoiceNo = priorInvoiceNo;
+    state.additionalInvoiceEligible = ["paid", "fully_paid"].includes(paymentStatus) && Boolean(priorInvoiceNo);
+    state.additionalInvoiceMode = false;
+    els.additionalInvoiceMode.checked = false;
+    els.additionalInvoicePanel.hidden = !state.additionalInvoiceEligible;
+    els.priorInvoiceDetails.textContent = state.additionalInvoiceEligible
+      ? `Prior invoice ${priorInvoiceNo} is recorded as paid. Confirm below only if this new invoice is for additional approved services.`
+      : "";
+  }
+
+  function rawAcceptedQuoteMismatch() {
+    return state.acceptedQuoteTotal!==null && Math.round(currentBookingSubtotal()*100)!==state.acceptedQuoteTotal*100;
+  }
+
+  function additionalInvoiceMetadata() {
+    if (!state.additionalInvoiceMode) return {};
+    return {
+      invoice_context: "additional_services",
+      prior_invoice_no: state.priorInvoiceNo,
+      prior_payment_status: state.priorPaymentStatus,
+      original_accepted_total: state.acceptedQuoteTotal
+    };
+  }
+
   function applyAcceptedQuote(data) {
     state.acceptedQuoteTotal=importedAcceptedTotal(data);
-    if(state.acceptedQuoteTotal===null || state.items.length!==1)return;
+    if(state.additionalInvoiceEligible || state.acceptedQuoteTotal===null || state.items.length!==1)return;
     const item=state.items[0],tour=getTourByCodeAndLanguage(item.tour_code,item.language);
     if(!tour)return;
     const quantity=billingQuantity(tour,item.quantity),unit=state.acceptedQuoteTotal/quantity;
@@ -1403,7 +1459,7 @@ function createItem(initial = {}) {
   }
 
   function acceptedQuoteMismatch() {
-    return state.acceptedQuoteTotal!==null && Math.round(currentBookingSubtotal()*100)!==state.acceptedQuoteTotal*100;
+    return rawAcceptedQuoteMismatch() && !state.additionalInvoiceMode;
   }
 
   function applyInboundPrefill() {
@@ -1428,6 +1484,8 @@ function createItem(initial = {}) {
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
     const quoteId = getInboundValue(data, "quote_id", "quoteId");
     const inboundItems = parseInboundTourItems(data);
+
+    applyPriorInvoiceContext(data);
 
     setFieldValue(els.mainFirstName, firstName);
     setFieldValue(els.mainLastName, lastName);
@@ -1744,7 +1802,9 @@ function createItem(initial = {}) {
       : 0;
     const amountRemaining = Math.max(0, bookingSubtotal - depositAmount);
     els.summaryTotals.innerHTML = `
-      ${state.acceptedQuoteTotal!==null?`<p class="small-note">CRM accepted total: $${state.acceptedQuoteTotal} USD${acceptedQuoteMismatch()?" · Adjust item prices to match before invoicing.":" · Matches this booking."}</p>`:""}
+      ${state.acceptedQuoteTotal!==null?`<p class="small-note">${state.additionalInvoiceMode
+        ? `Prior paid invoice${state.priorInvoiceNo ? ` ${escapeHtml(state.priorInvoiceNo)}` : ""}: original accepted total $${state.acceptedQuoteTotal} USD · This separate invoice contains only the additional services below.`
+        : `CRM accepted total: $${state.acceptedQuoteTotal} USD${acceptedQuoteMismatch()?" · Confirm Additional invoice above or adjust item prices before invoicing.":" · Matches this booking."}`}</p>`:""}
       <div class="summary-total-row">
         <span>Booking subtotal</span>
         <strong>$${bookingSubtotal.toFixed(2)} USD</strong>
@@ -1772,7 +1832,15 @@ function createItem(initial = {}) {
     els.copyBtn.disabled = !state.generatedUrl;
     els.openBtn.disabled = !state.generatedOpenUrl;
 
-    if (multi) {
+    if (state.additionalInvoiceMode) {
+      els.actionSummary.innerHTML = `
+        Additional invoice mode is active.
+        <br />
+        Send Invoice creates a separate Stripe invoice for the items below.
+        <br />
+        Prior paid invoice <strong>${escapeHtml(state.priorInvoiceNo || "-")}</strong> remains unchanged.
+      `;
+    } else if (multi) {
       els.actionSummary.innerHTML = `
         Multi-item mode is active.
         <br />
@@ -1817,6 +1885,7 @@ function createItem(initial = {}) {
   function validateItems() {
     const errors = [];
     if(acceptedQuoteMismatch())errors.push("Item prices do not match the accepted CRM quote. Review the prices or update the agreed quote in CRM before invoicing.");
+    if(state.additionalInvoiceMode && !state.additionalInvoiceEligible)errors.push("Additional invoice mode requires a verified prior paid invoice.");
 
     state.items.forEach((item, idx) => {
       if (!item.tour_code) errors.push(`Item ${idx + 1}: Tour is required.`);
@@ -1850,6 +1919,7 @@ function createItem(initial = {}) {
 
   function buildCombinedNotes(item) {
     const parts = [];
+    if (state.additionalInvoiceMode) parts.push(`Additional approved services. Prior paid invoice: ${state.priorInvoiceNo}. Original accepted total: $${state.acceptedQuoteTotal} USD.`);
     if (els.globalNotes.value.trim()) parts.push(`General notes: ${els.globalNotes.value.trim()}`);
     if (item && item.item_notes && item.item_notes.trim()) parts.push(`Item notes: ${item.item_notes.trim()}`);
     return parts.join("\n");
@@ -1857,6 +1927,7 @@ function createItem(initial = {}) {
 
   function buildSingleItemInvoicePayload(item) {
     return {
+      ...additionalInvoiceMetadata(),
       language: item.language,
       stripe_environment: els.stripeEnvironment.value,
       tour_code: item.tour_code,
@@ -1903,6 +1974,7 @@ function createItem(initial = {}) {
 
   function buildMultiItemInvoicePayload() {
     return {
+      ...additionalInvoiceMetadata(),
       stripe_environment: els.stripeEnvironment.value,
       main_contact_name: buildFullName(),
       main_contact_email: els.mainEmail.value.trim(),
@@ -1910,7 +1982,10 @@ function createItem(initial = {}) {
       whatsapp_number: els.whatsappNumber.value.trim(),
       pickup_location_label: els.pickupLocationLabel.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),
-      notes: els.globalNotes.value.trim(),
+      notes: [
+        state.additionalInvoiceMode ? `Additional approved services. Prior paid invoice: ${state.priorInvoiceNo}. Original accepted total: $${state.acceptedQuoteTotal} USD.` : "",
+        els.globalNotes.value.trim()
+      ].filter(Boolean).join("\n"),
       invoice_due_days: Number(els.invoiceDueDays.value || 2),
       agent_id: els.agentId.value.trim(),
       inquiry_id: els.inquiryId.value.trim(),
@@ -2355,6 +2430,19 @@ function createItem(initial = {}) {
   els.openBtn.addEventListener("click", onOpen);
   els.depositLookupBtn.addEventListener("click", lookupDeposit);
   els.applyDeposit.addEventListener("change", () => {
+    clearGeneratedResult();
+    renderSummary();
+    updateModeUI();
+  });
+  els.additionalInvoiceMode.addEventListener("change", () => {
+    state.additionalInvoiceMode = state.additionalInvoiceEligible && els.additionalInvoiceMode.checked;
+    if (state.additionalInvoiceMode) {
+      els.applyDeposit.checked = false;
+      els.applyDeposit.disabled = true;
+    } else if (state.deposit) {
+      els.applyDeposit.disabled = state.deposit.can_apply === false;
+      els.applyDeposit.checked = state.deposit.can_apply !== false;
+    }
     clearGeneratedResult();
     renderSummary();
     updateModeUI();
