@@ -208,7 +208,7 @@ test("additional-services invoices preserve the prior paid invoice context", asy
     prior_payment_status: "paid",
     original_accepted_total: 198,
     items: [
-      { tour_code: "MEAL001", language: "en", quantity: 2, tour_date: "2026-11-12" },
+      { tour_code: "MEAL001", language: "en", quantity: 2, tour_date: "2026-11-12", default_provider: "Chicho" },
       {
         tour_code: "TRANS007",
         language: "en",
@@ -217,6 +217,7 @@ test("additional-services invoices preserve the prior paid invoice context", asy
         price_override_per_person: 5,
         price_adjustment_per_person: 4,
         pricing_reason: "within_mindo_transportation",
+        default_provider: "Chicho",
       },
     ],
   });
@@ -234,6 +235,7 @@ test("additional-services invoices preserve the prior paid invoice context", asy
   const lines = h.calls.filter((call) => call.pathname === "/v1/invoiceitems").map((call) => call.form);
   assert.equal(lines.length, 2);
   assert(lines.every((line) => line.get("metadata[prior_invoice_no]") === "MBW-0143"));
+  assert(lines.every((line) => line.get("metadata[default_provider]") === "Chicho"));
 });
 
 test("additional-services invoices reject an unpaid or missing prior invoice before Stripe writes", async () => {

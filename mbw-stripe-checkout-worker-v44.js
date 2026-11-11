@@ -4083,6 +4083,7 @@ const worker = {
         const price_adjustment_per_person = optionalWholeDollarAmount(body.price_adjustment_per_person, true);
         const pricing_reason = optionalString(body.pricing_reason);
         const pricing_notes = optionalString(body.pricing_notes);
+        const default_provider = optionalString(body.default_provider);
         const inquiry_id = validInternalId(body.inquiry_id, "INQ");
         const guest_id = validInternalId(body.guest_id, "G");
         const booking_id = optionalString(body.booking_id);
@@ -4181,6 +4182,7 @@ const worker = {
           guide_rate_per_person: invoiceGuideCost.ratePerPerson ? dollarsToDisplay(invoiceGuideCost.ratePerPerson) : "",
           guide_payout_total: invoiceGuideCost.total ? dollarsToDisplay(invoiceGuideCost.total) : "",
           fees_charged_to_guide: invoiceGuideCost.total ? "0.00" : "",
+          default_provider: default_provider || tour.default_provider || "",
           ...invoiceContext,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(language),
@@ -4404,6 +4406,7 @@ const worker = {
           const price_adjustment_per_person = optionalWholeDollarAmount(raw.price_adjustment_per_person, true);
           const pricing_reason = optionalString(raw.pricing_reason);
           const pricing_notes = optionalString(raw.pricing_notes);
+          const default_provider = optionalString(raw.default_provider);
           if (price_override_per_person !== null && !pricing_reason) {
             throw new Error(`Item ${index + 1}: pricing reason is required when using a price override.`);
           }
@@ -4456,6 +4459,7 @@ const worker = {
             providedAdjustmentCents,
             pricing_reason: pricing_reason || (automaticPricingMode(tour, quantity) === "automatic_solo_rate" ? "MBW019 one-guest rate" : ""),
             pricing_notes,
+            default_provider,
             minimumPartySize,
             isBelowMinimum,
             guideCost,
@@ -4625,6 +4629,7 @@ const worker = {
             guide_rate_per_person: item.guideCost.ratePerPerson ? dollarsToDisplay(item.guideCost.ratePerPerson) : "",
             guide_payout_total: item.guideCost.total ? dollarsToDisplay(item.guideCost.total) : "",
             fees_charged_to_guide: item.guideCost.total ? "0.00" : "",
+            default_provider: item.default_provider || item.tour.default_provider || "",
             ...invoiceContext,
           };
 

@@ -12,6 +12,8 @@ const emailGenerator = read("admin/custom-email-generator/index.html");
 const inquirySource = read("services/inquiry-studio/vendor/editor-source.html");
 const inquiryPublic = read("services/inquiry-studio/public/editor.html");
 const itinerary = read("admin/itinerary-generator/index.html");
+const checkout = read("book-tour/create/index.html");
+const stripeWorker = read("mbw-stripe-checkout-worker-v44.js");
 
 test("all CRM workflows expose meals, add-on duration, and the three new staff products", () => {
   for (const source of [crmMain, workflow]) {
@@ -50,4 +52,11 @@ test("generated inquiry editor contains its pilot bridge and the rebuilt meal ca
   assert.match(inquiryPublic, /pilot-ready/);
   assert.match(inquiryPublic, /meal-breakfast/);
   assert.match(inquiryPublic, /meal-lunch/);
+});
+
+test("CRM guide assignments follow meal and local-transport items into Stripe accounting metadata", () => {
+  assert.match(crmMain, /assignmentForAccountingItem\(r,item\)/);
+  assert.match(crmMain, /Object\.assign\(\{\},item,\{default_provider:provider\}\)/);
+  assert.match(checkout, /default_provider: item\.default_provider \|\| ""/);
+  assert.match(stripeWorker, /default_provider: item\.default_provider \|\| item\.tour\.default_provider \|\| ""/);
 });

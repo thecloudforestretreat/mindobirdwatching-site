@@ -1243,6 +1243,7 @@ function createItem(initial = {}) {
     price_override_per_person: initial.price_override_per_person || "",
     pricing_reason: initial.pricing_reason || "",
     pricing_notes: initial.pricing_notes || "",
+    default_provider: initial.default_provider || initial.provider_name || initial.tour_guide || "",
     source_status: initial.source_status || "",
     source_tour_code: initial.source_tour_code || initial.tour_code || ""
   };
@@ -1408,6 +1409,7 @@ function createItem(initial = {}) {
       price_override_per_person: adjustment ? String(adjustment) : "",
       pricing_reason: adjustment ? "CRM quoted price" : "",
       pricing_notes: adjustment ? `Imported quoted price: $${quotedPrice} ${isVehicleTour(tour)?"per vehicle":"per person"}` : "",
+      default_provider: String(item.default_provider || item.provider_name || item.tour_guide || "").trim(),
       source_status: String(item.status || "").trim().toLowerCase(),
       source_tour_code: tourCode
     });
@@ -2034,6 +2036,7 @@ function createItem(initial = {}) {
       quote_id: els.quoteId.value.trim(),
       billing_brand_id: "mbw",
       marketing_brand_id: invoiceMarketingBrandId(),
+      default_provider: item.default_provider || "",
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -2106,7 +2109,8 @@ function createItem(initial = {}) {
             : null,
 
           pricing_reason: item.pricing_reason || "",
-          pricing_notes: item.pricing_notes || ""
+          pricing_notes: item.pricing_notes || "",
+          default_provider: item.default_provider || ""
         };
       })
     };
