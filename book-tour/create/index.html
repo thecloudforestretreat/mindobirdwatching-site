@@ -1834,7 +1834,7 @@ function createItem(initial = {}) {
       if (tour && tour.pricing_model === "per_quad" && (!Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) errors.push(`Item ${idx + 1}: Enter a positive whole number of quads.`);
       if (!Number.isInteger(Number(item.quantity))) errors.push(`Item ${idx + 1}: Number of people must be a whole number.`);
       if (tour && Number(tour.max_person) > 0 && Number(item.quantity) > Number(tour.max_person)) errors.push(`Item ${idx + 1}: Maximum ${tour.max_person} people allowed.`);
-      if (tour && tour.requires_price_override && !hasOverridePrice(item)) errors.push(`Item ${idx + 1}: Enter the guest-approved custom-tour price adjustment.`);
+      if (tour && tour.requires_price_override && !hasOverridePrice(item)) errors.push(`Item ${idx + 1}: Enter the guest-approved final price for this item.`);
 
       if (hasOverridePrice(item)) {
         const overrideValue = Number(item.price_override_per_person);

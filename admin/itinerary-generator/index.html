@@ -507,6 +507,7 @@
         "TRANS04 - Airport Pick Up",
         "TRANS05 - Custom",
         "TRANS06 - Quito -> Mindo -> Quito",
+        "TRANS007 - Within Mindo Transportation",
         "ACT004 - Quad Tour",
         "ACT009 - Orchid Garden Tour",
         "ACT010 - Frog Concert",
@@ -546,6 +547,7 @@
         "TRANS04 - Airport Pick Up": {"type": "Transportation", "duration": "Flexible", "unitPrice": 99, "note": "Merged from accounting products, Stripe product export, and stripe_tours where available."},
         "TRANS05 - Custom": {"type": "Transportation", "duration": "Flexible", "unitPrice": 100, "note": "Merged from accounting products, Stripe product export, and stripe_tours where available."},
         "TRANS06 - Quito -> Mindo -> Quito": {"type": "Transportation", "duration": "Flexible", "unitPrice": 180, "note": "Private same-day round-trip transportation from Quito to Mindo and back to Quito. Pickup and return times are coordinated with the guest."},
+        "TRANS007 - Within Mindo Transportation": {"type": "Transportation", "duration": "Flexible", "unitPrice": 1, "note": "Flexible transportation within Mindo. US$1 is a reference amount only; enter the guest-approved final rate before invoicing."},
         "DEP001 - Reservation Deposit": {"type": "Deposit", "duration": "Flexible", "unitPrice": 100, "note": "Deposit to reserve guided birdwatching tours and activities. Deposit amount will be credited toward the total booking cost. Reservation is confirmed upon receipt of deposit."},
         "ACT002 - Waterfalls": {"type": "Nature Excursion", "duration": "Flexible", "unitPrice": 10, "note": "Discover the magic of the Chocó Andino Reserve — a lush cloud forest with hidden waterfalls and the famous Nambillo fall.  Glide across the canopy on a hummingbird-shaped cable car and feel the thrill of adventure in the heart of nature!"},
         "ACT003 - Nambillo Waterfall": {"type": "Nature Excursion", "duration": "Flexible", "unitPrice": 10, "note": "Dive into the crystal-clear Nambillo River! Swim, ride a natural 15-meter slide, or take the leap from thrilling 4- and 12-meter jumps. A refreshing cloud forest adventure just minutes from Mindo!  Approximate Duration: 3 to 4 hours"},
@@ -590,6 +592,7 @@
         "TRANS04": {model:"flat", price:99, minGuests:0},
         "TRANS05": {model:"flat", price:100, minGuests:0},
         "TRANS06": {model:"flat", price:180, minGuests:0},
+        "TRANS007": {model:"flat", price:1, minGuests:0, requiresOverride:true},
         "ACT004": {model:"per_quad", price:30, minGuests:1},
         "ACT009": {model:"per_person", price:10, minGuests:1},
         "ACT010": {model:"per_person", price:10, minGuests:0},
@@ -628,6 +631,7 @@
         "TRANS04 - Airport Pick Up": "TRANS04 - Airport Pick Up",
         "TRANS05 - Custom": "TRANS05 - Custom",
         "TRANS06 - Quito -> Mindo -> Quito": "TRANS06 - Quito -> Mindo -> Quito",
+        "TRANS007 - Within Mindo Transportation": "TRANS007 - Transporte dentro de Mindo",
         "DEP001 - Reservation Deposit": "DEP001 - Reservation Deposit",
         "ACT002 - Waterfalls": "ACT002 - Tarabita / Cascadas",
         "ACT003 - Nambillo Waterfall": "ACT003 - Cascada de Nambillo",
@@ -1105,8 +1109,14 @@
         const minimum = rule.minGuests > 1 ? ` · usual minimum ${rule.minGuests}` : '';
         const status = rule.quoteOnly
           ? (adjusted ? `Approved package price entered · starting reference ${money(rule.price)}` : `Starting reference ${money(rule.price)} · enter the approved package price`)
+          : rule.requiresOverride
+            ? (adjusted ? `Guest-approved final rate entered · reference ${money(rule.price)}` : `Reference ${money(rule.price)} only · enter the guest-approved final rate`)
           : (adjusted ? `Agreed rate entered · catalog reference ${money(rule.price)}` : `Catalog rate ${money(rule.price)}`);
-        const badge = rule.quoteOnly ? (adjusted ? 'Approved quote' : 'Needs quote') : (adjusted ? 'Adjusted' : 'Standard');
+        const badge = rule.quoteOnly
+          ? (adjusted ? 'Approved quote' : 'Needs quote')
+          : rule.requiresOverride
+            ? (adjusted ? 'Final price entered' : 'Needs final price')
+            : (adjusted ? 'Adjusted' : 'Standard');
         return `<div class="catalogMeta${adjusted ? ' adjusted' : ''}" data-catalog-meta><span>${escapeHtml(status)} · ${escapeHtml(isVehicleItem(item)?'per vehicle':pricingModelLabel(rule.model))}${escapeHtml(minimum)}</span><strong>${badge}</strong></div>`;
       }
       function toast(message){
