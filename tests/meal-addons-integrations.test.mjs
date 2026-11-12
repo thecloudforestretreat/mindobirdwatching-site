@@ -12,6 +12,7 @@ const emailGenerator = read("admin/custom-email-generator/index.html");
 const inquirySource = read("services/inquiry-studio/vendor/editor-source.html");
 const inquiryPublic = read("services/inquiry-studio/public/editor.html");
 const itinerary = read("admin/itinerary-generator/index.html");
+const zelleGenerator = read("admin/zelle-invoice-generator/index.html");
 const checkout = read("book-tour/create/index.html");
 const stripeWorker = read("mbw-stripe-checkout-worker-v44.js");
 
@@ -59,4 +60,12 @@ test("CRM guide assignments follow meal and local-transport items into Stripe ac
   assert.match(crmMain, /Object\.assign\(\{\},item,\{default_provider:provider\}\)/);
   assert.match(checkout, /default_provider: item\.default_provider \|\| ""/);
   assert.match(stripeWorker, /default_provider: item\.default_provider \|\| item\.tour\.default_provider \|\| ""/);
+});
+
+test("accommodation uses a US$50 adjustable placeholder and US$10 standard cost across staff tools", () => {
+  assert.match(crmMain, /"ACCOM01": "50"/);
+  assert.match(workflow, /"ACCOM01": "50"/);
+  assert.match(zelleGenerator, /"ACCOM01": "50"/);
+  assert.match(itinerary, /"ACCOM01": \{model:"flat_amount", price:50/);
+  assert.match(stripeWorker, /"tour_code": "ACCOM01"[\s\S]*?"amount_display": "\$50\.00"[\s\S]*?"guide_cost_flat": 10/);
 });

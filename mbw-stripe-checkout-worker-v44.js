@@ -480,6 +480,62 @@ const TOURS = [
     "requires_price_override": true
   },
   {
+    "tour_code": "ACCOM01",
+    "language": "en",
+    "status": "staff_only",
+    "tour_title": "Accommodation Booking",
+    "service_type": "accommodation",
+    "pricing_model": "flat",
+    "product_id_live": "prod_UYQ5YmW4dSC36h",
+    "price_id_live": "price_1Ub73H0wAAlYwqaVd1O4bNPC",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Flexible",
+    "pickup_time_local": "Confirmed with itinerary",
+    "dropoff_time_local": "Confirmed with itinerary",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Accommodation arranged as part of a confirmed itinerary. The standard placeholder price is $50; staff can increase or decrease it to the guest-approved final amount after confirming the property, dates, room details, and inclusions.",
+    "guide_cost_flat": 10,
+    "default_provider": "",
+    "use_inline_price": true,
+    "invoice_only": true
+  },
+  {
+    "tour_code": "ACCOM01",
+    "language": "es",
+    "status": "staff_only",
+    "tour_title": "Reserva de Alojamiento",
+    "service_type": "accommodation",
+    "pricing_model": "flat",
+    "product_id_live": "prod_UYQ5YmW4dSC36h",
+    "price_id_live": "price_1Ub73H0wAAlYwqaVd1O4bNPC",
+    "product_id_test": null,
+    "price_id_test": null,
+    "currency": "USD",
+    "amount_display": "$50.00",
+    "min_person": 1,
+    "max_person": "unlimited",
+    "duration_label": "Flexible",
+    "pickup_time_local": "Confirmado con el itinerario",
+    "dropoff_time_local": "Confirmado con el itinerario",
+    "pickup_window_minutes": 0,
+    "timezone": "America/Guayaquil",
+    "hero_image_url": "",
+    "tour_page_url": "",
+    "description_one_liner": "Alojamiento coordinado como parte de un itinerario confirmado. El precio base provisional es de $50; el equipo puede aumentarlo o reducirlo al monto final aprobado después de confirmar la propiedad, las fechas, la habitación y los servicios incluidos.",
+    "guide_cost_flat": 10,
+    "default_provider": "",
+    "use_inline_price": true,
+    "invoice_only": true
+  },
+  {
     "tour_code": "MBW004",
     "language": "en",
     "status": "active",
@@ -2539,8 +2595,12 @@ function automaticPricingMode(tour, numberOfPeople) {
 
 function guideCostSummary(tour, numberOfPeople) {
   const partySize = requiredInt(numberOfPeople, "number_of_people");
+  const flatRate = Number(tour && tour.guide_cost_flat);
   const regularRate = Number(tour && tour.guide_cost_per_person);
   const soloCost = Number(tour && tour.solo_guide_cost);
+  if (Number.isFinite(flatRate) && flatRate > 0) {
+    return { payModel: "flat", ratePerPerson: flatRate, total: flatRate };
+  }
   if (partySize === 1 && Number.isFinite(soloCost) && soloCost > 0) {
     return { payModel: "solo_minimum", ratePerPerson: soloCost, total: soloCost };
   }
@@ -2822,9 +2882,65 @@ async function findAvailableDeposit(env, isTest, inquiryId) {
     null,
   );
   const deposits = (result.data || [])
-    .filter((pi) => !String(pi.metadata && pi.metadata.applied_invoice_id || "").trim() && pi.latest_charge && typeof pi.latest_charge === "object" && !pi.latest_charge.disputed && !pi.latest_charge.refunded && !Number(pi.latest_charge.amount_refunded || 0))
+    .filter((pi) => pi.latest_charge && typeof pi.latest_charge === "object" && !pi.latest_charge.disputed && !pi.latest_charge.refunded && !Number(pi.latest_charge.amount_refunded || 0))
     .sort((a, b) => Number(b.created || 0) - Number(a.created || 0));
-  return deposits[0] || null;
+  for (const deposit of deposits) {
+    const appliedInvoiceId = String(deposit.metadata && deposit.metadata.applied_invoice_id || "").trim();
+    if (!appliedInvoiceId) return deposit;
+    try {
+      return await allowHistoricalDepositReuseAfterVoid(env, isTest, deposit, inquiryId, "");
+    } catch (_) {}
+  }
+  return null;
+}
+
+function depositApplicationMethod(deposit) {
+  if (!deposit) return "";
+  return String(deposit._deposit_application_method || "").trim()
+    || (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit");
+}
+
+function depositIdempotencyScope(deposit) {
+  if (!deposit) return "";
+  return String(deposit._idempotency_scope || deposit.id || "").trim();
+}
+
+async function allowHistoricalDepositReuseAfterVoid(env, isTest, deposit, inquiryId, guestId) {
+  const md = deposit && deposit.metadata || {};
+  const appliedInvoiceId = String(md.applied_invoice_id || "").trim();
+  if (!appliedInvoiceId) return deposit;
+  if (String(md.deposit_application_method || "") !== "historical_invoice_credit") {
+    throw new Error("This deposit is already applied to an invoice.");
+  }
+
+  const previousInvoice = await stripeRequest(
+    env,
+    isTest,
+    "GET",
+    `/v1/invoices/${encodeURIComponent(appliedInvoiceId)}`,
+    null,
+  );
+  const previousMetadata = previousInvoice && previousInvoice.metadata || {};
+  if (!previousInvoice || previousInvoice.status !== "void") {
+    throw new Error("This deposit is already applied to an invoice.");
+  }
+  if (String(previousMetadata.deposit_application_method || "") !== "historical_invoice_credit") {
+    throw new Error("The prior invoice deposit method requires manual review.");
+  }
+  if (String(previousMetadata.deposit_payment_intent_id || "") !== String(deposit.id || "")) {
+    throw new Error("The prior invoice deposit identity does not match this payment.");
+  }
+  if (inquiryId && String(previousMetadata.inquiry_id || "") !== inquiryId) {
+    throw new Error("The prior invoice belongs to a different CRM inquiry.");
+  }
+  if (guestId && String(previousMetadata.guest_id || "") !== guestId) {
+    throw new Error("The prior invoice guest identity does not match this booking.");
+  }
+
+  deposit._deposit_application_method = "historical_invoice_credit";
+  deposit._replaces_voided_invoice_id = appliedInvoiceId;
+  deposit._idempotency_scope = `${deposit.id}-replaces-${appliedInvoiceId}`;
+  return deposit;
 }
 
 async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId, currency, guestId = "") {
@@ -2845,7 +2961,7 @@ async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId
     throw new Error("Deposit belongs to a different CRM inquiry.");
   }
   if (guestId && md.guest_id !== guestId) throw new Error("Deposit guest identity does not match this booking.");
-  if (md.applied_invoice_id) throw new Error("This deposit is already applied to an invoice.");
+  await allowHistoricalDepositReuseAfterVoid(env, isTest, pi, inquiryId, guestId);
   const charge = pi.latest_charge && typeof pi.latest_charge === "object" ? pi.latest_charge : null;
   if (!charge || Number(charge.amount_refunded || 0) > 0 || charge.refunded || charge.disputed) throw new Error("This deposit needs manual review because its charge is unavailable, refunded or disputed.");
   if (!Number.isSafeInteger(pi.amount_received) || pi.amount_received <= 0) throw new Error("Deposit has no verified received amount.");
@@ -2861,7 +2977,7 @@ function invoiceDepositTotals(invoice) {
 }
 
 async function createHistoricalDepositCredit(env, isTest, customerId, deposit, currency, inquiryId, guestId, invoiceId) {
-  if (!deposit || deposit.customer) return;
+  if (!deposit || depositApplicationMethod(deposit) !== "historical_invoice_credit") return;
   if (!invoiceId) throw new Error("Deposit credit requires a specific draft invoice.");
   const amountCents = Number(deposit.amount_received || deposit.amount || 0);
   if (!amountCents) throw new Error("Historical deposit amount is missing.");
@@ -2882,9 +2998,9 @@ async function createHistoricalDepositCredit(env, isTest, customerId, deposit, c
 async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, guestId) {
   if (!deposit) return invoice;
   if (Number(deposit.amount_received || deposit.amount || 0) > Number(invoice.amount_due || 0)) {
-    if (deposit.customer) throw new Error("Deposit exceeds the invoice amount. Review this booking manually.");
+    if (depositApplicationMethod(deposit) === "stripe_attach_payment") throw new Error("Deposit exceeds the invoice amount. Review this booking manually.");
   }
-  if (deposit.customer) {
+  if (depositApplicationMethod(deposit) === "stripe_attach_payment") {
     const attachForm = new URLSearchParams();
     attachForm.set("payment_intent", deposit.id);
     await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/attach_payment`, attachForm, `deposit-attach-${deposit.id}-${invoice.id}`);
@@ -2897,8 +3013,11 @@ async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, 
   metadataForm.set("metadata[deposit_status]", "applied");
   metadataForm.set(
     "metadata[deposit_application_method]",
-    deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit",
+    depositApplicationMethod(deposit),
   );
+  if (deposit._replaces_voided_invoice_id) {
+    metadataForm.set("metadata[previous_voided_invoice_id]", deposit._replaces_voided_invoice_id);
+  }
   if (inquiryId) metadataForm.set("metadata[inquiry_id]", inquiryId);
   if (guestId) metadataForm.set("metadata[guest_id]", guestId);
   await stripeRequest(env, isTest, "POST", `/v1/payment_intents/${encodeURIComponent(deposit.id)}`, metadataForm);
@@ -3434,6 +3553,69 @@ function appendActivityItemSummary(base, items) {
   return base;
 }
 
+async function runInvoicePostSendTasks(env, { label, activityFields, attributionPayload, ledgerPayload }) {
+  const agentActivityPromise = (async () => {
+    try {
+      const result = await postToAgentActivityLogger(env, { fields: activityFields });
+      console.log(`Agent activity logged: invoice_sent ${label}`, JSON.stringify(result));
+      return { result, error: "" };
+    } catch (error) {
+      const message = String(error && error.message ? error.message : error);
+      console.log(`Agent activity logging failed for invoice_sent ${label}`, { error: message });
+      return { result: null, error: message };
+    }
+  })();
+
+  const [agentOutcome, attributionOutcome, ledgerOutcome] = await Promise.allSettled([
+    agentActivityPromise,
+    syncRevenueAttribution(env, attributionPayload),
+    syncCrmInvoiceLedger(env, ledgerPayload),
+  ]);
+
+  const agent = agentOutcome.status === "fulfilled"
+    ? agentOutcome.value
+    : { result: null, error: String(agentOutcome.reason || "agent_activity_failed") };
+  const attribution = attributionOutcome.status === "fulfilled"
+    ? attributionOutcome.value
+    : { ok: false, error: String(attributionOutcome.reason || "attribution_link_failed") };
+  const ledger = ledgerOutcome.status === "fulfilled"
+    ? ledgerOutcome.value
+    : { ok: false, error: String(ledgerOutcome.reason || "crm_ledger_sync_failed") };
+
+  console.log(`Invoice post-send sync completed: ${label}`, {
+    agent_activity_logged: !!(agent.result && agent.result.ok),
+    attribution_linked: !!attribution.ok,
+    crm_ledger_linked: !!ledger.ok,
+  });
+
+  return {
+    queued: false,
+    agentActivityResult: agent.result,
+    agentActivityError: agent.error,
+    attributionLinkResult: attribution,
+    crmLedgerResult: ledger,
+  };
+}
+
+async function scheduleInvoicePostSendTasks(ctx, env, config) {
+  const task = runInvoicePostSendTasks(env, config);
+  if (ctx && typeof ctx.waitUntil === "function") {
+    ctx.waitUntil(task.catch((error) => {
+      console.log(`Invoice post-send background sync failed: ${config.label}`, {
+        error: String(error && error.message ? error.message : error),
+      });
+    }));
+    return {
+      queued: true,
+      agentActivityResult: null,
+      agentActivityError: "",
+      attributionLinkResult: { ok: false, queued: true },
+      crmLedgerResult: { ok: false, queued: true },
+    };
+  }
+  return await task;
+}
+
 async function enrichChargeAndFees(env, isTest, paymentIntentId) {
   const out = {
     stripe_charge_id: "",
@@ -3577,6 +3759,7 @@ const worker = {
         max_guests_per_quad: t.max_guests_per_quad || null,
         solo_amount_display: t.solo_amount_display || "",
         guide_cost_per_person: t.guide_cost_per_person || null,
+        guide_cost_flat: t.guide_cost_flat || null,
         solo_guide_cost: t.solo_guide_cost || null,
         quote_only: t.quote_only === true,
         requires_price_override: t.requires_price_override === true,
@@ -3668,14 +3851,12 @@ const worker = {
           return json({ ok: false, error: "The entered PaymentIntent has not succeeded." }, 400);
         }
         const depositMetadata = deposit.metadata || {};
-        if (depositMetadata.applied_invoice_id) {
-          return json({ ok: false, error: "This deposit is already applied to an invoice." }, 400);
-        }
         if (inquiryId && depositMetadata.inquiry_id && String(depositMetadata.inquiry_id) !== inquiryId) {
           return json({ ok: false, error: "This deposit belongs to a different CRM inquiry." }, 400);
         }
         const crm = await lookupCrmInquiry(env, inquiryId);
-        await validateDepositForInvoice(env, isTest, deposit.id, inquiryId, "USD", crm?.guest_id || "");
+        const verifiedDeposit = await validateDepositForInvoice(env, isTest, deposit.id, inquiryId, "USD", crm?.guest_id || "");
+        const applicationMethod = depositApplicationMethod(verifiedDeposit);
         return json({
           ok: true,
           found: true,
@@ -3684,10 +3865,13 @@ const worker = {
           payment_intent_id: deposit.id,
           stripe_customer_id: typeof deposit.customer === "string" ? deposit.customer : (deposit.customer && deposit.customer.id || ""),
           can_apply: true,
-          application_method: deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit",
-          eligibility_message: deposit.customer
-            ? "This deposit will be attached to the invoice as a Stripe payment."
-            : "This historical deposit will be shown as a credit on the invoice.",
+          application_method: applicationMethod,
+          replaces_voided_invoice_id: verifiedDeposit._replaces_voided_invoice_id || "",
+          eligibility_message: verifiedDeposit._replaces_voided_invoice_id
+            ? "The prior invoice is void. This deposit can be credited once to the replacement invoice."
+            : applicationMethod === "stripe_attach_payment"
+              ? "This deposit will be attached to the invoice as a Stripe payment."
+              : "This historical deposit will be shown as a credit on the invoice.",
           amount: Number(deposit.amount_received || deposit.amount || 0) / 100,
           currency: String(deposit.currency || "usd").toUpperCase(),
           created_at: new Date(Number(deposit.created || 0) * 1000).toISOString(),
@@ -4189,9 +4373,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           stripe_customer_id: deposit && deposit.customer
             ? (typeof deposit.customer === "string" ? deposit.customer : deposit.customer.id || "")
             : "",
@@ -4225,7 +4408,7 @@ const worker = {
           const v = md[k];
           if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
         });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${depositIdempotencyScope(deposit)}` : undefined);
 
         const itemForm = new URLSearchParams();
         itemForm.set("customer", customer.id);
@@ -4259,57 +4442,45 @@ const worker = {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
         }
 
-        let agentActivityResult = null;
-        let agentActivityError = "";
-        try {
-          const createdAt = new Date();
-          const base = buildAgentActivityBase({
-            createdAt,
-            actionType: "invoice_sent",
-            bookingMode: "single_item",
-            bookingSessionId: "",
-            stripeEnvironment: stripeEnv,
-            agentId: agent_id,
-            invoiceId: finalized.id || "",
-            invoiceNumber: finalized.number || "",
-            paymentLinkUrl: "",
-            hostedInvoiceUrl: finalized.hosted_invoice_url || "",
-            guestFirstName: "",
-            guestLastName: "",
-            guestEmail: main_email,
-            guestPhone: main_phone,
-            pickupLocationLabel: pickup_location_label,
-            pickupAddressOrHotel: pickup_address_or_hotel,
-            notes,
-          });
+        const activityFields = buildAgentActivityBase({
+          createdAt: new Date(),
+          actionType: "invoice_sent",
+          bookingMode: "single_item",
+          bookingSessionId: "",
+          stripeEnvironment: stripeEnv,
+          agentId: agent_id,
+          invoiceId: finalized.id || "",
+          invoiceNumber: finalized.number || "",
+          paymentLinkUrl: "",
+          hostedInvoiceUrl: finalized.hosted_invoice_url || "",
+          guestFirstName: "",
+          guestLastName: "",
+          guestEmail: main_email,
+          guestPhone: main_phone,
+          pickupLocationLabel: pickup_location_label,
+          pickupAddressOrHotel: pickup_address_or_hotel,
+          notes,
+        });
+        appendActivityItemSummary(activityFields, [{
+          tour_code: tour.tour_code,
+          tour_title: tour.tour_title,
+          tour_date,
+          language,
+          quantity: String(number_of_people),
+          amount_cents: Number(finalized.amount_due || 0),
+          currency: (finalized.currency || "usd").toUpperCase(),
+          service_type: tour.service_type || "",
+        }]);
+        activityFields.status = finalized.status || "open";
 
-          appendActivityItemSummary(base, [{
-            tour_code: tour.tour_code,
-            tour_title: tour.tour_title,
-            tour_date,
-            language,
-            quantity: String(number_of_people),
-            amount_cents: Number(finalized.amount_due || 0),
-            currency: (finalized.currency || "usd").toUpperCase(),
-            service_type: tour.service_type || "",
-          }]);
-
-          base.status = finalized.status || "open";
-          agentActivityResult = await postToAgentActivityLogger(env, { fields: base });
-          console.log("Agent activity logged: invoice_sent single", JSON.stringify(agentActivityResult));
-        } catch (err) {
-          agentActivityError = String(err && err.message ? err.message : err);
-          console.log("Agent activity logging failed for invoice_sent", { error: agentActivityError });
-        }
-
-        const attributionLinkResult = await syncRevenueAttribution(env, {
+        const attributionPayload = {
           inquiry_id,
           guest_id,
           booking_id,
           quote_id,
           invoice_id: finalized.id || "",
-        });
-        const crmLedgerResult = await syncCrmInvoiceLedger(env, {
+        };
+        const ledgerPayload = {
           inquiry_id, guest_id, booking_id,
           invoice_id: finalized.id || "",
           invoice_no: finalized.number || "",
@@ -4327,6 +4498,12 @@ const worker = {
           notes: invoiceContext.invoice_context === "additional_services"
             ? `Additional-services Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
             : "Stripe invoice created; payment status will update from the paid webhook.",
+        };
+        const postSend = await scheduleInvoicePostSendTasks(ctx, env, {
+          label: "single",
+          activityFields,
+          attributionPayload,
+          ledgerPayload,
         });
 
         return json({
@@ -4349,12 +4526,13 @@ const worker = {
           amount_before_deposit: expectedInvoiceCents / 100,
           amount_remaining: Number(finalized.amount_remaining || 0) / 100,
           env: stripeEnv,
-          agent_activity_logged: !!(agentActivityResult && agentActivityResult.ok),
-          agent_activity_error: agentActivityError,
-          attribution_linked: !!attributionLinkResult.ok,
-          attribution_link_id: attributionLinkResult.attribution_link_id || "",
-          attribution_link_error: attributionLinkResult.ok ? "" : (attributionLinkResult.error || "attribution_link_failed"),
-          crm_ledger_linked: !!crmLedgerResult.ok,
+          post_send_sync_queued: postSend.queued,
+          agent_activity_logged: !!(postSend.agentActivityResult && postSend.agentActivityResult.ok),
+          agent_activity_error: postSend.agentActivityError,
+          attribution_linked: !!postSend.attributionLinkResult.ok,
+          attribution_link_id: postSend.attributionLinkResult.attribution_link_id || "",
+          attribution_link_error: postSend.queued ? "" : (postSend.attributionLinkResult.ok ? "" : (postSend.attributionLinkResult.error || "attribution_link_failed")),
+          crm_ledger_linked: !!postSend.crmLedgerResult.ok,
         }, 200);
       } catch (err) {
         return json({ ok: false, error: err.message || "Unknown error" }, 400);
@@ -4509,9 +4687,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
           ...invoiceContext,
@@ -4558,9 +4735,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           stripe_customer_id: customer.id,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
@@ -4579,7 +4755,7 @@ const worker = {
           const v = invMd[k];
           if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));
         });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${depositIdempotencyScope(deposit)}` : undefined);
 
         for (const item of normalizedItems) {
           const lineMd = {
@@ -4668,58 +4844,46 @@ const worker = {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
         }
 
-        let agentActivityResult = null;
-        let agentActivityError = "";
-        try {
-          const createdAt = new Date();
-          const base = buildAgentActivityBase({
-            createdAt,
-            actionType: "invoice_sent",
-            bookingMode: "multi_item",
-            bookingSessionId: "",
-            stripeEnvironment: stripeEnv,
-            agentId: agent_id,
-            invoiceId: finalized.id || "",
-            invoiceNumber: finalized.number || "",
-            paymentLinkUrl: "",
-            hostedInvoiceUrl: finalized.hosted_invoice_url || "",
-            guestFirstName: "",
-            guestLastName: "",
-            guestEmail: main_email,
-            guestPhone: main_phone,
-            pickupLocationLabel: pickup_location_label,
-            pickupAddressOrHotel: pickup_address_or_hotel,
-            notes,
-          });
+        const activityFields = buildAgentActivityBase({
+          createdAt: new Date(),
+          actionType: "invoice_sent",
+          bookingMode: "multi_item",
+          bookingSessionId: "",
+          stripeEnvironment: stripeEnv,
+          agentId: agent_id,
+          invoiceId: finalized.id || "",
+          invoiceNumber: finalized.number || "",
+          paymentLinkUrl: "",
+          hostedInvoiceUrl: finalized.hosted_invoice_url || "",
+          guestFirstName: "",
+          guestLastName: "",
+          guestEmail: main_email,
+          guestPhone: main_phone,
+          pickupLocationLabel: pickup_location_label,
+          pickupAddressOrHotel: pickup_address_or_hotel,
+          notes,
+        });
+        appendActivityItemSummary(activityFields, normalizedItems.map((item) => ({
+          tour_code: item.tour_code,
+          tour_title: item.tour.tour_title,
+          tour_date: item.tour_date,
+          language: item.language,
+          quantity: String(item.quantity),
+          amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
+          currency: item.tour.currency || "USD",
+          service_type: item.tour.service_type || "",
+        })));
+        activityFields.status = finalized.status || "open";
 
-          appendActivityItemSummary(base, normalizedItems.map((item) => ({
-            tour_code: item.tour_code,
-            tour_title: item.tour.tour_title,
-            tour_date: item.tour_date,
-            language: item.language,
-            quantity: String(item.quantity),
-            amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
-            currency: item.tour.currency || "USD",
-            service_type: item.tour.service_type || "",
-          })));
-
-          base.status = finalized.status || "open";
-          agentActivityResult = await postToAgentActivityLogger(env, { fields: base });
-          console.log("Agent activity logged: invoice_sent multi", JSON.stringify(agentActivityResult));
-        } catch (err) {
-          agentActivityError = String(err && err.message ? err.message : err);
-          console.log("Agent activity logging failed for multi invoice_sent", { error: agentActivityError });
-        }
-
-        const attributionLinkResult = await syncRevenueAttribution(env, {
+        const attributionPayload = {
           inquiry_id,
           guest_id,
           booking_id,
           quote_id,
           invoice_id: finalized.id || "",
-        });
+        };
         const orderedDates = normalizedItems.map(item => item.tour_date).filter(Boolean).sort();
-        const crmLedgerResult = await syncCrmInvoiceLedger(env, {
+        const ledgerPayload = {
           inquiry_id, guest_id, booking_id,
           invoice_id: finalized.id || "",
           invoice_no: finalized.number || "",
@@ -4737,6 +4901,12 @@ const worker = {
           notes: invoiceContext.invoice_context === "additional_services"
             ? `Additional-services multi-item Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
             : "Multi-item Stripe invoice created; payment status will update from the paid webhook.",
+        };
+        const postSend = await scheduleInvoicePostSendTasks(ctx, env, {
+          label: "multi",
+          activityFields,
+          attributionPayload,
+          ledgerPayload,
         });
 
         return json({
@@ -4763,12 +4933,13 @@ const worker = {
           amount_remaining: Number(finalized.amount_remaining || 0) / 100,
           env: stripeEnv,
           total_items: normalizedItems.length,
-          agent_activity_logged: !!(agentActivityResult && agentActivityResult.ok),
-          agent_activity_error: agentActivityError,
-          attribution_linked: !!attributionLinkResult.ok,
-          attribution_link_id: attributionLinkResult.attribution_link_id || "",
-          attribution_link_error: attributionLinkResult.ok ? "" : (attributionLinkResult.error || "attribution_link_failed"),
-          crm_ledger_linked: !!crmLedgerResult.ok,
+          post_send_sync_queued: postSend.queued,
+          agent_activity_logged: !!(postSend.agentActivityResult && postSend.agentActivityResult.ok),
+          agent_activity_error: postSend.agentActivityError,
+          attribution_linked: !!postSend.attributionLinkResult.ok,
+          attribution_link_id: postSend.attributionLinkResult.attribution_link_id || "",
+          attribution_link_error: postSend.queued ? "" : (postSend.attributionLinkResult.ok ? "" : (postSend.attributionLinkResult.error || "attribution_link_failed")),
+          crm_ledger_linked: !!postSend.crmLedgerResult.ok,
         }, 200);
       } catch (err) {
         return json({ ok: false, error: err.message || "Unknown error" }, 400);

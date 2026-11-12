@@ -57,7 +57,16 @@ function harness() {
     const response = await context.worker.fetch(request, env, {});
     return { response, body: await response.json() };
   };
-  return { call, calls, context, env };
+  const callWithExecutionContext = async (path, payload, executionContext) => {
+    const request = new Request(`https://example.test/stripe/api/${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const response = await context.worker.fetch(request, env, executionContext);
+    return { response, body: await response.json() };
+  };
+  return { call, callWithExecutionContext, calls, context, env };
 }
 
 const base = {
@@ -199,6 +208,51 @@ test("within-Mindo transportation is staff-only and cannot bill the US$1 referen
   assert.equal(line.get("quantity"), "1");
 });
 
+test("accommodation is staff-only with an adjustable US$50 placeholder and US$10 standard cost", async () => {
+  const h = harness();
+  for (const language of ["en", "es"]) {
+    const publicResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}`), h.env, {});
+    const publicBody = await publicResponse.json();
+    assert.equal(publicBody.tours.some((item) => item.tour_code === "ACCOM01"), false);
+
+    const staffResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}&scope=staff`), h.env, {});
+    const staffBody = await staffResponse.json();
+    const item = staffBody.tours.find((tour) => tour.tour_code === "ACCOM01");
+    assert(item, `ACCOM01:${language} missing`);
+    assert.equal(item.amount_display, "$50.00");
+    assert.equal(item.pricing_model, "flat");
+    assert.equal(item.invoice_only, true);
+    assert.equal(item.requires_price_override, false);
+    assert.equal(item.guide_cost_flat, 10);
+  }
+
+  const standardInvoice = await h.call("create-invoice", { ...base, tour_code: "ACCOM01" });
+  assert.equal(standardInvoice.response.status, 200, JSON.stringify(standardInvoice.body));
+  assert.equal(standardInvoice.body.amount_before_deposit, 50);
+  const standardLine = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(standardLine.get("price_data[unit_amount]"), "5000");
+  assert.equal(standardLine.get("quantity"), "1");
+  assert.equal(standardLine.get("metadata[guide_rate_per_person]"), "10.00");
+  assert.equal(standardLine.get("metadata[guide_payout_total]"), "10.00");
+
+  const adjusted = harness();
+
+  const invoice = await adjusted.call("create-invoice", {
+    ...base,
+    tour_code: "ACCOM01",
+    price_override_per_person: 80,
+    price_adjustment_per_person: 30,
+    pricing_reason: "guest_approved_accommodation",
+  });
+  assert.equal(invoice.response.status, 200, JSON.stringify(invoice.body));
+  assert.equal(invoice.body.amount_before_deposit, 80);
+  const line = adjusted.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(line.get("price_data[product]"), "prod_UYQ5YmW4dSC36h");
+  assert.equal(line.get("price_data[unit_amount]"), "8000");
+  assert.equal(line.get("quantity"), "1");
+  assert.equal(line.get("metadata[service_type]"), "accommodation");
+});
+
 test("additional-services invoices preserve the prior paid invoice context", async () => {
   const h = harness();
   const result = await h.call("create-invoice-multi", {
@@ -236,6 +290,25 @@ test("additional-services invoices preserve the prior paid invoice context", asy
   assert.equal(lines.length, 2);
   assert(lines.every((line) => line.get("metadata[prior_invoice_no]") === "MBW-0143"));
   assert(lines.every((line) => line.get("metadata[default_provider]") === "Chicho"));
+});
+
+test("invoice confirmation returns while post-send bookkeeping continues in the background", async () => {
+  const h = harness();
+  let backgroundTask = null;
+  const result = await h.callWithExecutionContext("create-invoice", {
+    ...base,
+    tour_code: "ACCOM01",
+  }, {
+    waitUntil(promise) {
+      backgroundTask = promise;
+    },
+  });
+
+  assert.equal(result.response.status, 200, JSON.stringify(result.body));
+  assert.equal(result.body.post_send_sync_queued, true);
+  assert.equal(result.body.attribution_linked, false);
+  assert.equal(typeof backgroundTask?.then, "function");
+  await backgroundTask;
 });
 
 test("additional-services invoices reject an unpaid or missing prior invoice before Stripe writes", async () => {
