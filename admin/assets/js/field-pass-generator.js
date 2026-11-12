@@ -3,16 +3,16 @@
 
   const APP_SCRIPT_URL="https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec";
   const DAY_DESIGNS=[
-    {code:"COTR",name:"Andean Cock-of-the-Rock",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/01-andean-cock-of-the-rock-field-pass.png"},
-    {code:"GHQ",name:"Golden-headed Quetzal",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/02-golden-headed-quetzal-field-pass.png"},
-    {code:"TBAR",name:"Toucan Barbet",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/03-toucan-barbet-field-pass.png"},
-    {code:"CTOU",name:"Choco Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/04-choco-toucan-field-pass.png"},
-    {code:"PMAR",name:"Pale-mandibled Aracari",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/05-pale-mandibled-aracari-field-pass.png"},
-    {code:"PBMT",name:"Plate-billed Mountain-Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/06-plate-billed-mountain-toucan-field-pass.png"},
-    {code:"RTOU",name:"Rainforest Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/07-rainforest-toucan-field-pass.png"},
-    {code:"VTS",name:"Violet-tailed Sylph",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/08-violet-tailed-sylph-field-pass.png"}
+    {code:"COTR",name:"Andean Cock-of-the-Rock",note:"Males gather at traditional forest leks at dawn, filling the cloud forest with movement and calls.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/01-andean-cock-of-the-rock-field-pass.png"},
+    {code:"GHQ",name:"Golden-headed Quetzal",note:"A quiet canopy search near fruiting trees can reveal one of the cloud forest's most elegant birds.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/02-golden-headed-quetzal-field-pass.png"},
+    {code:"TBAR",name:"Toucan Barbet",note:"This colorful Choco-Andean bird feeds on fruit and insects and may appear with active forest groups.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/03-toucan-barbet-field-pass.png"},
+    {code:"CTOU",name:"Choco Toucan",note:"Listen for calls and scan the canopy around productive forest edges and fruiting trees.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/04-choco-toucan-field-pass.png"},
+    {code:"PMAR",name:"Pale-mandibled Aracari",note:"Often seen moving through fruiting trees, this social toucan brings energy and color to the canopy.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/05-pale-mandibled-aracari-field-pass.png"},
+    {code:"PBMT",name:"Plate-billed Mountain-Toucan",note:"A signature Choco-Andean target whose route depends on elevation, weather and current forest activity.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/06-plate-billed-mountain-toucan-field-pass.png"},
+    {code:"RTOU",name:"Rainforest Toucan",note:"Toucans connect the forest canopy to the fruiting trees that feed a wider community of cloud forest birds.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/07-rainforest-toucan-field-pass.png"},
+    {code:"VTS",name:"Violet-tailed Sylph",note:"Its long violet tail is most memorable when light, angle and rapid hummingbird movement line up.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/08-violet-tailed-sylph-field-pass.png"}
   ];
-  const NIGHT_DESIGN={code:"NIGHT",name:"Mindo After Dark",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/09-mindo-after-dark-night-walk-pass.png"};
+  const NIGHT_DESIGN={code:"NIGHT",name:"Mindo After Dark",note:"After sunset, frogs, insects, spiders and other small wildlife reveal a different rhythm of the cloud forest.",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/09-mindo-after-dark-night-walk-pass.png"};
   const GUIDES=[
     {name:"Chicho",phone:"+593 98 600 5054"},
     {name:"Neicer",phone:"+593 98 095 5817"},
@@ -22,7 +22,7 @@
   ];
   const state={records:[],passes:[],active:0};
   const $=id=>document.getElementById(id);
-  const ids=["bookingSelect","guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guideInput","guidePhoneInput","tourContactInput","designInput","previewGuestInput","heroImage","outTourName","outEdition","outGuest","outDate","outStart","outMeeting","outDuration","outGuide","outGuidePhone","outFieldId","outTourContact","ticketScale","previewStage","testSummary","statusText","refreshBtn","downloadBtn","downloadAllBtn"];
+  const ids=["bookingSelect","guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guideInput","guidePhoneInput","tourContactInput","designInput","companionLanguageInput","previewGuestInput","heroImage","outFieldNote","outEdition","outGuest","outDate","outStart","outMeeting","outDuration","outGuide","outGuidePhone","outFieldId","companionQr","ticketScale","previewStage","testSummary","statusText","refreshBtn","downloadBtn","downloadAllBtn"];
   const el={};
 
   document.addEventListener("DOMContentLoaded",init);
@@ -30,7 +30,7 @@
 
   function init(){ids.forEach(id=>el[id]=$(id));renderGuideOptions();renderDesignOptions();bind();rebuild();loadRecords();}
   function bind(){
-    ["guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guidePhoneInput","tourContactInput","designInput"].forEach(id=>{
+    ["guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guidePhoneInput","tourContactInput","designInput","companionLanguageInput"].forEach(id=>{
       el[id].addEventListener("input",rebuild);el[id].addEventListener("change",rebuild);
     });
     el.guideInput.addEventListener("change",()=>{const guide=GUIDES.find(g=>g.name===el.guideInput.value);if(guide&&guide.phone)el.guidePhoneInput.value=guide.phone;rebuild();});
@@ -60,7 +60,18 @@
   function renderGuestOptions(){const selected=state.active;el.previewGuestInput.innerHTML="";state.passes.forEach((p,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=`${p.guest} · ${p.design.name}`;el.previewGuestInput.appendChild(o);});el.previewGuestInput.value=String(selected);}
   function renderActive(){
     const pass=state.passes[state.active]||state.passes[0];if(!pass)return;
-    el.heroImage.src=pass.design.src;el.outTourName.textContent=el.tourNameInput.value||"Mindo wildlife experience";el.outEdition.textContent=`${pass.design.name} edition`;el.outGuest.textContent=pass.guest;el.outDate.textContent=formatDate(el.tourDateInput.value);el.outStart.textContent=el.startInput.value||"As confirmed";el.outMeeting.textContent=el.meetingInput.value||"As confirmed";el.outDuration.textContent=el.durationInput.value||"As booked";el.outGuide.textContent=el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value;el.outGuidePhone.textContent=el.guidePhoneInput.value?`WhatsApp ${el.guidePhoneInput.value}`:"WhatsApp to be confirmed";el.outFieldId.textContent=pass.fieldId;el.outTourContact.textContent=`WhatsApp ${el.tourContactInput.value}`;scalePreview();
+    el.heroImage.src=pass.design.src;el.outFieldNote.textContent=pass.design.note;el.outEdition.textContent=`${pass.design.name} edition`;el.outGuest.textContent=pass.guest;el.outDate.textContent=formatDate(el.tourDateInput.value);el.outStart.textContent=el.startInput.value||"As confirmed";el.outMeeting.textContent=el.meetingInput.value||"As confirmed";el.outDuration.textContent=el.durationInput.value||"As booked";el.outGuide.textContent=el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value;el.outGuidePhone.textContent=el.guidePhoneInput.value?`WhatsApp ${el.guidePhoneInput.value}`:"WhatsApp to be confirmed";el.outFieldId.textContent=pass.fieldId;renderCompanionQr();scalePreview();
+  }
+  function companionUrl(){
+    const language=el.companionLanguageInput.value==="es"?"es":"en";
+    const path=language==="es"?"/es/guia-del-pase-de-campo/":"/field-pass-companion/";
+    const q=new URLSearchParams({k:el.passTypeInput.value,t:el.tourNameInput.value||"Mindo nature experience",d:formatDate(el.tourDateInput.value),s:el.startInput.value||"As confirmed",du:el.durationInput.value||"As booked",m:el.meetingInput.value||"As confirmed",g:el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value,gp:el.guidePhoneInput.value||"",c:el.tourContactInput.value});
+    return `https://mindobirdwatching.com${path}?${q}`;
+  }
+  function renderCompanionQr(){
+    if(!el.companionQr)return;el.companionQr.innerHTML="";
+    if(!window.QRCode){el.companionQr.textContent="QR";return;}
+    new window.QRCode(el.companionQr,{text:companionUrl(),width:112,height:112,colorDark:"#073a2b",colorLight:"#ffffff",correctLevel:window.QRCode.CorrectLevel.M});
   }
   function scalePreview(){if(!el.previewStage||!el.ticketScale)return;const width=Math.max(280,el.previewStage.clientWidth-36);const scale=Math.min(1,width/944);el.ticketScale.style.transform=`scale(${scale})`;el.ticketScale.style.width=`${944*scale}px`;el.ticketScale.style.height=`${1672*scale}px`;}
   function formatDate(value){if(!value)return"As confirmed";const d=new Date(`${value}T12:00:00`);return Number.isNaN(d.getTime())?value:d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}

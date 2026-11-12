@@ -8,9 +8,10 @@
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="canonical" href="https://admin.mindobirdwatching.com/field-pass-generator/" />
-  <link rel="stylesheet" href="/assets/css/field-pass-generator.css?v=2" />
+  <link rel="stylesheet" href="/assets/css/field-pass-generator.css?v=3" />
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-  <script src="/assets/js/field-pass-generator.js?v=2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+  <script src="/assets/js/field-pass-generator.js?v=3" defer></script>
 </head>
 <body>
   <main class="passApp">
@@ -106,6 +107,13 @@
             <span>Wildlife design</span>
             <select id="designInput"><option value="auto">Automatic · unique within group</option></select>
           </label>
+          <label class="field full">
+            <span>Field Pass Companion language</span>
+            <select id="companionLanguageInput">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </label>
         </div>
 
         <div class="testSummary" id="testSummary"></div>
@@ -134,13 +142,13 @@
               <div class="detailsPanel">
                 <div class="passMeta">
                   <div>
-                    <span class="metaKicker">Guest field dossier</span>
-                    <strong id="outTourName">Quest for Five Toucans &amp; the Andean Cock-of-the-Rock</strong>
+                    <span class="metaKicker">Field note</span>
+                    <strong id="outFieldNote">Males gather at traditional forest leks at dawn, filling the cloud forest with movement and calls.</strong>
                   </div>
                   <span class="editionTag" id="outEdition">Andean Cock-of-the-Rock edition</span>
                 </div>
                 <div class="identityCard">
-                  <span class="dataLabel">Pass holder</span>
+                  <span class="dataLabel">Prepared for</span>
                   <strong id="outGuest">Rob Kesselring</strong>
                 </div>
                 <div class="dataGrid">
@@ -157,8 +165,8 @@
                   </div>
                 </div>
                 <div class="passFooter">
-                  <div class="fieldId"><span>Field ID</span><strong id="outFieldId">COTR-MBW-0150-RK</strong></div>
-                  <div class="tourContact"><span>Tour contact</span><strong id="outTourContact">WhatsApp +1 305 458 5402</strong></div>
+                  <div class="fieldId"><span>Expedition ID</span><strong id="outFieldId">COTR-MBW-0150-RK</strong></div>
+                  <div class="companionQr"><div id="companionQr" aria-label="Field Pass Companion QR code"></div><div><span>Field Pass Companion</span><strong>Directions · preparation · contacts</strong></div></div>
                 </div>
                 <div class="passLocale">Mindo, Ecuador · Chocó Andino</div>
               </div>
