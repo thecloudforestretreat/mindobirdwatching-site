@@ -36,6 +36,9 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - When binoculars are listed as included, the packing checklist asks only for an optional camera instead of telling the guest to bring binoculars again.
 - Kept QR payload growth controlled by making calendar end time, exact map URL, inclusions and access notes optional generator fields.
 - Connected the companion's MBW WhatsApp destination to `window.MBW_SITE_CONFIG.contact`. New passes default to the live centralized number, while the generator retains Miami and Ecuador as explicit booking-level overrides.
+- Rebuilt the companion as four task-based blocks: meeting and contacts, preparation, tour flow, and changes or emergencies. The desktop itinerary now runs horizontally and the previous mismatched two-card row no longer creates an empty column.
+- Consolidated repeated weather, trail, equipment and access guidance into one preparation block without removing safety qualifications or booking-specific caveats.
+- Replaced the full marketing footer with a compact utility footer linking to contact, booking terms and privacy information.
 
 ## Pending review
 
@@ -45,3 +48,4 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Calendar end time is optional. When it is absent, the `.ics` file records the confirmed start without inventing an end time.
 - The review panel uses the verified Google review link and the claimed Tripadvisor listing URL. Tripadvisor may require the traveler to sign in or choose “Write a review” on its listing.
 - A QR URL containing an explicit `c`/`contact` value intentionally keeps that booking-specific number. Omitting that parameter makes the companion follow `site-config.js`, including later day/night number changes.
+- The Spanish layout and meaning match the English page, but human Spanish-language review remains pending.

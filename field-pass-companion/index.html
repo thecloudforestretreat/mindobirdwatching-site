@@ -19,7 +19,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/pages/field-pass-companion.css?v=5" />
+  <link rel="stylesheet" href="/assets/css/pages/field-pass-companion.css?v=6" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js" defer></script>
   <script src="/assets/js/field-pass-companion.js?v=4" defer></script>
@@ -52,70 +52,58 @@
       </section>
 
       <div class="companionGrid">
-        <section class="companionCard card" aria-labelledby="meetingTitle">
+        <section class="companionCard card companionCard--wide" aria-labelledby="meetingTitle">
           <span class="eyebrow cardKicker">Start here</span>
-          <h2 id="meetingTitle">Meeting point and directions</h2>
-          <strong class="meetingName" id="meetingName">As confirmed</strong>
-          <p class="meetingNote" id="meetingNote">Please be ready at the confirmed meeting point.</p>
-          <div class="companionActions"><a class="btn secondary" id="directionsLink" href="https://www.google.com/maps/search/?api=1&amp;query=Mindo%2C%20Ecuador" target="_blank" rel="noopener">Open directions</a></div>
-        </section>
-
-        <section class="companionCard card" aria-labelledby="contactsTitle">
-          <span class="eyebrow cardKicker">Keep these contacts available</span>
-          <h2 id="contactsTitle">Guide and tour support</h2>
-          <div class="contactStack">
-            <div class="contactRow"><div><strong id="guideName">Assigned local guide</strong><span id="guidePhoneText">Guide contact</span></div><a class="btn primary" id="guideWhatsApp" href="/contact/">Message on WhatsApp</a></div>
-            <div class="contactRow"><div><strong>Mindo Bird Watching</strong><span id="mbwPhoneText">Current site contact</span></div><a class="btn primary" id="mbwWhatsApp" href="/contact/">Message on WhatsApp</a></div>
+          <h2 id="meetingTitle">Meeting point and tour contacts</h2>
+          <div class="actionHub">
+            <article class="meetingPanel">
+              <span class="sectionLabel">Meeting point</span>
+              <strong class="meetingName" id="meetingName">As confirmed</strong>
+              <p class="meetingNote" id="meetingNote">Please be ready at the confirmed meeting point.</p>
+              <div class="companionActions"><a class="btn secondary" id="directionsLink" href="https://www.google.com/maps/search/?api=1&amp;query=Mindo%2C%20Ecuador" target="_blank" rel="noopener">Open directions</a></div>
+            </article>
+            <article class="contactsPanel" aria-labelledby="contactsTitle">
+              <h3 id="contactsTitle">Keep these contacts available</h3>
+              <div class="contactStack">
+                <div class="contactRow"><div><strong id="guideName">Assigned local guide</strong><span id="guidePhoneText">Guide contact</span></div><a class="btn primary" id="guideWhatsApp" href="/contact/">Message on WhatsApp</a></div>
+                <div class="contactRow"><div><strong>Mindo Bird Watching</strong><span id="mbwPhoneText">Current site contact</span></div><a class="btn primary" id="mbwWhatsApp" href="/contact/">Message on WhatsApp</a></div>
+              </div>
+            </article>
           </div>
         </section>
 
         <section class="companionCard card companionCard--wide" aria-labelledby="packingTitle">
-          <span class="eyebrow cardKicker">Prepare for changing cloud forest conditions</span>
-          <h2 id="packingTitle">What to bring</h2>
-          <p>Pack light, but protect yourself and your equipment from sun, rain and damp trails. Your exact equipment inclusions depend on the confirmed booking.</p>
-          <ul class="packingList" id="packingList"></ul>
-        </section>
-
-        <section class="companionCard card companionCard--wide practicalBand" aria-labelledby="practicalTitle">
-          <div>
-            <span class="eyebrow cardKicker">Booking-specific preparation</span>
-            <h2 id="practicalTitle">Inclusions, trail and access</h2>
-            <p>Use your written confirmation as the final source for what is included and tell us before the tour about mobility, health or pacing needs.</p>
-          </div>
-          <div class="practicalGrid">
-            <article class="practicalItem" id="inclusionsPanel" hidden><h3>Included with this booking</h3><ul id="inclusionsList"></ul></article>
-            <article class="practicalItem"><h3>Trail conditions</h3><p>Expect uneven, wet or muddy cloud forest paths. Conditions vary with weather and the selected route.</p></article>
-            <article class="practicalItem"><h3>Accessibility and pace</h3><p id="accessNote">Tell us before the tour about mobility, health or pacing needs so we can confirm whether the route is appropriate.</p></article>
+          <span class="eyebrow cardKicker">Before you go</span>
+          <h2 id="packingTitle">Prepare for the cloud forest</h2>
+          <p>Pack light and prepare for wet trails and fast weather changes. Your written confirmation remains the final reference for equipment included with your booking.</p>
+          <div class="prepareLayout">
+            <div class="packingPanel">
+              <h3>What to bring</h3>
+              <ul class="packingList" id="packingList"></ul>
+            </div>
+            <div class="conditionStack">
+              <article class="practicalItem" id="inclusionsPanel" hidden><h3>Included with this booking</h3><ul id="inclusionsList"></ul></article>
+              <article class="practicalItem weatherItem"><div class="weatherIcon" aria-hidden="true">☁</div><div><h3>Weather and clothing</h3><p>Mindo can move between sun, mist and rain in one outing. Wear light layers, carry rain protection and keep electronics in a dry bag.</p><a class="textLink" href="https://servicios.inamhi.gob.ec/pronostico/" target="_blank" rel="noopener">Check Ecuador forecast</a></div></article>
+              <article class="practicalItem"><h3>Trail, access and pace</h3><p>Expect uneven, wet or muddy paths. <span id="accessNote">Tell us before the tour about mobility, health or pacing needs so we can confirm whether the route is appropriate.</span></p></article>
+            </div>
           </div>
         </section>
 
-        <section class="companionCard card companionCard--wide weatherBand" aria-labelledby="weatherTitle">
-          <div class="weatherIcon" aria-hidden="true">☁</div>
-          <div><span class="eyebrow cardKicker">Weather and clothing</span><h2 id="weatherTitle">Expect quick changes</h2><p>Mindo can move between sun, mist and rain in the same outing. Dress in light layers, carry rain protection and keep electronics in a dry bag. Your guide may adjust the route for current conditions.</p></div>
-          <a class="btn secondary" href="https://servicios.inamhi.gob.ec/pronostico/" target="_blank" rel="noopener">Check Ecuador forecast</a>
-        </section>
-
-        <section class="companionCard card" aria-labelledby="itineraryTitle">
+        <section class="companionCard card companionCard--wide tourFlow" aria-labelledby="itineraryTitle">
           <span class="eyebrow cardKicker">A flexible field plan</span>
           <h2 id="itineraryTitle">Your tour flow</h2>
           <p>Wildlife activity, weather and access can change the order without changing the purpose of your experience.</p>
           <ol class="itinerary" id="itinerary"></ol>
         </section>
 
-        <section class="companionCard card companionCard--alert" aria-labelledby="emergencyTitle">
-          <span class="eyebrow cardKicker">If something changes</span>
-          <h2 id="emergencyTitle">Delays and emergencies</h2>
-          <div class="emergencyGrid">
-            <div class="emergencyItem"><h3>Tour delay or meeting issue</h3><p>Stay at the agreed meeting point and message your guide first. If the guide cannot be reached, contact Mindo Bird Watching.</p></div>
-            <div class="emergencyItem"><h3>Immediate emergency in Ecuador</h3><p>For an immediate police, medical, fire or rescue emergency anywhere in Ecuador, call 9-1-1. Share your exact location or nearest landmark. When safe, contact your guide or Mindo Bird Watching.</p><a class="emergencyNumber" href="tel:911">Call 9-1-1</a><a class="officialSource" href="https://www.ecu911.gob.ec/servicio-integrado-de-seguridad-ecu-911/" target="_blank" rel="noopener">Official ECU 911 information</a></div>
+        <section class="companionCard card companionCard--wide companionCard--alert" aria-labelledby="emergencyTitle">
+          <span class="eyebrow cardKicker">If plans change</span>
+          <h2 id="emergencyTitle">Delays, emergencies and booking changes</h2>
+          <div class="supportGrid">
+            <article class="emergencyItem"><h3>Tour delay or meeting issue</h3><p>Stay at the agreed meeting point and message your guide first. If the guide cannot be reached, contact Mindo Bird Watching.</p></article>
+            <article class="emergencyItem"><h3>Immediate emergency in Ecuador</h3><p>For an immediate police, medical, fire or rescue emergency anywhere in Ecuador, call 9-1-1 and share your exact location or nearest landmark.</p><a class="emergencyNumber" href="tel:911">Call 9-1-1</a><a class="officialSource" href="https://www.ecu911.gob.ec/servicio-integrado-de-seguridad-ecu-911/" target="_blank" rel="noopener">Official ECU 911 information</a></article>
+            <article class="emergencyItem bookingTerms"><h3>Rescheduling or cancellation</h3><p>Your written confirmation and the terms that applied to your reservation remain the final reference. Contact us promptly if your plans change.</p><a class="btn secondary" href="/terms-conditions/">Review booking terms</a></article>
           </div>
-        </section>
-
-        <section class="companionCard card companionCard--wide bookingTerms" aria-labelledby="changesTitle">
-          <span class="eyebrow cardKicker">Booking changes</span>
-          <h2 id="changesTitle">Weather, rescheduling and cancellations</h2>
-          <p>Your written confirmation and the booking terms that applied to your reservation remain the final reference. Contact us promptly if your plans change. The guide may adjust the route when weather, access or safety conditions require it.</p>
-          <a class="btn secondary" href="/terms-conditions/">Review booking terms</a>
         </section>
       </div>
       <p class="companionFootnote">Wildlife sightings cannot be guaranteed. Follow your guide’s instructions, remain on agreed routes and place wildlife welfare before photographs.</p>
@@ -130,7 +118,7 @@
         </div>
       </section>
     </main>
-    <div id="siteFooter"></div>
+    <footer class="companionUtilityFooter" aria-label="Field Pass Companion links"><a href="/">Mindo Bird Watching</a><nav><a href="/contact/">Contact</a><a href="/terms-conditions/">Booking terms</a><a href="/privacy-policy/">Privacy</a></nav></footer>
   </div>
   <script src="/assets/js/includes.js?v=1" defer></script>
   <script src="/assets/js/site.js?v=34" defer></script>
