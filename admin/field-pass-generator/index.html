@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MBW Admin | Field Pass Test Studio</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/admin/assets/css/field-pass-generator.css?v=1" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="/admin/assets/js/field-pass-generator.js?v=1" defer></script>
+</head>
+<body>
+  <main class="passApp">
+    <header class="appHeader">
+      <div class="brandBlock">
+        <img src="/assets/images/logo/mbw-logo-mark-1024.png" alt="Mindo Bird Watching" />
+        <div>
+          <p class="eyebrow">MBW Admin</p>
+          <h1>Field Pass Test Studio</h1>
+          <p>Build and review collectible guest passes without contacting the guest.</p>
+        </div>
+      </div>
+      <a class="backLink" href="/admin/tour-confirmation-generator/">Existing confirmation generator</a>
+    </header>
+
+    <section class="testBanner" role="status">
+      <strong>TEST MODE</strong>
+      <span>No email, WhatsApp message, CRM update, or guest delivery can be triggered from this page.</span>
+    </section>
+
+    <div class="appGrid">
+      <section class="controls" aria-label="Field pass controls">
+        <div class="sectionHeading">
+          <div>
+            <p class="eyebrow">Source</p>
+            <h2>Booking details</h2>
+          </div>
+          <button class="secondaryButton" id="refreshBtn" type="button">Refresh CRM list</button>
+        </div>
+
+        <label class="field full">
+          <span>Confirmation</span>
+          <select id="bookingSelect"><option value="manual">Manual test</option></select>
+        </label>
+
+        <div class="formGrid">
+          <label class="field full">
+            <span>Guest names <small>one per line</small></span>
+            <textarea id="guestNamesInput" rows="3">Rob Kesselring</textarea>
+          </label>
+          <label class="field">
+            <span>Booking reference</span>
+            <input id="bookingRefInput" value="MBW-0150" />
+          </label>
+          <label class="field">
+            <span>Pass type</span>
+            <select id="passTypeInput">
+              <option value="day">Birding field pass</option>
+              <option value="night">Mindo After Dark</option>
+            </select>
+          </label>
+          <label class="field full">
+            <span>Tour name</span>
+            <input id="tourNameInput" value="Quest for Five Toucans &amp; the Andean Cock-of-the-Rock" />
+          </label>
+          <label class="field">
+            <span>Tour date</span>
+            <input id="tourDateInput" type="date" value="2026-11-10" />
+          </label>
+          <label class="field">
+            <span>Start</span>
+            <input id="startInput" value="5:00 AM" />
+          </label>
+          <label class="field">
+            <span>Duration</span>
+            <input id="durationInput" value="Full Day" />
+          </label>
+          <label class="field">
+            <span>Meeting point</span>
+            <input id="meetingInput" value="Septimo Paraiso" />
+          </label>
+        </div>
+
+        <div class="divider"></div>
+        <p class="eyebrow">Operations</p>
+        <div class="formGrid">
+          <label class="field">
+            <span>Guide</span>
+            <select id="guideInput"></select>
+          </label>
+          <label class="field">
+            <span>Guide WhatsApp</span>
+            <input id="guidePhoneInput" value="+593 98 600 5054" />
+          </label>
+          <label class="field full">
+            <span>Tour contact</span>
+            <select id="tourContactInput">
+              <option value="+1 305 458 5402">Miami · +1 305 458 5402</option>
+              <option value="+593 96 907 6501">Ecuador · +593 96 907 6501</option>
+            </select>
+          </label>
+          <label class="field full">
+            <span>Wildlife design</span>
+            <select id="designInput"><option value="auto">Automatic · unique within group</option></select>
+          </label>
+        </div>
+
+        <div class="testSummary" id="testSummary"></div>
+        <div class="buttonRow">
+          <button class="primaryButton" id="downloadBtn" type="button">Download current test JPG</button>
+          <button class="secondaryButton" id="downloadAllBtn" type="button">Download all test JPGs</button>
+        </div>
+        <p class="statusText" id="statusText" aria-live="polite">Ready in test mode.</p>
+      </section>
+
+      <section class="previewArea" aria-label="Field pass preview">
+        <div class="previewToolbar">
+          <div>
+            <p class="eyebrow">Preview</p>
+            <h2>Guest field pass</h2>
+          </div>
+          <label class="guestPicker">
+            <span>Preview guest</span>
+            <select id="previewGuestInput"></select>
+          </label>
+        </div>
+        <div class="previewStage" id="previewStage">
+          <div class="ticketScale" id="ticketScale">
+            <article class="fieldPass" id="fieldPass">
+              <div class="heroWindow"><img id="heroImage" alt="Selected wildlife field pass" /></div>
+              <div class="detailsPanel">
+                <div class="wideData">
+                  <span class="dataLabel">Guest</span>
+                  <strong id="outGuest">Rob Kesselring</strong>
+                </div>
+                <div class="dataGrid">
+                  <div><span class="dataLabel">Date</span><strong id="outDate">November 10, 2026</strong></div>
+                  <div><span class="dataLabel">Start</span><strong id="outStart">5:00 AM</strong></div>
+                  <div><span class="dataLabel">Meeting</span><strong id="outMeeting">Septimo Paraiso</strong></div>
+                  <div><span class="dataLabel">Duration</span><strong id="outDuration">Full Day</strong></div>
+                </div>
+                <div class="wideData guideData">
+                  <span class="dataLabel">Guide</span>
+                  <strong id="outGuide">Chicho</strong>
+                  <span id="outGuidePhone">WhatsApp +593 98 600 5054</span>
+                </div>
+                <div class="passFooter">
+                  <div class="fieldId"><span>Field ID</span><strong id="outFieldId">COTR-MBW-0150-RK</strong></div>
+                  <div class="tourContact"><span>Tour contact</span><strong id="outTourContact">WhatsApp +1 305 458 5402</strong></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
