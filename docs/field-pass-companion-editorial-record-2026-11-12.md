@@ -12,7 +12,9 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Existing MBW tour and species pages supplied the preparation language, wildlife qualifications and species field notes.
 - Existing operational data supplied the guide and MBW WhatsApp numbers.
 - Ecuador's Servicio Integrado de Seguridad ECU 911 confirms that 9-1-1 is the single emergency number, available from fixed or mobile phones at no cost, 24 hours a day.
+- Official source: `https://www.ecu911.gob.ec/servicio-integrado-de-seguridad-ecu-911/` confirms that ECU 911 coordinates police, fire, health, traffic, rescue and other emergency-response institutions through 9-1-1 nationwide.
 - INAMHI is linked as Ecuador's official forecast service. The page does not claim a precise Mindo forecast when one is not available.
+- Google Business Profile and Tripadvisor both allow businesses to request genuine reviews but prohibit incentives, pressure and selective positive-review solicitation. The companion offers both platforms equally and uses neutral language.
 
 ## Material edits
 
@@ -27,9 +29,17 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Shortened the QR payload by storing the tour date in ISO format; each language formats that date locally on the companion page.
 - Both companion pages load the shared MBW site and header styles plus a page-specific stylesheet scoped to the Field Pass Companion. Existing tour-card styles and selectors were not changed.
 - Replaced the original companion color system, page background, cards and custom buttons with the approved global `site.css` tokens and reusable `page card`, `card`, `heroCopy`, `eyebrow` and `btn` classes. The companion stylesheet now controls layout only and is fully scoped to `data-css-cluster="field_pass_companion"`.
+- Expanded the emergency instructions to identify police, medical, fire and rescue emergencies, request an exact location or landmark, and preserve the guide/MBW escalation order after immediate safety needs.
+- Added calendar export in the `America/Guayaquil` timezone, print/PDF support, optional exact map links, booking-specific inclusions and access notes, standard cloud-forest trail guidance and a link to the applicable booking terms.
+- Added a bilingual post-tour review panel with equal Google and Tripadvisor choices. It stays hidden until the day after the ISO tour date; `review=1` is reserved for QA.
+- Suppressed the global footer's standalone Google-review icon on companion pages so review solicitation is not visible before the post-tour panel is eligible.
+- When binoculars are listed as included, the packing checklist asks only for an optional camera instead of telling the guest to bring binoculars again.
+- Kept QR payload growth controlled by making calendar end time, exact map URL, inclusions and access notes optional generator fields.
 
 ## Pending review
 
 - Spanish copy has been adapted for natural meaning and operational parity, but human Spanish review is still pending.
 - Meeting-point links use a Google Maps search generated from the confirmed meeting text. Staff should continue entering a specific venue or address whenever available.
 - Equipment inclusions vary by booking; the companion page states this explicitly rather than promising binoculars, ponchos or other items universally.
+- Calendar end time is optional. When it is absent, the `.ics` file records the confirmed start without inventing an end time.
+- The review panel uses the verified Google review link and the claimed Tripadvisor listing URL. Tripadvisor may require the traveler to sign in or choose “Write a review” on its listing.

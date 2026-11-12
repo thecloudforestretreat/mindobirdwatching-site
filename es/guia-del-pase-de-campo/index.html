@@ -19,10 +19,10 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/assets/css/site.css" />
   <link rel="stylesheet" href="/assets/css/header.css?v=1" />
-  <link rel="stylesheet" href="/assets/css/pages/field-pass-companion.css?v=4" />
+  <link rel="stylesheet" href="/assets/css/pages/field-pass-companion.css?v=5" />
   <script src="/assets/js/head.js" defer></script>
   <script src="/assets/js/site-config.js" defer></script>
-  <script src="/assets/js/field-pass-companion.js?v=2" defer></script>
+  <script src="/assets/js/field-pass-companion.js?v=3" defer></script>
 </head>
 <body data-page-type="field_pass_companion" data-css-cluster="field_pass_companion" data-page-language="es" data-page-content-group="guest_support" data-page-location="mindo" data-page-region="mindo">
   <div class="container">
@@ -42,6 +42,10 @@
             <div class="tripFact"><span>Fecha</span><strong id="tripDate">Según confirmación</strong></div>
             <div class="tripFact"><span>Inicio</span><strong id="tripStart">Según confirmación</strong></div>
             <div class="tripFact"><span>Duración</span><strong id="tripDuration">Según reserva</strong></div>
+          </div>
+          <div class="tripTools" aria-label="Herramientas de la experiencia">
+            <button class="btn secondary" id="calendarButton" type="button">Agregar al calendario</button>
+            <button class="btn secondary" id="printButton" type="button">Guardar o imprimir</button>
           </div>
           <small>Si algún detalle cambia, tu mensaje de confirmación será la referencia final.</small>
         </aside>
@@ -72,6 +76,19 @@
           <ul class="packingList" id="packingList"></ul>
         </section>
 
+        <section class="companionCard card companionCard--wide practicalBand" aria-labelledby="practicalTitle">
+          <div>
+            <span class="eyebrow cardKicker">Preparación según tu reserva</span>
+            <h2 id="practicalTitle">Inclusiones, sendero y acceso</h2>
+            <p>Usa tu confirmación escrita como referencia final de lo incluido y cuéntanos antes del tour sobre necesidades de movilidad, salud o ritmo.</p>
+          </div>
+          <div class="practicalGrid">
+            <article class="practicalItem" id="inclusionsPanel" hidden><h3>Incluido en esta reserva</h3><ul id="inclusionsList"></ul></article>
+            <article class="practicalItem"><h3>Condiciones del sendero</h3><p>Espera senderos de bosque nublado irregulares, húmedos o con lodo. Las condiciones varían según el clima y la ruta seleccionada.</p></article>
+            <article class="practicalItem"><h3>Accesibilidad y ritmo</h3><p id="accessNote">Cuéntanos antes del tour sobre necesidades de movilidad, salud o ritmo para confirmar si la ruta es adecuada.</p></article>
+          </div>
+        </section>
+
         <section class="companionCard card companionCard--wide weatherBand" aria-labelledby="weatherTitle">
           <div class="weatherIcon" aria-hidden="true">☁</div>
           <div><span class="eyebrow cardKicker">Clima y vestimenta</span><h2 id="weatherTitle">Espera cambios rápidos</h2><p>En Mindo puede haber sol, neblina y lluvia durante una misma salida. Vístete en capas ligeras, lleva protección para la lluvia y guarda los aparatos electrónicos en una bolsa seca. Tu guía puede ajustar la ruta según las condiciones.</p></div>
@@ -90,11 +107,28 @@
           <h2 id="emergencyTitle">Retrasos y emergencias</h2>
           <div class="emergencyGrid">
             <div class="emergencyItem"><h3>Retraso o problema en el encuentro</h3><p>Permanece en el punto acordado y escribe primero a tu guía. Si no puedes comunicarte con el guía, contacta a Mindo Bird Watching.</p></div>
-            <div class="emergencyItem"><h3>Emergencia inmediata en Ecuador</h3><p>Llama al número único de emergencias de Ecuador e indica claramente tu ubicación y lo ocurrido.</p><a class="emergencyNumber" href="tel:911">9-1-1</a></div>
+            <div class="emergencyItem"><h3>Emergencia inmediata en Ecuador</h3><p>Para una emergencia inmediata de policía, salud, bomberos o rescate en cualquier lugar de Ecuador, llama al 9-1-1. Indica tu ubicación exacta o el punto de referencia más cercano. Cuando sea seguro, contacta a tu guía o a Mindo Bird Watching.</p><a class="emergencyNumber" href="tel:911">Llamar al 9-1-1</a><a class="officialSource" href="https://www.ecu911.gob.ec/servicio-integrado-de-seguridad-ecu-911/" target="_blank" rel="noopener">Información oficial de ECU 911</a></div>
           </div>
+        </section>
+
+        <section class="companionCard card companionCard--wide bookingTerms" aria-labelledby="changesTitle">
+          <span class="eyebrow cardKicker">Cambios en la reserva</span>
+          <h2 id="changesTitle">Clima, reprogramaciones y cancelaciones</h2>
+          <p>Tu confirmación escrita y las condiciones aplicables a tu reserva son la referencia final. Contáctanos cuanto antes si tus planes cambian. El guía puede ajustar la ruta cuando el clima, el acceso o la seguridad lo requieran.</p>
+          <a class="btn secondary" href="/es/terminos-y-condiciones/">Consultar las condiciones</a>
         </section>
       </div>
       <p class="companionFootnote">No se pueden garantizar los avistamientos. Sigue las indicaciones de tu guía, permanece en las rutas acordadas y prioriza el bienestar de la fauna antes que las fotografías.</p>
+
+      <section class="companionCard card companionCard--wide reviewPrompt" id="reviewPrompt" aria-labelledby="reviewTitle" hidden>
+        <span class="eyebrow cardKicker">Después de tu experiencia</span>
+        <h2 id="reviewTitle">Comparte tu experiencia</h2>
+        <p>Tus comentarios ayudan a otros viajeros a conocer mejor la experiencia de observar aves en Mindo y nos ayudan a seguir mejorando. Si tienes un momento, puedes dejar una reseña honesta en la plataforma que prefieras.</p>
+        <div class="companionActions">
+          <a class="btn primary" href="https://g.page/r/CdMlIYMGgBIvEAE/review" target="_blank" rel="noopener" data-analytics-event="review_request_click" data-analytics-label="Google" data-analytics-location="field_pass_companion">Escribir una reseña en Google</a>
+          <a class="btn secondary" href="https://www.tripadvisor.com/Attraction_Review-g609138-d34192556-Reviews-Mindo_Bird_Watching-Mindo_Pichincha_Province.html" target="_blank" rel="noopener" data-analytics-event="review_request_click" data-analytics-label="Tripadvisor" data-analytics-location="field_pass_companion">Escribir una reseña en Tripadvisor</a>
+        </div>
+      </section>
     </main>
     <div id="siteFooter"></div>
   </div>
