@@ -22,6 +22,10 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Replaced the second operational phone block with a QR-linked Field Pass Companion. The guide and MBW contacts remain available on the companion page.
 - Added English and Spanish companion pages with meeting directions, WhatsApp contacts, packing guidance, weather guidance, a flexible itinerary and emergency instructions.
 - QR parameters contain tour logistics only. Guest name and booking reference are excluded.
+- Removed the repeated wildlife-edition pill and gave the field note the full width of the lower panel.
+- Made the QR companion action the primary lime footer element and moved the Expedition ID into a secondary dark panel.
+- Shortened the QR payload by storing the tour date in ISO format; each language formats that date locally on the companion page.
+- Both companion pages load the shared MBW site and header styles plus a page-specific stylesheet scoped to the Field Pass Companion. Existing tour-card styles and selectors were not changed.
 
 ## Pending review
 

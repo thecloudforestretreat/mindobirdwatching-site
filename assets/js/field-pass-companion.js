@@ -32,10 +32,15 @@
     }
   }[lang];
   const set=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value;};
+  const displayDate=value=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||"")))return value;
+    const date=new Date(`${value}T12:00:00`);
+    return new Intl.DateTimeFormat(lang==="es"?"es-EC":"en-US",{year:"numeric",month:"long",day:"numeric"}).format(date);
+  };
   const phone=value=>String(value||"").replace(/[^\d+]/g,"");
   const wa=(number,message)=>`https://wa.me/${phone(number).replace(/^\+/,"")}?text=${encodeURIComponent(message)}`;
   const message=lang==="es"?`Hola, tengo una pregunta sobre mi experiencia: ${data.tour}.`:`Hello, I have a question about my experience: ${data.tour}.`;
-  set("tripName",data.tour);set("tripDate",data.date);set("tripStart",data.start);set("tripDuration",data.duration);set("meetingName",data.meeting);set("guideName",data.guide);set("guidePhoneText",data.guidePhone||text.whatsapp);set("mbwPhoneText",data.contact);set("meetingNote",text.ready);
+  set("tripName",data.tour);set("tripDate",displayDate(data.date));set("tripStart",data.start);set("tripDuration",data.duration);set("meetingName",data.meeting);set("guideName",data.guide);set("guidePhoneText",data.guidePhone||text.whatsapp);set("mbwPhoneText",data.contact);set("meetingNote",text.ready);
   const directions=document.getElementById("directionsLink");if(directions){directions.textContent=text.directions;directions.href=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.meeting+", Mindo, Ecuador")}`;}
   const guideLink=document.getElementById("guideWhatsApp");if(guideLink){guideLink.textContent=text.whatsapp;guideLink.href=data.guidePhone?wa(data.guidePhone,message):wa(data.contact,message);}
   const mbwLink=document.getElementById("mbwWhatsApp");if(mbwLink){mbwLink.textContent=text.whatsapp;mbwLink.href=wa(data.contact,message);}

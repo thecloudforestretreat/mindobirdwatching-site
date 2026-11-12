@@ -22,7 +22,7 @@
   ];
   const state={records:[],passes:[],active:0};
   const $=id=>document.getElementById(id);
-  const ids=["bookingSelect","guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guideInput","guidePhoneInput","tourContactInput","designInput","companionLanguageInput","previewGuestInput","heroImage","outFieldNote","outEdition","outGuest","outDate","outStart","outMeeting","outDuration","outGuide","outGuidePhone","outFieldId","companionQr","ticketScale","previewStage","testSummary","statusText","refreshBtn","downloadBtn","downloadAllBtn"];
+  const ids=["bookingSelect","guestNamesInput","bookingRefInput","passTypeInput","tourNameInput","tourDateInput","startInput","durationInput","meetingInput","guideInput","guidePhoneInput","tourContactInput","designInput","companionLanguageInput","previewGuestInput","heroImage","outFieldNote","outGuest","outDate","outStart","outMeeting","outDuration","outGuide","outGuidePhone","outFieldId","companionQr","ticketScale","previewStage","testSummary","statusText","refreshBtn","downloadBtn","downloadAllBtn"];
   const el={};
 
   document.addEventListener("DOMContentLoaded",init);
@@ -60,18 +60,18 @@
   function renderGuestOptions(){const selected=state.active;el.previewGuestInput.innerHTML="";state.passes.forEach((p,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=`${p.guest} · ${p.design.name}`;el.previewGuestInput.appendChild(o);});el.previewGuestInput.value=String(selected);}
   function renderActive(){
     const pass=state.passes[state.active]||state.passes[0];if(!pass)return;
-    el.heroImage.src=pass.design.src;el.outFieldNote.textContent=pass.design.note;el.outEdition.textContent=`${pass.design.name} edition`;el.outGuest.textContent=pass.guest;el.outDate.textContent=formatDate(el.tourDateInput.value);el.outStart.textContent=el.startInput.value||"As confirmed";el.outMeeting.textContent=el.meetingInput.value||"As confirmed";el.outDuration.textContent=el.durationInput.value||"As booked";el.outGuide.textContent=el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value;el.outGuidePhone.textContent=el.guidePhoneInput.value?`WhatsApp ${el.guidePhoneInput.value}`:"WhatsApp to be confirmed";el.outFieldId.textContent=pass.fieldId;renderCompanionQr();scalePreview();
+    el.heroImage.src=pass.design.src;el.outFieldNote.textContent=pass.design.note;el.outGuest.textContent=pass.guest;el.outDate.textContent=formatDate(el.tourDateInput.value);el.outStart.textContent=el.startInput.value||"As confirmed";el.outMeeting.textContent=el.meetingInput.value||"As confirmed";el.outDuration.textContent=el.durationInput.value||"As booked";el.outGuide.textContent=el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value;el.outGuidePhone.textContent=el.guidePhoneInput.value?`WhatsApp ${el.guidePhoneInput.value}`:"WhatsApp to be confirmed";el.outFieldId.textContent=pass.fieldId;renderCompanionQr();scalePreview();
   }
   function companionUrl(){
     const language=el.companionLanguageInput.value==="es"?"es":"en";
     const path=language==="es"?"/es/guia-del-pase-de-campo/":"/field-pass-companion/";
-    const q=new URLSearchParams({k:el.passTypeInput.value,t:el.tourNameInput.value||"Mindo nature experience",d:formatDate(el.tourDateInput.value),s:el.startInput.value||"As confirmed",du:el.durationInput.value||"As booked",m:el.meetingInput.value||"As confirmed",g:el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value,gp:el.guidePhoneInput.value||"",c:el.tourContactInput.value});
+    const q=new URLSearchParams({k:el.passTypeInput.value,t:el.tourNameInput.value||"Mindo nature experience",d:el.tourDateInput.value||"",s:el.startInput.value||"As confirmed",du:el.durationInput.value||"As booked",m:el.meetingInput.value||"As confirmed",g:el.guideInput.value==="Other"?"Assigned local guide":el.guideInput.value,gp:el.guidePhoneInput.value||"",c:el.tourContactInput.value});
     return `https://mindobirdwatching.com${path}?${q}`;
   }
   function renderCompanionQr(){
     if(!el.companionQr)return;el.companionQr.innerHTML="";
     if(!window.QRCode){el.companionQr.textContent="QR";return;}
-    new window.QRCode(el.companionQr,{text:companionUrl(),width:112,height:112,colorDark:"#073a2b",colorLight:"#ffffff",correctLevel:window.QRCode.CorrectLevel.M});
+    new window.QRCode(el.companionQr,{text:companionUrl(),width:128,height:128,colorDark:"#073a2b",colorLight:"#ffffff",correctLevel:window.QRCode.CorrectLevel.M});
   }
   function scalePreview(){if(!el.previewStage||!el.ticketScale)return;const width=Math.max(280,el.previewStage.clientWidth-36);const scale=Math.min(1,width/944);el.ticketScale.style.transform=`scale(${scale})`;el.ticketScale.style.width=`${944*scale}px`;el.ticketScale.style.height=`${1672*scale}px`;}
   function formatDate(value){if(!value)return"As confirmed";const d=new Date(`${value}T12:00:00`);return Number.isNaN(d.getTime())?value:d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}
