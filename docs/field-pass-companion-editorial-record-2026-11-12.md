@@ -26,6 +26,7 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Made the QR companion action the primary lime footer element and moved the Expedition ID into a secondary dark panel.
 - Shortened the QR payload by storing the tour date in ISO format; each language formats that date locally on the companion page.
 - Both companion pages load the shared MBW site and header styles plus a page-specific stylesheet scoped to the Field Pass Companion. Existing tour-card styles and selectors were not changed.
+- Replaced the original companion color system, page background, cards and custom buttons with the approved global `site.css` tokens and reusable `page card`, `card`, `heroCopy`, `eyebrow` and `btn` classes. The companion stylesheet now controls layout only and is fully scoped to `data-css-cluster="field_pass_companion"`.
 
 ## Pending review
 
