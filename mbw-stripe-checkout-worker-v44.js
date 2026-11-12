@@ -487,11 +487,11 @@ const TOURS = [
     "service_type": "accommodation",
     "pricing_model": "flat",
     "product_id_live": "prod_UYQ5YmW4dSC36h",
-    "price_id_live": "price_1TZJEr0wAAlYwqaV2bSd1Spq",
+    "price_id_live": "price_1Ub73H0wAAlYwqaVd1O4bNPC",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$600.00",
+    "amount_display": "$50.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -501,10 +501,11 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "",
-    "description_one_liner": "Accommodation arranged as part of a confirmed itinerary. Staff must verify the property, dates, room details, inclusions, and guest-approved final amount before invoicing.",
+    "description_one_liner": "Accommodation arranged as part of a confirmed itinerary. The standard placeholder price is $50; staff can increase or decrease it to the guest-approved final amount after confirming the property, dates, room details, and inclusions.",
+    "guide_cost_flat": 10,
+    "default_provider": "",
     "use_inline_price": true,
-    "invoice_only": true,
-    "requires_price_override": true
+    "invoice_only": true
   },
   {
     "tour_code": "ACCOM01",
@@ -514,11 +515,11 @@ const TOURS = [
     "service_type": "accommodation",
     "pricing_model": "flat",
     "product_id_live": "prod_UYQ5YmW4dSC36h",
-    "price_id_live": "price_1TZJEr0wAAlYwqaV2bSd1Spq",
+    "price_id_live": "price_1Ub73H0wAAlYwqaVd1O4bNPC",
     "product_id_test": null,
     "price_id_test": null,
     "currency": "USD",
-    "amount_display": "$600.00",
+    "amount_display": "$50.00",
     "min_person": 1,
     "max_person": "unlimited",
     "duration_label": "Flexible",
@@ -528,10 +529,11 @@ const TOURS = [
     "timezone": "America/Guayaquil",
     "hero_image_url": "",
     "tour_page_url": "",
-    "description_one_liner": "Alojamiento coordinado como parte de un itinerario confirmado. El equipo debe verificar la propiedad, las fechas, la habitación, los servicios incluidos y el monto final aprobado antes de facturar.",
+    "description_one_liner": "Alojamiento coordinado como parte de un itinerario confirmado. El precio base provisional es de $50; el equipo puede aumentarlo o reducirlo al monto final aprobado después de confirmar la propiedad, las fechas, la habitación y los servicios incluidos.",
+    "guide_cost_flat": 10,
+    "default_provider": "",
     "use_inline_price": true,
-    "invoice_only": true,
-    "requires_price_override": true
+    "invoice_only": true
   },
   {
     "tour_code": "MBW004",
@@ -2593,8 +2595,12 @@ function automaticPricingMode(tour, numberOfPeople) {
 
 function guideCostSummary(tour, numberOfPeople) {
   const partySize = requiredInt(numberOfPeople, "number_of_people");
+  const flatRate = Number(tour && tour.guide_cost_flat);
   const regularRate = Number(tour && tour.guide_cost_per_person);
   const soloCost = Number(tour && tour.solo_guide_cost);
+  if (Number.isFinite(flatRate) && flatRate > 0) {
+    return { payModel: "flat", ratePerPerson: flatRate, total: flatRate };
+  }
   if (partySize === 1 && Number.isFinite(soloCost) && soloCost > 0) {
     return { payModel: "solo_minimum", ratePerPerson: soloCost, total: soloCost };
   }
@@ -3690,6 +3696,7 @@ const worker = {
         max_guests_per_quad: t.max_guests_per_quad || null,
         solo_amount_display: t.solo_amount_display || "",
         guide_cost_per_person: t.guide_cost_per_person || null,
+        guide_cost_flat: t.guide_cost_flat || null,
         solo_guide_cost: t.solo_guide_cost || null,
         quote_only: t.quote_only === true,
         requires_price_override: t.requires_price_override === true,

@@ -955,6 +955,7 @@
           "TRANS007": "1",
           "MEAL001": "5",
           "MEAL002": "15",
+          "ACCOM01": "50",
           "DEP001": "100",
           "ACT002": "10",
           "ACT003": "10",
@@ -1024,7 +1025,7 @@
       function productLabelFromCode(code){ const key=clean(code).toUpperCase(); return key&&MBW_PRODUCT_NAME_BY_CODE[key] ? key+" - "+MBW_PRODUCT_NAME_BY_CODE[key] : clean(code); }
       function productTitle(value){ const code=productCodeFromValue(value); if(code&&MBW_PRODUCT_NAME_BY_CODE[code]) return MBW_PRODUCT_NAME_BY_CODE[code]; const product=clean(value); if(product.includes(" - ")) return product.split(" - ").slice(1).join(" - "); return product; }
       const CUSTOM_QUOTE_PRODUCT_CODES=new Set(["TOUR001","TOUR002"]);
-      const PRODUCT_DURATION_BY_CODE={TOUR001:"Half Day",TOUR002:"Full Day",MEAL001:"Add-on",MEAL002:"Add-on",TRANS007:"Flexible"};
+      const PRODUCT_DURATION_BY_CODE={TOUR001:"Half Day",TOUR002:"Full Day",MEAL001:"Add-on",MEAL002:"Add-on",TRANS007:"Flexible",ACCOM01:"Flexible"};
       function isCustomQuoteProduct(value){ return CUSTOM_QUOTE_PRODUCT_CODES.has(productCodeFromValue(value)); }
       function isPackagePriceItem(item){ return isCustomQuoteProduct(clean(item&&item.product_selected||item&&item.product||item&&item.tour)); }
       function pricingUnitForItem(item){ return isTransportItem(item)?"vehicle":(isPackagePriceItem(item)?"package":"person"); }

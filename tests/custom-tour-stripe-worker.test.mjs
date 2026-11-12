@@ -199,7 +199,7 @@ test("within-Mindo transportation is staff-only and cannot bill the US$1 referen
   assert.equal(line.get("quantity"), "1");
 });
 
-test("accommodation is staff-only and cannot bill the legacy US$600 reference amount", async () => {
+test("accommodation is staff-only with an adjustable US$50 placeholder and US$10 standard cost", async () => {
   const h = harness();
   for (const language of ["en", "es"]) {
     const publicResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}`), h.env, {});
@@ -210,29 +210,36 @@ test("accommodation is staff-only and cannot bill the legacy US$600 reference am
     const staffBody = await staffResponse.json();
     const item = staffBody.tours.find((tour) => tour.tour_code === "ACCOM01");
     assert(item, `ACCOM01:${language} missing`);
-    assert.equal(item.amount_display, "$600.00");
+    assert.equal(item.amount_display, "$50.00");
     assert.equal(item.pricing_model, "flat");
     assert.equal(item.invoice_only, true);
-    assert.equal(item.requires_price_override, true);
+    assert.equal(item.requires_price_override, false);
+    assert.equal(item.guide_cost_flat, 10);
   }
 
-  const missingPrice = await h.call("create-invoice", { ...base, tour_code: "ACCOM01" });
-  assert.equal(missingPrice.response.status, 400);
-  assert.match(missingPrice.body.error, /guest-approved final price/i);
-  assert.equal(h.calls.length, 0);
+  const standardInvoice = await h.call("create-invoice", { ...base, tour_code: "ACCOM01" });
+  assert.equal(standardInvoice.response.status, 200, JSON.stringify(standardInvoice.body));
+  assert.equal(standardInvoice.body.amount_before_deposit, 50);
+  const standardLine = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(standardLine.get("price_data[unit_amount]"), "5000");
+  assert.equal(standardLine.get("quantity"), "1");
+  assert.equal(standardLine.get("metadata[guide_rate_per_person]"), "10.00");
+  assert.equal(standardLine.get("metadata[guide_payout_total]"), "10.00");
 
-  const invoice = await h.call("create-invoice", {
+  const adjusted = harness();
+
+  const invoice = await adjusted.call("create-invoice", {
     ...base,
     tour_code: "ACCOM01",
-    price_override_per_person: 480,
-    price_adjustment_per_person: -120,
+    price_override_per_person: 80,
+    price_adjustment_per_person: 30,
     pricing_reason: "guest_approved_accommodation",
   });
   assert.equal(invoice.response.status, 200, JSON.stringify(invoice.body));
-  assert.equal(invoice.body.amount_before_deposit, 480);
-  const line = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(invoice.body.amount_before_deposit, 80);
+  const line = adjusted.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
   assert.equal(line.get("price_data[product]"), "prod_UYQ5YmW4dSC36h");
-  assert.equal(line.get("price_data[unit_amount]"), "48000");
+  assert.equal(line.get("price_data[unit_amount]"), "8000");
   assert.equal(line.get("quantity"), "1");
   assert.equal(line.get("metadata[service_type]"), "accommodation");
 });
