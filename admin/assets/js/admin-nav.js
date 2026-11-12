@@ -10,6 +10,7 @@
     { id:"email", label:"Email Generator", href:hub+"custom-email-generator/", group:"Guest Documents" },
     { id:"itinerary", label:"Itinerary Generator", href:hub+"itinerary-generator/", group:"Guest Documents" },
     { id:"confirmation", label:"Tour Confirmation", href:hub+"tour-confirmation-generator/", group:"Guest Documents" },
+    { id:"field-pass", label:"Field Pass Test Studio", href:hub+"field-pass-generator/", group:"Guest Documents" },
     { id:"stripe", label:"Stripe Invoice", href:"https://mindobirdwatching.com/book-tour/create/", group:"Payments", external:true },
     { id:"zelle", label:"Zelle Invoice", href:hub+"zelle-invoice-generator/", group:"Payments" },
     { id:"staff", label:"Staff Info", href:hub+"staff-info/", group:"Operations" },
