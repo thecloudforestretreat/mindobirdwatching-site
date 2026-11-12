@@ -3,16 +3,16 @@
 
   const APP_SCRIPT_URL="https://script.google.com/macros/s/AKfycbyMkE-1Dh2zXp6FcDuu59PpuIU38FrJBs0y1iK0vBce3fMRYa_W8cD_ibjn3gTG_LQ1QQ/exec";
   const DAY_DESIGNS=[
-    {code:"COTR",name:"Andean Cock-of-the-Rock",src:"/assets/images/tour-field-passes/01-andean-cock-of-the-rock-field-pass.png"},
-    {code:"GHQ",name:"Golden-headed Quetzal",src:"/assets/images/tour-field-passes/02-golden-headed-quetzal-field-pass.png"},
-    {code:"TBAR",name:"Toucan Barbet",src:"/assets/images/tour-field-passes/03-toucan-barbet-field-pass.png"},
-    {code:"CTOU",name:"Choco Toucan",src:"/assets/images/tour-field-passes/04-choco-toucan-field-pass.png"},
-    {code:"PMAR",name:"Pale-mandibled Aracari",src:"/assets/images/tour-field-passes/05-pale-mandibled-aracari-field-pass.png"},
-    {code:"PBMT",name:"Plate-billed Mountain-Toucan",src:"/assets/images/tour-field-passes/06-plate-billed-mountain-toucan-field-pass.png"},
-    {code:"RTOU",name:"Rainforest Toucan",src:"/assets/images/tour-field-passes/07-rainforest-toucan-field-pass.png"},
-    {code:"VTS",name:"Violet-tailed Sylph",src:"/assets/images/tour-field-passes/08-violet-tailed-sylph-field-pass.png"}
+    {code:"COTR",name:"Andean Cock-of-the-Rock",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/01-andean-cock-of-the-rock-field-pass.png"},
+    {code:"GHQ",name:"Golden-headed Quetzal",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/02-golden-headed-quetzal-field-pass.png"},
+    {code:"TBAR",name:"Toucan Barbet",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/03-toucan-barbet-field-pass.png"},
+    {code:"CTOU",name:"Choco Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/04-choco-toucan-field-pass.png"},
+    {code:"PMAR",name:"Pale-mandibled Aracari",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/05-pale-mandibled-aracari-field-pass.png"},
+    {code:"PBMT",name:"Plate-billed Mountain-Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/06-plate-billed-mountain-toucan-field-pass.png"},
+    {code:"RTOU",name:"Rainforest Toucan",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/07-rainforest-toucan-field-pass.png"},
+    {code:"VTS",name:"Violet-tailed Sylph",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/08-violet-tailed-sylph-field-pass.png"}
   ];
-  const NIGHT_DESIGN={code:"NIGHT",name:"Mindo After Dark",src:"/assets/images/tour-field-passes/09-mindo-after-dark-night-walk-pass.png"};
+  const NIGHT_DESIGN={code:"NIGHT",name:"Mindo After Dark",src:"https://mindobirdwatching.com/assets/images/tour-field-passes/09-mindo-after-dark-night-walk-pass.png"};
   const GUIDES=[
     {name:"Chicho",phone:"+593 98 600 5054"},
     {name:"Neicer",phone:"+593 98 095 5817"},
