@@ -2427,8 +2427,12 @@ function createItem(initial = {}) {
       const depositApplied = Number(data.deposit_applied_amount || 0);
       const amountRemaining = data.amount_remaining != null ? Number(data.amount_remaining) : null;
       const agentId = els.agentId.value.trim();
+      const postSendSyncQueued = data.post_send_sync_queued === true;
       const attributionLinked = data.attribution_linked === true;
       const attributionLinkError = data.attribution_link_error || "";
+      const attributionStatus = postSendSyncQueued
+        ? "Syncing in background"
+        : (attributionLinked ? "Linked" : "Not linked");
 
       state.lastInvoiceFingerprint = invoiceFingerprint;
       state.lastInvoiceResult = {
@@ -2459,8 +2463,10 @@ function createItem(initial = {}) {
         ${amountRemaining !== null ? `<br />Amount remaining: <strong>$${amountRemaining.toFixed(2)}</strong>` : ""}
         ${agentId ? `<br />Agent ID: <strong>${agentId}</strong>` : ""}
         <br />
-        Attribution: <strong>${attributionLinked ? "Linked" : "Not linked"}</strong>
-        ${!attributionLinked && attributionLinkError ? `<br />Attribution note: <strong>${attributionLinkError}</strong>` : ""}
+        Back-office sync: <strong>${postSendSyncQueued ? "Queued in background" : "Completed"}</strong>
+        <br />
+        Attribution: <strong>${attributionStatus}</strong>
+        ${!postSendSyncQueued && !attributionLinked && attributionLinkError ? `<br />Attribution note: <strong>${attributionLinkError}</strong>` : ""}
         <br />
         <strong>Safety:</strong> This page will not create another invoice for these same booking details.
       `;

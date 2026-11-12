@@ -57,7 +57,16 @@ function harness() {
     const response = await context.worker.fetch(request, env, {});
     return { response, body: await response.json() };
   };
-  return { call, calls, context, env };
+  const callWithExecutionContext = async (path, payload, executionContext) => {
+    const request = new Request(`https://example.test/stripe/api/${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const response = await context.worker.fetch(request, env, executionContext);
+    return { response, body: await response.json() };
+  };
+  return { call, callWithExecutionContext, calls, context, env };
 }
 
 const base = {
@@ -281,6 +290,25 @@ test("additional-services invoices preserve the prior paid invoice context", asy
   assert.equal(lines.length, 2);
   assert(lines.every((line) => line.get("metadata[prior_invoice_no]") === "MBW-0143"));
   assert(lines.every((line) => line.get("metadata[default_provider]") === "Chicho"));
+});
+
+test("invoice confirmation returns while post-send bookkeeping continues in the background", async () => {
+  const h = harness();
+  let backgroundTask = null;
+  const result = await h.callWithExecutionContext("create-invoice", {
+    ...base,
+    tour_code: "ACCOM01",
+  }, {
+    waitUntil(promise) {
+      backgroundTask = promise;
+    },
+  });
+
+  assert.equal(result.response.status, 200, JSON.stringify(result.body));
+  assert.equal(result.body.post_send_sync_queued, true);
+  assert.equal(result.body.attribution_linked, false);
+  assert.equal(typeof backgroundTask?.then, "function");
+  await backgroundTask;
 });
 
 test("additional-services invoices reject an unpaid or missing prior invoice before Stripe writes", async () => {

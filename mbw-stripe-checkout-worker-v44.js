@@ -3553,6 +3553,69 @@ function appendActivityItemSummary(base, items) {
   return base;
 }
 
+async function runInvoicePostSendTasks(env, { label, activityFields, attributionPayload, ledgerPayload }) {
+  const agentActivityPromise = (async () => {
+    try {
+      const result = await postToAgentActivityLogger(env, { fields: activityFields });
+      console.log(`Agent activity logged: invoice_sent ${label}`, JSON.stringify(result));
+      return { result, error: "" };
+    } catch (error) {
+      const message = String(error && error.message ? error.message : error);
+      console.log(`Agent activity logging failed for invoice_sent ${label}`, { error: message });
+      return { result: null, error: message };
+    }
+  })();
+
+  const [agentOutcome, attributionOutcome, ledgerOutcome] = await Promise.allSettled([
+    agentActivityPromise,
+    syncRevenueAttribution(env, attributionPayload),
+    syncCrmInvoiceLedger(env, ledgerPayload),
+  ]);
+
+  const agent = agentOutcome.status === "fulfilled"
+    ? agentOutcome.value
+    : { result: null, error: String(agentOutcome.reason || "agent_activity_failed") };
+  const attribution = attributionOutcome.status === "fulfilled"
+    ? attributionOutcome.value
+    : { ok: false, error: String(attributionOutcome.reason || "attribution_link_failed") };
+  const ledger = ledgerOutcome.status === "fulfilled"
+    ? ledgerOutcome.value
+    : { ok: false, error: String(ledgerOutcome.reason || "crm_ledger_sync_failed") };
+
+  console.log(`Invoice post-send sync completed: ${label}`, {
+    agent_activity_logged: !!(agent.result && agent.result.ok),
+    attribution_linked: !!attribution.ok,
+    crm_ledger_linked: !!ledger.ok,
+  });
+
+  return {
+    queued: false,
+    agentActivityResult: agent.result,
+    agentActivityError: agent.error,
+    attributionLinkResult: attribution,
+    crmLedgerResult: ledger,
+  };
+}
+
+async function scheduleInvoicePostSendTasks(ctx, env, config) {
+  const task = runInvoicePostSendTasks(env, config);
+  if (ctx && typeof ctx.waitUntil === "function") {
+    ctx.waitUntil(task.catch((error) => {
+      console.log(`Invoice post-send background sync failed: ${config.label}`, {
+        error: String(error && error.message ? error.message : error),
+      });
+    }));
+    return {
+      queued: true,
+      agentActivityResult: null,
+      agentActivityError: "",
+      attributionLinkResult: { ok: false, queued: true },
+      crmLedgerResult: { ok: false, queued: true },
+    };
+  }
+  return await task;
+}
+
 async function enrichChargeAndFees(env, isTest, paymentIntentId) {
   const out = {
     stripe_charge_id: "",
@@ -4379,57 +4442,45 @@ const worker = {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
         }
 
-        let agentActivityResult = null;
-        let agentActivityError = "";
-        try {
-          const createdAt = new Date();
-          const base = buildAgentActivityBase({
-            createdAt,
-            actionType: "invoice_sent",
-            bookingMode: "single_item",
-            bookingSessionId: "",
-            stripeEnvironment: stripeEnv,
-            agentId: agent_id,
-            invoiceId: finalized.id || "",
-            invoiceNumber: finalized.number || "",
-            paymentLinkUrl: "",
-            hostedInvoiceUrl: finalized.hosted_invoice_url || "",
-            guestFirstName: "",
-            guestLastName: "",
-            guestEmail: main_email,
-            guestPhone: main_phone,
-            pickupLocationLabel: pickup_location_label,
-            pickupAddressOrHotel: pickup_address_or_hotel,
-            notes,
-          });
+        const activityFields = buildAgentActivityBase({
+          createdAt: new Date(),
+          actionType: "invoice_sent",
+          bookingMode: "single_item",
+          bookingSessionId: "",
+          stripeEnvironment: stripeEnv,
+          agentId: agent_id,
+          invoiceId: finalized.id || "",
+          invoiceNumber: finalized.number || "",
+          paymentLinkUrl: "",
+          hostedInvoiceUrl: finalized.hosted_invoice_url || "",
+          guestFirstName: "",
+          guestLastName: "",
+          guestEmail: main_email,
+          guestPhone: main_phone,
+          pickupLocationLabel: pickup_location_label,
+          pickupAddressOrHotel: pickup_address_or_hotel,
+          notes,
+        });
+        appendActivityItemSummary(activityFields, [{
+          tour_code: tour.tour_code,
+          tour_title: tour.tour_title,
+          tour_date,
+          language,
+          quantity: String(number_of_people),
+          amount_cents: Number(finalized.amount_due || 0),
+          currency: (finalized.currency || "usd").toUpperCase(),
+          service_type: tour.service_type || "",
+        }]);
+        activityFields.status = finalized.status || "open";
 
-          appendActivityItemSummary(base, [{
-            tour_code: tour.tour_code,
-            tour_title: tour.tour_title,
-            tour_date,
-            language,
-            quantity: String(number_of_people),
-            amount_cents: Number(finalized.amount_due || 0),
-            currency: (finalized.currency || "usd").toUpperCase(),
-            service_type: tour.service_type || "",
-          }]);
-
-          base.status = finalized.status || "open";
-          agentActivityResult = await postToAgentActivityLogger(env, { fields: base });
-          console.log("Agent activity logged: invoice_sent single", JSON.stringify(agentActivityResult));
-        } catch (err) {
-          agentActivityError = String(err && err.message ? err.message : err);
-          console.log("Agent activity logging failed for invoice_sent", { error: agentActivityError });
-        }
-
-        const attributionLinkResult = await syncRevenueAttribution(env, {
+        const attributionPayload = {
           inquiry_id,
           guest_id,
           booking_id,
           quote_id,
           invoice_id: finalized.id || "",
-        });
-        const crmLedgerResult = await syncCrmInvoiceLedger(env, {
+        };
+        const ledgerPayload = {
           inquiry_id, guest_id, booking_id,
           invoice_id: finalized.id || "",
           invoice_no: finalized.number || "",
@@ -4447,6 +4498,12 @@ const worker = {
           notes: invoiceContext.invoice_context === "additional_services"
             ? `Additional-services Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
             : "Stripe invoice created; payment status will update from the paid webhook.",
+        };
+        const postSend = await scheduleInvoicePostSendTasks(ctx, env, {
+          label: "single",
+          activityFields,
+          attributionPayload,
+          ledgerPayload,
         });
 
         return json({
@@ -4469,12 +4526,13 @@ const worker = {
           amount_before_deposit: expectedInvoiceCents / 100,
           amount_remaining: Number(finalized.amount_remaining || 0) / 100,
           env: stripeEnv,
-          agent_activity_logged: !!(agentActivityResult && agentActivityResult.ok),
-          agent_activity_error: agentActivityError,
-          attribution_linked: !!attributionLinkResult.ok,
-          attribution_link_id: attributionLinkResult.attribution_link_id || "",
-          attribution_link_error: attributionLinkResult.ok ? "" : (attributionLinkResult.error || "attribution_link_failed"),
-          crm_ledger_linked: !!crmLedgerResult.ok,
+          post_send_sync_queued: postSend.queued,
+          agent_activity_logged: !!(postSend.agentActivityResult && postSend.agentActivityResult.ok),
+          agent_activity_error: postSend.agentActivityError,
+          attribution_linked: !!postSend.attributionLinkResult.ok,
+          attribution_link_id: postSend.attributionLinkResult.attribution_link_id || "",
+          attribution_link_error: postSend.queued ? "" : (postSend.attributionLinkResult.ok ? "" : (postSend.attributionLinkResult.error || "attribution_link_failed")),
+          crm_ledger_linked: !!postSend.crmLedgerResult.ok,
         }, 200);
       } catch (err) {
         return json({ ok: false, error: err.message || "Unknown error" }, 400);
@@ -4786,58 +4844,46 @@ const worker = {
           await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/send`, new URLSearchParams());
         }
 
-        let agentActivityResult = null;
-        let agentActivityError = "";
-        try {
-          const createdAt = new Date();
-          const base = buildAgentActivityBase({
-            createdAt,
-            actionType: "invoice_sent",
-            bookingMode: "multi_item",
-            bookingSessionId: "",
-            stripeEnvironment: stripeEnv,
-            agentId: agent_id,
-            invoiceId: finalized.id || "",
-            invoiceNumber: finalized.number || "",
-            paymentLinkUrl: "",
-            hostedInvoiceUrl: finalized.hosted_invoice_url || "",
-            guestFirstName: "",
-            guestLastName: "",
-            guestEmail: main_email,
-            guestPhone: main_phone,
-            pickupLocationLabel: pickup_location_label,
-            pickupAddressOrHotel: pickup_address_or_hotel,
-            notes,
-          });
+        const activityFields = buildAgentActivityBase({
+          createdAt: new Date(),
+          actionType: "invoice_sent",
+          bookingMode: "multi_item",
+          bookingSessionId: "",
+          stripeEnvironment: stripeEnv,
+          agentId: agent_id,
+          invoiceId: finalized.id || "",
+          invoiceNumber: finalized.number || "",
+          paymentLinkUrl: "",
+          hostedInvoiceUrl: finalized.hosted_invoice_url || "",
+          guestFirstName: "",
+          guestLastName: "",
+          guestEmail: main_email,
+          guestPhone: main_phone,
+          pickupLocationLabel: pickup_location_label,
+          pickupAddressOrHotel: pickup_address_or_hotel,
+          notes,
+        });
+        appendActivityItemSummary(activityFields, normalizedItems.map((item) => ({
+          tour_code: item.tour_code,
+          tour_title: item.tour.tour_title,
+          tour_date: item.tour_date,
+          language: item.language,
+          quantity: String(item.quantity),
+          amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
+          currency: item.tour.currency || "USD",
+          service_type: item.tour.service_type || "",
+        })));
+        activityFields.status = finalized.status || "open";
 
-          appendActivityItemSummary(base, normalizedItems.map((item) => ({
-            tour_code: item.tour_code,
-            tour_title: item.tour.tour_title,
-            tour_date: item.tour_date,
-            language: item.language,
-            quantity: String(item.quantity),
-            amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
-            currency: item.tour.currency || "USD",
-            service_type: item.tour.service_type || "",
-          })));
-
-          base.status = finalized.status || "open";
-          agentActivityResult = await postToAgentActivityLogger(env, { fields: base });
-          console.log("Agent activity logged: invoice_sent multi", JSON.stringify(agentActivityResult));
-        } catch (err) {
-          agentActivityError = String(err && err.message ? err.message : err);
-          console.log("Agent activity logging failed for multi invoice_sent", { error: agentActivityError });
-        }
-
-        const attributionLinkResult = await syncRevenueAttribution(env, {
+        const attributionPayload = {
           inquiry_id,
           guest_id,
           booking_id,
           quote_id,
           invoice_id: finalized.id || "",
-        });
+        };
         const orderedDates = normalizedItems.map(item => item.tour_date).filter(Boolean).sort();
-        const crmLedgerResult = await syncCrmInvoiceLedger(env, {
+        const ledgerPayload = {
           inquiry_id, guest_id, booking_id,
           invoice_id: finalized.id || "",
           invoice_no: finalized.number || "",
@@ -4855,6 +4901,12 @@ const worker = {
           notes: invoiceContext.invoice_context === "additional_services"
             ? `Additional-services multi-item Stripe invoice created for prior paid invoice ${invoiceContext.prior_invoice_no}; payment status will update from the paid webhook.`
             : "Multi-item Stripe invoice created; payment status will update from the paid webhook.",
+        };
+        const postSend = await scheduleInvoicePostSendTasks(ctx, env, {
+          label: "multi",
+          activityFields,
+          attributionPayload,
+          ledgerPayload,
         });
 
         return json({
@@ -4881,12 +4933,13 @@ const worker = {
           amount_remaining: Number(finalized.amount_remaining || 0) / 100,
           env: stripeEnv,
           total_items: normalizedItems.length,
-          agent_activity_logged: !!(agentActivityResult && agentActivityResult.ok),
-          agent_activity_error: agentActivityError,
-          attribution_linked: !!attributionLinkResult.ok,
-          attribution_link_id: attributionLinkResult.attribution_link_id || "",
-          attribution_link_error: attributionLinkResult.ok ? "" : (attributionLinkResult.error || "attribution_link_failed"),
-          crm_ledger_linked: !!crmLedgerResult.ok,
+          post_send_sync_queued: postSend.queued,
+          agent_activity_logged: !!(postSend.agentActivityResult && postSend.agentActivityResult.ok),
+          agent_activity_error: postSend.agentActivityError,
+          attribution_linked: !!postSend.attributionLinkResult.ok,
+          attribution_link_id: postSend.attributionLinkResult.attribution_link_id || "",
+          attribution_link_error: postSend.queued ? "" : (postSend.attributionLinkResult.ok ? "" : (postSend.attributionLinkResult.error || "attribution_link_failed")),
+          crm_ledger_linked: !!postSend.crmLedgerResult.ok,
         }, 200);
       } catch (err) {
         return json({ ok: false, error: err.message || "Unknown error" }, 400);
