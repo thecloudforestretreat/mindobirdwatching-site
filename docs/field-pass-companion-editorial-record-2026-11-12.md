@@ -35,6 +35,7 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Suppressed the global footer's standalone Google-review icon on companion pages so review solicitation is not visible before the post-tour panel is eligible.
 - When binoculars are listed as included, the packing checklist asks only for an optional camera instead of telling the guest to bring binoculars again.
 - Kept QR payload growth controlled by making calendar end time, exact map URL, inclusions and access notes optional generator fields.
+- Connected the companion's MBW WhatsApp destination to `window.MBW_SITE_CONFIG.contact`. New passes default to the live centralized number, while the generator retains Miami and Ecuador as explicit booking-level overrides.
 
 ## Pending review
 
@@ -43,3 +44,4 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Equipment inclusions vary by booking; the companion page states this explicitly rather than promising binoculars, ponchos or other items universally.
 - Calendar end time is optional. When it is absent, the `.ics` file records the confirmed start without inventing an end time.
 - The review panel uses the verified Google review link and the claimed Tripadvisor listing URL. Tripadvisor may require the traveler to sign in or choose “Write a review” on its listing.
+- A QR URL containing an explicit `c`/`contact` value intentionally keeps that booking-specific number. Omitting that parameter makes the companion follow `site-config.js`, including later day/night number changes.

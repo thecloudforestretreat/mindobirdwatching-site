@@ -4,6 +4,8 @@
   const lang=root.dataset.pageLanguage==="es"?"es":"en";
   const q=new URLSearchParams(location.search);
   const get=(short,long,fallback="")=>q.get(short)||q.get(long)||fallback;
+  const siteContact=(window.MBW_SITE_CONFIG&&window.MBW_SITE_CONFIG.contact)||{};
+  const configuredContact=String(siteContact.whatsappDisplayNumber||siteContact.whatsappNumberDigits||"").trim();
   const data={
     type:get("k","type","day"),
     tour:get("t","tour",lang==="es"?"Experiencia de naturaleza en Mindo":"Mindo nature experience"),
@@ -15,7 +17,7 @@
     map:get("ml","map",""),
     guide:get("g","guide",lang==="es"?"Guía local asignado":"Assigned local guide"),
     guidePhone:get("gp","guide_phone",""),
-    contact:get("c","contact","+1 305 458 5402"),
+    contact:get("c","contact",configuredContact),
     inclusions:get("i","inclusions",""),
     access:get("an","access_note","")
   };
