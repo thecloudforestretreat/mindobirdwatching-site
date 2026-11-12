@@ -1,13 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import {webcrypto} from 'node:crypto';
 const source=fs.readFileSync(new URL('../mbw-stripe-checkout-worker-v44.js',import.meta.url),'utf8');
-function harness({customer=null,refunded=0,applied='',wrongGuest=false,wrongInquiry=false,failCreditOnce=false}={}){
+function harness({customer=null,refunded=0,applied='',appliedStatus='open',appliedMethod='historical_invoice_credit',priorInvoicePaymentIntent='pi_QA',priorInvoiceInquiry='INQ-QA',priorInvoiceGuest='G-QA',failCreditOnce=false,wrongGuest=false,wrongInquiry=false}={}){
  const calls=[],idempotent=new Map(),items=new Map();let creditFail=failCreditOnce,invoiceCount=0,customerCount=0;
- const deposit={id:'pi_QA',status:'succeeded',amount_received:10000,currency:'usd',customer,metadata:{inquiry_id:wrongInquiry?'INQ-other':'INQ-QA',guest_id:wrongGuest?'G-other':'G-QA',payment_purpose:'tour_deposit',applied_invoice_id:applied},latest_charge:{amount_refunded:refunded}};
+ const deposit={id:'pi_QA',status:'succeeded',amount_received:10000,currency:'usd',customer,metadata:{inquiry_id:wrongInquiry?'INQ-other':'INQ-QA',guest_id:wrongGuest?'G-other':'G-QA',payment_purpose:'tour_deposit',applied_invoice_id:applied,deposit_application_method:applied?appliedMethod:''},latest_charge:{amount_refunded:refunded}};
  const total=()=>[...items.values()].reduce((sum,f)=>sum+(f.has('amount')?Number(f.get('amount')):Number(f.get('price_data[unit_amount]'))*Number(f.get('quantity'))),0);
  const invoice=()=>({id:'in_QA',number:'QA-1',currency:'usd',status:'open',amount_due:total(),amount_remaining:total()-(customer?10000:0),amount_paid:customer?10000:0,hosted_invoice_url:'https://example.invalid/qa'});
  const ctx={Request,Response,URL,URLSearchParams,TextEncoder,TextDecoder,Date,crypto:webcrypto,console:{log(){}},fetch:async(url,init={})=>{
   const p=new URL(url).pathname,f=new URLSearchParams(init.body),key=init.headers?.['Idempotency-Key'];calls.push({p,f,key,method:init.method});
   if(p==='/v1/payment_intents/pi_QA'&&init.method==='GET')return Response.json(deposit);
+  if(p==='/v1/invoices/in_existing'&&init.method==='GET')return Response.json({id:'in_existing',status:appliedStatus,metadata:{deposit_application_method:appliedMethod,deposit_payment_intent_id:priorInvoicePaymentIntent,inquiry_id:priorInvoiceInquiry,guest_id:priorInvoiceGuest}});
   if(key&&idempotent.has(key))return Response.json(idempotent.get(key));
   let out;
   if(p==='/v1/customers'){out={id:'cus_QA'};customerCount++;}
@@ -22,12 +23,23 @@ function harness({customer=null,refunded=0,applied='',wrongGuest=false,wrongInqu
  }};vm.createContext(ctx);vm.runInContext(source.replace('const worker = {','globalThis.worker = {').replace('export default worker;',''),ctx);
  // Local-only QA stubs: these tests never contact accounting, CRM or guest email services.
  ctx.postToAgentActivityLogger=async()=>({ok:true});ctx.syncRevenueAttribution=async()=>({ok:true});ctx.syncCrmInvoiceLedger=async()=>({ok:true});
+ ctx.lookupCrmInquiry=async()=>({guest_id:'G-QA'});
  const base={language:'en',stripe_environment:'sandbox',tour_code:'MBW004',number_of_people:2,price_override_per_person:99,price_adjustment_per_person:39,pricing_reason:'Historical agreed rate',main_contact_name:'QA Guest',main_contact_email:'qa@example.invalid',main_contact_phone:'+15555550100',whatsapp_number:'+15555550100',pickup_location_label:'QA hotel',pickup_address_or_hotel:'QA hotel',tour_date:'2026-11-12',inquiry_id:'INQ-QA',guest_id:'G-QA',deposit_payment_intent_id:'pi_QA'};
  const run=async(multi=false,withoutDeposit=false)=>{const payload=multi?{...base,items:[{tour_code:'MBW004',language:'en',number_of_people:2,quantity:2,tour_date:base.tour_date,price_override_per_person:99,price_adjustment_per_person:39,pricing_reason:'Historical agreed rate'}]}:base;if(withoutDeposit)delete payload.deposit_payment_intent_id;const r=await ctx.worker.fetch(new Request('https://example.invalid/stripe/api/create-invoice'+(multi?'-multi':''),{method:'POST',body:JSON.stringify(payload)}),{STRIPE_SECRET_KEY_TEST:'sk_mock'},{});return {status:r.status,body:await r.json()};};
- return {ctx,calls,run,stats:()=>({invoiceCount,customerCount,items:items.size,total:total()})};
+ const checkDeposit=async()=>{const r=await ctx.worker.fetch(new Request('https://example.invalid/api/deposits/available?inquiry_id=INQ-QA&payment_intent_id=pi_QA&stripe_environment=sandbox'),{STRIPE_SECRET_KEY_TEST:'sk_mock'},{});return {status:r.status,body:await r.json()};};
+ return {ctx,calls,run,checkDeposit,stats:()=>({invoiceCount,customerCount,items:items.size,total:total()})};
 }
 for(const multi of [false,true])for(const customer of [null,'cus_QA'])test(`${multi?'multi':'single'} invoice credits $100 once against $198 (${customer?'attached payment':'historical credit'})`,async()=>{const h=harness({customer});const r=await h.run(multi);assert.equal(r.status,200,JSON.stringify(r.body));assert.equal(r.body.amount_before_deposit,198);assert.equal(r.body.deposit_applied_amount,100);assert.equal(r.body.amount_remaining,98);assert.equal(h.stats().invoiceCount,1);assert.equal(h.calls.some(c=>c.p.endsWith('/send')),false);});
 for(const opts of [{refunded:10000},{refunded:100},{applied:'in_existing'},{wrongGuest:true},{wrongInquiry:true}])test('unsafe deposit rejected before invoice/customer creation '+JSON.stringify(opts),async()=>{const h=harness(opts),r=await h.run();assert.notEqual(r.status,200);assert.equal(h.stats().invoiceCount,0);assert.equal(h.stats().customerCount,0);});
+for(const multi of [false,true])test(`voided historical-credit invoice releases deposit once for ${multi?'multi':'single'} replacement`,async()=>{const h=harness({applied:'in_existing',appliedStatus:'void'}),r=await h.run(multi);assert.equal(r.status,200,JSON.stringify(r.body));assert.equal(r.body.amount_before_deposit,198);assert.equal(r.body.deposit_applied_amount,100);assert.equal(r.body.amount_remaining,98);assert.equal(h.stats().invoiceCount,1);const create=h.calls.find(c=>c.p==='/v1/invoices'&&c.method==='POST');assert.equal(create.key,'deposit-invoice-pi_QA-replaces-in_existing');});
+test('deposit lookup marks a historical deposit on a void invoice eligible for replacement',async()=>{const h=harness({applied:'in_existing',appliedStatus:'void'}),r=await h.checkDeposit();assert.equal(r.status,200,JSON.stringify(r.body));assert.equal(r.body.can_apply,true);assert.equal(r.body.replaces_voided_invoice_id,'in_existing');assert.match(r.body.eligibility_message,/prior invoice is void/i);});
+for(const opts of [
+ {applied:'in_existing',appliedStatus:'void',appliedMethod:'stripe_attach_payment'},
+ {applied:'in_existing',appliedStatus:'uncollectible'},
+ {applied:'in_existing',appliedStatus:'void',priorInvoicePaymentIntent:'pi_other'},
+ {applied:'in_existing',appliedStatus:'void',priorInvoiceInquiry:'INQ-other'},
+ {applied:'in_existing',appliedStatus:'void',priorInvoiceGuest:'G-other'},
+])test('voided deposit reuse rejects unsafe prior invoice '+JSON.stringify(opts),async()=>{const h=harness(opts),r=await h.run();assert.notEqual(r.status,200);assert.equal(h.stats().invoiceCount,0);});
 test('retry after credit failure cannot duplicate draft, line or $100 credit',async()=>{const h=harness({failCreditOnce:true});assert.notEqual((await h.run()).status,200);const r=await h.run();assert.equal(r.status,200,JSON.stringify(r.body));assert.equal(r.body.amount_remaining,98);assert.deepEqual(h.stats(),{invoiceCount:1,customerCount:1,items:2,total:9800});});
 test('paid webhook totals count attached and historical deposits exactly once',()=>{const h=harness();for(const [method,paid] of [['stripe_attach_payment',19800],['historical_invoice_credit',9800]]){const r=h.ctx.invoiceDepositTotals({amount_paid:paid,metadata:{deposit_applied_amount:'100',deposit_application_method:method}});assert.equal(r.total,19800);assert.equal(r.additional,9800);assert.equal(r.deposit,10000);}});
 

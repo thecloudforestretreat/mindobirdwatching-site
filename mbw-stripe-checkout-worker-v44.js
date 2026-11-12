@@ -2822,9 +2822,65 @@ async function findAvailableDeposit(env, isTest, inquiryId) {
     null,
   );
   const deposits = (result.data || [])
-    .filter((pi) => !String(pi.metadata && pi.metadata.applied_invoice_id || "").trim() && pi.latest_charge && typeof pi.latest_charge === "object" && !pi.latest_charge.disputed && !pi.latest_charge.refunded && !Number(pi.latest_charge.amount_refunded || 0))
+    .filter((pi) => pi.latest_charge && typeof pi.latest_charge === "object" && !pi.latest_charge.disputed && !pi.latest_charge.refunded && !Number(pi.latest_charge.amount_refunded || 0))
     .sort((a, b) => Number(b.created || 0) - Number(a.created || 0));
-  return deposits[0] || null;
+  for (const deposit of deposits) {
+    const appliedInvoiceId = String(deposit.metadata && deposit.metadata.applied_invoice_id || "").trim();
+    if (!appliedInvoiceId) return deposit;
+    try {
+      return await allowHistoricalDepositReuseAfterVoid(env, isTest, deposit, inquiryId, "");
+    } catch (_) {}
+  }
+  return null;
+}
+
+function depositApplicationMethod(deposit) {
+  if (!deposit) return "";
+  return String(deposit._deposit_application_method || "").trim()
+    || (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit");
+}
+
+function depositIdempotencyScope(deposit) {
+  if (!deposit) return "";
+  return String(deposit._idempotency_scope || deposit.id || "").trim();
+}
+
+async function allowHistoricalDepositReuseAfterVoid(env, isTest, deposit, inquiryId, guestId) {
+  const md = deposit && deposit.metadata || {};
+  const appliedInvoiceId = String(md.applied_invoice_id || "").trim();
+  if (!appliedInvoiceId) return deposit;
+  if (String(md.deposit_application_method || "") !== "historical_invoice_credit") {
+    throw new Error("This deposit is already applied to an invoice.");
+  }
+
+  const previousInvoice = await stripeRequest(
+    env,
+    isTest,
+    "GET",
+    `/v1/invoices/${encodeURIComponent(appliedInvoiceId)}`,
+    null,
+  );
+  const previousMetadata = previousInvoice && previousInvoice.metadata || {};
+  if (!previousInvoice || previousInvoice.status !== "void") {
+    throw new Error("This deposit is already applied to an invoice.");
+  }
+  if (String(previousMetadata.deposit_application_method || "") !== "historical_invoice_credit") {
+    throw new Error("The prior invoice deposit method requires manual review.");
+  }
+  if (String(previousMetadata.deposit_payment_intent_id || "") !== String(deposit.id || "")) {
+    throw new Error("The prior invoice deposit identity does not match this payment.");
+  }
+  if (inquiryId && String(previousMetadata.inquiry_id || "") !== inquiryId) {
+    throw new Error("The prior invoice belongs to a different CRM inquiry.");
+  }
+  if (guestId && String(previousMetadata.guest_id || "") !== guestId) {
+    throw new Error("The prior invoice guest identity does not match this booking.");
+  }
+
+  deposit._deposit_application_method = "historical_invoice_credit";
+  deposit._replaces_voided_invoice_id = appliedInvoiceId;
+  deposit._idempotency_scope = `${deposit.id}-replaces-${appliedInvoiceId}`;
+  return deposit;
 }
 
 async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId, currency, guestId = "") {
@@ -2845,7 +2901,7 @@ async function validateDepositForInvoice(env, isTest, paymentIntentId, inquiryId
     throw new Error("Deposit belongs to a different CRM inquiry.");
   }
   if (guestId && md.guest_id !== guestId) throw new Error("Deposit guest identity does not match this booking.");
-  if (md.applied_invoice_id) throw new Error("This deposit is already applied to an invoice.");
+  await allowHistoricalDepositReuseAfterVoid(env, isTest, pi, inquiryId, guestId);
   const charge = pi.latest_charge && typeof pi.latest_charge === "object" ? pi.latest_charge : null;
   if (!charge || Number(charge.amount_refunded || 0) > 0 || charge.refunded || charge.disputed) throw new Error("This deposit needs manual review because its charge is unavailable, refunded or disputed.");
   if (!Number.isSafeInteger(pi.amount_received) || pi.amount_received <= 0) throw new Error("Deposit has no verified received amount.");
@@ -2861,7 +2917,7 @@ function invoiceDepositTotals(invoice) {
 }
 
 async function createHistoricalDepositCredit(env, isTest, customerId, deposit, currency, inquiryId, guestId, invoiceId) {
-  if (!deposit || deposit.customer) return;
+  if (!deposit || depositApplicationMethod(deposit) !== "historical_invoice_credit") return;
   if (!invoiceId) throw new Error("Deposit credit requires a specific draft invoice.");
   const amountCents = Number(deposit.amount_received || deposit.amount || 0);
   if (!amountCents) throw new Error("Historical deposit amount is missing.");
@@ -2882,9 +2938,9 @@ async function createHistoricalDepositCredit(env, isTest, customerId, deposit, c
 async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, guestId) {
   if (!deposit) return invoice;
   if (Number(deposit.amount_received || deposit.amount || 0) > Number(invoice.amount_due || 0)) {
-    if (deposit.customer) throw new Error("Deposit exceeds the invoice amount. Review this booking manually.");
+    if (depositApplicationMethod(deposit) === "stripe_attach_payment") throw new Error("Deposit exceeds the invoice amount. Review this booking manually.");
   }
-  if (deposit.customer) {
+  if (depositApplicationMethod(deposit) === "stripe_attach_payment") {
     const attachForm = new URLSearchParams();
     attachForm.set("payment_intent", deposit.id);
     await stripeRequest(env, isTest, "POST", `/v1/invoices/${encodeURIComponent(invoice.id)}/attach_payment`, attachForm, `deposit-attach-${deposit.id}-${invoice.id}`);
@@ -2897,8 +2953,11 @@ async function attachDepositToInvoice(env, isTest, invoice, deposit, inquiryId, 
   metadataForm.set("metadata[deposit_status]", "applied");
   metadataForm.set(
     "metadata[deposit_application_method]",
-    deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit",
+    depositApplicationMethod(deposit),
   );
+  if (deposit._replaces_voided_invoice_id) {
+    metadataForm.set("metadata[previous_voided_invoice_id]", deposit._replaces_voided_invoice_id);
+  }
   if (inquiryId) metadataForm.set("metadata[inquiry_id]", inquiryId);
   if (guestId) metadataForm.set("metadata[guest_id]", guestId);
   await stripeRequest(env, isTest, "POST", `/v1/payment_intents/${encodeURIComponent(deposit.id)}`, metadataForm);
@@ -3668,14 +3727,12 @@ const worker = {
           return json({ ok: false, error: "The entered PaymentIntent has not succeeded." }, 400);
         }
         const depositMetadata = deposit.metadata || {};
-        if (depositMetadata.applied_invoice_id) {
-          return json({ ok: false, error: "This deposit is already applied to an invoice." }, 400);
-        }
         if (inquiryId && depositMetadata.inquiry_id && String(depositMetadata.inquiry_id) !== inquiryId) {
           return json({ ok: false, error: "This deposit belongs to a different CRM inquiry." }, 400);
         }
         const crm = await lookupCrmInquiry(env, inquiryId);
-        await validateDepositForInvoice(env, isTest, deposit.id, inquiryId, "USD", crm?.guest_id || "");
+        const verifiedDeposit = await validateDepositForInvoice(env, isTest, deposit.id, inquiryId, "USD", crm?.guest_id || "");
+        const applicationMethod = depositApplicationMethod(verifiedDeposit);
         return json({
           ok: true,
           found: true,
@@ -3684,10 +3741,13 @@ const worker = {
           payment_intent_id: deposit.id,
           stripe_customer_id: typeof deposit.customer === "string" ? deposit.customer : (deposit.customer && deposit.customer.id || ""),
           can_apply: true,
-          application_method: deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit",
-          eligibility_message: deposit.customer
-            ? "This deposit will be attached to the invoice as a Stripe payment."
-            : "This historical deposit will be shown as a credit on the invoice.",
+          application_method: applicationMethod,
+          replaces_voided_invoice_id: verifiedDeposit._replaces_voided_invoice_id || "",
+          eligibility_message: verifiedDeposit._replaces_voided_invoice_id
+            ? "The prior invoice is void. This deposit can be credited once to the replacement invoice."
+            : applicationMethod === "stripe_attach_payment"
+              ? "This deposit will be attached to the invoice as a Stripe payment."
+              : "This historical deposit will be shown as a credit on the invoice.",
           amount: Number(deposit.amount_received || deposit.amount || 0) / 100,
           currency: String(deposit.currency || "usd").toUpperCase(),
           created_at: new Date(Number(deposit.created || 0) * 1000).toISOString(),
@@ -4189,9 +4249,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           stripe_customer_id: deposit && deposit.customer
             ? (typeof deposit.customer === "string" ? deposit.customer : deposit.customer.id || "")
             : "",
@@ -4225,7 +4284,7 @@ const worker = {
           const v = md[k];
           if (v !== undefined && v !== null) invForm.set(`metadata[${k}]`, String(v));
         });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${depositIdempotencyScope(deposit)}` : undefined);
 
         const itemForm = new URLSearchParams();
         itemForm.set("customer", customer.id);
@@ -4509,9 +4568,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
           ...invoiceContext,
@@ -4558,9 +4616,8 @@ const worker = {
           deposit_payment_intent_id: deposit ? deposit.id : "",
           deposit_applied_amount: deposit ? dollarsToDisplay(Number(deposit.amount_received || deposit.amount || 0) / 100) : "",
           deposit_payment_method: deposit ? "Stripe" : "",
-          deposit_application_method: deposit
-            ? (deposit.customer ? "stripe_attach_payment" : "historical_invoice_credit")
-            : "",
+          deposit_application_method: depositApplicationMethod(deposit),
+          replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           stripe_customer_id: customer.id,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
@@ -4579,7 +4636,7 @@ const worker = {
           const v = invMd[k];
           if (v !== undefined && v !== null && v !== "") invForm.set(`metadata[${k}]`, String(v));
         });
-        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${deposit.id}` : undefined);
+        const invoice = await stripeRequest(env, isTest, "POST", "/v1/invoices", invForm, deposit ? `deposit-invoice-${depositIdempotencyScope(deposit)}` : undefined);
 
         for (const item of normalizedItems) {
           const lineMd = {
