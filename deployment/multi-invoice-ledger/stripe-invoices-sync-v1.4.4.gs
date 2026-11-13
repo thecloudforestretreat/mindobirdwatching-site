@@ -570,7 +570,9 @@ function buildServiceExpense_(row) {
   if (!shouldWaitForServiceExpense_(row)) return null;
   var guide = cleanSyncValue_(row.tour_guide);
   var tourKey = cleanSyncValue_(row.tour_key);
-  var payout = Math.abs(parseSyncMoney_(row.total_amount_owed_to_guide));
+  // A zero or negative payable is incomplete/invalid source data, not an
+  // expense. Do not turn a fee-only negative balance into a positive payout.
+  var payout = parseSyncMoney_(row.total_amount_owed_to_guide);
   if (!guide || !(payout > 0)) return null;
 
   var serviceType = cleanSyncValue_(row.service_type);
@@ -1434,6 +1436,7 @@ function getStripeToInvoiceMapping_() {
     transaction_id: "transaction_id",
     payment_reference_note: "payment_reference_note",
     guest_rate_override: "guest_rate_override",
+    guide_base_rate: "guide_base_rate_override",
     standard_price_per_person: "standard_guest_price",
     final_price_per_person: "charged_guest_price",
     pricing_reason: "pricing_reason",
