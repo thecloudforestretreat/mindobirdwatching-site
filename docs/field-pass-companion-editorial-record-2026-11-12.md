@@ -38,7 +38,7 @@ The Spanish slug uses natural guest-facing language rather than a literal transl
 - Connected the companion's MBW WhatsApp destination to `window.MBW_SITE_CONFIG.contact`. New passes default to the live centralized number, while the generator retains Miami and Ecuador as explicit booking-level overrides.
 - Rebuilt the companion as four task-based blocks: meeting and contacts, preparation, tour flow, and changes or emergencies. The desktop itinerary now runs horizontally and the previous mismatched two-card row no longer creates an empty column.
 - Consolidated repeated weather, trail, equipment and access guidance into one preparation block without removing safety qualifications or booking-specific caveats.
-- Replaced the full marketing footer with a compact utility footer linking to contact, booking terms and privacy information.
+- Restored the approved global site footer after layout QA so the companion remains consistent with the rest of the bilingual site.
 
 ## Pending review
 
