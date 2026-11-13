@@ -38,6 +38,11 @@ var MBW_SYNC_TARGET_SHEET = "invoices";
 var MBW_SYNC_EXPENSES_SHEET = "expenses";
 var MBW_SYNC_CURSOR_PROPERTY = "MBW_STRIPE_INVOICES_LAST_SYNCED_ROW";
 var MBW_SYNC_HANDLER = "syncStripeInvoicesToInvoices";
+var MBW_SYNC_RECENT_AUDIT_ROWS = 500;
+// The automation was initialized with source row 189 as its historical
+// baseline. Recovery must never scan rows before the first live row (190),
+// even when the source contains fewer than MBW_SYNC_RECENT_AUDIT_ROWS rows.
+var MBW_SYNC_RECOVERY_START_ROW = 190;
 // Expense automation begins with the reconciled production transition.
 // Earlier invoice and expense rows remain historical and are never backfilled.
 var MBW_EXPENSE_SYNC_START_DATE = "2026-09-12";
@@ -82,7 +87,22 @@ function setupStripeInvoiceSync() {
 /**
  * Automatic sync handler. It can also be run manually for testing.
  */
-function syncStripeInvoicesToInvoices() {
+function syncStripeInvoicesToInvoices(e) {
+  // Two historical time triggers currently invoke this function five minutes
+  // apart by only a few seconds. Retain the newer trigger window and make the
+  // older one exit before it can hold the document lock for several minutes.
+  // Manual executions do not include a trigger event and remain unaffected.
+  if (e && e.triggerUid) {
+    var triggerSecond = Number(Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "ss"));
+    if (triggerSecond < 35) {
+      return logSyncResult_({
+        ok: true,
+        skipped: true,
+        reason: "legacy_duplicate_trigger_window"
+      });
+    }
+  }
+
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     return logSyncResult_({
@@ -115,6 +135,8 @@ function syncStripeInvoicesToInvoices() {
     var existingKeys = buildExistingInvoiceKeys_(target, targetHeaders.index);
     var imported = 0;
     var skipped = 0;
+    var backfilled = 0;
+    var recovered = 0;
 
     for (var i = 0; i < sourceRows.length; i++) {
       var sourceRowNumber = cursor + 1 + i;
@@ -139,16 +161,37 @@ function syncStripeInvoicesToInvoices() {
 
       var identity = buildSourceIdentity_(rowObject);
       if (existingKeys[identity]) {
+        if (backfillExistingInvoiceIdentityFields_(
+          target,
+          targetHeaders.index,
+          Number(existingKeys[identity]),
+          rowObject
+        )) backfilled++;
         skipped++;
         properties.setProperty(MBW_SYNC_CURSOR_PROPERTY, String(sourceRowNumber));
         continue;
       }
 
-      appendInvoiceRow_(target, targetHeaders.index, rowObject);
-      existingKeys[identity] = true;
+      var appendedRow = appendInvoiceRow_(target, targetHeaders.index, rowObject);
+      existingKeys[identity] = appendedRow;
       imported++;
       properties.setProperty(MBW_SYNC_CURSOR_PROPERTY, String(sourceRowNumber));
     }
+
+    // A trigger timeout or a previously corrected sheet row can leave an exact
+    // Stripe service line behind the cursor. Recheck a bounded recent window by
+    // immutable tour_key so valid repeated products (for example, two lodging
+    // lines on the same invoice/date) are restored without duplicating rows.
+    var auditResult = recoverMissingRecentInvoiceRows_(
+      source,
+      target,
+      sourceHeaders,
+      targetHeaders,
+      existingKeys,
+      MBW_SYNC_RECENT_AUDIT_ROWS
+    );
+    recovered += auditResult.recovered;
+    backfilled += auditResult.backfilled;
 
     SpreadsheetApp.flush();
     var expenseResult = syncInvoicesToExpensesUnlocked_(ss);
@@ -156,10 +199,89 @@ function syncStripeInvoicesToInvoices() {
       ok: true,
       scanned: sourceRows.length,
       imported: imported,
+      recovered: recovered,
+      backfilled: backfilled,
       skipped: skipped,
+      recent_audit_failures: auditResult.failures,
       last_synced_row: Math.max(sourceLastRow, cursor),
       expenses: expenseResult
     });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function recoverMissingRecentInvoiceRows_(source, target, sourceHeaders, targetHeaders, existingKeys, limit) {
+  var lastRow = source.getLastRow();
+  if (lastRow < 2) return { recovered: 0, backfilled: 0, failures: 0 };
+
+  var boundedLimit = Math.max(Number(limit) || 0, 1);
+  var firstRow = Math.max(MBW_SYNC_RECOVERY_START_ROW, lastRow - boundedLimit + 1);
+  if (firstRow > lastRow) return { recovered: 0, backfilled: 0, failures: 0 };
+  var rowCount = lastRow - firstRow + 1;
+  var rows = source.getRange(firstRow, 1, rowCount, sourceHeaders.values.length).getValues();
+  var recovered = 0;
+  var backfilled = 0;
+  var failures = 0;
+
+  for (var i = 0; i < rows.length; i++) {
+    var rowObject = rowToObject_(sourceHeaders.values, rows[i]);
+    if (!cleanSyncValue_(rowObject.invoice_no) || isAppliedDepositCreditRow_(rowObject)) continue;
+
+    var identity = buildSourceIdentity_(rowObject);
+    if (existingKeys[identity]) {
+      if (backfillExistingInvoiceIdentityFields_(
+        target,
+        targetHeaders.index,
+        Number(existingKeys[identity]),
+        rowObject
+      )) backfilled++;
+      continue;
+    }
+
+    try {
+      var appendedRow = appendInvoiceRow_(target, targetHeaders.index, rowObject);
+      existingKeys[identity] = appendedRow;
+      recovered++;
+    } catch (error) {
+      failures++;
+      console.error("Recent invoice audit could not restore source row " + (firstRow + i) + ": " + error);
+    }
+  }
+
+  return { recovered: recovered, backfilled: backfilled, failures: failures };
+}
+
+/**
+ * Manual full-history integrity repair. Safe to run repeatedly: exact tour_key
+ * identities are appended only when absent, and existing rows receive only the
+ * approved blank country/service-type backfills.
+ */
+function recoverMissingInvoiceRows() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    var ss = SpreadsheetApp.openById(MBW_SYNC_SPREADSHEET_ID);
+    var source = requireSyncSheet_(ss, MBW_SYNC_SOURCE_SHEET);
+    var target = requireSyncSheet_(ss, MBW_SYNC_TARGET_SHEET);
+    var sourceHeaders = getUniqueHeaders_(source);
+    var targetHeaders = getUniqueHeaders_(target);
+    validateRequiredHeaders_(sourceHeaders.index, targetHeaders.index);
+    var existingKeys = buildExistingInvoiceKeys_(target, targetHeaders.index);
+    var result = recoverMissingRecentInvoiceRows_(
+      source,
+      target,
+      sourceHeaders,
+      targetHeaders,
+      existingKeys,
+      Math.max(source.getLastRow() - 1, 1)
+    );
+    SpreadsheetApp.flush();
+    result.ok = true;
+    result.expenses = syncInvoicesToExpensesUnlocked_(ss);
+    SpreadsheetApp.flush();
+    return logSyncResult_(result);
   } finally {
     lock.releaseLock();
   }
@@ -762,12 +884,18 @@ function findFirstBlankExpenseRow_(sheet, expenseIdIndex) {
 
 function ensureExpenseRowTemplate_(sheet, targetRow) {
   var width = sheet.getLastColumn();
+  var destination = sheet.getRange(targetRow, 1, 1, width);
+
+  // Accounting rows use one presentation standard even when the destination
+  // is a pre-allocated blank row whose default spreadsheet font has drifted.
+  destination.setFontFamily("Calibri").setFontSize(9);
+
   if (targetRow <= sheet.getLastRow()) return;
   if (targetRow <= 2) return;
   var template = sheet.getRange(targetRow - 1, 1, 1, width);
-  var destination = sheet.getRange(targetRow, 1, 1, width);
   template.copyTo(destination, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
   template.copyTo(destination, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
+  destination.setFontFamily("Calibri").setFontSize(9);
   var formulas = template.getFormulasR1C1()[0];
   for (var c = 0; c < formulas.length; c++) {
     if (formulas[c]) sheet.getRange(targetRow, c + 1).setFormulaR1C1(formulas[c]);
@@ -824,20 +952,93 @@ function appendInvoiceRow_(target, targetIndex, sourceRow) {
     var value = sourceRow[sourceHeader];
     if (value === undefined || value === null) value = "";
     if (targetHeader === "tour_completed" && cleanSyncValue_(value) === "") value = "No";
-    setMappedInvoiceValue_(
-      target.getRange(targetRow, targetIndex[targetHeader] + 1),
-      value
-    );
+    if (targetHeader === "service_type") value = normalizeInvoiceServiceType_(value);
+    try {
+      setMappedInvoiceValue_(
+        target.getRange(targetRow, targetIndex[targetHeader] + 1),
+        value
+      );
+    } catch (mappedWriteError) {
+      // A protected calculated or policy-owned column must not prevent the
+      // remaining paid invoice fields from reaching the accounting ledger.
+      console.log(JSON.stringify({
+        warning: "protected_invoice_cell_skipped",
+        row: targetRow,
+        header: targetHeader,
+        error: String(mappedWriteError && mappedWriteError.message ? mappedWriteError.message : mappedWriteError)
+      }));
+    }
   });
   return targetRow;
+}
+
+function normalizeInvoiceServiceType_(value) {
+  var raw = cleanSyncValue_(value);
+  var key = canonicalSyncToken_(raw);
+  var normalized = {
+    "accommodation": "Accommodation",
+    "birding": "Birdwatching",
+    "birdwatching": "Birdwatching",
+    "meal": "Meal",
+    "private transfer": "Transportation",
+    "transportation": "Transportation",
+    "wildlife": "Wildlife",
+    "wildlife tour": "Wildlife",
+    "private macro wildlife search": "Wildlife"
+  };
+  return normalized[key] || raw;
+}
+
+function backfillExistingInvoiceIdentityFields_(sheet, targetIndex, rowNumber, sourceRow) {
+  if (!(rowNumber >= 2)) return false;
+  var changed = false;
+  ["home_country", "service_type"].forEach(function (header) {
+    if (!Object.prototype.hasOwnProperty.call(targetIndex, header)) return;
+    var cell = sheet.getRange(rowNumber, targetIndex[header] + 1);
+    if (cleanSyncValue_(cell.getDisplayValue())) return;
+    var value = sourceRow[header];
+    if (header === "service_type") value = normalizeInvoiceServiceType_(value);
+    if (!cleanSyncValue_(value)) return;
+    if (setMappedInvoiceValue_(cell, value)) changed = true;
+  });
+  return changed;
+}
+
+function backfillMissingInvoiceIdentityFields() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return logSyncResult_({ ok: true, skipped: true, reason: "another_sync_is_running" });
+  try {
+    var ss = SpreadsheetApp.openById(MBW_SYNC_SPREADSHEET_ID);
+    var source = requireSyncSheet_(ss, MBW_SYNC_SOURCE_SHEET);
+    var target = requireSyncSheet_(ss, MBW_SYNC_TARGET_SHEET);
+    var sourceHeaders = getUniqueHeaders_(source);
+    var targetHeaders = getUniqueHeaders_(target);
+    validateRequiredHeaders_(sourceHeaders.index, targetHeaders.index);
+    var sourceLastRow = source.getLastRow();
+    var rows = sourceLastRow > 1
+      ? source.getRange(2, 1, sourceLastRow - 1, sourceHeaders.values.length).getValues()
+      : [];
+    var existingKeys = buildExistingInvoiceKeys_(target, targetHeaders.index);
+    var repaired = 0;
+    rows.forEach(function (values) {
+      var sourceRow = rowToObject_(sourceHeaders.values, values);
+      var targetRow = Number(existingKeys[buildSourceIdentity_(sourceRow)] || 0);
+      if (targetRow && backfillExistingInvoiceIdentityFields_(target, targetHeaders.index, targetRow, sourceRow)) repaired++;
+    });
+    SpreadsheetApp.flush();
+    return logSyncResult_({ ok: true, scanned: rows.length, repaired: repaired });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function setMappedInvoiceValue_(cell, value) {
   var rule = cell.getDataValidation();
 
-  // A blank staging value must never erase an invoice calculation. If the
-  // destination is a formula cell, the invoices sheet remains authoritative.
-  if (cleanSyncValue_(value) === "" && cell.getFormula()) {
+  // Calculated invoice fields are protected and remain authoritative even when
+  // Stripe staging contains a derived value for the same header. Never replace
+  // a destination formula with webhook data.
+  if (cell.getFormula()) {
     return true;
   }
 
@@ -1102,9 +1303,16 @@ function findFirstBlankInvoiceRow_(sheet, invoiceNoIndex) {
   maxRows = sheet.getMaxRows();
 
   var values = sheet.getRange(2, invoiceNoIndex + 1, maxRows - 1, 1).getDisplayValues();
+  var lastPopulatedIndex = -1;
   for (var i = 0; i < values.length; i++) {
-    if (!cleanSyncValue_(values[i][0])) return i + 2;
+    if (cleanSyncValue_(values[i][0])) lastPopulatedIndex = i;
   }
+
+  // Append after the final populated invoice instead of filling an internal
+  // blank. Historical/manual repairs can leave a gap above newer records; if
+  // the importer reuses that gap, a newly paid invoice appears out of order.
+  var targetRow = lastPopulatedIndex + 3;
+  if (targetRow <= maxRows) return targetRow;
 
   sheet.insertRowAfter(maxRows);
   return maxRows + 1;
@@ -1114,30 +1322,40 @@ function ensureInvoiceRowTemplate_(sheet, targetRow) {
   var width = sheet.getLastColumn();
   var destination = sheet.getRange(targetRow, 1, 1, width);
 
+  // Normalize both newly inserted and pre-allocated invoice rows. Formatting
+  // is explicit so a prior row's font cannot silently propagate at 11 points.
+  destination.setFontFamily("Calibri").setFontSize(9);
+
   if (targetRow <= 2) {
     throw new Error("The invoices sheet needs an existing formula row as its template.");
   }
 
-  // Always use the immediately preceding populated invoice as the presentation
-  // and formula template. This also repairs pre-created blank rows whose style
-  // or formulas have drifted from the live invoice table.
+  // Use the immediately preceding populated invoice as the formula source.
+  // The live invoices sheet pre-allocates formatted rows and protects its
+  // calculated columns. Re-copying the whole row (or clearing every validation)
+  // makes an otherwise valid import fail as soon as the destination intersects
+  // one of those protected cells. Existing blank rows therefore keep their
+  // presentation and validations; we only install formulas that are missing.
   var template = sheet.getRange(targetRow - 1, 1, 1, width);
-
-  // A new row can temporarily evaluate calculated dropdown fields to a value
-  // outside their allowed list while its source inputs are still blank. Remove
-  // validation before installing formulas so that transient state cannot stop
-  // the entire invoice import.
-  destination.clearDataValidations();
-  template.copyTo(destination, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-  sheet.setRowHeight(targetRow, sheet.getRowHeight(targetRow - 1));
-
   var formulas = template.getFormulasR1C1()[0];
+  var destinationFormulas = destination.getFormulasR1C1()[0];
   for (var c = 0; c < formulas.length; c++) {
-    if (formulas[c]) sheet.getRange(targetRow, c + 1).setFormulaR1C1(formulas[c]);
+    if (!formulas[c] || destinationFormulas[c]) continue;
+    try {
+      sheet.getRange(targetRow, c + 1).setFormulaR1C1(formulas[c]);
+    } catch (formulaError) {
+      // Protected calculated cells are normally pre-filled. If one has been
+      // cleared manually, log it for repair but do not block the payment import.
+      console.log(JSON.stringify({
+        warning: "protected_invoice_formula_skipped",
+        row: targetRow,
+        column: c + 1,
+        error: String(formulaError && formulaError.message ? formulaError.message : formulaError)
+      }));
+    }
   }
 
-  // Restore the template dropdowns after all row formulas are present.
-  template.copyTo(destination, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
+  sheet.setRowHeight(targetRow, sheet.getRowHeight(targetRow - 1));
 }
 
 /**
@@ -1254,7 +1472,7 @@ function buildExistingInvoiceKeys_(target, targetIndex) {
   for (var i = 0; i < values.length; i++) {
     var obj = rowToObject_(headers, values[i]);
     if (!cleanSyncValue_(obj.invoice_no)) continue;
-    keys[buildTargetIdentity_(obj)] = true;
+    keys[buildTargetIdentity_(obj)] = i + 2;
   }
   return keys;
 }
