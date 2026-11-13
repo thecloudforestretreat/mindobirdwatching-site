@@ -41,6 +41,24 @@ test('transport quantities use vehicles while birding and night walks retain par
   assert.equal(items[2].price,'');
  }
 });
+test('public forms and CRM offer exact guest counts through nine plus a ten-or-more choice',async()=>{
+ const expected=['1','2','3','4','5','6','7','8','9','10+'];
+ for(const path of ['book-tour/index.html','es/reservar-tour/index.html','contact/index.html','es/contacto/index.html']){
+  const source=read(path),match=source.match(/<select name="number_of_guests">([\s\S]*?)<\/select>/);
+  assert.ok(match,path+' guest selector');
+  const values=Array.from(match[1].matchAll(/<option(?: value="([^"]*)")?>([^<]*)<\/option>/g),entry=>(entry[1]??entry[2]).trim()).filter(Boolean);
+  assert.deepEqual(values,expected,path);
+  assert.doesNotMatch(match[1],/3 (?:to|a) 4|5 (?:to|a) 8|9\+/);
+ }
+ const crm=read('admin/guest-crm/index.html'),crmMatch=crm.match(/<select id="guestCountInput">([\s\S]*?)<\/select>/);
+ assert.ok(crmMatch,'CRM guest selector');
+ assert.deepEqual(Array.from(crmMatch[1].matchAll(/<option>([^<]*)<\/option>/g),entry=>entry[1]).filter(Boolean),expected);
+ for(const handler of [booking.onRequestPost,contact.onRequestPost]){
+  const result=await submit(handler,{preferred_tour_type:'Night Walk',number_of_guests:'10+'});
+  assert.equal(result.forwarded.get('number_of_guests'),'10+');
+  assert.equal(JSON.parse(result.forwarded.get('tour_items'))[0].guests,'10+');
+ }
+});
 function stateHarness(path, fetchResult){
  let s=read(path),isBook=path.includes('reservar-tour')||path.startsWith('book-tour');let start=s.indexOf('var pending = false;');let end=s.indexOf('\n    })();',start);if(end<0)end=s.indexOf('\n})();',start);let code=s.slice(start,end);
  let events={},timers=[],winEvents={},reset=0,tracked=[];
