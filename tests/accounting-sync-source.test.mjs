@@ -25,6 +25,25 @@ test('Stripe invoice mapping carries service_type into invoices', () => {
   assert.equal(context.getStripeToInvoiceMapping_().service_type, 'service_type');
 });
 
+test('Stripe invoice mapping carries provider cost into the guide-rate override', () => {
+  assert.equal(context.getStripeToInvoiceMapping_().guide_base_rate, 'guide_base_rate_override');
+});
+
+test('service expense rejects zero and negative payables instead of converting them to payouts', () => {
+  const base = {
+    invoice_no: 'MBW-0155',
+    product_selected: 'ACCOM01',
+    tour_guide: 'Other',
+    tour_key: 'in_1|5|ACCOM01|2026-11-22|1',
+    total_amount_owed_to_guide: -1.04,
+    service_type: 'Accommodation',
+    tour_date: '2026-11-22'
+  };
+  assert.equal(context.buildServiceExpense_(base), null);
+  assert.equal(context.buildServiceExpense_({ ...base, total_amount_owed_to_guide: 0 }), null);
+  assert.equal(context.buildServiceExpense_({ ...base, total_amount_owed_to_guide: 8.96 }).amount, -8.96);
+});
+
 test('dropdown values are canonicalized without losing the approved label', () => {
   const allowed = ['Birdwatching', 'Wildlife', 'Nature Excursion'];
   assert.equal(context.canonicalizeSyncValueAgainstAllowed_('birdwatching', allowed), 'Birdwatching');
