@@ -147,7 +147,7 @@ test("manual Stripe catalog lines recover complete accounting metadata", () => {
   }, false);
   assert.equal(metadata.tour_code, "MEAL001");
   assert.equal(metadata.tour_title, "Breakfast");
-  assert.equal(metadata.service_type, "meal");
+  assert.equal(metadata.service_type, "Meal");
   assert.equal(metadata.number_of_people, "2");
   assert.equal(metadata.standard_price_per_person, "5.00");
   assert.equal(metadata.final_price_per_person, "5.00");
@@ -250,7 +250,36 @@ test("accommodation is staff-only with an adjustable US$50 placeholder and US$10
   assert.equal(line.get("price_data[product]"), "prod_UYQ5YmW4dSC36h");
   assert.equal(line.get("price_data[unit_amount]"), "8000");
   assert.equal(line.get("quantity"), "1");
-  assert.equal(line.get("metadata[service_type]"), "accommodation");
+  assert.equal(line.get("metadata[service_type]"), "Accommodation");
+});
+
+test("invoice metadata preserves CRM country and normalizes transportation", async () => {
+  const single = harness();
+  const singleResult = await single.call("create-invoice", {
+    ...base,
+    tour_code: "TRANS06",
+    home_country: "United States",
+  });
+  assert.equal(singleResult.response.status, 200, JSON.stringify(singleResult.body));
+  const singleLine = single.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(singleLine.get("metadata[home_country]"), "United States");
+  assert.equal(singleLine.get("metadata[service_type]"), "Transportation");
+
+  const multi = harness();
+  const multiResult = await multi.call("create-invoice-multi", {
+    ...base,
+    home_country: "United States",
+    items: [
+      { tour_code: "ACCOM01", language: "en", quantity: 1, tour_date: "2026-11-22" },
+      { tour_code: "TRANS06", language: "en", quantity: 1, tour_date: "2026-11-22" },
+    ],
+  });
+  assert.equal(multiResult.response.status, 200, JSON.stringify(multiResult.body));
+  const multiInvoice = multi.calls.find((call) => call.pathname === "/v1/invoices").form;
+  assert.equal(multiInvoice.get("metadata[home_country]"), "United States");
+  const multiLines = multi.calls.filter((call) => call.pathname === "/v1/invoiceitems").map((call) => call.form);
+  assert.deepEqual(multiLines.map((line) => line.get("metadata[home_country]")), ["United States", "United States"]);
+  assert.deepEqual(multiLines.map((line) => line.get("metadata[service_type]")), ["Accommodation", "Transportation"]);
 });
 
 test("additional-services invoices preserve the prior paid invoice context", async () => {

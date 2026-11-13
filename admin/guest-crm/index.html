@@ -1777,12 +1777,13 @@
       function isUrgentReadiness(record){ const days=daysUntilTour(record); return days>=0&&days<=1; }
       function hasConfirmationInteraction(record){ return currentInteractionRows(record).some(item=>/confirmation|confirmaci[oó]n|confirmed tour|tour confirmed|confirmaci[oó]n enviada|sent confirmation/i.test([item.interaction_type,item.note].map(clean).join(" "))); }
       function hasConfirmationSignal(record,assignments,informed){ const status=normalizeStatus(record.status),payment=normalizePayment(record.payment_status); const financiallyCleared=["paid","deposit_paid","no_payment_required"].includes(payment); const booked=["booked","completed"].includes(status); const referenced=Boolean(clean(record.invoice_no)); const coverage=upcomingProviderReadiness(record); const providersDone=assignments.length&&informed>=assignments.length&&!coverage.missing&&!coverage.incomplete; return hasConfirmationInteraction(record)||Boolean(clean(record.itinerary_status).match(/sent|generated|complete|completed|confirmed/i))||(booked&&financiallyCleared&&referenced&&providersDone); }
+      function providerAssignmentRequired(row){ const service=clean(row?._calendar_item?.service_type||row?.service_type||deriveServiceType(row?.product_selected||row?.tour_type)).toLowerCase(); const product=productCodeFromValue(row?._calendar_item?.product_selected||row?.product_selected); return service!=="accommodation"&&service!=="meal"&&product!=="ACCOM01"&&!/^MEAL\d+/i.test(product); }
       function readinessChipHtml(item){ return `<span class="readinessChip readinessChip--${esc(item.state)}" title="${esc(item.title||item.label)}">${esc(item.label)}</span>`; }
       function readinessChipsHtml(record,mode){ if(!record) return ""; const items=readinessItems(record); const chosen=mode==="compact"?items.filter(item=>item.compact).slice(0,4):items; if(!chosen.length) return ""; return `<div class="${mode==="compact"?"recordReadinessCompact":"recordReadiness"}">${chosen.map(readinessChipHtml).join("")}</div>`; }
       function upcomingProviderReadiness(record){
         if(isClosedStatus(record.status))return {total:0,missing:0,incomplete:0,informed:0};
         const today=datePlusDays(0),booked=["booked","deposit_paid"].includes(normalizeStatus(record.status));
-        const rows=calendarEntriesForRecord(record).filter(row=>!isClosedStatus(row.status)&&(!toDateValue(row.requested_date)||toDateValue(row.requested_date)>=today)&&(isBookedCalendarService(row)||(booked&&row._calendar_assignment)));
+        const rows=calendarEntriesForRecord(record).filter(providerAssignmentRequired).filter(row=>!isClosedStatus(row.status)&&(!toDateValue(row.requested_date)||toDateValue(row.requested_date)>=today)&&(isBookedCalendarService(row)||(booked&&row._calendar_assignment)));
         let missing=0,incomplete=0,informed=0;
         rows.forEach(row=>{
           const assignment=row._calendar_assignment;

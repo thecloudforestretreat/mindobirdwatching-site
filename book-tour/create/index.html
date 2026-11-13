@@ -857,6 +857,7 @@
     additionalInvoiceMode: false,
     priorInvoiceNo: "",
     priorPaymentStatus: "",
+    homeCountry: "",
     excludedPriorInvoiceItems: []
   };
 
@@ -1508,6 +1509,7 @@ function createItem(initial = {}) {
     const lastName = getInboundValue(data, "guest_last_name", "last_name", "lastName") || split.last;
     const email = getInboundValue(data, "guest_email", "email", "guestEmail");
     const phone = getInboundValue(data, "guest_phone", "phone", "phone_number", "guestPhone");
+    const homeCountry = getInboundValue(data, "home_country", "country");
     const whatsapp = getInboundValue(data, "whatsapp_number", "whatsapp", "guest_phone", "phone", "phone_number");
     const pickup = getInboundValue(data, "pickup_address_or_hotel", "pickup_location", "pickup", "pickupLocation");
     const pickupLabel = getInboundValue(data, "pickup_location_label") || (pickup ? "Pickup location" : "");
@@ -1540,6 +1542,7 @@ function createItem(initial = {}) {
     setFieldValue(els.mainLastName, lastName);
     setFieldValue(els.mainEmail, email);
     setFieldValue(els.mainPhone, phone);
+    state.homeCountry = homeCountry;
     setFieldValue(els.whatsappNumber, whatsapp);
     setFieldValue(els.pickupLocationLabel, pickupLabel);
     setFieldValue(els.pickupAddress, pickup);
@@ -2023,6 +2026,7 @@ function createItem(initial = {}) {
       main_contact_name: buildFullName(),
       main_contact_email: els.mainEmail.value.trim(),
       main_contact_phone: els.mainPhone.value.trim(),
+      home_country: state.homeCountry,
       whatsapp_number: els.whatsappNumber.value.trim(),
       pickup_location_label: els.pickupLocationLabel.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),
@@ -2067,6 +2071,7 @@ function createItem(initial = {}) {
       main_contact_name: buildFullName(),
       main_contact_email: els.mainEmail.value.trim(),
       main_contact_phone: els.mainPhone.value.trim(),
+      home_country: state.homeCountry,
       whatsapp_number: els.whatsappNumber.value.trim(),
       pickup_location_label: els.pickupLocationLabel.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),

@@ -1242,7 +1242,7 @@ const TOURS = [
     "language": "en",
     "status": "active",
     "tour_title": "Quito -> Mindo",
-    "service_type": "private_transfer",
+    "service_type": "Transportation",
     "pricing_model": "flat",
     "product_id_live": "prod_UvwuS6i7xitlyk",
     "price_id_live": "price_1Tw50p0wAAlYwqaVvV8IRT9R",
@@ -1292,7 +1292,7 @@ const TOURS = [
     "language": "en",
     "status": "active",
     "tour_title": "Mindo -> Quito",
-    "service_type": "private_transfer",
+    "service_type": "Transportation",
     "pricing_model": "flat",
     "product_id_live": "prod_UvwxK6irRJqSKk",
     "price_id_live": "price_1Tw53X0wAAlYwqaVz2FzAU0H",
@@ -1342,7 +1342,7 @@ const TOURS = [
     "language": "en",
     "status": "active",
     "tour_title": "Quito -> Mindo -> Quito",
-    "service_type": "private_transfer",
+    "service_type": "Transportation",
     "pricing_model": "flat",
     "product_id_live": "prod_UZOWczM0jBNQKF",
     "price_id_live": "price_1Tw4vR0wAAlYwqaVVACznAE8",
@@ -3248,6 +3248,23 @@ function catalogTourForAccountingLine(line, isTest = false) {
   return matches.find((tour) => tour.language === language) || matches.find((tour) => tour.language === "en") || matches[0];
 }
 
+function normalizeAccountingServiceType(value) {
+  const raw = String(value || "").trim();
+  const key = raw.toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+  const normalized = {
+    accommodation: "Accommodation",
+    birding: "Birdwatching",
+    birdwatching: "Birdwatching",
+    meal: "Meal",
+    "private transfer": "Transportation",
+    transportation: "Transportation",
+    wildlife: "Wildlife",
+    "wildlife tour": "Wildlife",
+    "private macro wildlife search": "Wildlife",
+  };
+  return normalized[key] || raw;
+}
+
 function accountingLineMetadata(line, invoiceMetadata = {}, isTest = false) {
   const item = line || {};
   const existing = item.metadata || {};
@@ -3261,7 +3278,7 @@ function accountingLineMetadata(line, invoiceMetadata = {}, isTest = false) {
     ...invoiceMetadata,
     tour_code: tour.tour_code,
     tour_title: tour.tour_title,
-    service_type: tour.service_type || "",
+    service_type: normalizeAccountingServiceType(tour.service_type),
     language: tour.language || "en",
     pricing_model: tour.pricing_model || "per_person",
     product_id: stripeLineProductId(item),
@@ -4029,6 +4046,7 @@ const worker = {
         const main_name = requiredString(body.main_contact_name, "main_contact_name");
         const main_email = requiredString(body.main_contact_email, "main_contact_email");
         const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
+        const home_country = firstNonEmptyString(body.home_country, body.country);
         const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
         const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
         const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
@@ -4118,7 +4136,7 @@ const worker = {
           tour_code: tour.tour_code,
           language,
           tour_title: tour.tour_title,
-          service_type: tour.service_type || "",
+          service_type: normalizeAccountingServiceType(tour.service_type),
           pricing_model: tour.pricing_model || "per_person",
           product_id: ids.product_id,
           price_id: tour.use_inline_price ? "" : ids.price_id,
@@ -4127,6 +4145,7 @@ const worker = {
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
+          home_country,
           guest_first_name: guestFirstName,
           guest_last_name: guestLastName,
           whatsapp_number,
@@ -4205,7 +4224,7 @@ const worker = {
             quantity: String(number_of_people),
             amount_cents: calculatedLineTotalCents(tour, standardUnitPriceCents(tour, number_of_people), number_of_people, quad_count),
             currency: tour.currency || "USD",
-            service_type: tour.service_type || "",
+            service_type: normalizeAccountingServiceType(tour.service_type),
           }]);
 
           base.status = "generated";
@@ -4237,6 +4256,7 @@ const worker = {
         const main_name = requiredString(body.main_contact_name, "main_contact_name");
         const main_email = requiredString(body.main_contact_email, "main_contact_email");
         const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
+        const home_country = firstNonEmptyString(body.home_country, body.country);
         const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
         const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
         const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
@@ -4326,7 +4346,7 @@ const worker = {
           tour_code: tour.tour_code,
           language,
           tour_title: tour.tour_title,
-          service_type: tour.service_type || "",
+          service_type: normalizeAccountingServiceType(tour.service_type),
           pricing_model: tour.pricing_model || "per_person",
           product_id: ids.product_id,
           price_id: tour.use_inline_price ? "" : ids.price_id,
@@ -4335,6 +4355,7 @@ const worker = {
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
+          home_country,
           whatsapp_number,
           pickup_location_label,
           pickup_address_or_hotel,
@@ -4469,7 +4490,7 @@ const worker = {
           quantity: String(number_of_people),
           amount_cents: Number(finalized.amount_due || 0),
           currency: (finalized.currency || "usd").toUpperCase(),
-          service_type: tour.service_type || "",
+          service_type: normalizeAccountingServiceType(tour.service_type),
         }]);
         activityFields.status = finalized.status || "open";
 
@@ -4491,7 +4512,7 @@ const worker = {
           tour_date_start: tour_date,
           tour_date_end: tour_date,
           party_size: number_of_people,
-          service_type: tour.service_type || "",
+          service_type: normalizeAccountingServiceType(tour.service_type),
           product_selected: tour.tour_code || "",
           pickup_location: pickup_location_label || pickup_address_or_hotel || "",
           currency: (finalized.currency || "usd").toUpperCase(),
@@ -4553,6 +4574,7 @@ const worker = {
         const main_name = requiredString(body.main_contact_name, "main_contact_name");
         const main_email = requiredString(body.main_contact_email, "main_contact_email");
         const main_phone = requiredString(body.main_contact_phone, "main_contact_phone");
+        const home_country = firstNonEmptyString(body.home_country, body.country);
         const whatsapp_number = requiredString(body.whatsapp_number, "whatsapp_number");
         const pickup_location_label = requiredString(body.pickup_location_label, "pickup_location_label");
         const pickup_address_or_hotel = requiredString(body.pickup_address_or_hotel, "pickup_address_or_hotel");
@@ -4670,6 +4692,7 @@ const worker = {
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
+          home_country,
           whatsapp_number,
           pickup_location_label,
           pickup_address_or_hotel,
@@ -4717,6 +4740,7 @@ const worker = {
           main_contact_name: main_name,
           main_contact_email: main_email,
           main_contact_phone: main_phone,
+          home_country,
           whatsapp_number,
           pickup_location_label,
           pickup_address_or_hotel,
@@ -4765,7 +4789,7 @@ const worker = {
             tour_code: item.tour_code,
             language: item.language,
             tour_title: item.tour.tour_title,
-            service_type: item.tour.service_type || "",
+            service_type: normalizeAccountingServiceType(item.tour.service_type),
             pricing_model: item.tour.pricing_model || "per_person",
             product_id: item.ids.product_id,
             price_id: item.tour.use_inline_price ? "" : item.ids.price_id,
@@ -4774,6 +4798,7 @@ const worker = {
             main_contact_name: main_name,
             main_contact_email: main_email,
             main_contact_phone: main_phone,
+            home_country,
             whatsapp_number,
             pickup_location_label,
             pickup_address_or_hotel,
@@ -4871,7 +4896,7 @@ const worker = {
           quantity: String(item.quantity),
           amount_cents: calculatedLineTotalCents(item.tour, item.unitAmountCents, item.quantity, item.quad_count),
           currency: item.tour.currency || "USD",
-          service_type: item.tour.service_type || "",
+          service_type: normalizeAccountingServiceType(item.tour.service_type),
         })));
         activityFields.status = finalized.status || "open";
 
@@ -5211,9 +5236,12 @@ const worker = {
           guest_last_name: isGuideTip ? tipGuestParts.last : nameParts.last,
           guest_email: guestEmail,
           guest_phone: guestPhone,
-          home_country: session.customer_details && session.customer_details.address && session.customer_details.address.country ? String(session.customer_details.address.country) : "",
+          home_country: firstNonEmptyString(
+            md.home_country,
+            session.customer_details && session.customer_details.address && session.customer_details.address.country ? String(session.customer_details.address.country) : "",
+          ),
           party_size: isGuideTip ? "1" : md.number_of_people ? String(md.number_of_people) : "",
-          service_type: isGuideTip ? "Guide Gratuity" : md.service_type || "",
+          service_type: isGuideTip ? "Guide Gratuity" : normalizeAccountingServiceType(md.service_type),
           tour_title: isGuideTip
             ? `Guide Tip - ${tipGuideName || "Staff"}`
             : md.tour_title || "",
@@ -5689,9 +5717,13 @@ const worker = {
                     guest_last_name: nameParts.last,
                     guest_email: guestEmail,
                     guest_phone: guestPhone,
-                    home_country: customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
+                    home_country: firstNonEmptyString(
+                      lineMd.home_country,
+                      invMd.home_country,
+                      customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
+                    ),
                     party_size: lineQty,
-                    service_type: lineMd.service_type || "",
+                    service_type: normalizeAccountingServiceType(lineMd.service_type),
                     tour_title: lineMd.tour_title || "",
                     tour_guide: lineMd.default_provider || "",
                     payment_method: "Stripe",
@@ -5840,9 +5872,13 @@ const worker = {
                   guest_last_name: nameParts.last,
                   guest_email: guestEmail,
                   guest_phone: guestPhone,
-                  home_country: customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
+                  home_country: firstNonEmptyString(
+                    md.home_country,
+                    invMd.home_country,
+                    customerObj && customerObj.address && customerObj.address.country ? String(customerObj.address.country) : "",
+                  ),
                   party_size: md.number_of_people ? String(md.number_of_people) : "",
-                  service_type: md.service_type || "",
+                  service_type: normalizeAccountingServiceType(md.service_type),
                   tour_title: md.tour_title || "",
                   tour_guide: md.default_provider || "",
                   payment_method: "Stripe",
