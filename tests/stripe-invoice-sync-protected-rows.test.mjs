@@ -115,6 +115,31 @@ assert.match(
 );
 assert.match(
   source,
+  /function shouldExcludeInvoiceSourceRow_\(row\)/,
+  "invoice sync must share one eligibility gate across normal and recovery imports",
+);
+assert.match(
+  source,
+  /canonicalSyncToken_\(row\.exclude_from_invoice_sync\)/,
+  "explicitly excluded staging rows must never enter invoices",
+);
+assert.match(
+  source,
+  /"replaced by itemized repair"/,
+  "superseded invoice summaries must remain excluded after itemized repair",
+);
+assert.match(
+  source,
+  /return !hasServiceIdentity;/,
+  "invoice-level shells without a service identity must remain out of accounting",
+);
+assert.equal(
+  (source.match(/shouldExcludeInvoiceSourceRow_\(rowObject\)/g) || []).length,
+  2,
+  "normal cursor imports and recovery audits must enforce the same eligibility gate",
+);
+assert.match(
+  source,
   /function recoverMissingInvoiceRows\(\)/,
   "a repeat-safe manual full-history repair must remain available",
 );

@@ -151,9 +151,10 @@ function syncStripeInvoicesToInvoices(e) {
         continue;
       }
 
-      // Stripe can expose an applied deposit as a negative invoice line. It is
-      // a balance credit, not a tour/service sale, and must not enter invoices.
-      if (isAppliedDepositCreditRow_(rowObject)) {
+      // Only active service-level accounting lines belong in invoices. This
+      // excludes deposit credits, superseded repair summaries and invoice-level
+      // shells that do not identify a tour, product or service.
+      if (shouldExcludeInvoiceSourceRow_(rowObject)) {
         skipped++;
         properties.setProperty(MBW_SYNC_CURSOR_PROPERTY, String(sourceRowNumber));
         continue;
@@ -226,7 +227,7 @@ function recoverMissingRecentInvoiceRows_(source, target, sourceHeaders, targetH
 
   for (var i = 0; i < rows.length; i++) {
     var rowObject = rowToObject_(sourceHeaders.values, rows[i]);
-    if (!cleanSyncValue_(rowObject.invoice_no) || isAppliedDepositCreditRow_(rowObject)) continue;
+    if (!cleanSyncValue_(rowObject.invoice_no) || shouldExcludeInvoiceSourceRow_(rowObject)) continue;
 
     var identity = buildSourceIdentity_(rowObject);
     if (existingKeys[identity]) {
@@ -1506,6 +1507,32 @@ function isAppliedDepositCreditRow_(row) {
     .join(" ")
     .toLowerCase();
   return text.indexOf("deposit") >= 0 && (text.indexOf("credit") >= 0 || text.indexOf("applied") >= 0);
+}
+
+function shouldExcludeInvoiceSourceRow_(row) {
+  if (isAppliedDepositCreditRow_(row)) return true;
+
+  var excluded = canonicalSyncToken_(row.exclude_from_invoice_sync);
+  if (excluded === "yes" || excluded === "true" || excluded === "1") return true;
+
+  var status = canonicalSyncToken_(row.record_status);
+  if ([
+    "replaced by itemized repair",
+    "superseded",
+    "void",
+    "voided",
+    "reversed",
+    "cancelled",
+    "canceled"
+  ].indexOf(status) >= 0) return true;
+
+  var hasServiceIdentity = Boolean(
+    cleanSyncValue_(row.product_selected) ||
+    cleanSyncValue_(row.service_type) ||
+    cleanSyncValue_(row.tour_title) ||
+    cleanSyncValue_(row.tour_date)
+  );
+  return !hasServiceIdentity;
 }
 
 function buildTargetIdentity_(row) {
