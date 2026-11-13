@@ -1529,6 +1529,15 @@ function shouldExcludeInvoiceSourceRow_(row) {
     "canceled"
   ].indexOf(status) >= 0) return true;
 
+  // The invoices ledger is service-line based. A Stripe invoice summary may
+  // share the same invoice/payment identifiers as its itemized rows, but it
+  // has no product or tour date and must never be recovered as an extra line.
+  // Require both immutable service dimensions instead of accepting a title or
+  // service label alone; those descriptive fields can exist on summaries.
+  if (!cleanSyncValue_(row.product_selected) || !cleanSyncValue_(row.tour_date)) {
+    return true;
+  }
+
   var hasServiceIdentity = Boolean(
     cleanSyncValue_(row.product_selected) ||
     cleanSyncValue_(row.service_type) ||

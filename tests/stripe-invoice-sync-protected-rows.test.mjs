@@ -130,6 +130,11 @@ assert.match(
 );
 assert.match(
   source,
+  /!cleanSyncValue_\(row\.product_selected\) \|\| !cleanSyncValue_\(row\.tour_date\)/,
+  "recovery must require a product and tour date before creating an invoice service row",
+);
+assert.match(
+  source,
   /return !hasServiceIdentity;/,
   "invoice-level shells without a service identity must remain out of accounting",
 );
