@@ -43,6 +43,7 @@ const destinationAuthority = /\bmindo\b/i.test(location)
 const sourceAuthority = [intakeAuthority, destinationAuthority].filter(Boolean).join(' ');
 const banned = /\b(this reel shows|the video shows|imagine|step into|hidden paradise|nature['’]s symphony|mist-kissed|living tapestry|feathered wonders|where time slows down|showdown)\b/i;
 const filler = /\b(can (?:bring several distinct moments together|unfold in unexpected ways)|three distinct moments|each offering something different to notice|which (?:one|moment) would have caught your eye(?: first)?|those (?:are|supplied) (?:the )?details that made this experience(?: in [^.]+)? worth sharing|every outing develops from the moments that are actually present|this was the clear focus here|supplied details are the focus|the account stays with the moment as described|the tour offers guided observation|experience the thrill of|unforgettable|book your adventure today|book your spot today|adding a splash of color|turn(?:s|ing)? (?:a|the|this) [^.]+ into a memorable adventure)\b/i;
+const engagementBait = /\b(?:which (?:bird|image|slide|frame|one|moment)|what caught your eye|tell us which|would you|how many|drop (?:a )?comment|comment below)\b/i;
 const grammar = /\b(?:one|a|an|each)\s+(?:birdwatching|birding)\b/i;
 const genericTitle = /^(?:birdwatching|birding|tour|nature|reel|mindo)$/i;
 const unsupportedTerms = ['moonlit','moonlight','lantern','canopy','plumage','elusive','rare','mist','misty','rain','rainfall','weather','habitat','nest','feeding','river','rapids','current','trail','garden','feeder','bridge','road','lodge','breakfast','dawn','sunrise','glow','rainforest','cloud forest'];
@@ -87,7 +88,7 @@ const finalCopy = [blurb, ig, yt, tt, xx].join(' ');
 const flags = [];
 if (parseError) flags.push(parseError);
 if (usedDeterministicFallback) flags.push('deterministic_fallback_requires_review');
-if (banned.test(finalCopy) || filler.test(finalCopy)) flags.push('forbidden_template_language');
+if (banned.test(finalCopy) || filler.test(finalCopy) || engagementBait.test(finalCopy) || (finalCopy.match(/\?/g)||[]).length > 1) flags.push('forbidden_template_language');
 if (grammar.test(finalCopy)) flags.push('unnatural_activity_grammar');
 if (/(?:\.{3,}|…)/.test(finalCopy)) flags.push('ellipsis_or_incomplete_copy');
 if (genericTitle.test(yt)) flags.push('generic_title');

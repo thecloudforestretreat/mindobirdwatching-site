@@ -126,7 +126,8 @@ function compileWorkflow(path) {
   assert(!/\b(bird|species|portrait|x-ray)\b/i.test([experienceCopy.carousel_title, experienceCopy.caption, experienceCopy.facebook_caption, experienceCopy.reddit_title, experienceCopy.reddit_caption].join(" ")), "Experience copy must never be forced into a bird-profile template");
   assert(/night walks/i.test(experienceCopy.carousel_title) && experienceCopy.instagram_hashtags.includes("#MindoNightWalk"), "Experience copy must retain the submitted subject and receive contextual hashtags");
   assert.strictEqual(experienceCopy.quality_score, 92, "Minimal-input experience copy must use the validated safe fallback rather than inherit an inflated model score");
-  assert(/After Dark in Mindo/.test(experienceCopy.carousel_title) && /recent evenings out/.test(experienceCopy.caption), "Night-walk fallback must sound like an experience, not a mechanical image inventory");
+  assert(/After Dark in Mindo/.test(experienceCopy.carousel_title) && /recent night walks/.test(experienceCopy.caption), "Night-walk fallback must sound like an experience, not a mechanical image inventory");
+  assert(!/which (?:image|slide|frame)|what caught your eye|would you/i.test([experienceCopy.caption,experienceCopy.facebook_caption,experienceCopy.reddit_caption].join(" ")), "Carousel fallback must not use formulaic engagement bait");
 
   const recentHighlightsCopy = await runParser({
     ...imageUrls,

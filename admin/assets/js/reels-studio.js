@@ -94,6 +94,8 @@
       if (tags.length !== 5 || tags.some(function (tag) { return !/^#[A-Za-z0-9_]+$/.test(tag); })) issues.push("Instagram requires exactly five valid hashtags.");
     }
     var selectedCopy = [instagramSelected ? captionBody : "", platformSelected(row, "youtube") ? row.youtube_title : "", platformSelected(row, "tiktok") ? row.tiktok_caption : ""].join(" ");
+    var engagementBait = /\b(?:which (?:bird|image|slide|frame|one|moment)|what caught your eye|tell us which|would you|how many|drop (?:a )?comment|comment below)\b/i;
+    if (engagementBait.test(selectedCopy) || (selectedCopy.match(/\?/g) || []).length > 1) issues.push("The copy uses a formulaic engagement question. Replace it with a direct, useful call to action.");
     var source = clean([row.reel_description, row.featured_birds, row.activity_name, row.location, row.verified_details].join(" ")).toLowerCase();
     var sceneTerms = ["trail", "river", "rapids", "current", "garden", "feeder", "bridge", "road", "lodge", "breakfast", "dawn", "sunrise", "nest", "feeding", "habitat", "rainforest"];
     var inventedTerms = sceneTerms.filter(function (term) { return selectedCopy.toLowerCase().includes(term) && !source.includes(term); });
@@ -434,6 +436,16 @@
       '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
       '<p class="mediaEditorStatus" data-media-status role="status" aria-live="polite"></p></section>';
   }
+  function creativePreflight(row) {
+    if (bucket(row) === "published") return "";
+    return '<section class="creativePreflight"><div class="mediaEditorHeader"><strong>Opening and retention check</strong><span>Required before approval</span></div>' +
+      '<p>Watch the reel from the beginning, then confirm each item. These checks are about the video edit, not the generated copy.</p>' +
+      '<label><input type="checkbox" data-creative-check /> <span>The strongest bird, wildlife, or guest moment is visible within the first 2 seconds.</span></label>' +
+      '<label><input type="checkbox" data-creative-check /> <span>There is no black frame, logo-only screen, or dead lead-in before the action.</span></label>' +
+      '<label><input type="checkbox" data-creative-check /> <span>The opening makes sense with the sound muted.</span></label>' +
+      '<label><input type="checkbox" data-creative-check /> <span>The edit reaches the promised subject quickly and removes unnecessary setup.</span></label>' +
+      '</section>';
+  }
   function openReview(id) {
     var row = state.rows.find(function (candidate) { return rowId(candidate) === clean(id); });
     if (!row) return;
@@ -451,6 +463,7 @@
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = clean(row.activity_name) || "Review reel " + rowId(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
+      creativePreflight(row) +
       mediaEditor(row) +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (reviewNotice ? '<div class="warningBox">' + esc(reviewNotice) + "</div>" : "") +
@@ -492,6 +505,11 @@
         return false;
       }
       if (action === "approve") {
+        var creativeChecks = Array.from(document.querySelectorAll("[data-creative-check]"));
+        if (!creativeChecks.length || creativeChecks.some(function (check) { return !check.checked; })) {
+          window.alert("Complete all four opening and retention checks after watching the reel from the beginning.");
+          return false;
+        }
         var captionBody = clean(edits.instagram_caption_final).split(/\n\s*\n(?=#)/)[0];
         var wordCount = captionBody.split(/\s+/).filter(Boolean).length;
         if (wordCount < 35 || wordCount > 100) {
@@ -503,6 +521,11 @@
         var inventedTerms = sceneTerms.filter(function (term) { return captionBody.toLowerCase().includes(term) && !source.includes(term); });
         if (inventedTerms.length) {
           window.alert("The caption includes scene details not found in the supplied description: " + inventedTerms.join(", ") + ". Remove them or add verified context before approval.");
+          return false;
+        }
+        var engagementBait = /\b(?:which (?:bird|image|slide|frame|one|moment)|what caught your eye|tell us which|would you|how many|drop (?:a )?comment|comment below)\b/i;
+        if (engagementBait.test(captionBody) || (captionBody.match(/\?/g) || []).length > 1) {
+          window.alert("Replace the formulaic engagement question with a direct, useful call to action before approval.");
           return false;
         }
       }

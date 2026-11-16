@@ -149,20 +149,39 @@ const facebookReelCandidates = values => unique(values.map(value => clean(value)
 const fbPostCandidates = facebookPostCandidates(records.filter(r=>r.type!=='reel').map(r=>r.facebook_post_id));
 const fbReelCandidates = facebookReelCandidates(records.filter(r=>r.type==='reel').map(r=>r.facebook_post_id));
 const enc = encodeURIComponent;
+const chunks = (items,size=50) => {
+  const output=[];
+  for(let index=0;index<items.length;index+=size)output.push(items.slice(index,index+size));
+  return output.length?output:[[]];
+};
+const graphBatchUrls = (items,fields) => chunks(items).map(batch => batch.length
+  ? 'https://graph.facebook.com/v23.0/?ids='+enc(batch.join(','))+'&fields='+enc(fields)
+  : 'https://graph.facebook.com/v23.0/me?fields=id');
+const instagramFields='id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)';
+const facebookPostFields='id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)';
+const facebookReelFields='id,created_time,permalink_url,description,picture,thumbnails,likes.limit(0).summary(true),comments.limit(0).summary(true)';
 return [{json:{...ctx,records,
-  ig_url: ig.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(ig.join(','))+'&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  ig_library_url: 'https://graph.facebook.com/v23.0/${INSTAGRAM_BUSINESS_ID}/media?limit=100&fields='+enc('id,caption,media_type,media_product_type,timestamp,permalink,thumbnail_url,media_url,like_count,comments_count,insights.metric(reach,saved,shares,total_interactions,views)'),
+  ig_urls: graphBatchUrls(ig,instagramFields),
+  ig_library_url: 'https://graph.facebook.com/v23.0/${INSTAGRAM_BUSINESS_ID}/media?limit=50&fields='+enc(instagramFields),
   fb_url: 'https://graph.facebook.com/v23.0/'+facebookPageId+'/published_posts?since='+ctx.previous_start_date+'&until='+ctx.end_date+'&limit=100&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)'),
-  fb_ids_url: fbPostCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbPostCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,full_picture,message,shares,comments.limit(0).summary(true),reactions.limit(0).summary(true),insights.metric(post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  fb_reels_url: fbReelCandidates.length ? 'https://graph.facebook.com/v23.0/?ids='+enc(fbReelCandidates.join(','))+'&fields='+enc('id,created_time,permalink_url,description,picture,thumbnails,likes.limit(0).summary(true),comments.limit(0).summary(true)') : 'https://graph.facebook.com/v23.0/me?fields=id',
-  yt_url: 'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id='+enc(yt.join(',')),
+  fb_ids_urls: graphBatchUrls(fbPostCandidates,facebookPostFields),
+  fb_reels_urls: graphBatchUrls(fbReelCandidates,facebookReelFields),
+  yt_urls: chunks(yt).map(batch=>'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id='+enc(batch.join(','))),
   yt_daily_url: 'https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&startDate='+ctx.previous_start_date+'&endDate='+ctx.end_date+'&metrics=views%2CestimatedMinutesWatched%2CaverageViewDuration%2CaverageViewPercentage%2Clikes%2Ccomments%2Cshares%2CsubscribersGained&dimensions=day&sort=day'
 }}];`,
 });
 
+const expandUrls = (name, position, field) => add(name, "n8n-nodes-base.code", 2, position, {
+  jsCode: `const urls=Array.isArray($json.${field})?$json.${field}:[];\nreturn (urls.length?urls:['']).map((url,index)=>({json:{url,batch_index:index,batch_count:Math.max(1,urls.length)}}));`,
+});
+expandUrls("[BATCH] Instagram IDs", [-20, -180], "ig_urls");
+expandUrls("[BATCH] Facebook Post IDs", [180, 10], "fb_ids_urls");
+expandUrls("[BATCH] Facebook Reel IDs", [180, 90], "fb_reels_urls");
+expandUrls("[BATCH] YouTube IDs", [-20, 100], "yt_urls");
+
 const httpDefaults = { options: { timeout: 25000 } };
 add("[META] Instagram Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [120, -180], {
-  url: "={{ $json.ig_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
+  url: "={{ $json.url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Instagram Media Library", "n8n-nodes-base.httpRequest", 4.2, [120, -280], {
   url: "={{ $json.ig_library_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
@@ -175,15 +194,15 @@ add("[META] Facebook Batch Insights", "n8n-nodes-base.httpRequest", 4.2, [340, -
   authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Facebook Stored Posts", "n8n-nodes-base.httpRequest", 4.2, [340, 10], {
-  url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_ids_url }}",
+  url: "={{ $json.url }}",
   authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[META] Facebook Stored Reels", "n8n-nodes-base.httpRequest", 4.2, [340, 90], {
-  url: "={{ $('[CORE] Prepare Batch Queries').first().json.fb_reels_url }}",
+  url: "={{ $json.url }}",
   authentication: "predefinedCredentialType", nodeCredentialType: "facebookGraphApi", ...httpDefaults,
 }, { credentials: { facebookGraphApi: INSTAGRAM_GRAPH }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[YT] Video Statistics", "n8n-nodes-base.httpRequest", 4.2, [120, 100], {
-  url: "={{ $json.yt_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
+  url: "={{ $json.url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
 }, { credentials: { youTubeOAuth2Api: YOUTUBE }, onError: "continueRegularOutput", alwaysOutputData: true });
 add("[YT] Daily Analytics", "n8n-nodes-base.httpRequest", 4.2, [120, 240], {
   url: "={{ $json.yt_daily_url }}", authentication: "predefinedCredentialType", nodeCredentialType: "youTubeOAuth2Api", ...httpDefaults,
@@ -199,13 +218,19 @@ add("[JOIN] Add YouTube Daily", "n8n-nodes-base.merge", 3.2, [960, 100], {});
 add("[REPORT] Build Dashboard Payload", "n8n-nodes-base.code", 2, [1180, 100], {
   jsCode: String.raw`const base = $('\u005bCORE\u005d Prepare Batch Queries').first().json;
 const get = name => { try { return $(name).first().json || {}; } catch { return {}; } };
-const igRaw = get('\u005bMETA\u005d Instagram Batch Insights');
+const getAll = name => { try { return $(name).all().map(item=>item.json||{}); } catch { return []; } };
+const mergeObjects = values => Object.assign({},...values.filter(value=>value&&typeof value==='object'));
+const igRaws = getAll('\u005bMETA\u005d Instagram Batch Insights');
+const igRaw = mergeObjects(igRaws);
 const igLibraryRaw = get('\u005bMETA\u005d Instagram Media Library');
 const pageAccessRaw = get('\u005bMETA\u005d Load Page Access');
 const fbRaw = get('\u005bMETA\u005d Facebook Batch Insights');
-const fbDirectRaw = get('\u005bMETA\u005d Facebook Stored Posts');
-const fbReelRaw = get('\u005bMETA\u005d Facebook Stored Reels');
-const ytRaw = get('\u005bYT\u005d Video Statistics');
+const fbDirectRaws = getAll('\u005bMETA\u005d Facebook Stored Posts');
+const fbDirectRaw = mergeObjects(fbDirectRaws);
+const fbReelRaws = getAll('\u005bMETA\u005d Facebook Stored Reels');
+const fbReelRaw = mergeObjects(fbReelRaws);
+const ytRaws = getAll('\u005bYT\u005d Video Statistics');
+const ytRaw = {items:ytRaws.flatMap(value=>Array.isArray(value.items)?value.items:[])};
 const ydRaw = get('\u005bYT\u005d Daily Analytics');
 const num = v => Number(v) || 0;
 const clean = v => String(v ?? '').trim();
@@ -347,11 +372,13 @@ const countMatched=(platform)=>current.filter(p=>p.platform.toLowerCase()===plat
 const countVisible=(platform)=>current.filter(p=>p.platform.toLowerCase()===platform&&num(p.denominator||p.reach||p.views)>0).length;
 const platformStatus=(platform)=>{const expected=countExpected(platform),matched=countMatched(platform),visible=countVisible(platform),coverage=expected?matched/expected:0,visibilityCoverage=matched?visible/matched:0;return{expected,matched,visible,coverage_percent:expected?Math.round(coverage*100):null,visibility_coverage_percent:matched?Math.round(visibilityCoverage*100):null,data_status:matched&&visible?'available':matched?'identity_only':'no_data'}};
 const facebookPageAuthorized=String(pageAccessRaw.id||'')==='753092067877601'&&!apiError(pageAccessRaw);
-const facebookApiErrors=[fbRaw,fbDirectRaw,fbReelRaw].map(apiError).filter(Boolean);
-const metaCredentialReason=apiError(pageAccessRaw)||apiError(igRaw);
+const facebookApiErrors=[fbRaw,...fbDirectRaws,...fbReelRaws].map(apiError).filter(Boolean);
+const instagramApiErrors=igRaws.map(apiError).filter(Boolean);
+const youtubeApiErrors=ytRaws.map(apiError).filter(Boolean);
+const metaCredentialReason=apiError(pageAccessRaw)||instagramApiErrors[0]||'';
 const facebookConnectionReason=metaCredentialReason||(!facebookPageAuthorized?'The permanent Mindo Bird Watching Page token could not verify Page access. Reconnect the Facebook credential with Page access and read-insights permissions.':facebookApiErrors.length?facebookApiErrors[0]:'');
-const instagramConnectionReason=apiError(igRaw)||apiError(igLibraryRaw)||metaCredentialReason;
-const refreshErrors=[instagramConnectionReason,facebookConnectionReason,apiError(ytRaw),apiError(ydRaw)].filter(Boolean);
+const instagramConnectionReason=instagramApiErrors[0]||apiError(igLibraryRaw)||metaCredentialReason;
+const refreshErrors=[instagramConnectionReason,facebookConnectionReason,youtubeApiErrors[0]||'',apiError(ydRaw)].filter(Boolean);
 const syncAttemptAt=new Date().toISOString(),syncSuccessful=refreshErrors.length===0;
 if(syncSuccessful)snapshotState.last_successful_sync_at=syncAttemptAt;
 const lastSuccessfulSyncAt=snapshotState.last_successful_sync_at||'',lastSuccessfulMillis=Date.parse(lastSuccessfulSyncAt),syncStale=!lastSuccessfulMillis||snapshotNow-lastSuccessfulMillis>2*3600000;
@@ -461,17 +488,21 @@ const connections = {
   "[DATA] Load Carousels": { main: [[{ node: "[DATA] Combine Published Records", type: "main", index: 1 }]] },
   "[DATA] Combine Published Records": { main: [[{ node: "[CORE] Prepare Batch Queries", type: "main", index: 0 }]] },
   "[CORE] Prepare Batch Queries": { main: [[
-    { node: "[META] Instagram Batch Insights", type: "main", index: 0 },
+    { node: "[BATCH] Instagram IDs", type: "main", index: 0 },
     { node: "[META] Instagram Media Library", type: "main", index: 0 },
     { node: "[META] Load Page Access", type: "main", index: 0 },
-    { node: "[YT] Video Statistics", type: "main", index: 0 },
+    { node: "[BATCH] YouTube IDs", type: "main", index: 0 },
     { node: "[YT] Daily Analytics", type: "main", index: 0 },
   ]] },
+  "[BATCH] Instagram IDs": { main: [[{ node: "[META] Instagram Batch Insights", type: "main", index: 0 }]] },
+  "[BATCH] YouTube IDs": { main: [[{ node: "[YT] Video Statistics", type: "main", index: 0 }]] },
   "[META] Load Page Access": { main: [[
     { node: "[META] Facebook Batch Insights", type: "main", index: 0 },
-    { node: "[META] Facebook Stored Posts", type: "main", index: 0 },
-    { node: "[META] Facebook Stored Reels", type: "main", index: 0 },
+    { node: "[BATCH] Facebook Post IDs", type: "main", index: 0 },
+    { node: "[BATCH] Facebook Reel IDs", type: "main", index: 0 },
   ]] },
+  "[BATCH] Facebook Post IDs": { main: [[{ node: "[META] Facebook Stored Posts", type: "main", index: 0 }]] },
+  "[BATCH] Facebook Reel IDs": { main: [[{ node: "[META] Facebook Stored Reels", type: "main", index: 0 }]] },
   "[META] Instagram Batch Insights": { main: [[{ node: "[JOIN] Instagram Sources", type: "main", index: 0 }]] },
   "[META] Instagram Media Library": { main: [[{ node: "[JOIN] Instagram Sources", type: "main", index: 1 }]] },
   "[JOIN] Instagram Sources": { main: [[{ node: "[JOIN] Meta", type: "main", index: 0 }]] },

@@ -71,6 +71,7 @@ Editorial rules:
 - Open with a concrete person, bird, place, or action from the intake. Never open with a broad claim about how birding "can unfold" or what an outing "can bring".
 - Prefer one vivid, factual scene over an abstract recap. Do not label the content as "three distinct moments" or explain that each moment "offers something different to notice".
 - Do not use rhetorical engagement questions such as "Which one caught your eye?" The CTA should be direct and useful.
+- Do not ask "Would you...?", "How many...?", "Tell us which...", or any question designed only to collect comments. Use a specific direct CTA such as saving the post, sharing it with a birding companion, or messaging to plan a relevant tour.
 - A supplied feeling such as excitement or thrill may be used in an observational sentence. Do not turn it into a stock command such as "Experience the thrill of...".
 - Lead with the most concrete subject or moment. Never begin with "One birdwatching", "Each birdwatching", or another article followed by the activity name.
 - Paraphrase the quick description naturally; do not paste it as a complete sentence into the caption.

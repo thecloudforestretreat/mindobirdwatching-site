@@ -10,12 +10,15 @@ assert(
   "Reels Studio must use the main-site Pages Function, not the static admin host"
 );
 assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=14'), "Reels Studio asset cache key must expose deterministic copy checks");
-assert(html.includes('reels-studio.css?v=5'), "Reels Studio CSS cache key must expose service health styles");
+assert(html.includes('reels-studio.js?v=16'), "Reels Studio asset cache key must expose deterministic copy checks");
+assert(html.includes('reels-studio.css?v=7'), "Reels Studio CSS cache key must expose service health styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('copyValidationIssues(row).length === 0'), "Reels Studio must verify copy content instead of trusting a stored quality score");
 assert(ui.includes('caption must contain 35–100 words'), "Reels Studio must explain the caption-length requirement");
 assert(ui.includes('scene details not found in the supplied description'), "Reels Studio must reject ungrounded scene details before approval");
+assert(ui.includes('data-creative-check'), "Reels Studio approval must include video-opening retention checks");
+assert(ui.includes('Complete all four opening and retention checks'), "Reels Studio must block approval until the video edit is reviewed");
+assert(ui.includes('formulaic engagement question'), "Reels Studio must reject repetitive engagement bait");
 assert(ui.includes('group === "review" || group === "upcoming"'), "Scheduled reels must remain eligible for explicit copy regeneration");
 assert(ui.includes(': copyIsApproved(row) ? ""'), "Approved reels must not show stale generation warnings");
 assert(api.includes("export async function onRequestGet"), "Reels API GET handler is missing");
@@ -54,6 +57,6 @@ assert(!html.includes("Defaults to tomorrow; today remains available."), "Reel i
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v14",
+  cacheKey: "v16",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));

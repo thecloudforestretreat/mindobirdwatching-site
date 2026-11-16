@@ -25,8 +25,10 @@ test("analytics workflow queries Facebook posts and reels with the correct objec
   assert.ok(names.has("[JOIN] Facebook Sources"));
   const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
   assert.match(prepare,/published_posts/);
-  assert.match(prepare,/fb_ids_url/);
-  assert.match(prepare,/fb_reels_url/);
+  assert.match(prepare,/fb_ids_urls/);
+  assert.match(prepare,/fb_reels_urls/);
+  assert.match(prepare,/const chunks = \(items,size=50\)/);
+  assert.match(prepare,/graphBatchUrls/);
   assert.match(prepare,/description,picture,thumbnails,likes/);
   assert.match(prepare,/facebook_caption/);
   assert.match(prepare,/post_media_view,post_total_media_view_unique,post_clicks,post_reactions_by_type_total,post_video_views/);
@@ -35,6 +37,20 @@ test("analytics workflow queries Facebook posts and reels with the correct objec
   assert.doesNotMatch(prepare,/facebookCandidates = values => unique\(values\.flatMap/);
   assert.doesNotMatch(prepare,/post_impressions_unique/);
   assert.doesNotMatch(prepare,/post_engaged_users/);
+});
+
+test("analytics workflow batches platform IDs at API-safe limits and merges every response",()=>{
+  const workflow=buildWorkflow();
+  const names=new Set(workflow.nodes.map(node=>node.name));
+  for(const name of ["[BATCH] Instagram IDs","[BATCH] Facebook Post IDs","[BATCH] Facebook Reel IDs","[BATCH] YouTube IDs"]) assert.ok(names.has(name),name);
+  const report=workflow.nodes.find(node=>node.name==="[REPORT] Build Dashboard Payload").parameters.jsCode;
+  assert.match(report,/\.all\(\)\.map/);
+  assert.match(report,/const igRaws = getAll/);
+  assert.match(report,/const ytRaws = getAll/);
+  assert.match(report,/youtubeApiErrors/);
+  const prepare=workflow.nodes.find(node=>node.name==="[CORE] Prepare Batch Queries").parameters.jsCode;
+  assert.match(prepare,/media\?limit=50/);
+  assert.doesNotMatch(prepare,/media\?limit=100/);
 });
 
 test("analytics workflow keeps Facebook recovery deterministic and auditable",()=>{
@@ -60,7 +76,7 @@ test("analytics workflow keeps Facebook recovery deterministic and auditable",()
     assert.equal(nodeMap[name].parameters.queryParameters,undefined);
   }
   assert.match(report,/connection_reason/);
-  assert.match(report,/metaCredentialReason=apiError\(pageAccessRaw\)\|\|apiError\(igRaw\)/);
+  assert.match(report,/metaCredentialReason=apiError\(pageAccessRaw\)\|\|instagramApiErrors\[0\]/);
   assert.match(report,/instagramConnectionReason/);
   assert.match(report,/value\.error\.description \|\| value\.error\.message/);
   assert.match(report,/post_total_media_view_unique/);

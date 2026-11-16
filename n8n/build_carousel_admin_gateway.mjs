@@ -132,14 +132,14 @@ if (action === 'approve_carousel') {
   const count=Array.from({length:10},(_,i)=>clean(row['image_'+(i+1)+'_url'])).filter(Boolean).length;
   if (count<2 || count>10) errors.push('Carousel must have 2–10 images.');
   const captionWords=words(row.caption);
-  if (captionWords<50 || captionWords>120) errors.push('Caption must contain 50–120 words.');
+  if (captionWords<35 || captionWords>100) errors.push('Caption must contain 35–100 words.');
   const tags=clean(row.instagram_hashtags).split(/\s+/).filter(Boolean);
   if (tags.length!==5 || tags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Instagram requires exactly five valid hashtags.');
   if (!clean(row.carousel_title)) errors.push('Carousel title is required.');
   const facebookWords=words(row.facebook_caption), facebookTags=clean(row.facebook_hashtags).split(/\s+/).filter(Boolean);
-  if (facebookWords<50 || facebookWords>140 || facebookTags.length!==3 || facebookTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Facebook requires a 50–140 word caption and exactly three valid hashtags.');
+  if (facebookWords<35 || facebookWords>120 || facebookTags.length!==3 || facebookTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Facebook requires a 35–120 word caption and exactly three valid hashtags.');
   const redditWords=words(row.reddit_caption), redditTags=clean(row.reddit_hashtags).split(/\s+/).filter(Boolean);
-  if (!clean(row.reddit_title) || clean(row.reddit_title).length>120 || redditWords<35 || redditWords>120 || redditTags.length!==3 || redditTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Reddit requires a title, a 35–120 word body, and exactly three valid hashtags.');
+  if (!clean(row.reddit_title) || clean(row.reddit_title).length>120 || redditWords<25 || redditWords>100 || redditTags.length!==3 || redditTags.some(tag=>!/^#[A-Za-z0-9_]+$/.test(tag))) errors.push('Reddit requires a title, a 25–100 word body, and exactly three valid hashtags.');
   if (!truthy(row.post_to_instagram) && !truthy(row.post_to_facebook)) errors.push('Select Instagram or Facebook.');
   const reviewStatus=clean(row.copy_review_status).toUpperCase();
   if (!['PASS','HUMAN_EDITED'].includes(reviewStatus) || (reviewStatus==='PASS' && Number(row.quality_score||0)<92)) errors.push('Local copy must score at least 92 through both reviews, or be edited by a human, before approval.');
