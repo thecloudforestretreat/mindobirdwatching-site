@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
   catch { return reply(400, { ok: false, error: "invalid_json" }); }
   const required = ["daily_recon", "guide_payment_queue", "guide_settlements", "guide_ledger", "expenses", "growth_dashboard", "invoices", "report_income_summary", "deposits", "recon_meta_ads_import"];
   if (!payload?.ok || !payload.generated_at || !payload.tabs || required.some(name => !Array.isArray(payload.tabs[name]))) return reply(400, { ok: false, error: "invalid_snapshot" });
-  const db = env.MBW_PORTFOLIO_DB;
+  const db = env.MBW_PORTFOLIO_DB || env.MBW_ATTRIBUTION_DB;
   if (!db) return reply(503, { ok: false, error: "snapshot_store_unavailable" });
   const receivedAt = new Date().toISOString();
   try {

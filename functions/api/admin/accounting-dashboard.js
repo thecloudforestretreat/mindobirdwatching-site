@@ -26,7 +26,7 @@ function parseCsv(source) {
 }
 
 async function secureSource(env) {
-  const db = env.MBW_PORTFOLIO_DB;
+  const db = env.MBW_PORTFOLIO_DB || env.MBW_ATTRIBUTION_DB;
   if (!db) throw new Error("accounting_source_store_unavailable");
   await db.prepare("CREATE TABLE IF NOT EXISTS accounting_dashboard_snapshots (snapshot_id TEXT PRIMARY KEY, generated_at TEXT NOT NULL, payload TEXT NOT NULL, received_at TEXT NOT NULL)").run();
   const record = await db.prepare("SELECT generated_at, payload, received_at FROM accounting_dashboard_snapshots WHERE snapshot_id = ? LIMIT 1").bind("current").first();
