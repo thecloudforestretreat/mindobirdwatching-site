@@ -119,4 +119,12 @@ If any gate fails, keep triggers paused, restore the production workbook from th
 - The active `invoices` grid has been reduced from 29,783 to 1,000 rows without removing populated ledger records.
 - Live invoice status reports zero pending source rows.
 - Live expense reconciliation completed idempotently with no duplicate fee or payout creation.
-- A second invoice trigger owned by another Google account remains visible; it must be removed by that account before the 2027 cutover so only one invoice trigger remains.
+- The duplicate invoice trigger owned by `juan@klizos.com` was removed on 2026-11-17.
+- The Apps Script project now has exactly two production triggers, both owned by `mindobirdwatching@gmail.com`: one invoice sync and one expense sync.
+- The `MBW-0148 / ACT016 / Neicer` exception is resolved and reconciled across invoices, expenses, and the guide payment queue.
+- No archive tabs have been created and no 2026 records have been moved, copied, deleted, or reclassified for rollover.
+- The operational pre-cutover checklist is maintained in `2027-rollover-readiness-checklist.md`.
+
+## Explicit cutover lock
+
+This document is preparation only. No archive creation, trigger pause, tab reset, carry-forward import, or 2027 opening entry may occur until the owner gives a new, explicit cutover instruction after the final 2026 close review. Completing the readiness checklist is not authorization to begin the rollover.
