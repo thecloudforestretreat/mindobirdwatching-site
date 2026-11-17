@@ -8,6 +8,8 @@ Production workbook: `1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU`
 
 After this read-only audit was completed, the approved stabilization work was applied to production. Apps Script v1.5.5 now bounds invoice reads to the last populated `invoice_no`, preserves the stricter invoice-source protections, and passed local and live QA. The active `invoices` grid was then reduced from 29,783 rows to 1,000 rows after confirming the populated ledger ended at row 283 and that the native backup was available. This reduced the active grid from 3,305,913 cells to 111,000 cells without removing populated invoice rows. The original findings below remain the evidence that justified the implementation.
 
+The post-change expense run reported one intentionally waiting service row: `invoices` row 265, invoice `MBW-0148`, product `ACT016`, guide `Neicer`. Its calculated provider payout is zero, so v1.5.5 correctly refuses to create a payout expense until the rate or payable amount is resolved.
+
 ## Scope and safety boundary
 
 This was a read-only audit performed after the 2026-11-16 baseline and native Google Sheets backup. No production cells, formulas, formatting, triggers, Apps Script code, Stripe records, Cloudflare Worker settings, or external account settings were changed.
