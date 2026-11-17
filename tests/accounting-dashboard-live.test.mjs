@@ -32,6 +32,7 @@ test("accounting operations feed uses a private pushed snapshot and reports heal
 
   assert.match(api, /accounting_dashboard_snapshots/);
   assert.match(api, /MBW_PORTFOLIO_DB/);
+  assert.match(api, /MBW_ATTRIBUTION_DB/);
   assert.doesNotMatch(api, /docs\.google\.com\/spreadsheets\/d\/.*gviz/);
   assert.doesNotMatch(api, /ACCOUNTING_DASHBOARD_SOURCE_URL/);
   assert.match(api, /source_health:\s*sourceHealth/);
@@ -44,6 +45,7 @@ test("accounting operations feed uses a private pushed snapshot and reports heal
   assert.match(sync, /GSHEET_WEBAPP_TOKEN/);
   assert.match(sync, /invalid_snapshot/);
   assert.match(sync, /ON CONFLICT\(snapshot_id\)/);
+  assert.match(sync, /MBW_PORTFOLIO_DB\s*\|\|\s*env\.MBW_ATTRIBUTION_DB/);
   assert.match(middleware, /accounting-dashboard-sync/);
   assert.match(logger, /buildAccountingDashboardSource_/);
   assert.match(logger, /ACCOUNTING_DASHBOARD_FIELDS/);

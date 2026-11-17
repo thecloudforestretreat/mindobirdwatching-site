@@ -47,3 +47,18 @@ test("snapshot receiver validates and stores the current snapshot", async () => 
   assert.ok(db.calls.some(call => /ON CONFLICT\(snapshot_id\)/.test(call.sql)));
   assert.ok(db.calls.some(call => call.values?.[0] === "current"));
 });
+
+test("snapshot receiver uses the existing attribution database binding", async () => {
+  const db = fakeDb();
+  const payload = { ok: true, generated_at: "2026-11-17T20:00:00.000Z", tabs };
+  const response = await onRequestPost({
+    request: new Request("https://admin.mindobirdwatching.com/api/admin/accounting-dashboard-sync", {
+      method: "POST",
+      headers: { "authorization": "Bearer secret", "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+    env: { GSHEET_WEBAPP_TOKEN: "secret", MBW_ATTRIBUTION_DB: db },
+  });
+  assert.equal(response.status, 200);
+  assert.ok(db.calls.some(call => /accounting_dashboard_snapshots/.test(call.sql)));
+});
