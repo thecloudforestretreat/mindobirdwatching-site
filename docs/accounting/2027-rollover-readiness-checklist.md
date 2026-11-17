@@ -23,8 +23,8 @@ This checklist prepares the accounting system for a controlled transition from 2
 - [x] The 2026-11-17 post-trigger health audit found zero duplicate invoice, expense, deposit, or guide-queue keys and zero past-due guide payouts.
 - [x] A complete scheduled invoice cycle and expense cycle succeeded after the duplicate trigger was removed.
 - [ ] Inactive `Copy of invoices` grid is reviewed separately; it currently remains a large, non-production cleanup candidate and must not be trimmed without specific approval.
-- [ ] Source-confirm the missing booking total and balance for deposit `DEP-20261010-JOANFINLEY` before the final carry-forward set is approved.
-- [ ] Resolve or formally accept the bounded metadata exceptions documented in the 2026-11-17 health audit.
+- [x] Deposit `DEP-20261010-JOANFINLEY` is confirmed at $353.00 total, $100.00 paid, and $253.00 remaining.
+- [x] The deterministic invoice and expense metadata exceptions documented in the 2026-11-17 health audit are resolved; two historical deposits without PaymentIntent evidence remain explicitly accepted.
 
 ## 2. Prepare during the remainder of 2026
 
