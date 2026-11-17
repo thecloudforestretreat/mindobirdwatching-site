@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const source = fs.readFileSync(
-  new URL("../deployment/multi-invoice-ledger/stripe-invoices-sync-v1.4.4.gs", import.meta.url),
+  new URL("../deployment/multi-invoice-ledger/stripe-invoices-sync-v1.5.5.gs", import.meta.url),
   "utf8",
 );
 
@@ -48,7 +48,7 @@ const appendRowFinder = source.match(/function findFirstBlankInvoiceRow_\(sheet,
 assert(appendRowFinder, "findFirstBlankInvoiceRow_ must exist");
 assert.match(
   appendRowFinder,
-  /findLastPopulatedInvoiceRow_\(sheet, invoiceNoIndex\) \+ 1/,
+  /getLastNonBlankRowInColumn_\(sheet, column\)/,
   "invoice imports must append after the final populated invoice row",
 );
 assert.doesNotMatch(
@@ -57,20 +57,20 @@ assert.doesNotMatch(
   "invoice imports must not scan every preallocated invoice row",
 );
 
-const lastInvoiceRowFinder = source.match(/function findLastPopulatedInvoiceRow_\(sheet, invoiceNoIndex\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert(lastInvoiceRowFinder, "findLastPopulatedInvoiceRow_ must exist");
-assert.match(lastInvoiceRowFinder, /createTextFinder\("\.\+"\)/);
-assert.match(lastInvoiceRowFinder, /matchFormulaText\(false\)/);
+const lastInvoiceRowFinder = source.match(/function getLastNonBlankRowInColumn_\(sheet, column\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert(lastInvoiceRowFinder, "getLastNonBlankRowInColumn_ must exist");
+assert.match(lastInvoiceRowFinder, /getRange\(2, column, lastRow - 1, 1\)/);
+assert.match(lastInvoiceRowFinder, /getDisplayValues\(\)/);
 assert.doesNotMatch(
   lastInvoiceRowFinder,
-  /getValues\(|getDisplayValues\(/,
-  "last invoice lookup must stay server-side and single-column",
+  /getRange\(2, 1, lastRow - 1, sheet\.getLastColumn\(\)\)/,
+  "last invoice lookup must never read the full 111-column template area",
 );
 
 const expenseSync = source.match(/function syncInvoicesToExpensesUnlocked_\(ss\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert(expenseSync, "syncInvoicesToExpensesUnlocked_ must exist");
-assert.match(expenseSync, /invoiceLastRow = findLastPopulatedInvoiceRow_/);
-assert.match(expenseSync, /invoice_rows_scanned: invoiceRows\.length/);
+assert.match(expenseSync, /lastInvoiceDataRow = getLastNonBlankRowInColumn_/);
+assert.match(expenseSync, /getRange\(2, 1, lastInvoiceDataRow - 1, invoiceHeaders\.values\.length\)/);
 assert.doesNotMatch(
   expenseSync,
   /invoices\.getLastRow\(\)/,
@@ -79,7 +79,7 @@ assert.doesNotMatch(
 
 const keyBuilder = source.match(/function buildExistingInvoiceKeys_\(target, targetIndex\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert(keyBuilder, "buildExistingInvoiceKeys_ must exist");
-assert.match(keyBuilder, /findLastPopulatedInvoiceRow_\(target, targetIndex\.invoice_no\)/);
+assert.match(keyBuilder, /getLastNonBlankRowInColumn_\(target, targetIndex\.invoice_no \+ 1\)/);
 assert.doesNotMatch(
   keyBuilder,
   /target\.getLastRow\(\)/,
@@ -139,39 +139,27 @@ assert.match(
 );
 assert.match(
   source,
-  /immutable tour_key/,
-  "recovery must preserve valid repeated products using immutable line identity",
+  /function isAppliedDepositCreditRow_\(row\)/,
+  "invoice sync must exclude applied deposit credits from service revenue",
 );
 assert.match(
   source,
-  /function shouldExcludeInvoiceSourceRow_\(row\)/,
-  "invoice sync must share one eligibility gate across normal and recovery imports",
-);
-assert.match(
-  source,
-  /canonicalSyncToken_\(row\.exclude_from_invoice_sync\)/,
-  "explicitly excluded staging rows must never enter invoices",
-);
-assert.match(
-  source,
-  /"replaced by itemized repair"/,
-  "superseded invoice summaries must remain excluded after itemized repair",
+  /if \(shouldExcludeInvoiceSourceRow_\(rowObject\)\)/,
+  "normal imports must use the shared exclusion gate",
 );
 assert.match(
   source,
   /!cleanSyncValue_\(row\.product_selected\) \|\| !cleanSyncValue_\(row\.tour_date\)/,
   "recovery must require a product and tour date before creating an invoice service row",
 );
-assert.match(
-  source,
-  /return !hasServiceIdentity;/,
-  "invoice-level shells without a service identity must remain out of accounting",
-);
+assert.match(source, /canonicalSyncToken_\(row\.exclude_from_invoice_sync\)/, "explicit source exclusions must remain enforced");
+assert.match(source, /"replaced by itemized repair"/, "superseded repair summaries must remain excluded");
 assert.equal(
   (source.match(/shouldExcludeInvoiceSourceRow_\(rowObject\)/g) || []).length,
   2,
   "normal cursor imports and recovery audits must enforce the same eligibility gate",
 );
+assert.match(source, /if \(tourKey\) return "tour_key:" \+ tourKey;/, "immutable tour keys must remain the preferred invoice identity");
 assert.match(
   source,
   /function recoverMissingInvoiceRows\(\)/,

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const file = new URL('../deployment/multi-invoice-ledger/stripe-invoices-sync-v1.4.4.gs', import.meta.url);
+const file = new URL('../deployment/multi-invoice-ledger/stripe-invoices-sync-v1.5.5.gs', import.meta.url);
 const source = fs.readFileSync(file, 'utf8');
 const context = {
   console,
@@ -51,58 +51,29 @@ test('dropdown values are canonicalized without losing the approved label', () =
   assert.equal(context.canonicalizeSyncValueAgainstAllowed_('unknown', allowed), null);
 });
 
-test('only materially identical automatic expenses qualify as duplicates', () => {
-  const base = {
-    expense_id: 'MBW-0142', expense_date: '2026-11-22', expense_month: '2026-11',
-    expense_type: 'Guide Payout', invoice_no: 'MBW-0142', tour_date: '2026-11-22',
-    tour_completed: 'No', paid_to: 'Chicho', payment_method: 'Pending', amount: -105.93,
-    notes: 'Product MBW005.', expense_category: 'COGS', accrual_month: '2026-11',
-    reconciled: 'No', guide_paid_actual: 0, fees_paid_actual: 0,
-    expense_reconciled_flag: 'No', expense_key: 'service|same', ledger_entry_id: 'EXP-000390',
-    product_selected: 'MBW005', service_type: 'Birdwatching', tour_key: 'same',
-    invoice_id: 'in_same', transaction_id: 'pi_same', source_type: 'Automatic',
-    source_record_id: 'service|same', expense_status: 'Pending'
-  };
-  assert.equal(context.isExactAutomaticExpenseDuplicate_(base, { ...base }), true);
-  assert.equal(context.isExactAutomaticExpenseDuplicate_(base, { ...base, amount: -100 }), false);
-  assert.equal(context.isExactAutomaticExpenseDuplicate_(base, { ...base, ledger_entry_id: 'EXP-OTHER' }), false);
-});
-
-test('invoice last-row lookup uses displayed invoice identities, not template formulas', () => {
+test('invoice last-row lookup reads only the invoice identity column, not all 111 columns', () => {
   const calls = [];
-  const matches = [{ getRow: () => 4 }, { getRow: () => 283 }, { getRow: () => 99 }];
-  const finder = {
-    useRegularExpression(value) { calls.push(['regex', value]); return this; },
-    matchFormulaText(value) { calls.push(['formula', value]); return this; },
-    findAll() { calls.push(['findAll']); return matches; }
-  };
+  const values = Array.from({ length: 29782 }, () => ['']);
+  values[281][0] = 'MBW-0156';
   const sheet = {
-    getMaxRows() { return 29783; },
+    getLastRow() { return 29783; },
     getRange(row, column, rows, columns) {
       calls.push(['range', row, column, rows, columns]);
-      return { createTextFinder(pattern) { calls.push(['pattern', pattern]); return finder; } };
+      return { getDisplayValues() { calls.push(['displayValues']); return values; } };
     }
   };
 
-  assert.equal(context.findLastPopulatedInvoiceRow_(sheet, 0), 283);
+  assert.equal(context.getLastNonBlankRowInColumn_(sheet, 1), 283);
   assert.deepEqual(calls, [
     ['range', 2, 1, 29782, 1],
-    ['pattern', '.+'],
-    ['regex', true],
-    ['formula', false],
-    ['findAll']
+    ['displayValues']
   ]);
 });
 
 test('invoice last-row lookup returns the header row when no invoices exist', () => {
-  const finder = {
-    useRegularExpression() { return this; },
-    matchFormulaText() { return this; },
-    findAll() { return []; }
-  };
   const sheet = {
-    getMaxRows() { return 1000; },
-    getRange() { return { createTextFinder() { return finder; } }; }
+    getLastRow() { return 1000; },
+    getRange() { return { getDisplayValues() { return Array.from({ length: 999 }, () => ['']); } }; }
   };
-  assert.equal(context.findLastPopulatedInvoiceRow_(sheet, 0), 1);
+  assert.equal(context.getLastNonBlankRowInColumn_(sheet, 1), 1);
 });

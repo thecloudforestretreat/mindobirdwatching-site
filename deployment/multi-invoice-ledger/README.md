@@ -27,7 +27,7 @@ James Harrod / `MBW-0114` was inserted as the verified baseline record. Existing
 6. Create a test second booking, create an invoice, and confirm a second payment ledger row appears while `MBW-0114` remains visible.
 7. Run the existing invoices-to-expenses sync and confirm the new invoice has its own `tour_key` and expenses.
 
-Keep `invoices-logger-v8.gs` and `stripe-invoices-sync-v1.4.4.gs`; both already identify separate invoices/services using their unique Stripe/tour keys.
+Keep `invoices-logger-v8.gs`, the historical `stripe-invoices-sync-v1.4.4.gs`, and the current production snapshot `stripe-invoices-sync-v1.5.4.gs`. The v1.5.4 snapshot was read back from the live bound Apps Script project on 16 November 2026 and has SHA-256 `0d6389d25c327640da9485bb0b789b5cac9915aae888762222ca16954ac28409`. It limits invoice-boundary discovery to the `invoice_no` column before loading live rows, so the preallocated formula tail is not read as a 3.3-million-cell invoice dataset. The prepared `stripe-invoices-sync-v1.5.5.gs` merge retains that bounded read while restoring the repository's service mappings, dropdown canonicalization, non-positive payout guard, and shared void/superseded recovery exclusion.
 
 ## Rollback
 
