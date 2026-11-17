@@ -27,10 +27,57 @@ function parseCsv(source) {
 }
 
 async function tab(name, query = "") {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}${query ? `&tq=${encodeURIComponent(query)}` : ""}`;
-  const response = await fetch(url, { headers: { "user-agent": "MBW-Accounting-Dashboard/2.0" } });
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}${query ? `&tq=${encodeURIComponent(query)}` : ""}&_=${Date.now()}`;
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      accept: "text/csv",
+      "cache-control": "no-cache",
+      pragma: "no-cache",
+      "user-agent": "MBW-Accounting-Dashboard/3.0",
+    },
+  });
   if (!response.ok) throw new Error(`${name}_unavailable`);
   return parseCsv(await response.text());
+}
+
+function latestTimestamp(rows, fields) {
+  let latest = "";
+  for (const row of rows) {
+    for (const field of fields) {
+      const value = text(row[field]);
+      if (!value) continue;
+      const parsed = Date.parse(validDate(value) ? `${value}T12:00:00Z` : value);
+      if (!Number.isFinite(parsed)) continue;
+      const normalized = new Date(parsed).toISOString();
+      if (!latest || normalized > latest) latest = normalized;
+    }
+  }
+  return latest;
+}
+
+function daysSince(today, value) {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.max(0, Math.floor((Date.parse(`${today}T23:59:59Z`) - parsed) / 86400000));
+}
+
+function growthMetric(rows, label) {
+  const firstColumn = Object.keys(rows[0] || {})[0];
+  return rows.find(row => text(row[firstColumn]) === label) || {};
+}
+
+function feeAllocationSummary(growth, month, year) {
+  const rows = {
+    total: growthMetric(growth, "Total Stripe processing fees"),
+    mbw: growthMetric(growth, "Paid by Mindo Bird Watching"),
+    guides: growthMetric(growth, "Paid by guides"),
+    guests: growthMetric(growth, "Recovered from guests"),
+    check: growthMetric(growth, "Allocation check"),
+  };
+  const read = row => ({ current: number(row.year), ytd: number(row.earned_revenue), share: number(row.earned_profit) / 100 });
+  return { available: Boolean(Object.keys(rows.total).length), month, year, total: read(rows.total), mbw: read(rows.mbw), guides: read(rows.guides), guests: read(rows.guests), check: read(rows.check) };
 }
 
 function guayaquilToday() {
@@ -211,7 +258,7 @@ export async function onRequestGet({ request }) {
     const openSettlements = settlements.filter(row => text(row.settlement_id) && !/reconciled|settled|closed/i.test(text(row.status))).length;
     const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
     const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
-    const monthly = income.filter(row => validMonth(row.month_ky)).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
+    const monthly = income.filter(row => validMonth(row.month_ky) && text(row.month_ky) <= month).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
     const incomeCurrent = monthly.find(row => row.month === month) || {}, invoiceProjection = monthProjection(invoices, month, today), projection = {
       ...invoiceProjection,
       earnedProfit: number(incomeCurrent.profit),
@@ -226,8 +273,27 @@ export async function onRequestGet({ request }) {
       invoiceEarnedProfit: number(invoiceProjection.earnedProfit),
     }, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3), priorMonth = addDays(`${month}-01`, -1).slice(0, 7);
     const cash = { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) };
+    const sourceHealth = {
+      status: "current",
+      issues: [],
+      current_month: month,
+      reconciliation_through: text(latestRecon.date),
+      latest_invoice_update: latestTimestamp(invoices, ["updated_at", "paid_at", "date_paid", "created_at"]),
+      latest_expense_update: latestTimestamp(expenses, ["updated_at", "paid_at", "created_at"]) || latestTimestamp(expenses, ["expense_date"]),
+      latest_deposit_update: latestTimestamp(deposits, ["updated_at", "paid_at", "created_at"]) || latestTimestamp(deposits, ["deposit_date"]),
+      monthly_summary_through: monthly.at(-1)?.month || "",
+      row_counts: { invoices: invoices.length, expenses: expenses.length, deposits: deposits.length, monthly: monthly.length },
+    };
+    if (!Object.keys(ytd).length) sourceHealth.issues.push(`${year} YTD growth summary is missing`);
+    if (!Object.keys(current).length) sourceHealth.issues.push("Current Month growth summary is missing");
+    if (!Object.keys(incomeCurrent).length) sourceHealth.issues.push(`${month} income summary is missing`);
+    if (!sourceHealth.reconciliation_through) sourceHealth.issues.push("Daily reconciliation date is missing");
+    else if (daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`) > 3) sourceHealth.issues.push(`Daily reconciliation is ${daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`)} days old`);
+    if (!invoices.length) sourceHealth.issues.push("Invoice source returned no rows");
+    if (!expenses.length) sourceHealth.issues.push("Expense source returned no rows");
+    sourceHealth.status = sourceHealth.issues.length ? "attention" : "current";
     return reply(200, {
-      ok: true, updated_at: new Date().toISOString(), control_date: today,
+      ok: true, generated_at: new Date().toISOString(), updated_at: new Date().toISOString(), control_date: today, source_health: sourceHealth,
       cash,
       summary: { year, revenue: number(ytd.earned_revenue), profit: number(ytd.earned_profit), margin: number(ytd.earned_margin) / 100, guests: number(ytd.guests_served), services: number(ytd.completed_services), expenses: number(ytd.operating_expenses), net: number(ytd.net_income), currentMonthRevenue: number(current.earned_revenue), currentMonthProfit: number(current.earned_profit), currentMonthNet: number(current.net_income) },
       projection, monthly,
@@ -239,6 +305,7 @@ export async function onRequestGet({ request }) {
       activities: activitySummary(invoices, year, month), weekdays: weekdaySummary(invoices, year, month), expense_mix: expenseMix(expenses, year, month),
       guides, guide_totals: { due_completed: guides.reduce((sum, row) => sum + row.due, 0), completed_items: guides.reduce((sum, row) => sum + row.dueCount, 0), future_obligations: guides.reduce((sum, row) => sum + row.future, 0) },
       advertising_fund: { contribution_due: number(ledgerSummary.contribution_due), contribution_collected: number(ledgerSummary.contribution_collected), ad_spend_used: number(ledgerSummary.ad_spend_used), outstanding_from_guides: number(ledgerSummary.contribution_due_balance), available: number(ledgerSummary.advertising_fund_balance), status: text(ledgerSummary.notes) },
+      fee_allocation: feeAllocationSummary(growth, month, year),
       expenses: { month, month_total: monthExpenses.reduce((sum, row) => sum + Math.abs(number(row.amount)), 0), unreconciled, missing_receipts: missingReceipts },
       controls: { open_settlements: openSettlements, profit_variance: invoiceProjection.earnedProfit - number(incomeCurrent.profit), ...anomalySummary(invoices, expenses, today, text(latestRecon.date)) },
     });
