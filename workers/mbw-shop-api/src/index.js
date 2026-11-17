@@ -7900,6 +7900,40 @@ async function handleDepositLink(request, env) {
     );
   }
 
+  let crmSnapshot = {};
+
+  if (inquiryId) {
+    try {
+      const listed = await customDepositCrmCall(env, "list_inquiries", {
+        filters: {}
+      });
+      const current = crmRecordsFromResponse(listed).find(
+        (record) => cleanText(record && record.inquiry_id, 180) === inquiryId
+      );
+
+      if (!current) {
+        return jsonResponse(
+          { ok: false, error: "The CRM inquiry could not be found. Save the guest record before creating the deposit link." },
+          404,
+          request
+        );
+      }
+
+      crmSnapshot = buildDepositCrmSnapshot(current);
+    } catch (error) {
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            cleanText(error && error.message, 240) ||
+            "The CRM guest record could not be loaded. Try creating the deposit link again."
+        },
+        502,
+        request
+      );
+    }
+  }
+
   let token;
 
   try {
@@ -7908,7 +7942,8 @@ async function handleDepositLink(request, env) {
       amount,
       reference_id: referenceId,
       inquiry_id: inquiryId,
-      language
+      language,
+      crm: crmSnapshot
     });
   } catch (error) {
     return jsonResponse(
@@ -7931,6 +7966,73 @@ async function handleDepositLink(request, env) {
   );
 }
 
+function depositIsoDate(value) {
+  const match = String(value || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : "";
+}
+
+function depositDateMinusDays(value, days) {
+  const iso = depositIsoDate(value);
+  if (!iso) return "";
+  const date = new Date(`${iso}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return "";
+  date.setUTCDate(date.getUTCDate() - Number(days || 0));
+  return date.toISOString().slice(0, 10);
+}
+
+function depositPartySize(record) {
+  const value = Number(
+    cleanText(
+      record.guest_count ||
+      record.guest_count_text ||
+      record.party_size ||
+      record.number_of_people,
+      20
+    ).replace(/[^0-9.-]/g, "")
+  );
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
+function buildDepositCrmSnapshot(record = {}) {
+  const tourDate = depositIsoDate(
+    record.requested_date_start ||
+    record.requested_date ||
+    record.tour_date_start ||
+    record.tour_date
+  );
+  const firstName = cleanText(record.first_name || record.guest_first_name, 120);
+  const lastName = cleanText(record.last_name || record.guest_last_name, 120);
+
+  return {
+    inquiry_id: cleanText(record.inquiry_id, 180),
+    guest_id: cleanText(record.guest_id, 180),
+    booking_id: cleanText(record.booking_id, 180),
+    guest_first_name: firstName,
+    guest_last_name: lastName,
+    guest_email: cleanText(record.email || record.guest_email, 320),
+    guest_phone: cleanText(
+      record.phone_number ||
+      record.phone_normalized ||
+      record.phone_raw ||
+      record.guest_phone,
+      80
+    ),
+    home_country: cleanText(record.country || record.home_country, 120),
+    party_size: String(depositPartySize(record)),
+    tour_date: tourDate,
+    balance_due_date: depositDateMinusDays(tourDate, 14),
+    booked_service_type: cleanText(record.service_type || record.tour_type, 120),
+    product_selected: cleanText(record.product_selected, 80),
+    tour_guide: cleanText(record.tour_guide || record.guide, 120),
+    total_booking_price: cleanText(
+      record.quoted_amount || record.total_booking_price,
+      40
+    ),
+    marketing_brand_id: cleanText(record.marketing_brand_id, 80),
+    billing_brand_id: cleanText(record.billing_brand_id, 80)
+  };
+}
+
 async function createStripeDepositCheckoutSession(env, data) {
   const params = new URLSearchParams();
   const productId = "prod_Ui8J2Sa9WWtBss";
@@ -7947,6 +8049,9 @@ async function createStripeDepositCheckoutSession(env, data) {
   params.set("client_reference_id", data.referenceId);
   params.set("submit_type", "pay");
   params.set("adaptive_pricing[enabled]", "false");
+  if (data.crm && data.crm.guest_email) {
+    params.set("customer_email", data.crm.guest_email);
+  }
   params.set("consent_collection[terms_of_service]", "required");
   params.set(
     "custom_text[submit][message]",
@@ -7961,7 +8066,10 @@ async function createStripeDepositCheckoutSession(env, data) {
 
   const metadata = {
     payment_purpose: "tour_deposit",
-    service_type: "reservation_deposit",
+    service_type:
+      data.crm && data.crm.booked_service_type
+        ? data.crm.booked_service_type
+        : "reservation_deposit",
     tour_code: "DEP001",
     tour_title: "Tour Reservation Deposit",
     deposit_amount: String(data.amount),
@@ -7971,7 +8079,25 @@ async function createStripeDepositCheckoutSession(env, data) {
     language: data.language,
     product_id: productId,
     pricing_model: "flat_amount",
-    number_of_people: "1",
+    guest_id: data.crm && data.crm.guest_id,
+    booking_id: data.crm && data.crm.booking_id,
+    guest_first_name: data.crm && data.crm.guest_first_name,
+    guest_last_name: data.crm && data.crm.guest_last_name,
+    guest_email: data.crm && data.crm.guest_email,
+    guest_phone: data.crm && data.crm.guest_phone,
+    home_country: data.crm && data.crm.home_country,
+    number_of_people:
+      data.crm && data.crm.party_size
+        ? data.crm.party_size
+        : "1",
+    tour_date: data.crm && data.crm.tour_date,
+    balance_due_date: data.crm && data.crm.balance_due_date,
+    booked_service_type: data.crm && data.crm.booked_service_type,
+    product_selected: data.crm && data.crm.product_selected,
+    tour_guide: data.crm && data.crm.tour_guide,
+    total_booking_price: data.crm && data.crm.total_booking_price,
+    marketing_brand_id: data.crm && data.crm.marketing_brand_id,
+    billing_brand_id: data.crm && data.crm.billing_brand_id,
     terms_version: BOOKING_TERMS_VERSION,
     terms_url: data.language === "es" ? BOOKING_TERMS_URL_ES : BOOKING_TERMS_URL,
     terms_content_sha256: bookingTermsSha256(data.language),
@@ -8040,7 +8166,11 @@ async function handleDepositStart(request, env, url) {
     amount: Number(payload.amount),
     referenceId: cleanText(payload.reference_id, 180),
     inquiryId: cleanText(payload.inquiry_id, 180),
-    language: payload.language === "es" ? "es" : "en"
+    language: payload.language === "es" ? "es" : "en",
+    crm:
+      payload.crm && typeof payload.crm === "object"
+        ? payload.crm
+        : {}
   });
 
   if (!result.ok) {
