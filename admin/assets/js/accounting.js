@@ -76,10 +76,11 @@
     $("cadenceGrid").innerHTML=cards.map(card=>`<section class="cadenceMetric" data-tone="${card.tone}"><header><span>${esc(card.period)}</span><b>${esc(label(card.tone))}</b></header><strong>${card.headline}</strong><small>${esc(card.caption)}</small><footer><span>${esc(card.actual)}</span><span>${esc(card.reference)}</span></footer></section>`).join("");
     const top=(ops?.activities||[]).filter(row=>num(row.monthProfit)>0).sort((a,b)=>num(b.monthProfit)-num(a.monthProfit))[0],monthProfitTotal=(ops?.activities||[]).reduce((sum,row)=>sum+num(row.monthProfit),0),topShare=top&&monthProfitTotal?num(top.monthProfit)/monthProfitTotal:0,items=[];
     if(num(goals.monthlyProfit)<num(monthly.profit)*.75)items.push(["warn","Reset the monthly profit goal",`${money(goals.monthlyProfit)} is materially below the ${money(monthly.profit)} three-month baseline.`]);
-    if(num(ops?.cash?.available_operating_cash)<num(goals.operatingCash))items.push(["danger","Rebuild operating cash",`${money(goals.operatingCash-ops.cash.available_operating_cash)} below the operating-cash target.`]);
-    if(num(ops?.guide_totals?.due_completed)>0)items.push(["warn","Settle completed guide work",`${money(ops.guide_totals.due_completed)} is currently due.`]);
+    const availableCash=num(ops?.cash?.available_operating_cash),guideDue=num(ops?.guide_totals?.due_completed),profitVariance=num(ops?.controls?.profit_variance);
+    if(availableCash<num(goals.operatingCash))items.push(["danger","Rebuild operating cash",`${money(goals.operatingCash-availableCash)} below the operating-cash target.`]);
+    if(guideDue>0)items.push(["warn","Settle completed guide work",`${money(guideDue)} is currently due.`]);
     if(num(pipeline.due_30_days)>0)items.push(["track","Collect upcoming balances",`${money(pipeline.due_30_days)} falls due within 30 days.`]);
-    if(Math.abs(num(ops?.controls?.profit_variance))>.01)items.push(["warn","Resolve profit-source variance",`${moneyExact(ops.controls.profit_variance)} difference between invoice accruals and the income summary.`]);
+    if(Math.abs(profitVariance)>.01)items.push(["warn","Resolve profit-source variance",`${moneyExact(profitVariance)} difference between invoice accruals and the income summary.`]);
     if(topShare>.45)items.push(["track","Watch tour concentration",`${esc(top.title)} supplies ${pct(topShare)} of current-month profit.`]);
     $("decisionQueue").innerHTML=(items.slice(0,4).map(item=>`<div class="decisionItem" data-tone="${item[0]}"><i></i><div><strong>${esc(item[1])}</strong><small>${item[2]}</small></div></div>`).join("")||'<div class="decisionItem" data-tone="good"><i></i><div><strong>No material CFO actions</strong><small>Cash, pace, obligations and controls are within current guardrails.</small></div></div>');
   }

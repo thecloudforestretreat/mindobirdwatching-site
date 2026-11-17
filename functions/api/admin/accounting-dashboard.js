@@ -1,6 +1,5 @@
 import { authorize } from "../whatsapp/index.js";
 
-const SHEET_ID = "1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU";
 const TABS = ["daily_recon", "guide_payment_queue", "guide_settlements", "guide_ledger", "expenses", "growth_dashboard", "invoices", "report_income_summary", "deposits"];
 const reply = (status, body) => Response.json(body, { status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
 const text = value => String(value ?? "").trim();
@@ -26,19 +25,18 @@ function parseCsv(source) {
   return rows.filter(values => values.some(text)).map(values => Object.fromEntries(headers.map((header, index) => [header || `_${index}`, values[index] ?? ""])));
 }
 
-async function tab(name, query = "") {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}${query ? `&tq=${encodeURIComponent(query)}` : ""}&_=${Date.now()}`;
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      accept: "text/csv",
-      "cache-control": "no-cache",
-      pragma: "no-cache",
-      "user-agent": "MBW-Accounting-Dashboard/3.0",
-    },
-  });
-  if (!response.ok) throw new Error(`${name}_unavailable`);
-  return parseCsv(await response.text());
+async function secureSource(env) {
+  const db = env.MBW_PORTFOLIO_DB;
+  if (!db) throw new Error("accounting_source_store_unavailable");
+  await db.prepare("CREATE TABLE IF NOT EXISTS accounting_dashboard_snapshots (snapshot_id TEXT PRIMARY KEY, generated_at TEXT NOT NULL, payload TEXT NOT NULL, received_at TEXT NOT NULL)").run();
+  const record = await db.prepare("SELECT generated_at, payload, received_at FROM accounting_dashboard_snapshots WHERE snapshot_id = ? LIMIT 1").bind("current").first();
+  if (!record?.payload) throw new Error("accounting_source_snapshot_missing");
+  const payload = JSON.parse(record.payload);
+  if (!payload?.ok || !payload.tabs) throw new Error(payload?.error || "accounting_source_invalid");
+  for (const name of [...TABS, "recon_meta_ads_import"]) {
+    if (!Array.isArray(payload.tabs[name])) throw new Error(`${name}_unavailable`);
+  }
+  return { tabs: payload.tabs, generatedAt: text(payload.generated_at || record.generated_at), receivedAt: text(record.received_at) };
 }
 
 function latestTimestamp(rows, fields) {
@@ -244,11 +242,11 @@ function pipelineSummary(deposits, today) {
   };
 }
 
-export async function onRequestGet({ request }) {
+export async function onRequestGet({ request, env }) {
   const denied = await authorize(request); if (denied) return denied;
   try {
-    const core = await Promise.all([...TABS.map(name => tab(name)), tab("recon_meta_ads_import", "offset 5")]);
-    const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits, metaAds] = core;
+    const source = await secureSource(env), tabs = source.tabs;
+    const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits, metaAds] = [...TABS, "recon_meta_ads_import"].map(name => tabs[name]);
     const today = guayaquilToday(), month = today.slice(0, 7), year = today.slice(0, 4);
     const latestRecon = [...daily].filter(row => validDate(row.date) && text(row.date) <= today).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
     const ledgerSummary = ledger.find(row => text(row.ledger_id) === "ADLEDGER-SUMMARY") || [...ledger].reverse().find(row => text(row.transaction_type) === "Summary") || {};
@@ -282,6 +280,8 @@ export async function onRequestGet({ request }) {
       latest_expense_update: latestTimestamp(expenses, ["updated_at", "paid_at", "created_at"]) || latestTimestamp(expenses, ["expense_date"]),
       latest_deposit_update: latestTimestamp(deposits, ["updated_at", "paid_at", "created_at"]) || latestTimestamp(deposits, ["deposit_date"]),
       monthly_summary_through: monthly.at(-1)?.month || "",
+      snapshot_generated_at: source.generatedAt,
+      snapshot_received_at: source.receivedAt,
       row_counts: { invoices: invoices.length, expenses: expenses.length, deposits: deposits.length, monthly: monthly.length },
     };
     if (!Object.keys(ytd).length) sourceHealth.issues.push(`${year} YTD growth summary is missing`);
@@ -291,6 +291,8 @@ export async function onRequestGet({ request }) {
     else if (daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`) > 3) sourceHealth.issues.push(`Daily reconciliation is ${daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`)} days old`);
     if (!invoices.length) sourceHealth.issues.push("Invoice source returned no rows");
     if (!expenses.length) sourceHealth.issues.push("Expense source returned no rows");
+    if (!sourceHealth.snapshot_generated_at) sourceHealth.issues.push("Accounting snapshot timestamp is missing");
+    else if (daysSince(today, sourceHealth.snapshot_generated_at) > 1) sourceHealth.issues.push(`Accounting snapshot is ${daysSince(today, sourceHealth.snapshot_generated_at)} days old`);
     sourceHealth.status = sourceHealth.issues.length ? "attention" : "current";
     return reply(200, {
       ok: true, generated_at: new Date().toISOString(), updated_at: new Date().toISOString(), control_date: today, source_health: sourceHealth,

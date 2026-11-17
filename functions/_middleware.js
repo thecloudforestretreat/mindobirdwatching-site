@@ -90,6 +90,9 @@ export async function onRequest(context) {
   // The public site's existing Functions are intentionally unchanged.
   if (url.origin !== ADMIN && !adminPreview) return context.next();
   if (adminPreview) return new Response(null, {status:302, headers:{Location:ADMIN + url.pathname + url.search, "Cache-Control":"no-store"}});
+  // The accounting snapshot receiver authenticates with its own private bearer
+  // token so the owner-only Apps Script trigger can write without an Access JWT.
+  if (url.pathname === "/api/admin/accounting-dashboard-sync" && request.method === "POST") return context.next();
   let email;
   try { email = await verifyIdentity(request.headers.get("Cf-Access-Jwt-Assertion")); }
   catch { return reject(401, "Sign in through MBW Admin to continue."); }
