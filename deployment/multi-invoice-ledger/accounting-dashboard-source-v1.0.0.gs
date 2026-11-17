@@ -4,13 +4,16 @@
  * Add this file to the private MBW Invoice to Confirmation Sync project and
  * run configureAccountingDashboardPush as mindobirdwatching@gmail.com. The
  * owner-only trigger sends a minimal accounting snapshot to MBW Admin every
- * 15 minutes. No public Apps Script deployment is required.
+ * 15 minutes. Cloudflare Access is crossed with a scoped service token; the
+ * admin site and this endpoint remain private.
  */
 
-var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.0.0-2026-11-17";
+var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.0.1-2026-11-17";
 var ACCOUNTING_DASHBOARD_SHEET_ID = "1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU";
 var ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_URL";
 var ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_TOKEN";
+var ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID_PROPERTY = "ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID";
+var ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET_PROPERTY = "ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET";
 var ACCOUNTING_DASHBOARD_PUSH_FUNCTION = "pushAccountingDashboardSnapshot";
 var ACCOUNTING_DASHBOARD_FIELDS = {
   daily_recon: ["date", "running_expected_balance", "restricted_ad_fund", "available_operating_cash"],
@@ -29,8 +32,11 @@ function configureAccountingDashboardPush() {
   var properties = PropertiesService.getScriptProperties();
   var url = String(properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY) || "").trim();
   var token = String(properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY) || "").trim();
+  var accessClientId = String(properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID_PROPERTY) || "").trim();
+  var accessClientSecret = String(properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET_PROPERTY) || "").trim();
   if (!/^https:\/\/admin\.mindobirdwatching\.com\/api\/admin\/accounting-dashboard-sync$/.test(url)) throw new Error("Set the private ACCOUNTING_DASHBOARD_SYNC_URL script property first.");
   if (!token) throw new Error("Set the private ACCOUNTING_DASHBOARD_SYNC_TOKEN script property first.");
+  if (!accessClientId || !accessClientSecret) throw new Error("Set the private Cloudflare Access service-token properties first.");
   ScriptApp.getProjectTriggers().forEach(function(trigger) {
     if (trigger.getHandlerFunction() === ACCOUNTING_DASHBOARD_PUSH_FUNCTION) ScriptApp.deleteTrigger(trigger);
   });
@@ -45,19 +51,29 @@ function pushAccountingDashboardSnapshot() {
   var properties = PropertiesService.getScriptProperties();
   var url = String(properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY) || "").trim();
   var token = String(properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY) || "").trim();
-  if (!url || !token) throw new Error("Accounting dashboard push is not configured.");
+  var accessClientId = String(properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID_PROPERTY) || "").trim();
+  var accessClientSecret = String(properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET_PROPERTY) || "").trim();
+  if (!url || !token || !accessClientId || !accessClientSecret) throw new Error("Accounting dashboard push is not configured.");
   var payload = buildAccountingDashboardSource_();
   var response = UrlFetchApp.fetch(url, {
     method: "post",
     contentType: "application/json",
-    headers: { Authorization: "Bearer " + token },
+    headers: {
+      Authorization: "Bearer " + token,
+      "CF-Access-Client-Id": accessClientId,
+      "CF-Access-Client-Secret": accessClientSecret
+    },
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   });
   var status = response.getResponseCode();
   var body = response.getContentText();
   if (status < 200 || status >= 300) throw new Error("Dashboard snapshot push failed (" + status + "): " + body.slice(0, 500));
-  var result = JSON.parse(body || "{}");
+  var contentType = String(response.getHeaders()["Content-Type"] || response.getHeaders()["content-type"] || "").toLowerCase();
+  if (contentType.indexOf("application/json") === -1) throw new Error("Dashboard sync returned non-JSON content (" + contentType + "). Check the Cloudflare Access service token.");
+  var result;
+  try { result = JSON.parse(body || "{}"); }
+  catch (error) { throw new Error("Dashboard sync returned invalid JSON: " + error.message); }
   if (!result.ok) throw new Error("Dashboard snapshot was not accepted.");
   properties.setProperty("ACCOUNTING_DASHBOARD_LAST_PUSH_AT", String(result.received_at || new Date().toISOString()));
   properties.setProperty("ACCOUNTING_DASHBOARD_LAST_SOURCE_AT", String(payload.generated_at));
@@ -73,6 +89,7 @@ function auditAccountingDashboardPush() {
     executor: Session.getEffectiveUser().getEmail(),
     url_configured: !!properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY),
     token_configured: !!properties.getProperty(ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY),
+    access_service_token_configured: !!properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID_PROPERTY) && !!properties.getProperty(ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET_PROPERTY),
     trigger_count: triggers.length,
     trigger_minutes: 15,
     last_push_at: properties.getProperty("ACCOUNTING_DASHBOARD_LAST_PUSH_AT") || "",

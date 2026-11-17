@@ -51,6 +51,10 @@ test("accounting operations feed uses a private pushed snapshot and reports heal
   assert.match(logger, /configureAccountingDashboardPush/);
   assert.match(logger, /everyMinutes\(15\)/);
   assert.match(logger, /PropertiesService\.getScriptProperties/);
+  assert.match(logger, /CF-Access-Client-Id/);
+  assert.match(logger, /CF-Access-Client-Secret/);
+  assert.match(logger, /access_service_token_configured/);
+  assert.match(logger, /returned non-JSON content/);
   assert.doesNotMatch(logger, /function doPost/);
   assert.doesNotMatch(logger, /ACCOUNTING_DASHBOARD_TOKEN\s*=/);
 });
