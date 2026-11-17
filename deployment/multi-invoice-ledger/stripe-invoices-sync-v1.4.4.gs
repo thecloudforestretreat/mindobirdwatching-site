@@ -350,8 +350,13 @@ function syncInvoicesToExpensesUnlocked_(ss) {
   validateExpenseSyncHeaders_(invoiceHeaders.index, expenseHeaders.index);
   var exactDuplicatesRemoved = removeExactAutomaticExpenseDuplicates_(expenses, expenseHeaders);
 
-  var invoiceRows = invoices.getLastRow() > 1
-    ? invoices.getRange(2, 1, invoices.getLastRow() - 1, invoiceHeaders.values.length).getValues()
+  // The invoices sheet intentionally carries formulas and formatting far below
+  // the live ledger. getLastRow() therefore points to the template tail (nearly
+  // 30,000 rows in production), not the final accounting record. Bound every
+  // invoice read by the last displayed invoice_no instead.
+  var invoiceLastRow = findLastPopulatedInvoiceRow_(invoices, invoiceHeaders.index.invoice_no);
+  var invoiceRows = invoiceLastRow > 1
+    ? invoices.getRange(2, 1, invoiceLastRow - 1, invoiceHeaders.values.length).getValues()
     : [];
   var invoiceObjects = invoiceRows.map(function (row, index) {
     var obj = rowToObject_(invoiceHeaders.values, row);
@@ -373,7 +378,9 @@ function syncInvoicesToExpensesUnlocked_(ss) {
     service_rows_waiting: 0,
     expense_key_column: expenseKeyColumn,
     stripe_fee_conflicts: 0,
-    exact_duplicate_expenses_removed: exactDuplicatesRemoved
+    exact_duplicate_expenses_removed: exactDuplicatesRemoved,
+    invoice_last_populated_row: invoiceLastRow,
+    invoice_rows_scanned: invoiceRows.length
   };
 
   Object.keys(stripeGroups).forEach(function (groupKey) {
@@ -1305,20 +1312,41 @@ function findFirstBlankInvoiceRow_(sheet, invoiceNoIndex) {
   if (maxRows < 2) sheet.insertRowAfter(1);
   maxRows = sheet.getMaxRows();
 
-  var values = sheet.getRange(2, invoiceNoIndex + 1, maxRows - 1, 1).getDisplayValues();
-  var lastPopulatedIndex = -1;
-  for (var i = 0; i < values.length; i++) {
-    if (cleanSyncValue_(values[i][0])) lastPopulatedIndex = i;
-  }
-
   // Append after the final populated invoice instead of filling an internal
   // blank. Historical/manual repairs can leave a gap above newer records; if
   // the importer reuses that gap, a newly paid invoice appears out of order.
-  var targetRow = lastPopulatedIndex + 3;
+  var targetRow = findLastPopulatedInvoiceRow_(sheet, invoiceNoIndex) + 1;
+  if (targetRow < 2) targetRow = 2;
   if (targetRow <= maxRows) return targetRow;
 
   sheet.insertRowAfter(maxRows);
   return maxRows + 1;
+}
+
+/**
+ * Returns the final row whose invoice_no displays a value.
+ *
+ * TextFinder runs inside Sheets and searches one identity column only. This is
+ * deliberately different from getLastRow(), because calculated/template cells
+ * in other invoice columns extend to the bottom of the preallocated grid.
+ */
+function findLastPopulatedInvoiceRow_(sheet, invoiceNoIndex) {
+  var firstDataRow = 2;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows < firstDataRow) return firstDataRow - 1;
+
+  var matches = sheet
+    .getRange(firstDataRow, invoiceNoIndex + 1, maxRows - firstDataRow + 1, 1)
+    .createTextFinder(".+")
+    .useRegularExpression(true)
+    .matchFormulaText(false)
+    .findAll();
+
+  var lastRow = firstDataRow - 1;
+  for (var i = 0; i < matches.length; i++) {
+    lastRow = Math.max(lastRow, matches[i].getRow());
+  }
+  return lastRow;
 }
 
 function ensureInvoiceRowTemplate_(sheet, targetRow) {
@@ -1468,7 +1496,7 @@ function getStripeToInvoiceMapping_() {
 
 function buildExistingInvoiceKeys_(target, targetIndex) {
   var keys = {};
-  var lastRow = target.getLastRow();
+  var lastRow = findLastPopulatedInvoiceRow_(target, targetIndex.invoice_no);
   if (lastRow < 2) return keys;
 
   var headers = target.getRange(1, 1, 1, target.getLastColumn()).getValues()[0];

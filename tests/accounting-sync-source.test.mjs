@@ -67,3 +67,42 @@ test('only materially identical automatic expenses qualify as duplicates', () =>
   assert.equal(context.isExactAutomaticExpenseDuplicate_(base, { ...base, amount: -100 }), false);
   assert.equal(context.isExactAutomaticExpenseDuplicate_(base, { ...base, ledger_entry_id: 'EXP-OTHER' }), false);
 });
+
+test('invoice last-row lookup uses displayed invoice identities, not template formulas', () => {
+  const calls = [];
+  const matches = [{ getRow: () => 4 }, { getRow: () => 283 }, { getRow: () => 99 }];
+  const finder = {
+    useRegularExpression(value) { calls.push(['regex', value]); return this; },
+    matchFormulaText(value) { calls.push(['formula', value]); return this; },
+    findAll() { calls.push(['findAll']); return matches; }
+  };
+  const sheet = {
+    getMaxRows() { return 29783; },
+    getRange(row, column, rows, columns) {
+      calls.push(['range', row, column, rows, columns]);
+      return { createTextFinder(pattern) { calls.push(['pattern', pattern]); return finder; } };
+    }
+  };
+
+  assert.equal(context.findLastPopulatedInvoiceRow_(sheet, 0), 283);
+  assert.deepEqual(calls, [
+    ['range', 2, 1, 29782, 1],
+    ['pattern', '.+'],
+    ['regex', true],
+    ['formula', false],
+    ['findAll']
+  ]);
+});
+
+test('invoice last-row lookup returns the header row when no invoices exist', () => {
+  const finder = {
+    useRegularExpression() { return this; },
+    matchFormulaText() { return this; },
+    findAll() { return []; }
+  };
+  const sheet = {
+    getMaxRows() { return 1000; },
+    getRange() { return { createTextFinder() { return finder; } }; }
+  };
+  assert.equal(context.findLastPopulatedInvoiceRow_(sheet, 0), 1);
+});

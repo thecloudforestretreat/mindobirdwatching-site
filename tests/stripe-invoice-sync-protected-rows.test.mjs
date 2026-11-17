@@ -48,13 +48,42 @@ const appendRowFinder = source.match(/function findFirstBlankInvoiceRow_\(sheet,
 assert(appendRowFinder, "findFirstBlankInvoiceRow_ must exist");
 assert.match(
   appendRowFinder,
-  /lastPopulatedIndex/,
+  /findLastPopulatedInvoiceRow_\(sheet, invoiceNoIndex\) \+ 1/,
   "invoice imports must append after the final populated invoice row",
 );
 assert.doesNotMatch(
   appendRowFinder,
-  /if \(!cleanSyncValue_\(values\[i\]\[0\]\)\) return i \+ 2/,
-  "invoice imports must not reuse an internal blank row",
+  /getDisplayValues\(\)/,
+  "invoice imports must not scan every preallocated invoice row",
+);
+
+const lastInvoiceRowFinder = source.match(/function findLastPopulatedInvoiceRow_\(sheet, invoiceNoIndex\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert(lastInvoiceRowFinder, "findLastPopulatedInvoiceRow_ must exist");
+assert.match(lastInvoiceRowFinder, /createTextFinder\("\.\+"\)/);
+assert.match(lastInvoiceRowFinder, /matchFormulaText\(false\)/);
+assert.doesNotMatch(
+  lastInvoiceRowFinder,
+  /getValues\(|getDisplayValues\(/,
+  "last invoice lookup must stay server-side and single-column",
+);
+
+const expenseSync = source.match(/function syncInvoicesToExpensesUnlocked_\(ss\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert(expenseSync, "syncInvoicesToExpensesUnlocked_ must exist");
+assert.match(expenseSync, /invoiceLastRow = findLastPopulatedInvoiceRow_/);
+assert.match(expenseSync, /invoice_rows_scanned: invoiceRows\.length/);
+assert.doesNotMatch(
+  expenseSync,
+  /invoices\.getLastRow\(\)/,
+  "expense sync must not treat the invoice template tail as live data",
+);
+
+const keyBuilder = source.match(/function buildExistingInvoiceKeys_\(target, targetIndex\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert(keyBuilder, "buildExistingInvoiceKeys_ must exist");
+assert.match(keyBuilder, /findLastPopulatedInvoiceRow_\(target, targetIndex\.invoice_no\)/);
+assert.doesNotMatch(
+  keyBuilder,
+  /target\.getLastRow\(\)/,
+  "invoice identity lookup must not scan the template tail",
 );
 
 const syncHandler = source.match(/function syncStripeInvoicesToInvoices\(e\) \{[\s\S]*?var lock = LockService\.getScriptLock\(\);/)?.[0] || "";
