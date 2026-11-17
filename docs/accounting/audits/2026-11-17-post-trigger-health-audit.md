@@ -64,10 +64,10 @@ The repair preserved the existing amounts and ledger identities.
 ### Deposit metadata
 
 - Deposit row 7, `DEP-20260706-NATALIAPOTTER`, is a Zelle payment linked to invoice `1046`; a Stripe PaymentIntent is not applicable.
-- Deposit row 11, `DEP-G-20260710125233-5578-TOURDEPOSITHISTORICALUNREVIEWED`, is a historical Zelle payment to Wells Fargo; Stripe contains no matching record, so a Stripe PaymentIntent is not applicable. Its recorded **$820.00** amount and final invoice linkage remain pending bank-source review.
+- Deposit row 11, `DEP-G-20260710125233-5578-TOURDEPOSITHISTORICALUNREVIEWED`, is a historical non-Stripe Point Breeze P2P payment to Wells Fargo. Bank-source review reconciled three payments: **$100.00** posted 2026-08-21, the **$500.00 initial deposit** posted 2026-09-09, and **$220.00** posted 2026-09-10. The deposit row now records **$500.00** as the initial deposit and **$320.00** as additional payments, totaling **$820.00**. A Stripe PaymentIntent is not applicable; final invoice linkage remains unverified.
 - Deposit row 19, `DEP-20261010-JOANFINLEY`, is confirmed at **$353.00** total booking price, **$100.00** paid, and **$253.00** remaining.
 
-The absence of Stripe identifiers on these two rows is correct because neither payment used Stripe. Dennis Murphy's payment method was normalized from `Other` to `Zelle`; no amount or invoice identifier was changed.
+The absence of Stripe identifiers on these two rows is correct because neither payment used Stripe. Dennis Murphy's payment method was normalized from `Other` to `Zelle`, and the bank-supported allocation was recorded without inventing an invoice identifier.
 
 ## Current 2027 carry-forward inventory
 
@@ -98,7 +98,7 @@ The formulas are currently producing values, but the whole-column scans remain a
 ## Priority classification
 
 - **P0:** none found.
-- **P1:** reconcile Dennis Murphy's historical **$820.00** deposit and final invoice linkage against the bank source; do not infer those values from Stripe because Stripe has no matching payment.
+- **P1:** verify Dennis Murphy's final invoice linkage from an authoritative invoice or accounting source; do not infer an invoice identifier from Stripe because Stripe has no matching payment.
 - **P2:** replace dashboard whole-column and volatile formulas with bounded helper ranges; review the inactive oversized `Copy of invoices` tab separately.
 
 ## Next safe step
