@@ -63,11 +63,11 @@ The repair preserved the existing amounts and ledger identities.
 
 ### Deposit metadata
 
-- Deposit row 7, `DEP-20260706-NATALIAPOTTER`, lacks a Stripe PaymentIntent ID.
-- Deposit row 11, `DEP-G-20260710125233-5578-TOURDEPOSITHISTORICALUNREVIEWED`, lacks a Stripe PaymentIntent ID.
+- Deposit row 7, `DEP-20260706-NATALIAPOTTER`, is a Zelle payment linked to invoice `1046`; a Stripe PaymentIntent is not applicable.
+- Deposit row 11, `DEP-G-20260710125233-5578-TOURDEPOSITHISTORICALUNREVIEWED`, is a historical Zelle payment to Wells Fargo; Stripe contains no matching record, so a Stripe PaymentIntent is not applicable. Its recorded **$820.00** amount and final invoice linkage remain pending bank-source review.
 - Deposit row 19, `DEP-20261010-JOANFINLEY`, is confirmed at **$353.00** total booking price, **$100.00** paid, and **$253.00** remaining.
 
-The first two are accepted historical evidence gaps and should not be rewritten automatically without source evidence.
+The absence of Stripe identifiers on these two rows is correct because neither payment used Stripe. Dennis Murphy's payment method was normalized from `Other` to `Zelle`; no amount or invoice identifier was changed.
 
 ## Current 2027 carry-forward inventory
 
@@ -98,7 +98,7 @@ The formulas are currently producing values, but the whole-column scans remain a
 ## Priority classification
 
 - **P0:** none found.
-- **P1:** none remaining from the bounded repair set. Two historical deposits still lack PaymentIntent IDs and remain accepted evidence gaps pending a source document.
+- **P1:** reconcile Dennis Murphy's historical **$820.00** deposit and final invoice linkage against the bank source; do not infer those values from Stripe because Stripe has no matching payment.
 - **P2:** replace dashboard whole-column and volatile formulas with bounded helper ranges; review the inactive oversized `Copy of invoices` tab separately.
 
 ## Next safe step

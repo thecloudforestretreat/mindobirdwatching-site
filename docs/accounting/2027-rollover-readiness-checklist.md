@@ -24,7 +24,8 @@ This checklist prepares the accounting system for a controlled transition from 2
 - [x] A complete scheduled invoice cycle and expense cycle succeeded after the duplicate trigger was removed.
 - [ ] Inactive `Copy of invoices` grid is reviewed separately; it currently remains a large, non-production cleanup candidate and must not be trimmed without specific approval.
 - [x] Deposit `DEP-20261010-JOANFINLEY` is confirmed at $353.00 total, $100.00 paid, and $253.00 remaining.
-- [x] The deterministic invoice and expense metadata exceptions documented in the 2026-11-17 health audit are resolved; two historical deposits without PaymentIntent evidence remain explicitly accepted.
+- [x] The deterministic invoice and expense metadata exceptions documented in the 2026-11-17 health audit are resolved; Natalia Potter and Dennis Murphy are correctly classified as non-Stripe deposits.
+- [ ] Reconcile Dennis Murphy's historical $820.00 deposit and final invoice linkage against the bank source; Stripe has no matching record.
 
 ## 2. Prepare during the remainder of 2026
 
