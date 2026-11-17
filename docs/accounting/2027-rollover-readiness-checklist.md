@@ -20,7 +20,11 @@ This checklist prepares the accounting system for a controlled transition from 2
 - [x] Business automation timezone remains `America/Guayaquil`.
 - [x] Stable invoice, expense, deposit, queue, settlement, and ledger identities are preserved.
 - [x] `MBW-0148 / ACT016 / Neicer` is reconciled across invoices, expenses, and guide queue.
+- [x] The 2026-11-17 post-trigger health audit found zero duplicate invoice, expense, deposit, or guide-queue keys and zero past-due guide payouts.
+- [x] A complete scheduled invoice cycle and expense cycle succeeded after the duplicate trigger was removed.
 - [ ] Inactive `Copy of invoices` grid is reviewed separately; it currently remains a large, non-production cleanup candidate and must not be trimmed without specific approval.
+- [ ] Source-confirm the missing booking total and balance for deposit `DEP-20261010-JOANFINLEY` before the final carry-forward set is approved.
+- [ ] Resolve or formally accept the bounded metadata exceptions documented in the 2026-11-17 health audit.
 
 ## 2. Prepare during the remainder of 2026
 
