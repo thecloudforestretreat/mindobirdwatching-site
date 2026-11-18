@@ -413,9 +413,10 @@
               <div class="field"><label for="availabilityInput">Availability</label><select id="availabilityInput"><option>pending</option><option>available</option><option>unavailable</option><option>needs_check</option></select></div>
               <div class="field"><label for="groupingPreferenceInput">Grouping Preference</label><select id="groupingPreferenceInput"><option>unknown</option><option>private_only</option><option>open_to_group</option></select></div>
             </div>
-            <div class="two">
+            <div class="three">
               <div class="field"><label for="groupingStatusInput">Grouping Status</label><select id="groupingStatusInput"><option>unmatched</option><option>candidate</option><option>invited</option><option>accepted</option></select></div>
               <div class="field"><label for="quotedAmountInput">Accepted Quote Total</label><input id="quotedAmountInput" type="number" min="0" step="0.01" placeholder="Enter only after the guest selects an option" /></div>
+              <div class="field"><label for="promoCodeInput">Promotion</label><select id="promoCodeInput"><option value="">No promotion</option><option value="MINDOFLY">MINDOFLY</option></select><small>Saved to this reservation and validated again by the invoice generator.</small></div>
             </div>
             <section class="tourItemsPanel" aria-label="Request summary"><h3>Requested services</h3><div id="requestedServicesSummary" class="hint"></div><p class="hint">This summarizes the request, not an accepted itinerary. Verify dates, party size and transport coverage before quoting.</p></section>
             <section class="tourItemsPanel" aria-labelledby="tourItemsTitle">
@@ -564,7 +565,7 @@
       const STATUS_FOLLOW_UP_MESSAGES = {
         default: "We are just following up to see if you have any questions in reference to our tour options."
       };
-      const fields = ["referenceIdInput","apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","notesInput","internalInput"];
+      const fields = ["referenceIdInput","apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","promoCodeInput","notesInput","internalInput"];
       fields.push("marketingBrandInput","billingBrandDisplay");
       document.addEventListener("DOMContentLoaded", init);
       function init(){cache();els.zelleToAcctBtn=document.getElementById("zelleToAcctBtn");["assignmentEndTime","repFilter","inlineRepFilter","assignedToInput","statPaymentPending"].forEach(id=>els[id]=document.getElementById(id));renderPrimaryProductOptions();populateAssignmentTimeOptions();bind();clearInteractionForm();clearAssignmentForm();initQuickFilters();loadSettings();loadLocalRecords();if(!state.records.length)loadDemoRecords(false);els.sortInput.value=localStorage.getItem("mbwCrmSort")||"created_at";els.sortDirectionInput.value=localStorage.getItem("mbwCrmSortDirection")||"desc";render();loadGuidePlans();window.addEventListener("online",()=>{refreshRetryAttempt=0;scheduleRefreshRetry(500);});window.addEventListener("storage",event=>{if(event.key==="mbwCrmItinerarySaved"&&event.newValue)syncSavedItineraryFromOtherTab();});window.addEventListener("focus",()=>{if(localStorage.getItem("mbwCrmItinerarySaved"))syncSavedItineraryFromOtherTab();loadGuidePlans();});if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)refreshCrm();}
@@ -1583,7 +1584,12 @@
         const country=selectedCountry||inferCountry(norm);
         const notes=dedupeNoteText(els.notesInput.value);
         const tourCompleted=selected.tour_completed||(status==="completed"?"Yes":"No");
-        return {inquiry_id:inquiry,guest_id:clean(els.guestIdInput.value)||selected.guest_id||"G-"+stamp()+"-"+lastFour(norm||phone),first_name:clean(els.firstNameInput.value),last_name:clean(els.lastNameInput.value),full_name:full,phone_number:sheetPhone,phone_raw:sheetPhone,phone_normalized:norm,email:clean(els.emailInput.value),email_normalized:clean(els.emailInput.value).toLowerCase(),country:country,home_country:country,source_type:source,source_tab:source,source_page:selected.source_page||"",source_row:selected.source_row||"",assigned_to:selected.assigned_to||"",stage_changed_at:statusChanged?now:(selected.stage_changed_at||""),last_contacted_at:lastContacted,next_action:selected.next_action||"",tour_type:tour,tour_category:tour,interest_category:tour,guest_count:clean(els.guestCountInput.value),guest_count_text:clean(els.guestCountInput.value),requested_date:date,requested_date_start:date,requested_date_end:requestedEnd,requested_date_text:requestedText,duration_preference:clean(els.durationInput.value),transportation_needed:clean(els.transportInput.value),pickup_location:clean(els.pickupLocationInput.value),priority:priority,status:status,quote_status:clean(els.quoteStatusInput.value),payment_status:clean(els.paymentStatusInput.value),invoice_no:clean(els.invoiceNoInput.value),date_paid:toDateValue(els.datePaidInput.value),payment_method:clean(els.paymentMethodInput.value),service_type:serviceType,product_selected:product,tour_completed:tourCompleted,completed_date:status==="completed"?(selected.completed_date||date||toDateValue(now)):"",is_archived:selected.is_archived||"No",archived_at:selected.archived_at||"",archive_reason:selected.archive_reason||"",superseded_by_inquiry_id:selected.superseded_by_inquiry_id||"",return_sequence:selected.return_sequence||"",availability_status:clean(els.availabilityInput.value)||"pending",grouping_preference:clean(els.groupingPreferenceInput.value)||"unknown",grouping_status:clean(els.groupingStatusInput.value)||"unmatched",quoted_amount:clean(els.quotedAmountInput.value),quoted_currency:clean(els.quotedAmountInput.value)?"USD":"",quote_options_json:JSON.stringify(collectQuoteOptions()),quote_sent_at:els.quoteSentAtInput.value?new Date(els.quoteSentAtInput.value).toISOString():"",quote_sent_channel:clean(els.quoteSentChannelInput.value),quote_notes:clean(els.quoteNotesInput.value),followup_date:toDateValue(els.followupInput.value),notes:notes,message_questions:dedupeNoteText(selected.message_questions||""),internal_notes:clean(els.internalInput.value),tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):"",tour_content:tourItems.length?String(tourItems.length):"",itinerary_json:selected.itinerary_json||"",itinerary_updated_at:selected.itinerary_updated_at||"",itinerary_version:selected.itinerary_version||"",itinerary_status:selected.itinerary_status||"",updated_at:now,created_at:selected.created_at||now};
+        const promoCode=clean(els.promoCodeInput.value).toUpperCase();
+        const savedPromoCode=clean(selected.promo_code).toUpperCase();
+        const promoAppliedAt=promoCode
+          ? (promoCode===savedPromoCode&&clean(selected.promo_applied_at)?clean(selected.promo_applied_at):now)
+          : "";
+        return {inquiry_id:inquiry,guest_id:clean(els.guestIdInput.value)||selected.guest_id||"G-"+stamp()+"-"+lastFour(norm||phone),first_name:clean(els.firstNameInput.value),last_name:clean(els.lastNameInput.value),full_name:full,phone_number:sheetPhone,phone_raw:sheetPhone,phone_normalized:norm,email:clean(els.emailInput.value),email_normalized:clean(els.emailInput.value).toLowerCase(),country:country,home_country:country,source_type:source,source_tab:source,source_page:selected.source_page||"",source_row:selected.source_row||"",assigned_to:selected.assigned_to||"",stage_changed_at:statusChanged?now:(selected.stage_changed_at||""),last_contacted_at:lastContacted,next_action:selected.next_action||"",tour_type:tour,tour_category:tour,interest_category:tour,guest_count:clean(els.guestCountInput.value),guest_count_text:clean(els.guestCountInput.value),requested_date:date,requested_date_start:date,requested_date_end:requestedEnd,requested_date_text:requestedText,duration_preference:clean(els.durationInput.value),transportation_needed:clean(els.transportInput.value),pickup_location:clean(els.pickupLocationInput.value),priority:priority,status:status,quote_status:clean(els.quoteStatusInput.value),payment_status:clean(els.paymentStatusInput.value),invoice_no:clean(els.invoiceNoInput.value),date_paid:toDateValue(els.datePaidInput.value),payment_method:clean(els.paymentMethodInput.value),service_type:serviceType,product_selected:product,tour_completed:tourCompleted,completed_date:status==="completed"?(selected.completed_date||date||toDateValue(now)):"",is_archived:selected.is_archived||"No",archived_at:selected.archived_at||"",archive_reason:selected.archive_reason||"",superseded_by_inquiry_id:selected.superseded_by_inquiry_id||"",return_sequence:selected.return_sequence||"",availability_status:clean(els.availabilityInput.value)||"pending",grouping_preference:clean(els.groupingPreferenceInput.value)||"unknown",grouping_status:clean(els.groupingStatusInput.value)||"unmatched",quoted_amount:clean(els.quotedAmountInput.value),quoted_currency:clean(els.quotedAmountInput.value)?"USD":"",promo_code:promoCode,promo_applied_at:promoAppliedAt,quote_options_json:JSON.stringify(collectQuoteOptions()),quote_sent_at:els.quoteSentAtInput.value?new Date(els.quoteSentAtInput.value).toISOString():"",quote_sent_channel:clean(els.quoteSentChannelInput.value),quote_notes:clean(els.quoteNotesInput.value),followup_date:toDateValue(els.followupInput.value),notes:notes,message_questions:dedupeNoteText(selected.message_questions||""),internal_notes:clean(els.internalInput.value),tour_items:serializeTourItems(tourItems),tour_items_json:serializeTourItems(tourItems),tour_count:tourItems.length?String(tourItems.length):"",tour_content:tourItems.length?String(tourItems.length):"",itinerary_json:selected.itinerary_json||"",itinerary_updated_at:selected.itinerary_updated_at||"",itinerary_version:selected.itinerary_version||"",itinerary_status:selected.itinerary_status||"",updated_at:now,created_at:selected.created_at||now};
       }
       const formRecordBase=formRecord;
       formRecord=function(){ const r=Object.assign({},getSelected()||{},formRecordBase()); const raw=clean(els.referenceIdInput&&els.referenceIdInput.value); if(raw)r.contact_intent_id=referenceId(raw)||raw; if(referenceMatch&&referenceMatch.contact_intent_id===r.contact_intent_id)Object.assign(r,referenceMatch); r.marketing_brand_id=clean(els.marketingBrandInput.value)||"mbw"; r.billing_brand_id="mbw"; return r; };
@@ -2016,6 +2022,14 @@
       function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
       function fillForm(r){ resetCommunicationContext(r); if(!r)return; referenceMatch=null; referenceGeneration++; if(els.referenceIdInput)els.referenceIdInput.value=r.contact_intent_id||""; referenceStatus(r.contact_intent_id?"Saved reference; checked again on save.":"Paste an ID or a guest message containing one Reference / Referencia."); if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); if(els.assignmentTourItem)renderAssignmentTourItems(els.assignmentTourItem.value); state.tourFormSnapshot=tourFormSnapshot(); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
       const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);if(record&&els.referenceIdInput){const primary=primaryReferenceId(record.contact_intent_id);const count=recordReferenceIds(record).length;els.referenceIdInput.value=primary;referenceStatus(primary?("Saved primary reference; "+count+" linked reference"+(count===1?"":"s")+" preserved in the audit trail."):"Paste an ID or a guest message containing one Reference / Referencia.");}els.marketingBrandInput.value=clean(record?.marketing_brand_id||record?.brand_id||record?.brandId)||"mbw";els.billingBrandDisplay.value="Mindo Bird Watching";fillQuoteOptions(record);updateItineraryActions(record);state.toolHandoffSnapshot=toolHandoffSnapshot()};
+      const fillFormWithoutPromotion=fillForm;
+      fillForm=function(record){
+        fillFormWithoutPromotion(record);
+        if(record&&els.promoCodeInput){
+          setSelectValue(els.promoCodeInput,clean(record.promo_code).toUpperCase());
+        }
+        state.toolHandoffSnapshot=toolHandoffSnapshot();
+      };
       function renderDetail(){ const r=getSelected()||{}; renderTable(els.detailTable,r,["inquiry_id","guest_id","is_archived","archive_reason","full_name","phone_number","email","marketing_brand_id","billing_brand_id","tour_type","guest_count","requested_date","priority","status","quote_status","payment_status","availability_status"]); renderTable(els.actionTable,r,["archived_at","completed_date","invoice_no","date_paid","payment_method","service_type","product_selected","followup_date","last_contacted_at","duration_preference","transportation_needed","pickup_location","grouping_preference","grouping_status","quoted_amount","quote_sent_at","quote_sent_channel","quote_notes","notes","internal_notes","created_at","updated_at"]); }
       function workspaceContextHtml(record,label){ return `<div class="workspaceContext"><div><h2>${esc(record.full_name||"Guest")}</h2><p>${esc(label)} · ${esc(record.inquiry_id||"")} · ${esc(record.phone_number||record.email||"No contact information")}</p></div><span class="contextBadge">${esc(labelStatus(record.status||"new"))}</span></div>`; }
       function renderWorkspaces(){
@@ -2454,8 +2468,78 @@
         }catch(error){ showToast("Restore failed: "+error.message); }
         finally{ buttons.forEach(button=>button.disabled=false); updateDuplicateActionButtons(getSelected()); }
       }
-      function toolHandoffSnapshot(){return JSON.stringify(["firstNameInput","lastNameInput","fullNameInput","emailInput","phoneInput","countryInput","marketingBrandInput","quotedAmountInput","paymentStatusInput","quoteStatusInput","pickupLocationInput","notesInput","internalInput"].map(id=>els[id]?.value||""));}
-      function openTool(url){ if(els.modeInput.value==="update"&&(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot()))){showToast("Save Record before opening this tool so it uses your latest guest and service details.");return;} const r=toolRecord(getSelected()||formRecord()); localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(r)); localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(r)); const first=r.first_name||String(r.full_name||"").split(" ")[0]||""; const last=r.last_name||String(r.full_name||"").split(" ").slice(1).join(" ")||""; const paymentStatus=normalizePayment(r.payment_status||""); const depositMode=paymentStatus!=="paid"&&paymentStatus!=="deposit_paid"; const isStripeInvoiceTool=/\/book-tour\/create\/?(?:$|\?)/.test(url); const toolItems=normalizeTourItems(r).map(item=>{if(!isStripeInvoiceTool)return item;const assignment=assignmentForAccountingItem(r,item);if(!assignment)return item;const provider=clean(assignment.provider_name)==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name);return provider?Object.assign({},item,{default_provider:provider}):item;}); const tourItems=serializeTourItems(toolItems); const params=new URLSearchParams({inquiry_id:r.inquiry_id||"",guest_id:r.guest_id||"",booking_id:r.booking_id||"",guest:r.full_name||"",name:r.full_name||"",full_name:r.full_name||"",first_name:first,last_name:last,guest_first_name:first,guest_last_name:last,email:r.email||"",guest_email:r.email||"",phone:r.phone_number||"",guest_phone:r.phone_number||"",whatsapp:r.phone_number||"",whatsapp_number:r.phone_number||"",guests:r.guest_count||"",guest_count:r.guest_count||"",party:r.guest_count||"",date:r.requested_date||"",tour_date:r.requested_date||"",tour:r.tour_type||"",tour_type:r.tour_type||"",duration:r.duration_preference||"",duration_preference:r.duration_preference||"",transportation:r.transportation_needed||"",transportation_needed:r.transportation_needed||"",pickup:r.pickup_location||"",pickup_location:r.pickup_location||"",pickup_address_or_hotel:r.pickup_location||"",invoice_no:r.invoice_no||"",date_paid:r.date_paid||"",payment_method:r.payment_method||"",service_type:r.service_type||"",product_selected:r.product_selected||"",quoted_amount:r.quoted_amount||"",tour_items_json:tourItems,tour_items:tourItems,status:r.status||"",quote_status:r.quote_status||"",payment_status:r.payment_status||"",payment_request:depositMode?"deposit":"full",deposit_amount:"100",notes:r.notes||""}); window.open(url+(url.includes("?")?"&":"?")+params.toString(),"_blank","noopener,noreferrer"); }
+      function toolHandoffSnapshot(){return JSON.stringify(["firstNameInput","lastNameInput","fullNameInput","emailInput","phoneInput","countryInput","marketingBrandInput","quotedAmountInput","promoCodeInput","paymentStatusInput","quoteStatusInput","pickupLocationInput","notesInput","internalInput"].map(id=>els[id]?.value||""));}
+      function openTool(url){
+        if(els.modeInput.value==="update"&&(hasUnsavedTourChanges()||(state.toolHandoffSnapshot&&state.toolHandoffSnapshot!==toolHandoffSnapshot()))){
+          showToast("Save Record before opening this tool so it uses your latest guest and service details.");
+          return;
+        }
+        const r=toolRecord(getSelected()||formRecord());
+        localStorage.setItem("mbwSelectedCrmRecord",JSON.stringify(r));
+        localStorage.setItem("mbwGuestCrmSelectedRecord",JSON.stringify(r));
+        const first=r.first_name||String(r.full_name||"").split(" ")[0]||"";
+        const last=r.last_name||String(r.full_name||"").split(" ").slice(1).join(" ")||"";
+        const paymentStatus=normalizePayment(r.payment_status||"");
+        const depositMode=paymentStatus!=="paid"&&paymentStatus!=="deposit_paid";
+        const isStripeInvoiceTool=/\/book-tour\/create\/?(?:$|\?)/.test(url);
+        const toolItems=normalizeTourItems(r).map(item=>{
+          if(!isStripeInvoiceTool)return item;
+          const assignment=assignmentForAccountingItem(r,item);
+          if(!assignment)return item;
+          const provider=clean(assignment.provider_name)==="Other"?clean(assignment.provider_name_other):clean(assignment.provider_name);
+          return provider?Object.assign({},item,{default_provider:provider}):item;
+        });
+        const tourItems=serializeTourItems(toolItems);
+        const params=new URLSearchParams({
+          inquiry_id:r.inquiry_id||"",
+          guest_id:r.guest_id||"",
+          booking_id:r.booking_id||"",
+          guest:r.full_name||"",
+          name:r.full_name||"",
+          full_name:r.full_name||"",
+          first_name:first,
+          last_name:last,
+          guest_first_name:first,
+          guest_last_name:last,
+          email:r.email||"",
+          guest_email:r.email||"",
+          phone:r.phone_number||"",
+          guest_phone:r.phone_number||"",
+          whatsapp:r.phone_number||"",
+          whatsapp_number:r.phone_number||"",
+          guests:r.guest_count||"",
+          guest_count:r.guest_count||"",
+          party:r.guest_count||"",
+          date:r.requested_date||"",
+          tour_date:r.requested_date||"",
+          tour:r.tour_type||"",
+          tour_type:r.tour_type||"",
+          duration:r.duration_preference||"",
+          duration_preference:r.duration_preference||"",
+          transportation:r.transportation_needed||"",
+          transportation_needed:r.transportation_needed||"",
+          pickup:r.pickup_location||"",
+          pickup_location:r.pickup_location||"",
+          pickup_address_or_hotel:r.pickup_location||"",
+          invoice_no:r.invoice_no||"",
+          date_paid:r.date_paid||"",
+          payment_method:r.payment_method||"",
+          service_type:r.service_type||"",
+          product_selected:r.product_selected||"",
+          quoted_amount:r.quoted_amount||"",
+          promo_code:clean(r.promo_code).toUpperCase(),
+          promo_applied_at:r.promo_applied_at||"",
+          tour_items_json:tourItems,
+          tour_items:tourItems,
+          status:r.status||"",
+          quote_status:r.quote_status||"",
+          payment_status:r.payment_status||"",
+          payment_request:depositMode?"deposit":"full",
+          deposit_amount:"100",
+          notes:r.notes||""
+        });
+        window.open(url+(url.includes("?")?"&":"?")+params.toString(),"_blank","noopener,noreferrer");
+      }
       function toolRecord(r){ const marketingBrand=clean(r.marketing_brand_id||r.brand_id||r.brandId)||"mbw"; return Object.assign({},r,{guest_name:r.full_name||"",guestName:r.full_name||"",guest_email:r.email||"",guestEmail:r.email||"",guest_phone:r.phone_number||"",guestPhone:r.phone_number||"",tour_date:r.requested_date||"",tourDate:r.requested_date||"",tour_interest:r.tour_type||"",guestCount:r.guest_count||"",pickupLocation:r.pickup_location||"",invoiceNo:r.invoice_no||"",datePaid:r.date_paid||"",serviceType:r.service_type||"",productSelected:r.product_selected||"",marketing_brand_id:marketingBrand,billing_brand_id:"mbw",brand_id:marketingBrand,brandId:marketingBrand}); }
       function confirmationHandoffItems(record){
         const entries=calendarEntriesForRecord(record),today=datePlusDays(0);
@@ -2738,6 +2822,10 @@
       async function postZelleToAccounting(){
         const record=normalizeCrmRecord(formRecord());
         if(!clean(record.inquiry_id)||!clean(record.guest_id)){ showToast("Save the CRM record first"); return; }
+        if(clean(record.promo_code)){
+          showToast("Open the Zelle Invoice Generator to validate and record promotional pricing");
+          return;
+        }
         if(clean(record.payment_method).toLowerCase()!=="zelle"){ showToast("Payment method must be Zelle"); return; }
         if(normalizePayment(record.payment_status)!=="paid"){ showToast("Payment status must be Paid"); return; }
         if(!clean(record.invoice_no)||!toDateValue(record.date_paid)){ showToast("Add the invoice number and payment date first"); return; }

@@ -811,6 +811,14 @@
               </select>
               <p class="hint">The selected address appears on the invoice and in the prepared email.</p>
             </div>
+            <div class="field">
+              <label for="promoCode">Promotion</label>
+              <select id="promoCode">
+                <option value="">No promotion</option>
+                <option value="MINDOFLY">MINDOFLY</option>
+              </select>
+              <p class="hint" id="promoStatus">Select promotions in the CRM. This invoice validates eligibility again before it is recorded.</p>
+            </div>
             <div class="totalsEditor">
               <div class="field">
                 <label for="adjustmentLabel">Adjustment Label</label>
@@ -934,12 +942,31 @@
         "Other"
 ];
 
+      const PROMOTIONS = Object.freeze({
+        MINDOFLY: Object.freeze({
+          campaign:"cyber_monday_2026",
+          startsAtMs:Date.parse("2026-11-18T00:00:00-05:00"),
+          endsAtMs:Date.parse("2026-11-30T23:59:59-05:00"),
+          eligibleTourDateThrough:"2027-02-28",
+          discountByProduct:Object.freeze({
+            MBW002:5,
+            MBW004:5,
+            MBW005:5,
+            MBW006:10,
+            MBW007:5,
+            MBW008:10,
+            MBW010:5
+          })
+        })
+      });
+
       const els = {};
       const state = {
         items: [],
         ids: { inquiry_id:"", guest_id:"", booking_id:"", quote_id:"" },
         sourceItinerary: { version:0, title:"", fingerprint:"", createdAt:"" },
-        attribution: { status:"unlinked", linkId:"", fingerprint:"", error:"" }
+        attribution: { status:"unlinked", linkId:"", fingerprint:"", error:"" },
+        promoAppliedAt: ""
       };
 
       document.addEventListener("DOMContentLoaded", init);
@@ -960,7 +987,7 @@
       function cacheEls(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference", "paymentSummary", "itemsEditor",
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "promoCode", "promoStatus", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference", "paymentSummary", "itemsEditor",
           "addItemBtn", "invoicePreview", "printBtn", "bottomPrintBtn", "imageBtn", "bottomImageBtn", "bottomEmailHtmlBtn", "bottomCopyEmailHtmlBtn", "emailHtmlBtn", "emailBtn", "copyEmailHtmlBtn", "copyEmailBtn", "recordBtn", "attributionStatus", "attributionIds", "resetBtn", "toast"
         ].forEach(id => els[id] = document.getElementById(id));
       }
@@ -968,7 +995,7 @@
       function bindEvents(){
         [
           "invoiceNumber", "invoiceDate", "dueDate", "tourDate", "guestName", "guestEmail", "guestPhone",
-          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference"
+          "pickupLocation", "invoiceNotes", "paymentMode", "depositAmount", "zellePaymentEmail", "promoCode", "adjustmentLabel", "adjustmentAmount", "adjustmentType", "priorPaymentAmount", "accountingPaymentMethod", "paymentDate", "paymentReference"
         ].forEach(id => {
           els[id].addEventListener("input", handleGlobalInput);
           els[id].addEventListener("change", handleGlobalInput);
@@ -998,7 +1025,11 @@
         els.resetBtn.addEventListener("click", resetForm);
       }
 
-      function handleGlobalInput(){
+      function handleGlobalInput(event){
+        if(event && event.target === els.promoCode){
+          if(normalizedPromoCode() && !state.promoAppliedAt) state.promoAppliedAt = new Date().toISOString();
+          if(!normalizedPromoCode()) state.promoAppliedAt = "";
+        }
         if(Number(els.priorPaymentAmount.value) > 0 && els.accountingPaymentMethod.value === "Zelle"){
           els.accountingPaymentMethod.value = "Zelle + Bank Transfer";
         }
@@ -1038,6 +1069,9 @@
         if(pickup) els.pickupLocation.value = pickup;
         const paymentEmail = clean(record.zelle_payment_email || record.zelleEmail);
         if(["mindobirdwatching@gmail.com","payments@mindobirdwatching.com"].includes(paymentEmail)) els.zellePaymentEmail.value = paymentEmail;
+        const promoCode = clean(record.promo_code || record.promoCode).toUpperCase();
+        if(Array.from(els.promoCode.options).some(option => option.value === promoCode)) els.promoCode.value = promoCode;
+        state.promoAppliedAt = clean(record.promo_applied_at || record.promoAppliedAt);
         const adjustmentAmount = Number(record.adjustment_amount || record.adjustmentAmount || 0);
         if(Number.isFinite(adjustmentAmount)) els.adjustmentAmount.value = adjustmentAmount;
         if(record.adjustment_label || record.adjustmentLabel) els.adjustmentLabel.value = record.adjustment_label || record.adjustmentLabel;
@@ -1105,6 +1139,8 @@
           tour_type: params.get("tour") || params.get("tour_type") || "",
           pickup_location: params.get("pickup") || params.get("pickup_location") || "",
           quoted_amount: params.get("quoted_amount") || "",
+          promo_code: params.get("promo_code") || params.get("promoCode") || "",
+          promo_applied_at: params.get("promo_applied_at") || params.get("promoAppliedAt") || "",
           product_selected: params.get("product_selected") || "",
           service_type: params.get("service_type") || "",
           tour_items_json: params.get("tour_items_json") || params.get("tour_items") || "",
@@ -1122,6 +1158,76 @@
         if(itineraryDraft) return Object.assign({}, compatibleStored || {}, itineraryDraft, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
         if(hasParams) return Object.assign({}, compatibleStored || {}, Object.fromEntries(Object.entries(fromParams).filter(([, value]) => clean(value))));
         return compatibleStored;
+      }
+
+      function normalizedPromoCode(){
+        return clean(els.promoCode && els.promoCode.value).toUpperCase();
+      }
+
+      function getPromotionPlan(){
+        const code = normalizedPromoCode();
+        if(!code) return { code:"", plan:null, error:"" };
+        const promotion = PROMOTIONS[code];
+        if(!promotion) return { code, plan:null, error:`Promotion code ${code} is not recognized.` };
+        const now = Date.now();
+        const appliedAt = clean(state.promoAppliedAt);
+        const appliedAtMs = appliedAt ? Date.parse(appliedAt) : now;
+        if(!Number.isFinite(appliedAtMs)) return { code, plan:null, error:`${code} has an invalid reservation timestamp.` };
+        if(appliedAtMs > now + 300000) return { code, plan:null, error:`${code} has a future reservation timestamp.` };
+        if(appliedAtMs < promotion.startsAtMs || appliedAtMs > promotion.endsAtMs){
+          return { code, plan:null, error:`Promotion code ${code} is not active.` };
+        }
+        const tourDate = clean(els.tourDate.value);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(tourDate)){
+          return { code, plan:null, error:`${code} requires a valid tour date.` };
+        }
+        if(tourDate > promotion.eligibleTourDateThrough){
+          return { code, plan:null, error:`${code} requires travel by ${promotion.eligibleTourDateThrough}.` };
+        }
+        const candidates = state.items.flatMap((item, itemIndex) => {
+          const product = productCodeFromText(item.description);
+          const discountPerGuest = Number(promotion.discountByProduct[product] || 0);
+          return discountPerGuest ? [{ itemIndex, product, discountPerGuest, item }] : [];
+        }).sort((a,b) => b.discountPerGuest - a.discountPerGuest || a.itemIndex - b.itemIndex);
+        if(!candidates.length){
+          return { code, plan:null, error:`${code} is not eligible for any selected item.` };
+        }
+        const selected = candidates[0];
+        const eligibleGuests = Math.max(1, Number(selected.item.qty) || 1);
+        const discountTotal = selected.discountPerGuest * eligibleGuests;
+        if(discountTotal >= lineTotal(selected.item)){
+          return { code, plan:null, error:"The promotion discount must be less than the selected line total." };
+        }
+        return {
+          code,
+          error:"",
+          plan:{
+            code,
+            campaign:promotion.campaign,
+            itemIndex:selected.itemIndex,
+            product:selected.product,
+            discountPerGuest:selected.discountPerGuest,
+            eligibleGuests,
+            discountTotal
+          }
+        };
+      }
+
+      function syncPromotionControls(result){
+        const active = Boolean(result.code);
+        els.adjustmentLabel.disabled = active;
+        els.adjustmentAmount.disabled = active;
+        if(active){
+          els.adjustmentLabel.value = result.plan ? `${result.code} promotion` : "Promotion pending validation";
+          els.adjustmentAmount.value = "0";
+          els.promoStatus.textContent = result.error || `${result.code} applies $${result.plan.discountPerGuest} per guest to ${result.plan.product} (${result.plan.eligibleGuests} eligible guest${result.plan.eligibleGuests===1?"":"s"}; $${result.plan.discountTotal} total).`;
+          return;
+        }
+        if(els.adjustmentLabel.value === "Promotion pending validation" || / promotion$/i.test(els.adjustmentLabel.value)){
+          els.adjustmentLabel.value = "Adjustments";
+          els.adjustmentAmount.value = "0";
+        }
+        els.promoStatus.textContent = "Select promotions in the CRM. This invoice validates eligibility again before it is recorded.";
       }
 
       function isVehicleItem(item){return /^TRANS/i.test(clean(item.product_selected||item.product||item.description))||clean(item.service_type||item.type).toLowerCase()==="transportation"||/transportation/i.test(clean(item.tour));}
@@ -1356,6 +1462,8 @@
         els.paymentMode.value = "deposit";
         els.depositAmount.value = "100";
         els.zellePaymentEmail.value = zellePaymentEmail;
+        els.promoCode.value = "";
+        state.promoAppliedAt = "";
         els.adjustmentLabel.value = "Adjustments";
         els.adjustmentAmount.value = "0";
         els.adjustmentType.value = "price_adjustment";
@@ -1375,7 +1483,9 @@
       }
 
       function updateInvoice(){
-        const totals = getInvoiceTotals();
+        const promotion = getPromotionPlan();
+        syncPromotionControls(promotion);
+        const totals = getInvoiceTotals(promotion);
         const subtotal = totals.subtotal;
         const adjustment = totals.adjustment;
         const plan = getPaymentPlan(totals.amountDue);
@@ -1397,14 +1507,15 @@
         };
       }
 
-      function getInvoiceTotals(){
+      function getInvoiceTotals(promotion = getPromotionPlan()){
         const subtotal = state.items.reduce((sum, item) => sum + lineTotal(item), 0);
-        const adjustment = Number(els.adjustmentAmount.value) || 0;
+        const adjustment = promotion.plan ? -promotion.plan.discountTotal : (promotion.code ? 0 : (Number(els.adjustmentAmount.value) || 0));
         const priorPayment = Math.max(0, Number(els.priorPaymentAmount.value) || 0);
         const bookingTotal = subtotal + adjustment;
         return {
           subtotal,
           adjustment,
+          promotion,
           priorPayment,
           bookingTotal,
           amountDue:Math.max(0, bookingTotal - priorPayment),
@@ -1790,6 +1901,7 @@
           (pickup ? "Pickup: " + pickup + "\n" : "") +
           (extraGuests ? "Additional guest(s): " + extraGuests + "\n" : "") +
           (pickup || extraGuests ? "\n" : "") +
+          (totals.promotion.plan ? "MINDOFLY promotion: -" + formatMoney(totals.promotion.plan.discountTotal) + "\n" : "") +
           "Booking total: " + formatMoney(totals.total) + "\n" +
           (plan.mode === "deposit" ? "Deposit requested now: " + formatMoney(plan.requested) + "\nRemaining balance after deposit: " + formatMoney(plan.remaining) + "\n\n" : "Amount requested now: " + formatMoney(plan.requested) + "\n\n") +
           "Zelle payment email: " + getContact().paymentEmail + "\n\n" +
@@ -1884,6 +1996,7 @@
           ["Booking total", formatMoney(totals.total)],
           [plan.mode === "deposit" ? "Deposit requested" : "Amount requested", formatMoney(plan.requested)]
         ];
+        if(totals.promotion.plan) rows.unshift(["MINDOFLY promotion", "-" + formatMoney(totals.promotion.plan.discountTotal)]);
         if(totals.priorPayment > 0) rows.splice(1, 0, ["Prior payment received", "-" + formatMoney(totals.priorPayment)]);
         if(plan.remaining > 0) rows.push(["Remaining balance", formatMoney(plan.remaining)]);
         return rows.map((row, index) => {
@@ -2005,6 +2118,8 @@
           invoice:clean(els.invoiceNumber.value), invoiceDate:els.invoiceDate.value, tourDate:els.tourDate.value,
           guest:clean(els.guestName.value), email:clean(els.guestEmail.value), phone:clean(els.guestPhone.value),
           pickup:clean(els.pickupLocation.value), notes:clean(els.invoiceNotes.value),
+          promoCode:normalizedPromoCode(),
+          promoAppliedAt:state.promoAppliedAt,
           adjustmentLabel:clean(els.adjustmentLabel.value), adjustmentAmount:Number(els.adjustmentAmount.value)||0,
           adjustmentType:els.adjustmentType.value, priorPaymentAmount:Number(els.priorPaymentAmount.value)||0,
           accountingPaymentMethod:els.accountingPaymentMethod.value, paymentDate:els.paymentDate.value,
@@ -2018,6 +2133,9 @@
         if(!validId(els.invoiceNumber.value) || /^(xxxx|draft)$/i.test(clean(els.invoiceNumber.value))) return "Enter the final invoice number before recording attribution.";
         if(!clean(els.guestName.value)) return "Enter the guest name before recording attribution.";
         if(!clean(els.guestEmail.value)) return "Enter the guest email before recording attribution.";
+        const promotion = getPromotionPlan();
+        if(promotion.error) return promotion.error;
+        if(promotion.code && Number(els.adjustmentAmount.value)) return "A promotion cannot be combined with another price adjustment.";
         if(getInvoiceTotals().total <= 0) return "The invoice total must be greater than zero.";
         if(getInvoiceTotals().priorPayment > getInvoiceTotals().bookingTotal) return "The prior payment cannot exceed the booking total.";
         if(!/^\d{4}-\d{2}-\d{2}$/.test(els.paymentDate.value)) return "Enter the date the payment was received.";
@@ -2070,8 +2188,10 @@
               guest_phone:clean(els.guestPhone.value),
               pickup_location:clean(els.pickupLocation.value),
               notes:clean(els.invoiceNotes.value),
+              promo_code:normalizedPromoCode(),
+              promo_applied_at:state.promoAppliedAt,
               adjustment_label:clean(els.adjustmentLabel.value),
-              adjustment_amount:Number(els.adjustmentAmount.value)||0,
+              adjustment_amount:normalizedPromoCode()?0:(Number(els.adjustmentAmount.value)||0),
               adjustment_type:els.adjustmentType.value,
               prior_payment_amount:Number(els.priorPaymentAmount.value)||0,
               payment_method:els.accountingPaymentMethod.value,

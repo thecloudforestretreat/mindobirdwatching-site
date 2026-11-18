@@ -1462,7 +1462,12 @@ function getStripeToInvoiceMapping_() {
     stripe_customer_id: "stripe_customer_id",
     amount_before_deposit: "amount_before_deposit",
     amount_remaining: "amount_remaining",
-    quote_id: "quote_id"
+    quote_id: "quote_id",
+    promo_code: "promo_code",
+    promo_discount_total: "promo_discount_total",
+    promo_discount_per_guest: "promo_discount_per_guest",
+    promo_eligible_guests: "promo_eligible_guests",
+    promo_campaign: "promo_campaign"
   };
 }
 
