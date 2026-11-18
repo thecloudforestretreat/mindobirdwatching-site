@@ -200,6 +200,100 @@ function requireBookingTerms(form, language, deposit = false) {
   );
 }
 
+const PROMOTIONS = Object.freeze({
+  MINDOFLY: Object.freeze({
+    code: "MINDOFLY",
+    campaign: "cyber_monday_2026",
+    starts_at_ms: Date.parse("2026-11-18T00:00:00-05:00"),
+    ends_at_ms: Date.parse("2026-11-30T23:59:59-05:00"),
+    eligible_tour_date_through: "2027-02-28",
+    eligible_tour_codes: new Set(["MBW002", "MBW004", "MBW005", "MBW006", "MBW007", "MBW008", "MBW010"]),
+    discount_cents_by_tour_code: Object.freeze({
+      MBW002: 500,
+      MBW004: 500,
+      MBW005: 500,
+      MBW006: 1000,
+      MBW007: 500,
+      MBW008: 1000,
+      MBW010: 500,
+    }),
+    discount_cents_by_duration: Object.freeze({
+      "half day": 500,
+      "medio dia": 500,
+      "full day": 1000,
+      "dia completo": 1000,
+    }),
+  }),
+});
+
+function normalizePromoCode(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function normalizedDurationLabel(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function promotionLineMetadata(promoCode, tour, quantity, priceAdjustmentCents, tourDate, nowMs = Date.now(), promoAppliedAt = "") {
+  const code = normalizePromoCode(promoCode);
+  if (!code) return {};
+  const promotion = PROMOTIONS[code];
+  if (!promotion) throw new Error(`Promotion code ${code} is not recognized.`);
+  const appliedAtText = String(promoAppliedAt || "").trim();
+  const appliedAtMs = appliedAtText ? Date.parse(appliedAtText) : nowMs;
+  if (!Number.isFinite(appliedAtMs)) throw new Error(`Promotion code ${code} has an invalid reservation timestamp.`);
+  if (appliedAtMs > nowMs + 300000) throw new Error(`Promotion code ${code} has a future reservation timestamp.`);
+  if (appliedAtMs < promotion.starts_at_ms || appliedAtMs > promotion.ends_at_ms) {
+    throw new Error(`Promotion code ${code} is not active.`);
+  }
+  const normalizedTourDate = String(tourDate || "").trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedTourDate)) {
+    throw new Error(`Promotion code ${code} requires a valid tour date.`);
+  }
+  if (normalizedTourDate > promotion.eligible_tour_date_through) {
+    throw new Error(`Promotion code ${code} requires the tour to occur by ${promotion.eligible_tour_date_through}.`);
+  }
+  if (!promotion.eligible_tour_codes.has(String(tour && tour.tour_code || ""))) return {};
+  const discountCents = promotion.discount_cents_by_tour_code[String(tour && tour.tour_code || "")]
+    || promotion.discount_cents_by_duration[normalizedDurationLabel(tour.duration_label)]
+    || 0;
+  if (!discountCents) throw new Error(`Promotion code ${code} is not configured for this tour duration.`);
+  if (Number(priceAdjustmentCents) !== -discountCents) {
+    throw new Error(`Promotion code ${code} requires a -$${discountCents / 100} whole-dollar adjustment per guest for ${tour.duration_label}.`);
+  }
+  const eligibleGuests = Math.max(1, Number(quantity || 1));
+  return {
+    promo_code: code,
+    promo_discount_total: dollarsToDisplay((discountCents * eligibleGuests) / 100),
+    promo_discount_per_guest: dollarsToDisplay(discountCents / 100),
+    promo_eligible_guests: String(eligibleGuests),
+    promo_campaign: promotion.campaign,
+  };
+}
+
+function aggregatePromotionMetadata(promoCode, items) {
+  const code = normalizePromoCode(promoCode);
+  if (!code) return {};
+  const eligible = (items || []).filter((item) => item && item.promoMetadata && item.promoMetadata.promo_code === code);
+  if (!eligible.length) throw new Error(`Promotion code ${code} is not eligible for any selected invoice item.`);
+  if (eligible.length > 1) throw new Error(`Promotion code ${code} may be applied to only one eligible tour line per reservation.`);
+  const total = eligible.reduce((sum, item) => sum + Number(item.promoMetadata.promo_discount_total || 0), 0);
+  const guests = eligible.reduce((sum, item) => sum + Number(item.promoMetadata.promo_eligible_guests || 0), 0);
+  return {
+    promo_code: code,
+    promo_discount_total: dollarsToDisplay(total),
+    promo_discount_per_guest: eligible.length === 1 ? eligible[0].promoMetadata.promo_discount_per_guest : "mixed",
+    promo_eligible_guests: String(guests),
+    promo_campaign: PROMOTIONS[code].campaign,
+  };
+}
+
 const TOURS = [
   {
     "tour_code": "TOUR001",
@@ -3268,14 +3362,22 @@ function normalizeAccountingServiceType(value) {
 function accountingLineMetadata(line, invoiceMetadata = {}, isTest = false) {
   const item = line || {};
   const existing = item.metadata || {};
+  const inheritedInvoiceMetadata = { ...invoiceMetadata };
+  [
+    "promo_code",
+    "promo_discount_total",
+    "promo_discount_per_guest",
+    "promo_eligible_guests",
+    "promo_campaign",
+  ].forEach((key) => delete inheritedInvoiceMetadata[key]);
   const tour = catalogTourForAccountingLine(item, isTest);
-  if (!tour) return { ...invoiceMetadata, ...existing };
+  if (!tour) return { ...inheritedInvoiceMetadata, ...existing };
   const quantity = Math.max(1, Number(existing.number_of_people || item.quantity || 1) || 1);
   const amountCents = Number(item.amount || 0);
   const unitAmount = amountCents > 0 ? amountCents / quantity / 100 : parseAmountDisplayToCents(tour.amount_display) / 100;
   const guideCost = guideCostSummary(tour, quantity);
   return {
-    ...invoiceMetadata,
+    ...inheritedInvoiceMetadata,
     tour_code: tour.tour_code,
     tour_title: tour.tour_title,
     service_type: normalizeAccountingServiceType(tour.service_type),
@@ -3781,6 +3883,7 @@ const worker = {
         quote_only: t.quote_only === true,
         requires_price_override: t.requires_price_override === true,
         invoice_only: t.invoice_only === true,
+        promo_eligible: PROMOTIONS.MINDOFLY.eligible_tour_codes.has(t.tour_code),
       }));
       return new Response(JSON.stringify({ ok: true, tours }, null, 2), {
         status: 200,
@@ -4287,6 +4390,8 @@ const worker = {
         const price_adjustment_per_person = optionalWholeDollarAmount(body.price_adjustment_per_person, true);
         const pricing_reason = optionalString(body.pricing_reason);
         const pricing_notes = optionalString(body.pricing_notes);
+        const promo_code = normalizePromoCode(body.promo_code);
+        const promo_applied_at = optionalString(body.promo_applied_at);
         const default_provider = optionalString(body.default_provider);
         const inquiry_id = validInternalId(body.inquiry_id, "INQ");
         const guest_id = validInternalId(body.guest_id, "G");
@@ -4334,6 +4439,18 @@ const worker = {
           ? Math.round(price_adjustment_per_person * 100)
           : priceAdjustmentCents;
         if (providedAdjustmentCents !== priceAdjustmentCents) throw new Error("Price adjustment does not match the standard and final price.");
+        const promoMetadata = promotionLineMetadata(
+          promo_code,
+          tour,
+          number_of_people,
+          providedAdjustmentCents,
+          tour_date,
+          Date.now(),
+          promo_applied_at,
+        );
+        if (promo_code && !promoMetadata.promo_code) {
+          throw new Error(`Promotion code ${promo_code} is not eligible for ${tour.tour_code}.`);
+        }
 
         if (!invoiceUnitAmountCents) throw new Error("Unable to resolve invoice unit amount.");
         const expectedInvoiceCents = calculatedLineTotalCents(tour, invoiceUnitAmountCents, number_of_people, quad_count);
@@ -4388,6 +4505,7 @@ const worker = {
           guide_payout_total: invoiceGuideCost.total ? dollarsToDisplay(invoiceGuideCost.total) : "",
           fees_charged_to_guide: invoiceGuideCost.total ? "0.00" : "",
           default_provider: default_provider || tour.default_provider || "",
+          ...promoMetadata,
           ...invoiceContext,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(language),
@@ -4589,6 +4707,8 @@ const worker = {
         const deposit_payment_intent_id = optionalString(body.deposit_payment_intent_id);
         const minimum_party_override = optionalBoolean(body.minimum_party_override);
         const minimum_party_override_reason = optionalString(body.minimum_party_override_reason);
+        const promo_code = normalizePromoCode(body.promo_code);
+        const promo_applied_at = optionalString(body.promo_applied_at);
         const invoiceContext = validatedInvoiceContext(body);
         const dueDaysRaw = body.invoice_due_days != null ? Number(body.invoice_due_days) : 1;
         const invoice_due_days = Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : 1;
@@ -4639,6 +4759,17 @@ const worker = {
             ? Math.round(price_adjustment_per_person * 100)
             : priceAdjustmentCents;
           if (providedAdjustmentCents !== priceAdjustmentCents) throw new Error(`Item ${index + 1}: price adjustment does not match the standard and final price.`);
+          const promoMetadata = promo_code && pricing_reason === "promo_discount"
+            ? promotionLineMetadata(
+              promo_code,
+              tour,
+              quantity,
+              providedAdjustmentCents,
+              tour_date,
+              Date.now(),
+              promo_applied_at,
+            )
+            : {};
 
           if (!unitAmountCents) throw new Error(`Item ${index + 1}: unable to resolve invoice unit amount.`);
 
@@ -4663,8 +4794,20 @@ const worker = {
             minimumPartySize,
             isBelowMinimum,
             guideCost,
+            promoMetadata,
           };
         });
+
+        const promoInvoiceMetadata = aggregatePromotionMetadata(promo_code, normalizedItems);
+        if (promo_code) {
+          const otherAdjustedItems = normalizedItems.filter((item) =>
+            Number(item.providedAdjustmentCents || 0) !== 0 &&
+            !item.promoMetadata.promo_code
+          );
+          if (otherAdjustedItems.length) {
+            throw new Error(`Promotion code ${promo_code} cannot be combined with another price adjustment.`);
+          }
+        }
 
         const belowMinimumItems = normalizedItems.filter((item) => item.isBelowMinimum);
         const minimumPartyOverrideSummary = belowMinimumItems
@@ -4714,6 +4857,7 @@ const worker = {
           replaces_voided_invoice_id: deposit && deposit._replaces_voided_invoice_id || "",
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
+          ...promoInvoiceMetadata,
           ...invoiceContext,
         };
 
@@ -4764,6 +4908,7 @@ const worker = {
           stripe_customer_id: customer.id,
           terms_version: BOOKING_TERMS_VERSION,
           terms_url: bookingTermsUrl(normalizedItems[0].language),
+          ...promoInvoiceMetadata,
           ...invoiceContext,
         };
 
@@ -4831,6 +4976,7 @@ const worker = {
             guide_payout_total: item.guideCost.total ? dollarsToDisplay(item.guideCost.total) : "",
             fees_charged_to_guide: item.guideCost.total ? "0.00" : "",
             default_provider: item.default_provider || item.tour.default_provider || "",
+            ...item.promoMetadata,
             ...invoiceContext,
           };
 
@@ -5736,6 +5882,11 @@ const worker = {
                     final_price_per_person: lineMd.final_price_per_person || lineMd.price_override_per_person || lineMd.standard_price_per_person || "",
                     pricing_reason: lineMd.pricing_reason || "",
                     pricing_notes: lineMd.pricing_notes || "",
+                    promo_code: lineMd.promo_code || "",
+                    promo_discount_total: lineMd.promo_discount_total || "",
+                    promo_discount_per_guest: lineMd.promo_discount_per_guest || "",
+                    promo_eligible_guests: lineMd.promo_eligible_guests || "",
+                    promo_campaign: lineMd.promo_campaign || "",
                     discount_rate_guest: "",
                     discount_reason: "",
                     amount_received: centsToDollarsString(lineAmountCents),
@@ -5891,6 +6042,11 @@ const worker = {
                   final_price_per_person: md.final_price_per_person || md.price_override_per_person || md.standard_price_per_person || "",
                   pricing_reason: md.pricing_reason || "",
                   pricing_notes: md.pricing_notes || "",
+                  promo_code: md.promo_code || "",
+                  promo_discount_total: md.promo_discount_total || "",
+                  promo_discount_per_guest: md.promo_discount_per_guest || "",
+                  promo_eligible_guests: md.promo_eligible_guests || "",
+                  promo_campaign: md.promo_campaign || "",
                   discount_rate_guest: "",
                   discount_reason: "",
                   amount_received: amountPaidCents != null ? centsToDollarsString(amountPaidCents) : "",
@@ -5991,6 +6147,11 @@ const worker = {
                     price_override_per_person: md.price_override_per_person || "",
                     pricing_reason: md.pricing_reason || "",
                     pricing_notes: md.pricing_notes || "",
+                    promo_code: md.promo_code || "",
+                    promo_discount_total: md.promo_discount_total || "",
+                    promo_discount_per_guest: md.promo_discount_per_guest || "",
+                    promo_eligible_guests: md.promo_eligible_guests || "",
+                    promo_campaign: md.promo_campaign || "",
                     payment_amount: amountPaidCents != null ? centsToDollarsString(amountPaidCents) : "",
                     currency: inv.currency ? String(inv.currency).toUpperCase() : "USD",
                     };

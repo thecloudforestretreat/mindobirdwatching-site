@@ -29,7 +29,7 @@ test('Zelle preserves explicit zero and never bills accepted trip totals as cust
  const legacy=c.buildItemsFromRecord({guest_count:3,quoted_amount:465,tour_type:'Custom experience'},3,'');assert.equal(legacy[0].price,0);
 });
 test('Zelle booking, prior payment and deposit balances count selected services once',()=>{
- const c=zelleContext();c.state={items:c.buildItemsFromRecord({guest_count:3,tour_items_json:JSON.stringify([bird,{...bird,id:'night',product_selected:'MBW016',price:35},vehicle]),quote_options_json:JSON.stringify([{code:'MBW005',price:85},{code:'MBW006',price:120}])},3,'')};c.els={adjustmentAmount:{value:0},priorPaymentAmount:{value:100},paymentMode:{value:'deposit'},depositAmount:{value:100}};
+ const c=zelleContext();c.getPromotionPlan=()=>({discountTotal:0});c.state={items:c.buildItemsFromRecord({guest_count:3,tour_items_json:JSON.stringify([bird,{...bird,id:'night',product_selected:'MBW016',price:35},vehicle]),quote_options_json:JSON.stringify([{code:'MBW005',price:85},{code:'MBW006',price:120}])},3,'')};c.els={adjustmentAmount:{value:0},priorPaymentAmount:{value:100},paymentMode:{value:'deposit'},depositAmount:{value:100}};
  for(const n of ['lineTotal','getInvoiceTotals','getPaymentPlan'])vm.runInContext(source(zelle,n),c);
  const totals=c.getInvoiceTotals();assert.equal(totals.bookingTotal,465);assert.equal(totals.amountDue,365);assert.equal(c.getPaymentPlan(totals.amountDue).requested,100);assert.equal(c.getPaymentPlan(totals.amountDue).remaining,265);
  c.els.paymentMode.value='full';assert.equal(c.getPaymentPlan(totals.amountDue).requested,365);

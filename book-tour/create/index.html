@@ -591,6 +591,15 @@
           </div>
         </div>
 
+        <div class="field">
+          <label for="promoCode">Promotion code</label>
+          <select id="promoCode">
+            <option value="">No promotion</option>
+            <option value="MINDOFLY">MINDOFLY</option>
+          </select>
+          <div class="hint">MINDOFLY applies to one eligible tour line: $5 per half-day guest or $10 per full-day guest, with no guest cap. Reserve by November 30, 2026 for travel through February 28, 2027. Deposits and add-ons are not discounted.</div>
+        </div>
+
         <div class="payPanel" id="depositPanel" style="margin:4px 0 18px;padding:14px;background:rgba(255,255,255,.72);">
           <div class="section-title" style="margin-top:0;">Existing deposit</div>
           <div class="grid-2">
@@ -806,6 +815,7 @@
           <option value="price_test">Price test</option>
           <option value="manual_adjustment">Manual adjustment</option>
           <option value="custom_quote">Custom quote</option>
+          <option value="promo_discount">MINDOFLY promotion</option>
         </select>
       </div>
 
@@ -858,7 +868,8 @@
     priorInvoiceNo: "",
     priorPaymentStatus: "",
     homeCountry: "",
-    excludedPriorInvoiceItems: []
+    excludedPriorInvoiceItems: [],
+    promoAppliedAt: ""
   };
 
   const els = {
@@ -877,6 +888,7 @@
     resultLinkBox: document.getElementById("resultLinkBox"),
     stripeEnvironment: document.getElementById("stripeEnvironment"),
     invoiceDueDays: document.getElementById("invoiceDueDays"),
+    promoCode: document.getElementById("promoCode"),
     mainFirstName: document.getElementById("mainFirstName"),
     mainLastName: document.getElementById("mainLastName"),
     mainEmail: document.getElementById("mainEmail"),
@@ -1165,9 +1177,80 @@
     const labels = {
       price_test: "Price test",
       manual_adjustment: "Manual adjustment",
-      custom_quote: "Custom quote"
+      custom_quote: "Custom quote",
+      promo_discount: "MINDOFLY promotion"
     };
     return labels[value] || "";
+  }
+
+  function normalizedPromoCode() {
+    return String(els.promoCode && els.promoCode.value || "").trim().toUpperCase();
+  }
+
+  const PROMO_TOUR_DATE_THROUGH = "2027-02-28";
+  const PROMO_ADJUSTMENT_BY_TOUR_CODE = Object.freeze({
+    MBW002: -5,
+    MBW004: -5,
+    MBW005: -5,
+    MBW006: -10,
+    MBW007: -5,
+    MBW008: -10,
+    MBW010: -5
+  });
+
+  function promoAdjustmentForTour(tour) {
+    if (!tour || !tour.promo_eligible) return 0;
+    const configuredAdjustment = PROMO_ADJUSTMENT_BY_TOUR_CODE[String(tour.tour_code || "")];
+    if (configuredAdjustment) return configuredAdjustment;
+    const duration = String(tour.duration_label || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (["half day", "medio dia"].includes(duration)) return -5;
+    if (["full day", "dia completo"].includes(duration)) return -10;
+    return 0;
+  }
+
+  function syncPromotionForItem(item, code = normalizedPromoCode()) {
+    if (!item) return;
+    const adjustment = code === "MINDOFLY"
+      ? promoAdjustmentForTour(getTourByCodeAndLanguage(item.tour_code, item.language))
+      : 0;
+    if (adjustment) {
+      item.price_override_per_person = String(adjustment);
+      item.pricing_reason = "promo_discount";
+      item.pricing_notes = "MINDOFLY Black Friday/Cyber Monday 2026 promotion";
+      return;
+    }
+    if (item.pricing_reason === "promo_discount") {
+      item.price_override_per_person = "";
+      item.pricing_reason = "";
+      item.pricing_notes = "";
+    }
+  }
+
+  function applyPromotionToItems() {
+    const code = normalizedPromoCode();
+    els.promoCode.value = code;
+    let selectedIndex = -1;
+    let selectedAdjustment = 0;
+    if (code === "MINDOFLY") {
+      state.items.forEach((item, index) => {
+        const adjustment = promoAdjustmentForTour(getTourByCodeAndLanguage(item.tour_code, item.language));
+        if (adjustment < selectedAdjustment) {
+          selectedIndex = index;
+          selectedAdjustment = adjustment;
+        }
+      });
+    }
+    state.items.forEach((item, index) => syncPromotionForItem(item, index === selectedIndex ? code : ""));
+    clearGeneratedResult();
+    renderItems();
+    renderSummary();
+    updateModeUI();
   }
 
   function titleCaseWords(value) {
@@ -1514,6 +1597,8 @@ function createItem(initial = {}) {
     const pickup = getInboundValue(data, "pickup_address_or_hotel", "pickup_location", "pickup", "pickupLocation");
     const pickupLabel = getInboundValue(data, "pickup_location_label") || (pickup ? "Pickup location" : "");
     const notes = getInboundValue(data, "notes", "message_questions", "guest_notes");
+    const promoCode = getInboundValue(data, "promo_code", "promoCode").toUpperCase();
+    const promoAppliedAt = getInboundValue(data, "promo_applied_at", "promoAppliedAt");
     const language = getInboundValue(data, "lang", "language") === "es" ? "es" : "en";
     const tourDate = getInboundValue(data, "tour_date", "date", "requested_date");
     const quantity = getInboundValue(data, "party", "guests", "guest_count", "number_of_people");
@@ -1543,6 +1628,7 @@ function createItem(initial = {}) {
     setFieldValue(els.mainEmail, email);
     setFieldValue(els.mainPhone, phone);
     state.homeCountry = homeCountry;
+    state.promoAppliedAt = promoAppliedAt;
     setFieldValue(els.whatsappNumber, whatsapp);
     setFieldValue(els.pickupLocationLabel, pickupLabel);
     setFieldValue(els.pickupAddress, pickup);
@@ -1588,6 +1674,11 @@ function createItem(initial = {}) {
       renderItems();
       renderSummary();
       updateModeUI();
+    }
+
+    if (promoCode) {
+      els.promoCode.value = promoCode;
+      applyPromotionToItems();
     }
 
     if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
@@ -1698,7 +1789,7 @@ function createItem(initial = {}) {
         const quoteOnly = !!(selectedTour && selectedTour.quote_only);
         const perQuad = !!(selectedTour && selectedTour.pricing_model === "per_quad");
         const quantityLabel = qtyInput.closest('.field').querySelector('label');
-        if (quantityLabel) quantityLabel.textContent = isVehicleTour(selectedTour)?"Passengers (one vehicle per line)":perQuad ? "Quantity" : "Number of people";
+        if (quantityLabel) quantityLabel.textContent = isVehicleTour(selectedTour)?"Vehicles":perQuad ? "Quantity" : "Number of people";
         if (priceAdjustmentLabel) {
           priceAdjustmentLabel.textContent = quoteOnly ? "Adjustment from starting amount" : isVehicleTour(selectedTour)?"Price adjustment/vehicle":flatPriced ? "Price adjustment/booking" : perQuad ? "Price adjustment/quad" : "Price adjustment/person";
         }
@@ -1746,6 +1837,12 @@ function createItem(initial = {}) {
           tourSelect.value = "";
         }
 
+        if (normalizedPromoCode()) {
+          syncPromotionForItem(item);
+          renderItems();
+          return;
+        }
+
         refreshMeta();
         refreshPricingControls();
       });
@@ -1754,6 +1851,11 @@ function createItem(initial = {}) {
         updateItem(item.id, "tour_code", e.target.value);
         if (item.source_status && e.target.value !== item.source_tour_code) {
           updateItem(item.id, "source_status", "");
+        }
+        if (normalizedPromoCode()) {
+          syncPromotionForItem(item);
+          renderItems();
+          return;
         }
         refreshMeta();
         refreshPricingControls();
@@ -1847,7 +1949,7 @@ function createItem(initial = {}) {
         <div class="summary-meta">
           Date: ${item.tour_date || "-"}
           <br />
-          ${isVehicleTour(tour)?"Passengers (1 vehicle)":"People"}: ${item.quantity || "-"}
+          ${isVehicleTour(tour)?"Vehicles":"People"}: ${isVehicleTour(tour)?billingQuantity(tour,item.quantity):(item.quantity || "-")}
           <br />
           Language: ${item.language === "es" ? "Spanish" : "English"}
           <br />
@@ -1873,6 +1975,16 @@ function createItem(initial = {}) {
       ? Number(state.deposit.amount || 0)
       : 0;
     const amountRemaining = Math.max(0, bookingSubtotal - depositAmount);
+    const promoCode = normalizedPromoCode();
+    const promoSummary = items.reduce((summary, item) => {
+      const adjustment = promoCode === "MINDOFLY" && item.pricing_reason === "promo_discount"
+        ? promoAdjustmentForTour(getTourByCodeAndLanguage(item.tour_code, item.language))
+        : 0;
+      if (!adjustment) return summary;
+      summary.guests += Number(item.quantity || 0);
+      summary.discount += Math.abs(adjustment) * Number(item.quantity || 0);
+      return summary;
+    }, { guests: 0, discount: 0 });
     els.summaryTotals.innerHTML = `
       ${state.acceptedQuoteTotal!==null?`<p class="small-note">${state.additionalInvoiceMode
         ? `Prior paid invoice${state.priorInvoiceNo ? ` ${escapeHtml(state.priorInvoiceNo)}` : ""}: original accepted total $${state.acceptedQuoteTotal} USD · This separate invoice contains only the additional services below.`
@@ -1881,6 +1993,11 @@ function createItem(initial = {}) {
         <span>Booking subtotal</span>
         <strong>$${bookingSubtotal.toFixed(2)} USD</strong>
       </div>
+      ${promoCode ? `
+      <div class="summary-total-row">
+        <span>Promotion ${escapeHtml(promoCode)} · ${promoSummary.guests} eligible guest${promoSummary.guests === 1 ? "" : "s"}</span>
+        <strong>−$${promoSummary.discount.toFixed(2)} USD</strong>
+      </div>` : ""}
       <div class="summary-total-row">
         <span>Deposit ${depositAmount ? "applied" : "not applied"}</span>
         <strong>${depositAmount ? `−$${depositAmount.toFixed(2)} USD` : "$0.00 USD"}</strong>
@@ -1899,7 +2016,7 @@ function createItem(initial = {}) {
     const hasInvoiceOnly = state.items.some(item => getTourByCodeAndLanguage(item.tour_code, item.language)?.invoice_only);
 
     els.modeChip.textContent = multi ? "Multi-item invoice mode" : "Single item mode";
-    els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || hasInvoiceOnly || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
+    els.generateLinkBtn.disabled = multi || hasQuadRental || hasQuoteOnly || hasInvoiceOnly || Boolean(normalizedPromoCode()) || state.items.some(hasOverridePrice) || Boolean(state.deposit && els.applyDeposit.checked) || acceptedQuoteMismatch();
     const hasPriorBookedItems = additionalInvoiceHasPriorBookedItems();
     els.sendInvoiceBtn.disabled = state.invoiceRequestInFlight || acceptedQuoteMismatch() || hasPriorBookedItems;
     els.copyBtn.disabled = !state.generatedUrl;
@@ -1973,6 +2090,8 @@ function createItem(initial = {}) {
 
   function validateItems() {
     const errors = [];
+    const promoCode = normalizedPromoCode();
+    if (promoCode && promoCode !== "MINDOFLY") errors.push(`Promotion code ${promoCode} is not recognized.`);
     if(acceptedQuoteMismatch())errors.push("Item prices do not match the accepted CRM quote. Review the prices or update the agreed quote in CRM before invoicing.");
     if(state.additionalInvoiceMode && !state.additionalInvoiceEligible)errors.push("Additional invoice mode requires a verified prior paid invoice.");
     if(additionalInvoiceHasPriorBookedItems())errors.push("Remove or replace items already booked on the prior paid invoice. An additional invoice may contain only new services.");
@@ -2002,7 +2121,22 @@ function createItem(initial = {}) {
         if (!item.pricing_reason) errors.push(`Item ${idx + 1}: Pricing reason is required when using a price adjustment.`);
         // backend ready for next implementation step
       }
+
+      const promoAdjustment = promoCode === "MINDOFLY" ? promoAdjustmentForTour(tour) : 0;
+      if (item.pricing_reason === "promo_discount") {
+        if (!promoAdjustment) errors.push(`Item ${idx + 1}: ${item.tour_code || "This item"} is not eligible for MINDOFLY.`);
+        if (Number(item.price_override_per_person) !== promoAdjustment) errors.push(`Item ${idx + 1}: MINDOFLY requires a ${promoAdjustment} USD adjustment per guest.`);
+        if (item.tour_date > PROMO_TOUR_DATE_THROUGH) errors.push(`Item ${idx + 1}: MINDOFLY requires travel by ${PROMO_TOUR_DATE_THROUGH}.`);
+      } else if (promoCode === "MINDOFLY" && hasOverridePrice(item)) {
+        errors.push(`Item ${idx + 1}: MINDOFLY cannot be combined with another price adjustment.`);
+      }
     });
+
+    if (promoCode === "MINDOFLY") {
+      const appliedPromoItems = state.items.filter(item => item.pricing_reason === "promo_discount");
+      if (!appliedPromoItems.length) errors.push("MINDOFLY is not eligible for any selected item.");
+      if (appliedPromoItems.length > 1) errors.push("MINDOFLY may be applied to only one eligible tour line per reservation.");
+    }
 
     return errors;
   }
@@ -2060,7 +2194,9 @@ function createItem(initial = {}) {
         : null,
 
       pricing_reason: item.pricing_reason || "",
-      pricing_notes: item.pricing_notes || ""
+      pricing_notes: item.pricing_notes || "",
+      promo_code: normalizedPromoCode(),
+      promo_applied_at: state.promoAppliedAt
     };
   }
 
@@ -2087,6 +2223,8 @@ function createItem(initial = {}) {
       quote_id: els.quoteId.value.trim(),
       billing_brand_id: "mbw",
       marketing_brand_id: invoiceMarketingBrandId(),
+      promo_code: normalizedPromoCode(),
+      promo_applied_at: state.promoAppliedAt,
       deposit_payment_intent_id: state.deposit && els.applyDeposit.checked
         ? state.deposit.payment_intent_id
         : "",
@@ -2522,6 +2660,13 @@ function createItem(initial = {}) {
 
   els.addItemBtn.addEventListener("click", () => {
     addItem({ language: els.defaultLanguage.value });
+  });
+
+  els.promoCode.addEventListener("change", () => {
+    if (normalizedPromoCode() && !state.promoAppliedAt) state.promoAppliedAt = new Date().toISOString();
+    if (!normalizedPromoCode()) state.promoAppliedAt = "";
+    clearGeneratedResult();
+    applyPromotionToItems();
   });
 
   els.generateLinkBtn.addEventListener("click", onGenerateLink);
