@@ -1,6 +1,24 @@
 const ADMIN_ORIGIN = "https://admin.mindobirdwatching.com";
 const MAX_BODY_BYTES = 65536;
 const MAX_ITEMS = 12;
+const PROMOTIONS = Object.freeze({
+  MINDOFLY: Object.freeze({
+    code: "MINDOFLY",
+    campaign: "cyber_monday_2026",
+    startsAtMs: Date.parse("2026-11-18T00:00:00-05:00"),
+    endsAtMs: Date.parse("2026-11-30T23:59:59-05:00"),
+    eligibleTourDateThrough: "2027-02-28",
+    discountCentsByProduct: Object.freeze({
+      MBW002: 500,
+      MBW004: 500,
+      MBW005: 500,
+      MBW006: 1000,
+      MBW007: 500,
+      MBW008: 1000,
+      MBW010: 500,
+    }),
+  }),
+});
 
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
@@ -47,10 +65,54 @@ function productCode(description) {
 
 function serviceType(code) {
   if (code.startsWith("TRANS")) return "Transportation";
+  if (code.startsWith("MEAL")) return "Meal";
   if (code.startsWith("ACT")) return "Activity";
   if (code.startsWith("ACCOM")) return "Accommodation";
   if (code.startsWith("OSO")) return "Wildlife";
   return "Birdwatching";
+}
+
+function normalizePromoCode(value) {
+  return clean(value, 32).toUpperCase();
+}
+
+function promotionPlan(promoCode, items, tourDate, nowMs = Date.now(), promoAppliedAt = "") {
+  const code = normalizePromoCode(promoCode);
+  if (!code) return null;
+  const promotion = PROMOTIONS[code];
+  if (!promotion) throw new Error(`promotion_code_${code}_not_recognized`);
+  const appliedAtText = clean(promoAppliedAt, 64);
+  const appliedAtMs = appliedAtText ? Date.parse(appliedAtText) : nowMs;
+  if (!Number.isFinite(appliedAtMs)) throw new Error("promotion_reservation_timestamp_invalid");
+  if (appliedAtMs > nowMs + 300000) throw new Error("promotion_reservation_timestamp_in_future");
+  if (appliedAtMs < promotion.startsAtMs || appliedAtMs > promotion.endsAtMs) {
+    throw new Error(`promotion_code_${code}_not_active`);
+  }
+  if (!validDate(tourDate)) throw new Error("promotion_requires_valid_tour_date");
+  if (tourDate > promotion.eligibleTourDateThrough) {
+    throw new Error(`promotion_requires_tour_by_${promotion.eligibleTourDateThrough}`);
+  }
+
+  const candidates = items.flatMap((item, itemIndex) => {
+    const codeForItem = productCode(item.description);
+    const discountCents = Number(promotion.discountCentsByProduct[codeForItem] || 0);
+    return discountCents ? [{ itemIndex, code: codeForItem, discountCents, item }] : [];
+  });
+  if (!candidates.length) throw new Error(`promotion_code_${code}_has_no_eligible_item`);
+  candidates.sort((a, b) => b.discountCents - a.discountCents || a.itemIndex - b.itemIndex);
+  const selected = candidates[0];
+  const discountTotalCents = selected.discountCents * selected.item.qty;
+  const lineGrossCents = selected.item.unitCents * selected.item.qty;
+  if (discountTotalCents >= lineGrossCents) throw new Error("promotion_discount_must_be_less_than_line_total");
+  return {
+    code,
+    campaign: promotion.campaign,
+    itemIndex: selected.itemIndex,
+    productCode: selected.code,
+    discountPerGuestCents: selected.discountCents,
+    eligibleGuests: selected.item.qty,
+    discountTotalCents,
+  };
 }
 
 function splitName(fullName) {
@@ -106,7 +168,7 @@ async function postJson(url, body, attempts = 3, headers = {}) {
   throw lastError || new Error("upstream_request_failed");
 }
 
-function validateInput(input) {
+function validateInput(input, nowMs = Date.now()) {
   const invoiceNo = validId(input.invoice_no);
   const inquiryId = validId(input.inquiry_id);
   const guestId = validId(input.guest_id);
@@ -147,10 +209,14 @@ function validateInput(input) {
     priorPaymentCents += Math.abs(adjustmentCents);
   }
   const priceAdjustmentCents = adjustmentType === "price_adjustment" ? adjustmentCents : 0;
+  const promo = promotionPlan(input.promo_code, normalizedItems, tourDate, nowMs, input.promo_applied_at);
+  if (promo && priceAdjustmentCents) throw new Error("promotion_cannot_be_combined_with_price_adjustment");
   let paymentMethod = clean(input.payment_method, 60) || "Zelle";
   const allowedPaymentMethods = ["Zelle", "Zelle + Bank Transfer", "Bank Transfer US", "Bank Transfer EC", "Other"];
   if (!allowedPaymentMethods.includes(paymentMethod)) throw new Error("payment_method_invalid");
-  const allocated = allocateTotal(normalizedItems, priceAdjustmentCents);
+  const allocated = promo
+    ? normalizedItems.map((item, index) => item.qty * item.unitCents - (index === promo.itemIndex ? promo.discountTotalCents : 0))
+    : allocateTotal(normalizedItems, priceAdjustmentCents);
   const invoiceTotalCents = allocated.reduce((sum, value) => sum + value, 0);
   if (priorPaymentCents > invoiceTotalCents) throw new Error("prior_payment_exceeds_invoice_total");
   if (priorPaymentCents > 0 && paymentMethod === "Zelle") paymentMethod = "Zelle + Bank Transfer";
@@ -175,6 +241,7 @@ function validateInput(input) {
     items: normalizedItems,
     itineraryVersion: clean(input.itinerary_version, 20),
     itineraryTitle: clean(input.itinerary_title, 300),
+    promo,
   };
 }
 
@@ -212,6 +279,7 @@ export async function onRequestPost({ request, env }) {
     const rows = invoice.items.map((item, index) => {
       const code = productCode(item.description);
       const chargedCents = invoice.allocated[index];
+      const promoApplied = Boolean(invoice.promo && invoice.promo.itemIndex === index);
       const rowKey = `${invoiceId}|${index + 1}|${code}|${invoice.tourDate}|${item.qty}`;
       return {
         created_at_iso: new Date().toISOString(),
@@ -236,14 +304,16 @@ export async function onRequestPost({ request, env }) {
         payment_reference_note: [
           invoice.paymentReference,
           paymentSummary,
+          promoApplied ? `${invoice.promo.code}: -${dollars(invoice.promo.discountTotalCents)} promotion` : "",
           invoice.adjustmentCents ? `${invoice.adjustmentLabel}: ${dollars(invoice.adjustmentCents)} (price adjustment)` : "",
         ].filter(Boolean).join(" | "),
         guest_rate_override: dollars(item.unitCents),
         standard_price_per_person: dollars(item.unitCents),
         final_price_per_person: dollars(Math.round(chargedCents / item.qty)),
-        pricing_reason: invoice.adjustmentCents ? "MANUAL_OVERRIDE_AND_INVOICE_ADJUSTMENT" : "MANUAL_OVERRIDE",
+        pricing_reason: promoApplied ? "promo_discount" : (invoice.adjustmentCents ? "MANUAL_OVERRIDE_AND_INVOICE_ADJUSTMENT" : "MANUAL_OVERRIDE"),
         pricing_notes: [
           "Manual invoice rate; do not replace with catalog pricing",
+          promoApplied ? `${invoice.promo.code} ${invoice.promo.campaign}: -${dollars(invoice.promo.discountPerGuestCents)} per eligible guest` : "",
           invoice.adjustmentCents ? `${invoice.adjustmentLabel}: ${dollars(invoice.adjustmentCents)}` : "",
         ].filter(Boolean).join(" | "),
         amount_received: dollars(chargedCents),
@@ -253,6 +323,11 @@ export async function onRequestPost({ request, env }) {
         notes: [item.note, invoice.notes].filter(Boolean).join(" | ").slice(0, 2000),
         subtotal_guest: dollars(item.qty * item.unitCents),
         discount_amount: invoice.adjustmentType === "price_adjustment" ? dollars(item.qty * item.unitCents - chargedCents) : "0.00",
+        promo_code: promoApplied ? invoice.promo.code : "",
+        promo_discount_total: promoApplied ? dollars(invoice.promo.discountTotalCents) : "",
+        promo_discount_per_guest: promoApplied ? dollars(invoice.promo.discountPerGuestCents) : "",
+        promo_eligible_guests: promoApplied ? String(invoice.promo.eligibleGuests) : "",
+        promo_campaign: promoApplied ? invoice.promo.campaign : "",
         final_invoice_total: dollars(chargedCents),
         expected_total_with_tip: dollars(chargedCents),
         tour_key: rowKey,
@@ -319,6 +394,8 @@ export async function onRequestPost({ request, env }) {
       attribution_linked: attribution.ok === true,
       attribution_link_id: attribution.attribution_link_id || "",
       attribution_error: attribution.ok === true ? "" : (attribution.error || "attribution_link_failed"),
+      promo_code: invoice.promo ? invoice.promo.code : "",
+      promo_discount_total: invoice.promo ? dollars(invoice.promo.discountTotalCents) : "0.00",
     });
   } catch (error) {
     console.error("Zelle accounting write failed", error);
@@ -337,4 +414,4 @@ export async function onRequestOptions({ request }) {
   return new Response(null, { status: 204, headers: JSON_HEADERS });
 }
 
-export const __test = { allocateTotal, productCode, serviceType, splitName, validateInput };
+export const __test = { allocateTotal, productCode, serviceType, splitName, promotionPlan, validateInput };
