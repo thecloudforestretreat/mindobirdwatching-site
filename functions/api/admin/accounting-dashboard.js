@@ -254,8 +254,9 @@ export async function onRequestGet({ request, env }) {
     const unreconciled = expenses.filter(row => text(row.reconciled).toLowerCase() !== "yes" && text(row.expense_status).toLowerCase() !== "void").length;
     const missingReceipts = expenses.filter(row => Math.abs(number(row.amount)) > 0 && !text(row.receipt_link) && text(row.payment_method) && !/stripe|paypal/i.test(text(row.payment_method))).length;
     const openSettlements = settlements.filter(row => text(row.settlement_id) && !/reconciled|settled|closed/i.test(text(row.status))).length;
-    const ytd = growth.find(row => text(row["MBW Growth Dashboard period"]) === `${year} YTD`) || {};
-    const current = growth.find(row => text(row["MBW Growth Dashboard period"]) === "Current Month") || {};
+    const growthPeriod = row => text(row.period || row["MBW Growth Dashboard period"]);
+    const ytd = growth.find(row => growthPeriod(row) === `${year} YTD`) || {};
+    const current = growth.find(row => growthPeriod(row) === "Current Month") || {};
     const monthly = income.filter(row => validMonth(row.month_ky) && text(row.month_ky) <= month).map(row => ({ month: text(row.month_ky), collected: number(row.cash_collected), revenue: number(row.earned_revenue), profit: number(row.earned_profit), expenses: number(row.expense_total), net: number(row.net_income), margin: number(row.earned_margin) / 100 })).sort((a, b) => a.month.localeCompare(b.month));
     const incomeCurrent = monthly.find(row => row.month === month) || {}, invoiceProjection = monthProjection(invoices, month, today), projection = {
       ...invoiceProjection,

@@ -41,6 +41,7 @@ test("accounting operations feed uses a private pushed snapshot and reports heal
   assert.match(api, /text\(row\.month_ky\) <= month/);
   assert.match(api, /Daily reconciliation is/);
   assert.match(api, /snapshot_generated_at/);
+  assert.match(api, /row\.period \|\| row\["MBW Growth Dashboard period"\]/);
   assert.match(sync, /authorization/);
   assert.match(sync, /GSHEET_WEBAPP_TOKEN/);
   assert.match(sync, /invalid_snapshot/);
@@ -57,6 +58,8 @@ test("accounting operations feed uses a private pushed snapshot and reports heal
   assert.match(logger, /CF-Access-Client-Secret/);
   assert.match(logger, /access_service_token_configured/);
   assert.match(logger, /returned non-JSON content/);
+  assert.match(logger, /"MBW Growth Dashboard period": \["period"\]/);
+  assert.match(logger, /sheetName === "growth_dashboard" \? 2 : 1/);
   assert.doesNotMatch(logger, /function doPost/);
   assert.doesNotMatch(logger, /ACCOUNTING_DASHBOARD_TOKEN\s*=/);
 });

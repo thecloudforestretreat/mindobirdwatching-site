@@ -8,13 +8,16 @@
  * admin site and this endpoint remain private.
  */
 
-var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.0.1-2026-11-17";
+var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.0.2-2026-11-17";
 var ACCOUNTING_DASHBOARD_SHEET_ID = "1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU";
 var ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_URL";
 var ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_TOKEN";
 var ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID_PROPERTY = "ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_ID";
 var ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET_PROPERTY = "ACCOUNTING_DASHBOARD_CF_ACCESS_CLIENT_SECRET";
 var ACCOUNTING_DASHBOARD_PUSH_FUNCTION = "pushAccountingDashboardSnapshot";
+var ACCOUNTING_DASHBOARD_HEADER_ALIASES = {
+  "MBW Growth Dashboard period": ["period"]
+};
 var ACCOUNTING_DASHBOARD_FIELDS = {
   daily_recon: ["date", "running_expected_balance", "restricted_ad_fund", "available_operating_cash"],
   guide_payment_queue: ["guide", "remaining_due", "tour_date", "tour_key"],
@@ -111,12 +114,19 @@ function buildAccountingDashboardSource_() {
 function readAccountingDashboardTab_(spreadsheet, sheetName, wantedFields) {
   var sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) throw new Error("Missing sheet: " + sheetName);
-  var headerRow = sheetName === "recon_meta_ads_import" ? 6 : 1;
+  var headerRow = sheetName === "recon_meta_ads_import" ? 6 : (sheetName === "growth_dashboard" ? 2 : 1);
   var lastRow = sheet.getLastRow();
   var lastColumn = sheet.getLastColumn();
   if (lastRow < headerRow || lastColumn < 1) return [];
   var headers = sheet.getRange(headerRow, 1, 1, lastColumn).getDisplayValues()[0].map(function(value) { return String(value || "").trim(); });
-  var indices = wantedFields.map(function(field) { return headers.indexOf(field); });
+  var indices = wantedFields.map(function(field) {
+    var candidates = [field].concat(ACCOUNTING_DASHBOARD_HEADER_ALIASES[field] || []);
+    for (var candidateIndex = 0; candidateIndex < candidates.length; candidateIndex++) {
+      var headerIndex = headers.indexOf(candidates[candidateIndex]);
+      if (headerIndex >= 0) return headerIndex;
+    }
+    return -1;
+  });
   if (lastRow === headerRow) return [];
   var keyValues = sheet.getRange(headerRow + 1, 1, lastRow - headerRow, 1).getDisplayValues();
   var meaningfulRows = 0;
