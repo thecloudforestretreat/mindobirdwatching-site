@@ -1,6 +1,49 @@
 const MAX_SPECIES = 100;
 const WEBHOOK_TIMEOUT_MS = 12_000;
 
+const messages = {
+  unavailable: {
+    en: `The request service is temporarily unavailable.`,
+    es: `El servicio de solicitudes no está disponible en este momento.`,
+  },
+  verification_failed: {
+    en: `Verification expired or failed. Please verify again.`,
+    es: `La verificación venció o no se completó. Vuelve a verificar.`,
+  },
+  no_species: {
+    en: `Please select at least one target bird.`,
+    es: `Selecciona al menos un ave que quieras observar.`,
+  },
+  too_many_species: {
+    en: `Please select no more than ${MAX_SPECIES} target birds.`,
+    es: `Selecciona hasta ${MAX_SPECIES} aves.`,
+  },
+  invalid_species: {
+    en: `The selected bird list contains an invalid species code.`,
+    es: `Hay una especie no válida en tu lista. Revisa tu selección e inténtalo de nuevo.`,
+  },
+  invalid_contact: {
+    en: `Please provide your name and a valid email address.`,
+    es: `Escribe tu nombre, apellido y un correo electrónico válido.`,
+  },
+  forward_failed: {
+    en: `We could not receive your request. Please try again or use WhatsApp.`,
+    es: `No pudimos recibir tu solicitud. Inténtalo de nuevo o escríbenos por WhatsApp.`,
+  },
+  received: {
+    en: `Your target bird request was received.`,
+    es: `Recibimos tu solicitud para planificar un tour según las aves que buscas.`,
+  },
+  timeout: {
+    en: `The request service took too long. Please try again or use WhatsApp.`,
+    es: `El envío tardó demasiado. Inténtalo de nuevo o escríbenos por WhatsApp.`,
+  },
+  unexpected: {
+    en: `Unexpected error sending your request.`,
+    es: `Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo o escríbenos por WhatsApp.`,
+  },
+};
+
 function messageResponse(request, status, message, extra = {}, httpStatus = 200) {
   const payload = JSON.stringify({ type: "mbw-target-bird", status, message, ...extra })
     .replace(/</g, "\\u003c");
@@ -35,9 +78,13 @@ function validSpeciesCode(code) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   const requestId = `web_${crypto.randomUUID()}`;
+  let language = "en";
+  const respond = (status, code, extra = {}, httpStatus = 200) =>
+    messageResponse(request, status, messages[code][language], { request_id: requestId, code, ...extra }, httpStatus);
 
   try {
     const formData = await request.formData();
+    language = clean(formData.get("preferred_language"), 5) === "es" ? "es" : "en";
     const turnstileSecret = env.TURNSTILE_SECRET_KEY || env.CF_TURNSTILE_SECRET;
     const turnstileToken = clean(formData.get("cf-turnstile-response"), 4096);
     const forwardUrl =
@@ -47,7 +94,7 @@ export async function onRequestPost(context) {
 
     if (!forwardUrl || !turnstileSecret) {
       console.error("Target bird endpoint configuration is incomplete", { requestId });
-      return messageResponse(request, "error", "The request service is temporarily unavailable.", { request_id: requestId }, 503);
+      return respond("error", "unavailable", {}, 503);
     }
 
     const verifyBody = new URLSearchParams({ secret: turnstileSecret, response: turnstileToken });
@@ -62,25 +109,25 @@ export async function onRequestPost(context) {
         requestId,
         codes: verification["error-codes"] || [],
       });
-      return messageResponse(request, "error", "Verification expired or failed. Please verify again.", { request_id: requestId }, 400);
+      return respond("error", "verification_failed", {}, 400);
     }
 
     const speciesCodes = uniqueSpeciesCodes(formData.get("selected_species_codes"));
     if (!speciesCodes.length) {
-      return messageResponse(request, "error", "Please select at least one target bird.", { request_id: requestId }, 400);
+      return respond("error", "no_species", {}, 400);
     }
     if (speciesCodes.length > MAX_SPECIES) {
-      return messageResponse(request, "error", `Please select no more than ${MAX_SPECIES} target birds.`, { request_id: requestId }, 400);
+      return respond("error", "too_many_species", {}, 400);
     }
     if (speciesCodes.some((code) => !validSpeciesCode(code))) {
-      return messageResponse(request, "error", "The selected bird list contains an invalid species code.", { request_id: requestId }, 400);
+      return respond("error", "invalid_species", {}, 400);
     }
 
     const firstName = clean(formData.get("first_name"), 80);
     const lastName = clean(formData.get("last_name"), 80);
     const email = clean(formData.get("visitor_email"), 254);
     if (!firstName || !lastName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return messageResponse(request, "error", "Please provide your name and a valid email address.", { request_id: requestId }, 400);
+      return respond("error", "invalid_contact", {}, 400);
     }
 
     const now = new Date().toISOString();
@@ -95,7 +142,7 @@ export async function onRequestPost(context) {
       visitor_email: email,
       visitor_whatsapp: clean(formData.get("visitor_whatsapp"), 40),
       preferred_contact_method: clean(formData.get("preferred_contact_method"), 20) || "email",
-      preferred_language: clean(formData.get("preferred_language"), 5) === "es" ? "es" : "en",
+      preferred_language: language,
       requested_dates: clean(formData.get("requested_dates"), 100),
       start_date: clean(formData.get("start_date"), 10),
       birding_days: clean(formData.get("birding_days"), 4),
@@ -134,12 +181,11 @@ export async function onRequestPost(context) {
         response: responseText.slice(0, 1000),
         speciesCount: speciesCodes.length,
       });
-      return messageResponse(request, "error", "We could not receive your request. Please try again or use WhatsApp.", { request_id: requestId }, 502);
+      return respond("error", "forward_failed", {}, 502);
     }
 
     console.log("Target bird request accepted", { requestId, speciesCount: speciesCodes.length });
-    return messageResponse(request, "ok", "Your target bird request was received.", {
-      request_id: requestId,
+    return respond("ok", "received", {
       report_id: payload.report_id,
     });
   } catch (error) {
@@ -149,13 +195,7 @@ export async function onRequestPost(context) {
       message: error?.message,
     });
     const timedOut = error?.name === "TimeoutError";
-    return messageResponse(
-      request,
-      "error",
-      timedOut ? "The request service took too long. Please try again or use WhatsApp." : "Unexpected error sending your request.",
-      { request_id: requestId },
-      timedOut ? 504 : 500,
-    );
+    return respond("error", timedOut ? "timeout" : "unexpected", {}, timedOut ? 504 : 500);
   }
 }
 

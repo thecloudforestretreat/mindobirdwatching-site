@@ -27321,13 +27321,13 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
           <input name="selected_species_names" type="hidden" value="">
           <div class="cf-turnstile" data-sitekey="0x4AAAAAACYIFF7ZNXiqieGk"></div>
           <div class="heroActions">
-            <button class="btn secondary" type="submit" data-submit-request>Solicitar revision del guia</button>
+            <button class="btn secondary" type="submit" data-submit-request>Solicitar revisión del guía</button>
             <a class="btn secondary" href="#targetBirdForm" data-whatsapp-message-key="book_tour_es" data-analytics-event="tour_whatsapp_click" data-analytics-link-url="dynamic_whatsapp" data-analytics-label="Mensaje por WhatsApp" data-analytics-location="target_builder_form" data-analytics-page-language="es" data-analytics-page-type="target_bird_tour_builder" rel="noopener noreferrer" target="_blank">WhatsApp</a>
           </div>
-          <p class="buttonHelp">Solicitar revision envia tu lista a MBW y dispara el flujo interno. WhatsApp abre una conversacion directa si prefieres escribirnos.</p>
+          <p class="buttonHelp">Envía tu lista para que la revise un guía. Si prefieres escribirnos directamente, usa WhatsApp.</p>
           <p class="trustNote">Este formulario usa Cloudflare Turnstile para reducir bots. El reporte final sera revisado por MBW.</p>
           <div class="success" id="targetFormSuccess">Solicitud preparada. Revisaremos tus aves objetivo.</div>
-          <div class="errorMsg" id="targetFormError">Selecciona al menos una especie objetivo antes de solicitar revision.</div>
+          <div class="errorMsg" id="targetFormError">Selecciona al menos un ave antes de enviar la solicitud.</div>
         </form>
       </div>
     </div>
@@ -28122,7 +28122,6 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
     var submit = event.target.closest("[data-preview-submit]");
     if(submit){
       var payload = buildPayload();
-      showFormMessage("success");
       track("target_form_submit", {
         selected_count: payload.speciesCodes.length,
         has_email: Boolean(payload.visitor_email),
@@ -28158,7 +28157,7 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
     if(!selected.size){
       event.preventDefault();
       showFormMessage("error", PAGE_LANG === "es"
-        ? "Selecciona al menos una especie objetivo antes de solicitar revision."
+        ? "Selecciona al menos un ave antes de enviar la solicitud."
         : "Select at least one target species before requesting review.");
       track("target_form_blocked", { reason: "no_species_selected" });
       return;
@@ -28169,10 +28168,10 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
       submitButton.textContent = PAGE_LANG === "es" ? "Enviando..." : "Sending...";
       window.setTimeout(function(){
         submitButton.disabled = false;
-        submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
+        submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revisión del guía" : "Request Guide Review";
       }, 6000);
     }
-    showFormMessage("pending", "Enviando tu solicitud de aves objetivo...");
+    showFormMessage("pending", "Enviando tu solicitud…");
     track("target_guide_review_submit", {
       selected_count: selected.size,
       has_email: Boolean(form.querySelector("input[name='visitor_email']") && form.querySelector("input[name='visitor_email']").value),
@@ -28189,14 +28188,14 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
     var submitButton = form ? form.querySelector("[data-submit-request]") : null;
     if(submitButton){
       submitButton.disabled = false;
-      submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
+      submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revisión del guía" : "Request Guide Review";
     }
     if(data.status === "ok"){
-      showFormMessage("success", data.message || "Recibimos tu solicitud de aves objetivo.");
+      showFormMessage("success", data.message || "Recibimos tu solicitud para planificar un tour según las aves que buscas.");
       track("target_guide_review_success", { selected_count: selected.size });
     } else {
       showFormMessage("error", data.message || (PAGE_LANG === "es" ? "No pudimos enviar la solicitud. Intenta de nuevo o usa WhatsApp." : "We could not send the request. Please try again or use WhatsApp."));
-      track("target_guide_review_error", { message: data.message || "unknown" });
+      track("target_guide_review_error", { error_code: data.code || "unknown" });
     }
   });
 
