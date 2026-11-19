@@ -10,7 +10,9 @@ test("media insights proxy preserves measured patterns and validated AI guidance
     observed_patterns:[{id:"format:carousel",metric:"views_or_reach",sample_size:8}],
     ai_guidance:{available:true,metric:"result",items:[{evidence_id:"format:carousel",interpretation:"Measured interpretation",experiment:"Controlled experiment"}]},
     data_health:{stale:false,platforms:{}},
-    platforms:{instagram:{connected:true,metrics:{reach:288}}},
+    last_successful_sync_at:"2026-10-22T22:18:32Z",
+    reddit:{overall:{username:"MindoBirdWatching",followers:58,posts_published:100},retention:{note:"Retained permanently."}},
+    platforms:{instagram:{connected:true,metrics:{reach:288}},reddit:{connected:true,metrics:{views:991221},coverage_percent:100}},
   }),{status:200,headers:{"content-type":"application/json"}});
   try{
     const request=new Request("https://mindobirdwatching.com/api/admin/media-insights?period=28d",{headers:{origin:"https://admin.mindobirdwatching.com"}});
@@ -19,6 +21,11 @@ test("media insights proxy preserves measured patterns and validated AI guidance
     assert.equal(body.observed_patterns[0].id,"format:carousel");
     assert.equal(body.ai_guidance.metric,"result");
     assert.equal(body.post_results[0].tags[0].label,"Toucan");
+    assert.equal(body.platforms.reddit.connected,true);
+    assert.equal(body.platforms.reddit.metrics.views,991221);
+    assert.equal(body.reddit.overall.username,"MindoBirdWatching");
+    assert.equal(body.reddit.overall.posts_published,100);
+    assert.equal(body.last_successful_sync_at,"2026-10-22T22:18:32Z");
   }finally{globalThis.fetch=original}
 });
 
