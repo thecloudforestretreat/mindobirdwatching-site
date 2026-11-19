@@ -1593,21 +1593,32 @@ function clientScript(lang) {
     });
   });
 
+  var trackedRequestIds = new Set();
   window.addEventListener("message", function(event){
+    var frame = document.getElementById("targetBirdHiddenFrame");
+    if(event.origin !== window.location.origin || !frame || event.source !== frame.contentWindow) return;
     var data = event.data || {};
     if(!data || data.type !== "mbw-target-bird") return;
     var form = document.querySelector("[data-lead-form]");
     var submitButton = form ? form.querySelector("[data-submit-request]") : null;
     if(submitButton){
       submitButton.disabled = false;
-      submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revision del guia" : "Request Guide Review";
+      submitButton.textContent = PAGE_LANG === "es" ? "Solicitar revisión del guía" : "Request Guide Review";
     }
     if(data.status === "ok"){
-      showFormMessage("success", "");
-      track("target_guide_review_success", { selected_count: selected.size });
+      showFormMessage("success", data.message || (PAGE_LANG === "es"
+        ? "Recibimos tu solicitud para planificar un tour según las aves que buscas."
+        : "Your target bird request was received."));
+      if(data.request_id && !trackedRequestIds.has(data.request_id) && typeof window.mbwAnalyticsTrack === "function"){
+        trackedRequestIds.add(data.request_id);
+        window.mbwAnalyticsTrack("target_guide_review_success", {
+          selected_count: selected.size,
+          form_name: "target_bird_tour_builder"
+        });
+      }
     } else {
       showFormMessage("error", data.message || (PAGE_LANG === "es" ? "No pudimos enviar la solicitud. Intenta de nuevo o usa WhatsApp." : "We could not send the request. Please try again or use WhatsApp."));
-      track("target_guide_review_error", { message: data.message || "unknown" });
+      track("target_guide_review_error", { error_code: data.code || "unknown" });
     }
   });
 

@@ -28179,6 +28179,7 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
     });
   });
 
+  var trackedRequestIds = new Set();
   window.addEventListener("message", function(event){
     var frame = document.getElementById("targetBirdHiddenFrame");
     if(event.origin !== window.location.origin || !frame || event.source !== frame.contentWindow) return;
@@ -28192,7 +28193,13 @@ body[data-page-type="target_bird_tour_builder"] .nextSteps ol{margin:0;padding-l
     }
     if(data.status === "ok"){
       showFormMessage("success", data.message || "Recibimos tu solicitud para planificar un tour según las aves que buscas.");
-      track("target_guide_review_success", { selected_count: selected.size });
+      if(data.request_id && !trackedRequestIds.has(data.request_id) && typeof window.mbwAnalyticsTrack === "function"){
+        trackedRequestIds.add(data.request_id);
+        window.mbwAnalyticsTrack("target_guide_review_success", {
+          selected_count: selected.size,
+          form_name: "target_bird_tour_builder"
+        });
+      }
     } else {
       showFormMessage("error", data.message || (PAGE_LANG === "es" ? "No pudimos enviar la solicitud. Intenta de nuevo o usa WhatsApp." : "We could not send the request. Please try again or use WhatsApp."));
       track("target_guide_review_error", { error_code: data.code || "unknown" });
