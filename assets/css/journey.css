@@ -27,6 +27,16 @@ body[data-page-type="tour_collection"] .targetBirdFeature .activityMedia > img {
   position: absolute;
   inset: 0;
   object-position: center 30%;
+  border-radius: 14px;
+}
+/* Mirror the second feature at the existing desktop breakpoint. */
+@media (min-width: 901px) {
+  body[data-page-content-group="tours"][data-page-type="tour_collection"] .birdCompareFeature--media-right {
+    grid-template-columns: minmax(0, 42%) minmax(0, 58%);
+    grid-template-areas: "copy media";
+  }
+  .birdCompareFeature--media-right > .activityMedia { grid-area: media; }
+  .birdCompareFeature--media-right > .activityBody { grid-area: copy; }
 }
 #siteFooter .footerExploreGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;text-align:left;padding:8px 0 24px;margin-bottom:22px;border-bottom:1px solid #c8d6c4;}
 #siteFooter .footerExploreGrid h2{font:700 16px/1.4 "Open Sans",system-ui,sans-serif;margin:0 0 10px;color:#0d5925;}
