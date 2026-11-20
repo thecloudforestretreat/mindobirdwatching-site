@@ -328,3 +328,34 @@
 .redditPlannerAlternatives strong{font-size:.8rem}
 .redditPlannerAlternatives small{color:var(--media-muted);font-size:.7rem}
 @media(max-width:720px){.redditPlannerSectionHeading{align-items:stretch;flex-direction:column}.redditPlannerSectionHeading>button{align-self:flex-start}.redditPlannerBodyLine,.redditPlannerAlternatives{grid-column:auto}.redditPlannerBodyLine article{grid-template-columns:1fr}.redditPlannerBodyLine button{justify-self:start}.redditPlannerAlternatives>div{grid-template-columns:1fr}}
+
+/* Mobile calendar and schedule repair */
+.calendarDayPicker{width:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.calendarDayCount{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--media-green);color:#fff;font-size:10px;font-weight:950;line-height:18px;text-align:center}
+.mobileDayAgenda{display:none}
+@media(max-width:700px){
+  .calendarToolbar{margin-bottom:10px}.calendarToolbar h2{font-size:24px}.calendarOptions{gap:10px}.calendarLegend{gap:10px}.scheduleRecommendations{padding:11px}
+  .calendarWeekdays span{padding:7px 1px;font-size:10px}.mediaCalendar{overflow:hidden}
+  .calendarDay{min-width:0;min-height:68px!important;padding:4px!important}
+  .calendarDay.isSelected{position:relative;background:#eef7e8;box-shadow:inset 0 0 0 2px var(--media-green)}
+  .calendarDayHead{min-height:22px;margin:0;gap:2px}.calendarDayPicker{align-items:flex-start}.dayNumber{font-size:13px}.calendarDayCount{display:inline-block}
+  .calendarDaySignal,.calendarGap{display:none!important}.calendarEvents{display:flex;align-content:flex-start;flex-wrap:wrap;gap:4px;margin-top:4px}
+  .calendarEventShell{display:block!important;width:10px;height:10px}
+  .calendarEventShell .calendarEvent{display:block!important;width:10px!important;height:10px!important;min-height:10px!important;padding:0!important;border:0!important;border-radius:999px!important;background:var(--media-green)!important;box-shadow:none!important}
+  .calendarEventShell .calendarEvent[data-type="reel"]{background:var(--media-purple)!important}
+  .calendarEventShell .calendarEvent[data-status="review"]{box-shadow:0 0 0 2px var(--media-yellow)!important}
+  .calendarEventShell .calendarEvent[data-status="failed"]{box-shadow:0 0 0 2px var(--media-red)!important}
+  .calendarEventIcon,.calendarEventCopy,.calendarStatusMark,.calendarEventEdit{display:none!important}
+  .mobileDayAgenda{display:grid;gap:10px;margin-top:12px;padding:13px;border:1px solid #c7d8c0;border-radius:13px;background:#f7fbf3}
+  .mobileDayAgendaHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.mobileDayAgendaHeader h3{margin:2px 0 0;font-size:20px}
+  .mobileDayAgendaHeader>span{flex:none;padding:5px 8px;border-radius:999px;background:#e5f2df;color:var(--media-green);font-size:11px;font-weight:900}
+  .agendaPanel{display:block!important;margin-top:14px;padding:13px!important}.agendaPanel>div:first-child{margin-bottom:11px}.agendaPanel h3{font-size:24px}.agendaList{gap:10px}
+  .agendaItem{display:block!important;width:100%;padding:0!important;overflow:hidden;border-radius:12px}
+  .agendaPreview{display:grid!important;grid-template-columns:76px minmax(0,1fr)!important;grid-template-areas:"date copy" "date status";align-items:start!important;gap:7px 12px!important;width:100%;min-height:0!important;padding:13px!important}
+  .agendaDate{grid-area:date;padding-right:10px;border-right:1px solid var(--media-line);font-size:12px;line-height:1.45}
+  .agendaItem .typeBar{display:none!important;width:0!important;height:0!important;min-height:0!important}
+  .agendaCopy{grid-area:copy;min-width:0}.agendaCopy strong{font-size:14px;line-height:1.35;white-space:normal;overflow-wrap:anywhere}.agendaCopy span{font-size:12px;line-height:1.4;white-space:normal}
+  .agendaPreview .statusPill{grid-area:status!important;grid-column:auto!important;justify-self:start}
+  .agendaEdit{justify-content:flex-start!important;min-height:42px;padding:10px 13px!important;border-top:1px solid var(--media-line)!important;border-left:0!important;font-size:13px}
+}
+@media(max-width:390px){.calendarWeekdays span{font-size:9px}.calendarDay{min-height:62px!important;padding:3px!important}.dayNumber{font-size:12px}.calendarDayCount{min-width:16px;height:16px;padding:0 4px;font-size:9px;line-height:16px}}
