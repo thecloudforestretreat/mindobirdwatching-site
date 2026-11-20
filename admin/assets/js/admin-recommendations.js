@@ -325,7 +325,7 @@
       website: "https://www.airbnb.com/rooms/1617783728300750224?source_impression_id=p3_1795134845_P3LFZMLRt3YicffH",
       instagram: "https://www.instagram.com/mindoloft/",
       mapUrl: "https://maps.app.goo.gl/bo7MMTx36xdZZgoa6",
-      address: "Cloud forest property approximately 3 km from Mindo",
+      address: "Cloud forest property approximately 3 km from Mindo town, in a key birdwatching and nature-tourism zone",
       image: "https://mindobirdwatching.com/recommendations/mindoloft/mindoloft_exterior_01.jpg",
       imageAlt: "Mindoloft private cloud forest loft near Mindo",
       recommendation: "yes",
@@ -356,8 +356,8 @@
         "Minimum stay is 1 night. Check-in 15:00; checkout 11:00. Children 5+ only. No pets, smoking, or events. Quiet hours 22:00–08:00. Entry includes stairs."
       ],
       sourceNotes: "Use the referral identifier supplied by Carolina for the first booking, but confirm the spelling correction from ‘Birdwatchig tours’ to ‘Birdwatching Tours.’",
-      guestSummary: "Mindoloft is a fully private 60 m² loft on a 2,000 m² cloud-forest property about 3 km from Mindo. It sleeps up to three guests and includes an equipped kitchen, vegetarian breakfast ingredients, outdoor jacuzzi, satellite internet, laundry, parking, and independent early access.",
-      note: "Commercial terms, operating policies, bilingual media authorization, and image package confirmed by Carolina Vélez Díaz on November 19, 2026."
+      guestSummary: "Mindoloft is a fully private 60 m² loft on a 2,000 m² cloud-forest property about 3 km from Mindo town, in one of the area's most important zones for birdwatching and nature tourism. It sleeps up to three guests and includes an equipped kitchen, vegetarian breakfast ingredients, outdoor jacuzzi, satellite internet, laundry, parking, and independent early access.",
+      note: "Commercial terms, operating policies, bilingual media authorization, and image package confirmed by Carolina Vélez Díaz on November 19, 2026. Owner clarification about the birdwatching zone and transport to nearby nature reserves recorded November 20, 2026."
     },
     {
       id: "reserva-roca-mia",
