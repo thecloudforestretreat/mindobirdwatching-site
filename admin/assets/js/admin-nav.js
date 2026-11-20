@@ -39,7 +39,7 @@
     if (isRestricted(page)) { link.setAttribute("aria-disabled","true"); link.title="Your account has Birding access only."; return link; }
     link.href=page.href; link.target="_blank"; link.rel="noopener noreferrer"; return link;
   }
-  function ensureMobileStyles(){if(document.getElementById("adminMobileStyles"))return;var link=document.createElement("link");link.id="adminMobileStyles";link.rel="stylesheet";link.href="/assets/css/admin-mobile-v2.css";document.head.appendChild(link)}
+  function ensureMobileStyles(){if(document.getElementById("adminMobileStyles"))return;var link=document.createElement("link");link.id="adminMobileStyles";link.rel="stylesheet";link.href="/assets/css/admin-mobile-v3.css";document.head.appendChild(link)}
   function render(host) {
     var activeId=currentId(host);
     var active=pages.find(function(page){return page.id===activeId;});
