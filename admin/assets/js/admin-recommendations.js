@@ -326,7 +326,7 @@
       instagram: "https://www.instagram.com/mindoloft/",
       mapUrl: "https://maps.app.goo.gl/bo7MMTx36xdZZgoa6",
       address: "Cloud forest property approximately 3 km from Mindo",
-      image: "/recommendations/mindoloft/mindoloft_exterior_01.jpg",
+      image: "https://mindobirdwatching.com/recommendations/mindoloft/mindoloft_exterior_01.jpg",
       imageAlt: "MINDOLOFT private cloud forest loft near Mindo",
       recommendation: "yes",
       followUp: "2027-10-01",
