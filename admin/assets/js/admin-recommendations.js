@@ -308,7 +308,7 @@
       id: "mindoloft",
       category: "accommodations",
       type: "Private loft",
-      name: "MINDOLOFT",
+      name: "Mindoloft",
       area: "Mindo",
       status: "current",
       statusText: "2026–2027 terms confirmed",
@@ -322,12 +322,12 @@
       contact: "Carolina Vélez Díaz",
       phone: "+593 96 723 6376",
       email: "reservas@mindoloft.com",
-      website: "https://www.instagram.com/mindoloft/",
+      website: "https://www.airbnb.com/rooms/1617783728300750224?source_impression_id=p3_1795134845_P3LFZMLRt3YicffH",
       instagram: "https://www.instagram.com/mindoloft/",
       mapUrl: "https://maps.app.goo.gl/bo7MMTx36xdZZgoa6",
       address: "Cloud forest property approximately 3 km from Mindo",
       image: "https://mindobirdwatching.com/recommendations/mindoloft/mindoloft_exterior_01.jpg",
-      imageAlt: "MINDOLOFT private cloud forest loft near Mindo",
+      imageAlt: "Mindoloft private cloud forest loft near Mindo",
       recommendation: "yes",
       followUp: "2027-10-01",
       followUpDue: false,
@@ -356,7 +356,7 @@
         "Minimum stay is 1 night. Check-in 15:00; checkout 11:00. Children 5+ only. No pets, smoking, or events. Quiet hours 22:00–08:00. Entry includes stairs."
       ],
       sourceNotes: "Use the referral identifier supplied by Carolina for the first booking, but confirm the spelling correction from ‘Birdwatchig tours’ to ‘Birdwatching Tours.’",
-      guestSummary: "MINDOLOFT is a fully private 60 m² loft on a 2,000 m² cloud-forest property about 3 km from Mindo. It sleeps up to three guests and includes an equipped kitchen, vegetarian breakfast ingredients, outdoor jacuzzi, satellite internet, laundry, parking, and independent early access.",
+      guestSummary: "Mindoloft is a fully private 60 m² loft on a 2,000 m² cloud-forest property about 3 km from Mindo. It sleeps up to three guests and includes an equipped kitchen, vegetarian breakfast ingredients, outdoor jacuzzi, satellite internet, laundry, parking, and independent early access.",
       note: "Commercial terms, operating policies, bilingual media authorization, and image package confirmed by Carolina Vélez Díaz on November 19, 2026."
     },
     {
