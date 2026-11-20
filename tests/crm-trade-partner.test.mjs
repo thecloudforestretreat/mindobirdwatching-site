@@ -23,6 +23,16 @@ test("trade partners have a separate view, action, lifecycle, and profile fields
   assert.match(html, /active_partner/);
 });
 
+test("collaborations are a separate non-guest queue with explicit commercial terms", () => {
+  assert.match(html, /option value="collaborations">Collaborations/);
+  assert.match(html, /id="moveCollaborationBtn"/);
+  assert.match(html, /id="statCollaborations"/);
+  assert.match(html, /function isCollaborationRecord\(record\)/);
+  assert.match(html, /vf==="collaborations"\)arr=arr\.filter\(isCollaborationRecord\)/);
+  assert.match(html, /complimentary">Complimentary \/ No Charge/);
+  assert.match(html, /function commercialTermsLabel\(record\)/);
+});
+
 test("guest reporting excludes trade partners while preserving an all-contacts view", () => {
   assert.match(html, /vf==="tradePartners"\)arr=arr\.filter\(isTradePartnerRecord\)/);
   assert.match(html, /vf!=="allContacts"\)arr=arr\.filter\(isGuestRecord\)/);
@@ -35,7 +45,9 @@ test("trade partner fields are persisted by the CRM router", () => {
   for (const header of ["record_type", "organization_name", "contact_role", "relationship_stage", "partner_type", "company_website", "pricing_model", "rate_sheet_version", "rates_sent_at", "referring_partner_id"]) {
     assert.match(router, new RegExp(`"${header}"`));
   }
-  assert.match(router, /relationship_stage: \{ values: \["new", "contacted", "rates_requested", "rates_sent", "negotiating", "active_partner", "inactive"\]/);
+  assert.match(router, /relationship_stage: \{ values: \["new", "contacted", "rates_requested", "rates_sent", "negotiating", "active_partner", "completed", "inactive"\]/);
+  assert.match(router, /pricing_model: \{ values: \["retail", "net_rate", "commission", "custom", "complimentary"\]/);
+  assert.match(router, /payment_status: \{ values: \["unpaid", "deposit_pending", "deposit_paid", "partial", "paid", "no_payment_required", "refunded"\]/);
 });
 
 test("all CRM inquiry writes map the trade partner fields", () => {
@@ -52,6 +64,13 @@ test("all CRM inquiry writes map the trade partner fields", () => {
 
 test("trade partner conversion defaults to custom commercial terms", () => {
   assert.match(html, /function moveToTradePartner\(\)[\s\S]*?pricingModelInput\.value="custom"/);
+});
+
+test("collaboration conversion preserves paid versus complimentary semantics", () => {
+  assert.match(html, /function moveToCollaboration\(\)[\s\S]*?recordTypeInput\.value="collaboration"/);
+  assert.match(html, /paymentStatusInput\.value\)==="no_payment_required"\?"complimentary":"custom"/);
+  assert.match(html, /relationshipStageInput\.value="completed"/);
+  assert.match(html, /record--collaboration/);
 });
 
 test("inline CRM scripts still parse", () => {
