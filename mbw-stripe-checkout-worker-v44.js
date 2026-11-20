@@ -2966,6 +2966,91 @@ async function syncCrmInvoiceLedger(env, payload) {
   return { ok: !!bookingResult.ok && !!paymentResult.ok, booking: bookingResult, payment: paymentResult };
 }
 
+async function findExactStripeInvoice(env, invoiceRef) {
+  const ref = String(invoiceRef || "").trim();
+  if (/^in_[A-Za-z0-9]+$/.test(ref)) {
+    return await stripeRequest(env, false, "GET", `/v1/invoices/${encodeURIComponent(ref)}?expand[]=customer&expand[]=payments&expand[]=payments.data.payment.payment_intent`, null);
+  }
+  if (!/^MBW-[0-9]{1,12}$/.test(ref)) throw new Error("Invalid invoice reference");
+  const result = await stripeRequest(env, false, "GET", `/v1/invoices/search?limit=10&query=${encodeURIComponent(`number:'${ref}'`)}`, null);
+  const matches = (result.data || []).filter((invoice) => String(invoice.number || "") === ref);
+  if (matches.length !== 1) throw new Error(matches.length ? "Invoice reference is not unique" : "Invoice not found");
+  return await stripeRequest(env, false, "GET", `/v1/invoices/${encodeURIComponent(matches[0].id)}?expand[]=customer&expand[]=payments&expand[]=payments.data.payment.payment_intent`, null);
+}
+
+async function attachPaidStripeInvoiceToCrm(env, inquiryId, invoiceRef) {
+  const crm = await lookupCrmInquiry(env, inquiryId);
+  if (!crm || !crm.guest_id) throw new Error("CRM inquiry identity unavailable");
+  const invoice = await findExactStripeInvoice(env, invoiceRef);
+  if (invoice.livemode === false) throw new Error("Sandbox invoice cannot update live CRM");
+  if (invoice.status !== "paid" || Number(invoice.amount_paid || 0) <= 0 || Number(invoice.amount_remaining || 0) > 0) {
+    throw new Error("Only a fully paid Stripe invoice can be attached");
+  }
+  const invoiceMetadata = invoice.metadata || {};
+  const lines = invoice.lines && Array.isArray(invoice.lines.data) ? invoice.lines.data : [];
+  const serviceLines = lines.filter((line) => isAccountingServiceLine(line, false));
+  const metadata = serviceLines.map((line) => accountingLineMetadata(line, invoiceMetadata, false));
+  const identityRows = [invoiceMetadata, ...metadata];
+  const inquiryIds = [...new Set(identityRows.map((row) => String(row.inquiry_id || "").trim()).filter(Boolean))];
+  const guestIds = [...new Set(identityRows.map((row) => String(row.guest_id || "").trim()).filter(Boolean))];
+  if (!inquiryIds.includes(inquiryId) || !guestIds.includes(String(crm.guest_id))) throw new Error("Invoice belongs to a different CRM booking");
+  if (inquiryIds.some((id) => id !== inquiryId) || guestIds.some((id) => id !== String(crm.guest_id))) throw new Error("Invoice identity is inconsistent");
+  const first = metadata[0] || invoiceMetadata;
+  const paidAtSeconds = Number(invoice.status_transitions && invoice.status_transitions.paid_at || invoice.created || 0);
+  const paidTotals = invoiceDepositTotals(invoice);
+  const total = Number(invoice.total == null ? invoice.amount_paid : invoice.total) / 100;
+  const ledgerPayload = {
+    inquiry_id: inquiryId,
+    guest_id: String(crm.guest_id),
+    booking_id: String(first.booking_id || invoiceMetadata.booking_id || ""),
+    invoice_id: invoice.id,
+    invoice_no: invoice.number || "",
+    transaction_id: getInvoicePaymentIntentId(invoice, null),
+    total_booking_price: total,
+    deposit_amount_paid: paidTotals.deposit / 100,
+    additional_amount_paid: paidTotals.additional / 100,
+    total_amount_paid: paidTotals.total / 100,
+    balance_remaining: Number(invoice.amount_remaining || 0) / 100,
+    payment_date: paidAtSeconds ? formatDateNY(new Date(paidAtSeconds * 1000)) : "",
+    tour_date_start: first.tour_date || crm.requested_date_start || crm.requested_date || "",
+    tour_date_end: first.tour_date || crm.requested_date_end || crm.requested_date_start || crm.requested_date || "",
+    party_size: first.number_of_people || crm.guest_count || "",
+    service_type: serviceLines.length > 1 ? "Multi Item" : first.service_type || crm.service_type || "",
+    product_selected: metadata.map((row) => String(row.tour_code || "")).filter(Boolean).join(" | ") || first.tour_code || crm.product_selected || "",
+    pickup_location: first.pickup_location_label || first.pickup_address_or_hotel || crm.pickup_location || "",
+    currency: String(invoice.currency || "usd").toUpperCase(),
+    notes: "Historical paid Stripe invoice verified by exact invoice reference and attached to the CRM ledger.",
+  };
+  // Historical attachment must not rewrite the current booking summary. Only
+  // add the missing, invoice-keyed payment row; the booking already exists and
+  // may now describe newer/additional services.
+  const paid = Number(ledgerPayload.total_amount_paid || 0);
+  const remaining = Math.max(0, Number(ledgerPayload.balance_remaining || 0));
+  const payment = {
+    payment_id: `PAY-${invoice.id}`,
+    booking_id: String(ledgerPayload.booking_id || "").trim() || `B-${inquiryId.replace(/^INQ-/, "")}`,
+    inquiry_id: inquiryId,
+    guest_id: String(crm.guest_id),
+    payment_status: remaining <= 0.005 && paid > 0 ? "paid" : paid > 0 ? "partial" : "unpaid",
+    payment_date: ledgerPayload.payment_date,
+    payment_method: "Stripe",
+    paid_to: "Mindo Bird Watching",
+    invoice_no: ledgerPayload.invoice_no,
+    invoice_id: invoice.id,
+    transaction_id: ledgerPayload.transaction_id,
+    total_booking_price: ledgerPayload.total_booking_price,
+    deposit_amount_paid: ledgerPayload.deposit_amount_paid,
+    additional_amount_paid: ledgerPayload.additional_amount_paid,
+    total_amount_paid: paid,
+    balance_remaining: remaining,
+    is_fully_paid: remaining <= 0.005 && paid > 0 ? "Yes" : "No",
+    notes: ledgerPayload.notes,
+  };
+  const result = await postCrmLedgerAction(env, "upsert_payment", "payment", payment);
+  if (!result.ok) throw new Error("CRM invoice attachment failed");
+  return { invoice_id: invoice.id, invoice_no: invoice.number || "", payment_status: "paid", total_amount_paid: paidTotals.total / 100 };
+}
+
 async function findAvailableDeposit(env, isTest, inquiryId) {
   const query = `metadata['inquiry_id']:'${inquiryId}' AND metadata['payment_purpose']:'tour_deposit' AND status:'succeeded'`;
   const result = await stripeRequest(
@@ -3927,10 +4012,14 @@ const worker = {
     if (path === "/api/invoices/reconcile" && request.method === "POST") {
       const privateReply = (body,status=200) => new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"private, no-store"}});
       if (!env.CF_SHARED_SECRET || request.headers.get("Authorization") !== "Bearer " + env.CF_SHARED_SECRET) return privateReply({ok:false,error:"Staff authentication required."},401);
-      let inquiryId;
-      try { inquiryId=validInternalId((await request.json()).inquiry_id,"INQ"); if(!inquiryId)throw Error(); }
+      let inquiryId,invoiceRef="";
+      try { const body=await request.json(); inquiryId=validInternalId(body.inquiry_id,"INQ"); invoiceRef=String(body.invoice_ref||"").trim(); if(!inquiryId||invoiceRef&&!/^(?:MBW-[0-9]{1,12}|in_[A-Za-z0-9]+)$/.test(invoiceRef))throw Error(); }
       catch { return privateReply({ok:false,error:"Select a saved inquiry."},400); }
       try {
+        if(invoiceRef){
+          const attached=await attachPaidStripeInvoiceToCrm(env,inquiryId,invoiceRef);
+          return privateReply({ok:true,inquiry_id:inquiryId,attached:true,...attached});
+        }
         const payments=await listCrmInvoicePayments(env,inquiryId);
         const rows=[...new Map(payments.filter(row=>/^in_[A-Za-z0-9]+$/.test(row.invoice_id || "")).map(row=>[row.invoice_id,row])).values()];
         if(rows.length>100)throw Error("Invoice history exceeds review limit");
@@ -3942,7 +4031,7 @@ const worker = {
           if(result.updated)updates.push(result);
         }
         return privateReply({ok:true,inquiry_id:inquiryId,checked:rows.length,updates});
-      } catch { return privateReply({ok:false,error:"Invoice reconciliation incomplete. Retry safely; no invoice was created or sent."},503); }
+      } catch(error) { const message=String(error&&error.message||""); const safe=/^(Invoice not found|Invoice reference is not unique|Only a fully paid Stripe invoice can be attached|Invoice belongs to a different CRM booking|Invoice identity is inconsistent)$/.test(message)?message:"Invoice reconciliation incomplete. Retry safely; no invoice was created or sent."; return privateReply({ok:false,error:safe},safe===message?400:503); }
     }
 
     if (path === "/api/deposits/available" && request.method === "GET") {
