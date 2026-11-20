@@ -19,7 +19,7 @@
     { id:"accounting", label:"Accounting", href:hub+"accounting/", group:"Finance & Control" },
     { id:"marketing", label:"Marketing", href:hub+"marketing/", group:"Growth & Content" },
     { id:"media", label:"Media", href:hub+"media/", group:"Growth & Content" },
-    { id:"portfolio", label:"Website Growth", href:hub+"portfolio/", group:"Growth & Content" },
+    { id:"portfolio", label:"Website Growth", href:hub+"portfolio/index.html#overview", group:"Growth & Content", sameTab:true },
     { id:"maps", label:"Markets & Origins", href:hub+"analytics/maps/", group:"Growth & Content" },
     { id:"reports", label:"Reports", href:hub+"reports/", group:"Growth & Content" }
   ];
@@ -37,7 +37,9 @@
     link.className=className||"adminGlobalNav__link";
     link.textContent=page.label;
     if (isRestricted(page)) { link.setAttribute("aria-disabled","true"); link.title="Your account has Birding access only."; return link; }
-    link.href=page.href; link.target="_blank"; link.rel="noopener noreferrer"; return link;
+    link.href=page.href;
+    if (!page.sameTab) { link.target="_blank"; link.rel="noopener noreferrer"; }
+    return link;
   }
   function ensureMobileStyles(){if(document.getElementById("adminMobileStyles"))return;var link=document.createElement("link");link.id="adminMobileStyles";link.rel="stylesheet";link.href="/assets/css/admin-mobile-v3.css";document.head.appendChild(link)}
   function render(host) {
