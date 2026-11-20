@@ -30,7 +30,12 @@ function harness() {
   };
   const els = {
     additionalInvoiceMode: { checked: false },
-    additionalInvoicePanel: { hidden: true },
+    additionalInvoicePanel: {
+      hidden: true,
+      dataset: {},
+      setAttribute(name, value) { this[name] = value; },
+    },
+    additionalInvoiceState: { textContent: "" },
     priorInvoiceDetails: { textContent: "" },
     applyDeposit: { checked: true, disabled: false },
   };
@@ -47,6 +52,7 @@ function harness() {
       return "";
     }
     ${extractFunction("applyPriorInvoiceContext")}
+    ${extractFunction("syncAdditionalInvoiceVisual")}
     ${extractFunction("rawAcceptedQuoteMismatch")}
     ${extractFunction("acceptedQuoteMismatch")}
     ${extractFunction("additionalInvoiceMetadata")}
@@ -55,7 +61,7 @@ function harness() {
     ${extractFunction("isPreviouslyBookedInboundItem")}
     ${extractFunction("enableVerifiedAdditionalInvoice")}
     ${extractFunction("additionalInvoiceHasPriorBookedItems")}
-    globalThis.qa = { applyPriorInvoiceContext, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, isPreviouslyBookedInboundItem, enableVerifiedAdditionalInvoice, additionalInvoiceHasPriorBookedItems };
+    globalThis.qa = { applyPriorInvoiceContext, syncAdditionalInvoiceVisual, rawAcceptedQuoteMismatch, acceptedQuoteMismatch, additionalInvoiceMetadata, isPreviouslyBookedImportedItem, isPreviouslyBookedInboundItem, enableVerifiedAdditionalInvoice, additionalInvoiceHasPriorBookedItems };
   `, context);
   return context;
 }
@@ -65,6 +71,8 @@ test("paid CRM invoices are eligible for a separate additional invoice", () => {
   context.qa.applyPriorInvoiceContext({ payment_status: "paid", invoice_no: "MBW-0143" });
   assert.equal(context.state.additionalInvoiceEligible, true);
   assert.equal(context.els.additionalInvoicePanel.hidden, false);
+  assert.equal(context.els.additionalInvoicePanel.dataset.active, "false");
+  assert.equal(context.els.additionalInvoiceState.textContent, "Off");
   assert.equal(context.qa.rawAcceptedQuoteMismatch(), true);
   assert.equal(context.qa.acceptedQuoteMismatch(), true);
 
@@ -85,6 +93,8 @@ test("verified paid bookings auto-enable only when old items were excluded and n
   assert.equal(context.qa.enableVerifiedAdditionalInvoice([{ status: "booked" }], [{ status: "quoted" }]), true);
   assert.equal(context.state.additionalInvoiceMode, true);
   assert.equal(context.els.additionalInvoiceMode.checked, true);
+  assert.equal(context.els.additionalInvoicePanel.dataset.active, "true");
+  assert.equal(context.els.additionalInvoiceState.textContent, "On · New services only");
   assert.equal(context.els.applyDeposit.checked, false);
   assert.equal(context.els.applyDeposit.disabled, true);
   assert.equal(context.qa.acceptedQuoteMismatch(), false);
@@ -143,4 +153,6 @@ test("checkout scripts parse with the additional-invoice control", () => {
   assert.match(html, /Create a separate invoice for approved additional services/);
   assert.match(html, /Prior paid invoice/);
   assert.match(html, /excluded automatically/);
+  assert.match(html, /additional-invoice-panel\[data-active="true"\]/);
+  assert.match(html, /On · New services only/);
 });

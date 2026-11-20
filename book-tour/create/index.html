@@ -47,6 +47,75 @@
     min-width: 0;
   }
 
+  .additional-invoice-panel {
+    margin: 4px 0 18px;
+    padding: 14px;
+    background: rgba(255,255,255,.72);
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+
+  .additional-invoice-panel[data-active="true"] {
+    border-color: rgba(13,89,37,.58);
+    background: rgba(224,244,228,.9);
+    box-shadow: 0 0 0 3px rgba(13,89,37,.1);
+  }
+
+  .additional-invoice-control {
+    display: grid;
+    grid-template-columns: 24px minmax(0,1fr);
+    align-items: start;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid rgba(7,25,35,.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,.78);
+    color: var(--ink);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .additional-invoice-control:hover {
+    border-color: rgba(13,89,37,.38);
+  }
+
+  .payCreatePage #additionalInvoiceMode {
+    appearance: auto;
+    -webkit-appearance: checkbox;
+    width: 22px;
+    height: 22px;
+    margin: 1px 0 0;
+    padding: 0;
+    accent-color: #0d5925;
+    cursor: pointer;
+  }
+
+  .additional-invoice-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 6px 9px;
+    border: 1px solid rgba(7,25,35,.14);
+    border-radius: 999px;
+    background: #eef1ed;
+    color: #46524b;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.15;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .additional-invoice-panel[data-active="true"] .additional-invoice-state {
+    border-color: #0d5925;
+    background: #0d5925;
+    color: #fff;
+  }
+
   .payHero h1 {
     margin: 0 0 8px;
     font-size: clamp(32px, 4vw, 32px);
@@ -627,12 +696,13 @@
           <button id="depositLookupBtn" class="action-btn secondary" type="button" style="margin-top:12px;" disabled>Check for deposit</button>
         </div>
 
-        <div class="payPanel" id="additionalInvoicePanel" style="margin:4px 0 18px;padding:14px;background:rgba(255,255,255,.72);" hidden>
+        <div class="payPanel additional-invoice-panel" id="additionalInvoicePanel" data-active="false" hidden>
           <div class="section-title" style="margin-top:0;">Additional invoice</div>
           <div id="priorInvoiceDetails" class="hint"></div>
-          <label style="display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-weight:800;">
-            <input id="additionalInvoiceMode" type="checkbox" style="width:auto;margin-top:3px;" />
-            Create a separate invoice for approved additional services
+          <label class="additional-invoice-control" for="additionalInvoiceMode">
+            <input id="additionalInvoiceMode" type="checkbox" />
+            <span>Create a separate invoice for approved additional services</span>
+            <span id="additionalInvoiceState" class="additional-invoice-state" aria-live="polite">Off</span>
           </label>
           <div class="hint" style="margin-top:8px;">
             Use this only when the prior invoice has already been paid. Previously booked items are excluded automatically, and this invoice contains only the new items listed below.
@@ -905,6 +975,7 @@
     depositLookupBtn: document.getElementById("depositLookupBtn"),
     additionalInvoicePanel: document.getElementById("additionalInvoicePanel"),
     additionalInvoiceMode: document.getElementById("additionalInvoiceMode"),
+    additionalInvoiceState: document.getElementById("additionalInvoiceState"),
     priorInvoiceDetails: document.getElementById("priorInvoiceDetails"),
     defaultLanguage: document.getElementById("defaultLanguage"),
     pickupLocationLabel: document.getElementById("pickupLocationLabel"),
@@ -1516,6 +1587,19 @@ function createItem(initial = {}) {
     els.priorInvoiceDetails.textContent = state.additionalInvoiceEligible
       ? `Prior invoice ${priorInvoiceNo} is recorded as paid. Confirm below only if this new invoice is for additional approved services.`
       : "";
+    syncAdditionalInvoiceVisual();
+  }
+
+  function syncAdditionalInvoiceVisual() {
+    const isActive = Boolean(state.additionalInvoiceEligible && state.additionalInvoiceMode && els.additionalInvoiceMode.checked);
+    els.additionalInvoicePanel.dataset.active = isActive ? "true" : "false";
+    els.additionalInvoiceState.textContent = isActive ? "On · New services only" : "Off";
+    els.additionalInvoicePanel.setAttribute(
+      "aria-label",
+      isActive
+        ? "Additional invoice mode is on. This invoice contains new services only."
+        : "Additional invoice mode is off."
+    );
   }
 
   function rawAcceptedQuoteMismatch() {
@@ -1577,6 +1661,7 @@ function createItem(initial = {}) {
     } else {
       els.applyDeposit.disabled = false;
     }
+    syncAdditionalInvoiceVisual();
     return safeToEnable;
   }
 
@@ -2688,6 +2773,7 @@ function createItem(initial = {}) {
       els.applyDeposit.disabled = state.deposit.can_apply === false;
       els.applyDeposit.checked = state.deposit.can_apply !== false;
     }
+    syncAdditionalInvoiceVisual();
     clearGeneratedResult();
     renderSummary();
     updateModeUI();
