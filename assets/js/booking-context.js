@@ -48,6 +48,7 @@
   }
 
   var sourcePairs = [
+    ["/birding/andean-cock-of-the-rock/", "/es/birding/gallo-de-la-pena-andino/"],
     ["/quito-to-mindo-day-trip/", "/es/viaje-de-un-dia-quito-mindo/"],
     ["/quito-to-mindo-cloud-forest-day-trip/", "/es/excursion-quito-mindo-bosque-nublado/"],
     ["/activities/night-walk/", "/es/actividades/caminata-nocturna/"],
