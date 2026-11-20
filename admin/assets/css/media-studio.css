@@ -477,3 +477,43 @@
   .studioView{padding:10px}
   .filterButton{font-size:12px}
 }
+
+/* Mobile clarity pass: meaningful media symbols, durable cards, and semantic statuses. */
+.statusPill[data-status="published"]{border:1px solid #a9c8e1;background:#eaf2fb;color:#245b86}
+.statusPill[data-status="upcoming"],.statusPill[data-status="scheduled"]{border:1px solid #a8c99e;background:#e8f4e2;color:#0d5925}
+.queueItem,.agendaItem{min-width:0}
+.queueInfo,.queueTitleLine,.queuePlatforms,.queueTags{min-width:0;max-width:100%}
+.queueTitleLine h3,.queuePlatforms,.queueTags button{overflow-wrap:anywhere;word-break:break-word}
+
+@media(max-width:700px){
+  .calendarEvents{align-items:center;gap:3px;margin-top:5px}
+  .calendarEventShell{display:block!important;width:18px!important;height:18px!important}
+  .calendarEventShell .calendarEvent{display:grid!important;place-items:center;width:18px!important;height:18px!important;min-height:18px!important;padding:0!important;border:1px solid rgba(7,25,35,.12)!important;border-radius:5px!important;background:#eef6e9!important;box-shadow:none!important;filter:none!important;opacity:1!important}
+  .calendarEventShell .calendarEvent[data-type="reel"]{background:#f0eafb!important}
+  .calendarEventShell .calendarEvent[data-status="published"]{border-color:#8db6d2!important;background:#eaf2fb!important}
+  .calendarEventShell .calendarEvent[data-status="review"]{border-color:#c69224!important;box-shadow:inset 0 -2px 0 #c69224!important}
+  .calendarEventShell .calendarEvent[data-status="failed"]{border-color:#b9382d!important;box-shadow:inset 0 -2px 0 #b9382d!important}
+  .calendarEventIcon,.calendarEvent[data-type="reel"] .calendarEventIcon{display:grid!important;place-items:center;width:16px!important;height:16px!important;border-radius:0!important;background:transparent!important;color:inherit!important;font-size:11px!important;line-height:1!important}
+  .calendarEventCopy,.calendarStatusMark,.calendarEventEdit{display:none!important}
+  .calendarEventShell:nth-child(n+4){display:none!important}
+
+  .agendaPreview{grid-template-columns:72px minmax(0,1fr)!important;gap:8px 12px!important;padding:0 13px 12px 0!important}
+  .agendaDate{grid-area:date;align-self:stretch;display:flex;min-height:100%;padding:12px 8px!important;border:0!important;border-radius:11px 0 0 0;background:#f1f7ed;flex-direction:column;align-items:center;justify-content:flex-start;color:var(--media-ink);font-style:normal;text-align:center;text-transform:none}
+  .agendaDate small,.agendaDate strong,.agendaDate span,.agendaDate em{display:block;font-style:normal;line-height:1.15}
+  .agendaDate small{color:var(--media-green);font-size:9px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+  .agendaDate strong{margin-top:3px;font-family:Georgia,"Times New Roman",serif;font-size:22px}
+  .agendaDate span{margin-top:10px;font-size:10px;font-weight:900;white-space:nowrap}
+  .agendaDate em{margin-top:2px;color:var(--media-muted);font-size:9px;font-weight:850}
+  .agendaCopy{padding-top:12px}
+  .agendaPreview .statusPill{margin-top:1px}
+  .agendaEdit{min-height:44px}
+}
+
+@media(max-width:560px){
+  .queueItem{max-width:100%}
+  .queueInfo{overflow:hidden}
+  .queueTitleLine h3,.queuePlatforms{max-width:100%;white-space:normal}
+  .queueTags{display:flex;flex-wrap:wrap;width:100%}
+  .queueTags button{flex:0 1 auto;max-width:100%;min-width:0;white-space:normal;text-align:left}
+  .queueActions button,.queueActions a{min-width:0;max-width:100%;white-space:normal;line-height:1.25;overflow-wrap:anywhere}
+}
