@@ -39,6 +39,7 @@
     if (isRestricted(page)) { link.setAttribute("aria-disabled","true"); link.title="Your account has Birding access only."; return link; }
     link.href=page.href; link.target="_blank"; link.rel="noopener noreferrer"; return link;
   }
+  function ensureMobileStyles(){if(document.getElementById("adminMobileStyles"))return;var link=document.createElement("link");link.id="adminMobileStyles";link.rel="stylesheet";link.href="/assets/css/admin-mobile-v2.css";document.head.appendChild(link)}
   function render(host) {
     var activeId=currentId(host);
     var active=pages.find(function(page){return page.id===activeId;});
@@ -57,9 +58,9 @@
       var section=document.createElement("section"); var heading=document.createElement("strong"); heading.textContent=group; section.appendChild(heading);
       pages.filter(function(page){return page.group===group;}).forEach(function(page){section.appendChild(toolLink(page,"adminGlobalNav__menuLink"));}); menu.appendChild(section);
     });
-    more.appendChild(menu); links.appendChild(more); inner.appendChild(links); nav.appendChild(inner);
+    more.appendChild(menu);more.addEventListener("toggle",function(){document.body.classList.toggle("adminMenuOpen",more.open)});menu.addEventListener("click",function(e){if(e.target.closest("a"))more.open=false});links.appendChild(more); inner.appendChild(links); nav.appendChild(inner);
     host.replaceChildren(nav); host.dataset.adminNavReady="true";
   }
-  function init(){document.querySelectorAll("[data-admin-nav]").forEach(render);}
+  function init(){ensureMobileStyles();document.querySelectorAll("[data-admin-nav]").forEach(render);document.addEventListener("click",function(e){document.querySelectorAll(".adminGlobalNav__more[open]").forEach(function(menu){if(!menu.contains(e.target))menu.open=false})});document.addEventListener("keydown",function(e){if(e.key==="Escape")document.querySelectorAll(".adminGlobalNav__more[open]").forEach(function(menu){menu.open=false})})}
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else init();
 })();
