@@ -392,6 +392,45 @@
     } catch (error) { status.textContent = error.message; url.value = ""; }
     finally { uploadingRows.delete(item); item.querySelector('[data-reel-file]').disabled = false; item.querySelector('[data-remove-row]').disabled = false; url.readOnly = false; $("submitBatch").disabled = uploadingRows.size > 0; }
   }
+  async function uploadReplacementFile(file) {
+    var row=state.selected, content=$("reviewContent"), status=content.querySelector('[data-media-status]');
+    if(!file||!row)return;
+    if(!mediaCanBeReplaced(row)){status.textContent="This reel is locked because publishing has already started.";return;}
+    if(!/\.mp4$/i.test(file.name)||!file.size||file.size>1024*1024*1024){status.textContent="Choose an MP4 up to 1 GiB.";return;}
+    if(demoMode){status.textContent="Uploads are disabled in preview mode.";return;}
+    var fileInput=content.querySelector('[data-replacement-video-file]'),url=content.querySelector('[data-replacement-video-url]');
+    var controls=Array.from(content.querySelectorAll('button,input,textarea')).concat(Array.from($("reviewActions").querySelectorAll('button')));
+    var previous=controls.map(function(control){return control.disabled;});controls.forEach(function(control){control.disabled=true;});
+    state.replacementUploading=true;
+    async function send(action, body, extra) {
+      var response = await fetch('/api/admin/reel-uploads?action=' + action, { method: 'POST', headers: Object.assign({ 'content-type': action === 'chunk' ? 'application/octet-stream' : 'application/json' }, extra || {}), body: action === 'chunk' ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000) });
+      var data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Upload failed. No reel was submitted.');
+      return data;
+    }
+    try {
+      status.textContent="Starting replacement upload…";
+      var session = await send('start', { name: file.name, bytes: file.size });
+      for (var offset = 0; offset < file.size; offset += session.chunk_bytes) {
+        var chunk = await file.slice(offset, offset + session.chunk_bytes).arrayBuffer();
+        var hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', chunk))).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        var result;
+        for (var attempt = 0; attempt < 2; attempt++) {
+          try { result = await send('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
+          catch (error) { if (attempt) throw error; }
+        }
+        status.textContent = "Uploading " + file.name + " · " + Math.floor(result.received / file.size * 100) + "%";
+      }
+      status.textContent = "Upload complete. Checking video format, checksum and backup…";
+      var saved = await send('finish', { upload_id: session.upload_id });
+      if(!saved.backup_verified)throw new Error("Upload saved, but replacement requires a verified independent backup. Connect the backup drive and retry.");
+      if(state.selected!==row)throw new Error("Upload saved. Reopen this reel to attach the replacement.");
+      url.value=saved.url;
+      status.textContent=file.name+" ready · "+saved.width+" × "+saved.height+" · "+saved.duration.toFixed(1)+" seconds. Backup verified. Preview it, then click Replace video to save.";
+      var preview=content.querySelector('.reviewVideo');if(preview){preview.src=saved.url;preview.load();}
+    }catch(error){status.textContent=error.message;}
+    finally{state.replacementUploading=false;controls.forEach(function(control,index){control.disabled=previous[index];});fileInput.value="";}
+  }
   function setBatchStatus(message, tone) { $("batchStatus").textContent = message; $("batchStatus").dataset.tone = tone || ""; }
   function selectedDefaults() { var result = {}; document.querySelectorAll('input[name="platform"]').forEach(function (input) { result[input.value] = input.checked; }); return result; }
   function batchPayload() {
@@ -490,8 +529,9 @@
   function mediaEditor(row) {
     if (!mediaCanBeReplaced(row)) return '<section class="mediaEditor isLocked"><div class="mediaEditorHeader"><strong>Video source</strong><span>Locked after publishing begins</span></div><p>The media URL cannot be replaced because this reel has a platform post or an unresolved publishing claim.</p></section>';
     return '<section class="mediaEditor"><div class="mediaEditorHeader"><strong>Replace video only</strong><span>Copy stays unchanged</span></div>' +
-      '<label><span>Video delivery URL</span><input type="url" data-replacement-video-url value="' + esc(row.video_url) + '" placeholder="https://n8n.mindobirdwatching.com/media-delivery/…/original.mp4" /></label>' +
-      '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
+      '<label><span>Upload replacement video</span><input type="file" accept="video/mp4,.mp4" data-replacement-video-file /></label><small>Choose an MP4 up to 1 GiB. Uploading prepares a preview; Replace video saves it to this reel.</small>' +
+      '<label><span>Or paste a video delivery URL</span><input type="url" data-replacement-video-url value="' + esc(row.video_url) + '" placeholder="https://n8n.mindobirdwatching.com/media-delivery/…/original.mp4" /></label>' +
+      '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title and schedule stay unchanged. The replacement must be reviewed before publishing.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
       '<p class="mediaEditorStatus" data-media-status role="status" aria-live="polite"></p></section>';
   }
   function openReview(id) {
@@ -572,7 +612,7 @@
     return true;
   }
   async function reviewAction(action) {
-    if (!state.selected) return;
+    if (!state.selected || state.replacementUploading) return;
     if (action === "replace-media") {
       var mediaInput = $("reviewContent").querySelector("[data-replacement-video-url]");
       var mediaStatus = $("reviewContent").querySelector("[data-media-status]");
@@ -589,7 +629,7 @@
         state.selected.video_url = replacementUrl;
         var preview = $("reviewContent").querySelector(".reviewVideo");
         if (preview) { preview.src = replacementUrl; preview.load(); }
-        if (mediaStatus) mediaStatus.textContent = "Video replaced. Copy, hashtags, schedule, and approval were preserved.";
+        if (mediaStatus) mediaStatus.textContent = "Video replaced. Copy, hashtags and schedule were preserved. Review the new video and approve when ready.";
         if (!demoMode) await loadRows();
       } catch (error) {
         if (mediaStatus) mediaStatus.textContent = error.message;
@@ -640,6 +680,7 @@
     $("searchInput").addEventListener("input", function (event) { state.query = clean(event.target.value); renderCards(); });
     document.querySelectorAll(".statusTab").forEach(function (button) { button.addEventListener("click", function () { state.activeStatus = button.dataset.status; syncTabs(); renderCards(); }); });
     $("reelsGrid").addEventListener("click", function (event) { var button = event.target.closest("[data-review-id]"); if (button) openReview(button.dataset.reviewId); });
+    $("reviewContent").addEventListener("change", function(event){if(event.target.matches("[data-replacement-video-file]")) uploadReplacementFile(event.target.files[0]);});
     $("reviewContent").addEventListener("input", function (event) { if (event.target.matches('[data-review-field="instagram_caption_final"]')) updateCaptionCount(); });
     $("reviewContent").addEventListener("click", async function (event) {
       var action = event.target.closest("[data-action]");
