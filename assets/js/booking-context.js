@@ -17,6 +17,29 @@
   var activityWrap = form.querySelector('[data-activity-choice-wrap]');
   var primary = Array.prototype.slice.call(form.querySelectorAll('[name="preferred_tour_type"]'));
   var notes = Array.prototype.slice.call(form.querySelectorAll("[data-booking-context]"));
+  var requestedKey = params.get("experience");
+  var namedTours = {
+    jewels: { en: "Jewels of the Morning Forest", es: "Joyas del bosque matutino", category: "Half-Day Tour", paths: ["/tours/jewels-morning-forest-birding/", "/es/tours/joyas-del-bosque-matutino/"] },
+    dawn: { en: "Cock-of-the-Rock Dawn Tour", es: "Gallo de la peña al amanecer", category: "Half-Day Tour", paths: ["/tours/andean-cock-of-the-rock-dawn/", "/es/tours/gallo-de-la-pena-andino-al-amanecer/"] },
+    quest: { en: "Quest for Five Toucans", es: "Búsqueda de cinco tucanes", category: "Full-Day Tour", paths: ["/tours/quest-five-toucans-guide/", "/es/tours/busqueda-cinco-tucanes-y-gallo-de-la-pena/"] }
+  };
+  var namedTour = Object.prototype.hasOwnProperty.call(namedTours, requestedKey) ? namedTours[requestedKey] : null;
+  // Offer the incoming named tour alongside the existing categories on booking forms.
+  if (namedTour && form.getAttribute("action") === "/api/book-tour" && params.get("itinerary") !== "1") {
+    var categoryField = primary.find(function (field) { return field.type === "radio" && field.value === namedTour.category; });
+    if (categoryField) {
+      var categoryLabel = categoryField.closest("label");
+      var tourLabel = categoryLabel.cloneNode(true);
+      var tourField = tourLabel.querySelector("input");
+      tourField.value = namedTour.en;
+      tourField.required = false;
+      tourLabel.querySelector("strong").textContent = document.documentElement.lang === "es" ? namedTour.es : namedTour.en;
+      categoryLabel.parentNode.prepend(tourLabel);
+      primary.unshift(tourField);
+      experiences[requestedKey] = [namedTour.en];
+    }
+  }
+
 
   function selectedExperience() {
     var selected = primary.find(function (field) { return field.tagName === "SELECT" || field.checked; });
@@ -32,6 +55,7 @@
     ["/book-tour/", "/es/reservar-tour/"],
     ["/contact/", "/es/contacto/"]
   ];
+  Object.keys(namedTours).forEach(function (key) { sourcePairs.push(namedTours[key].paths); });
   catalog.forEach(function (item) { sourcePairs.push([item.path, item.espath]); });
   var source = params.get("source_page") || "";
   var validSource = /^\/(?:[a-z0-9-]+\/)*$/i.test(source) && source.length <= 512;
@@ -122,7 +146,6 @@
 
   // Only supported experience names and internal paths may initialize the form.
   // Guests can change every preselected choice before submitting.
-  var requestedKey = params.get("experience");
   var requested = Object.prototype.hasOwnProperty.call(experiences, requestedKey) ? experiences[requestedKey] : null;
   if (requested && params.get("itinerary") !== "1") {
     primary.forEach(function (field) {

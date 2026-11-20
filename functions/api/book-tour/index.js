@@ -91,6 +91,9 @@ export async function onRequestPost({ request, env }) {
       const pickup = String(data.get("pickup_location") || "").trim();
       const primaryKey = rawPrimary.toLowerCase();
       const primaryMap = {
+        "jewels of the morning forest": { interest:"Birdwatching", service:"Birdwatching", tour:"Jewels of the Morning Forest", product:"", duration:"Half Day" },
+        "cock-of-the-rock dawn tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Cock-of-the-Rock Dawn Tour", product:"", duration:"Half Day" },
+        "quest for five toucans": { interest:"Birdwatching", service:"Birdwatching", tour:"Quest for Five Toucans", product:"", duration:"Full Day" },
         "activity": { interest:"Activity", service:"Activity", tour:"Activity", product:"", duration:"Flexible" },
         "half-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Half-Day Birdwatching", product:"", duration:"Half Day" },
         "full-day tour": { interest:"Birdwatching", service:"Birdwatching", tour:"Full-Day Birdwatching", product:"", duration:"Full Day" },
