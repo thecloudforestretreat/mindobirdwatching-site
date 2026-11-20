@@ -119,7 +119,10 @@ const CRM_HEADERS = {
     "last_touch_referrer", "last_touch_date",
     "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term",
     "gclid", "gbraid", "wbraid", "fbclid",
-    "meta_campaign_id", "meta_adset_id", "meta_ad_id"
+    "meta_campaign_id", "meta_adset_id", "meta_ad_id",
+    "record_type", "organization_name", "contact_role", "relationship_stage",
+    "partner_type", "company_website", "pricing_model", "rate_sheet_version",
+    "rates_sent_at", "referring_partner_id"
   ],
   crm_followups: [
     "followup_id", "inquiry_id", "guest_id", "created_at", "due_at", "completed_at",
@@ -176,7 +179,11 @@ const CRM_FIELD_VALUES = {
     transportation_needed: { values: ["Yes", "No", "Unknown"], fallback: "Unknown" },
     quoted_currency: { values: ["USD"], fallback: "USD" },
     grouping_preference: { values: ["unknown", "open_to_group", "private_only"], fallback: "unknown" },
-    grouping_status: { values: ["unmatched", "candidate", "invited", "accepted", "confirmed", "declined"], fallback: "unmatched" }
+    grouping_status: { values: ["unmatched", "candidate", "invited", "accepted", "confirmed", "declined"], fallback: "unmatched" },
+    record_type: { values: ["guest", "trade_partner", "provider", "collaboration"], fallback: "guest" },
+    relationship_stage: { values: ["new", "contacted", "rates_requested", "rates_sent", "negotiating", "active_partner", "inactive"], fallback: "new" },
+    partner_type: { values: ["travel_agency", "tour_operator", "hotel", "guide", "driver", "activity_provider", "other"], fallback: "other" },
+    pricing_model: { values: ["retail", "net_rate", "commission", "custom"], fallback: "retail" }
   },
   crm_followups: {
     status: { values: ["open", "completed", "cancelled", "failed"], fallback: "open" },
@@ -3801,7 +3808,11 @@ function applyPipelineReviewValidations_(sh) {
     { column: "priority", values: ["normal", "high", "urgent"] },
     { column: "transportation_needed", values: CRM_FIELD_VALUES.crm_inquiries.transportation_needed.values },
     { column: "grouping_preference", values: CRM_FIELD_VALUES.crm_inquiries.grouping_preference.values },
-    { column: "grouping_status", values: CRM_FIELD_VALUES.crm_inquiries.grouping_status.values }
+    { column: "grouping_status", values: CRM_FIELD_VALUES.crm_inquiries.grouping_status.values },
+    { column: "record_type", values: CRM_FIELD_VALUES.crm_inquiries.record_type.values },
+    { column: "relationship_stage", values: CRM_FIELD_VALUES.crm_inquiries.relationship_stage.values },
+    { column: "partner_type", values: CRM_FIELD_VALUES.crm_inquiries.partner_type.values },
+    { column: "pricing_model", values: CRM_FIELD_VALUES.crm_inquiries.pricing_model.values }
   ];
 
   specs.forEach(function(spec) {
