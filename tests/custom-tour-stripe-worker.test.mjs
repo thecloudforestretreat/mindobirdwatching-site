@@ -208,6 +208,43 @@ test("within-Mindo transportation is staff-only and cannot bill the US$1 referen
   assert.equal(line.get("quantity"), "1");
 });
 
+test("custom transportation uses the live TRANS05 product and requires an approved final rate", async () => {
+  const h = harness();
+  for (const language of ["en", "es"]) {
+    const publicResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}`), h.env, {});
+    const publicBody = await publicResponse.json();
+    assert.equal(publicBody.tours.some((item) => item.tour_code === "TRANS05"), false);
+
+    const staffResponse = await h.context.worker.fetch(new Request(`https://example.test/stripe/api/tours?lang=${language}&scope=staff`), h.env, {});
+    const staffBody = await staffResponse.json();
+    const item = staffBody.tours.find((tour) => tour.tour_code === "TRANS05");
+    assert(item, `TRANS05:${language} missing`);
+    assert.equal(item.amount_display, "$20.00");
+    assert.equal(item.pricing_model, "flat");
+    assert.equal(item.invoice_only, true);
+    assert.equal(item.requires_price_override, true);
+  }
+
+  const missingPrice = await h.call("create-invoice", { ...base, tour_code: "TRANS05" });
+  assert.equal(missingPrice.response.status, 400);
+  assert.match(missingPrice.body.error, /guest-approved final price/i);
+  assert.equal(h.calls.length, 0);
+
+  const invoice = await h.call("create-invoice", {
+    ...base,
+    tour_code: "TRANS05",
+    price_override_per_person: 70,
+    price_adjustment_per_person: 50,
+    pricing_reason: "custom_quote",
+  });
+  assert.equal(invoice.response.status, 200, JSON.stringify(invoice.body));
+  assert.equal(invoice.body.amount_before_deposit, 70);
+  const line = h.calls.find((call) => call.pathname === "/v1/invoiceitems").form;
+  assert.equal(line.get("price_data[product]"), "prod_VfhV7k1jZTNBFX");
+  assert.equal(line.get("price_data[unit_amount]"), "7000");
+  assert.equal(line.get("quantity"), "1");
+});
+
 test("accommodation is staff-only with an adjustable US$50 placeholder and US$10 standard cost", async () => {
   const h = harness();
   for (const language of ["en", "es"]) {
