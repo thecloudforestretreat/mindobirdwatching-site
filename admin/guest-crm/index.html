@@ -1342,8 +1342,10 @@
               credentials:"omit"
             });
             let text=await res.text();
-            // Backward compatibility while the matching n8n workflow update is being deployed.
-            if(res.ok&&!text){
+            // Read calls are safe to replay for backward compatibility. Never replay a
+            // write after a blank response: the workflow may already have changed a
+            // sheet before failing to return JSON, which would create duplicate rows.
+            if(isRead&&res.ok&&!text){
               res=await fetch(url,{
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
@@ -1357,7 +1359,9 @@
             if(!res.ok) throw new Error("API returned "+res.status+(text?": "+text.slice(0,160):""));
             let result;
             try{result=text?JSON.parse(text):null;}catch(parseError){throw new Error("API returned invalid JSON");}
-            if(!result) throw new Error("API returned an empty response");
+            if(!result) throw new Error(isRead
+              ?"API returned an empty response"
+              :"CRM did not confirm the save. Do not retry yet; refresh and search for the guest first.");
             if(result.ok===false) throw new Error(result.error||"API rejected the request");
             return result;
           }catch(error){

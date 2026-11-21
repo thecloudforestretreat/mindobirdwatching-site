@@ -5067,7 +5067,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const prepared = $('Route Validated Create').item.json;\nconst inquiry = prepared.inquiry_row || prepared.record;\n\nif (!inquiry?.inquiry_id) {\n  throw new Error('Inquiry payload was lost after creating the guest profile.');\n}\n\nif (!inquiry?.guest_id) {\n  throw new Error('Inquiry payload is missing guest_id.');\n}\n\nconst record = {\n  ...inquiry,\n  updated_at: new Date().toISOString(),\n};\n\nreturn [{\n  json: {\n    ...record,\n    inquiry_row: record,\n    record,\n  },\n}];"
+        "jsCode": "const prepared = $('Route Validated Create').item.json;\nconst inquiry = prepared.inquiry_row || prepared.record;\nconst guest = prepared.guest_row || {};\n\nif (!inquiry?.inquiry_id) {\n  throw new Error('Inquiry payload was lost after creating the inquiry.');\n}\n\nif (!inquiry?.guest_id || !guest?.guest_id) {\n  throw new Error('Create payload is missing guest_id.');\n}\n\nconst record = {\n  ...inquiry,\n  updated_at: new Date().toISOString(),\n};\n\nreturn [{\n  json: {\n    ...prepared,\n    guest_row: guest,\n    inquiry_row: record,\n    record,\n  },\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -5076,7 +5076,7 @@
         2240
       ],
       "id": "4e2404bd-f3af-4435-b5d3-0cb72244709c",
-      "name": "Restore Inquiry Row"
+      "name": "Restore Create Payload"
     },
     {
       "parameters": {
@@ -12232,7 +12232,7 @@
       "main": [
         [
           {
-            "node": "Append CRM Guest Profile",
+            "node": "Append CRM Inquiry - New Guest",
             "type": "main",
             "index": 0
           }
@@ -12268,7 +12268,7 @@
       "main": [
         [
           {
-            "node": "Respond to Admin Page",
+            "node": "Restore Create Payload",
             "type": "main",
             "index": 0
           }
@@ -12301,18 +12301,18 @@
       "main": [
         [
           {
-            "node": "Restore Inquiry Row",
+            "node": "Respond to Admin Page",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Restore Inquiry Row": {
+    "Restore Create Payload": {
       "main": [
         [
           {
-            "node": "Append CRM Inquiry - New Guest",
+            "node": "Append CRM Guest Profile",
             "type": "main",
             "index": 0
           }
