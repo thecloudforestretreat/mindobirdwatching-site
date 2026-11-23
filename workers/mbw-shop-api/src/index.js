@@ -16,6 +16,47 @@ function bookingTermsSha256(language) {
     : BOOKING_TERMS_SHA256;
 }
 
+/*
+  Merchant-only titles for the strongest, most distinctive products.
+  Keep these factual and front-load the species/product type shoppers use.
+  Printify remains the source of truth for price, inventory, options and copy
+  shown on the storefront.
+*/
+const GOOGLE_MERCHANT_HERO_TITLES = new Map([
+  [
+    "6abc3c857f86b0d98008aef7",
+    "Spectacled Bear T-Shirt - Mindo Ecuador Wildlife Graphic Tee"
+  ],
+  [
+    "6aad8fb3d984cd7fce0fb257",
+    "Andean Cock-of-the-Rock T-Shirt - Mindo Ecuador Birding Graphic Tee"
+  ],
+  [
+    "6a9c72f52cc93c68490f10c9",
+    "Choco Toucan T-Shirt - Mindo Ecuador Birding Graphic Tee"
+  ],
+  [
+    "6aad87ef4c624e91ad0e452a",
+    "Rose-crowned Woodnymph Hummingbird T-Shirt - Mindo Ecuador Birding Tee"
+  ],
+  [
+    "6aad81707729c566d404adcd",
+    "Long-wattled Umbrellabird T-Shirt - Mindo Ecuador Birding Tee"
+  ],
+  [
+    "6a9d88996f9ad8d57b086415",
+    "Andean Tanager Mug - Mindo Ecuador Bird Coffee Cup"
+  ],
+  [
+    "6a9d991ba1559696b4017197",
+    "Andean Cock-of-the-Rock Sticker - Mindo Ecuador Bird Decal"
+  ],
+  [
+    "6a9ac799af238959ba07aded",
+    "Mindo Bird Watching Organic Canvas Tote Bag - Ecuador Souvenir"
+  ]
+]);
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -8843,9 +8884,16 @@ function normalizeGoogleMerchantProduct(product) {
       )
   );
 
-  const title = cleanCustomerProductTitle(
+  const sourceTitle = cleanCustomerProductTitle(
     product.title ||
       "Mindo Bird Watching product"
+  );
+
+  const title = cleanMerchantText(
+    GOOGLE_MERCHANT_HERO_TITLES.get(
+      String(product.id || "")
+    ) || sourceTitle,
+    150
   );
 
   const description = cleanCustomerProductDescription(
@@ -8889,6 +8937,12 @@ function normalizeGoogleMerchantProduct(product) {
     condition: "new",
     brand: "Mindo Bird Watching",
     identifier_exists: "false",
+    custom_label_0:
+      GOOGLE_MERCHANT_HERO_TITLES.has(
+        String(product.id)
+      )
+        ? "hero"
+        : null,
     apparel,
     gender: apparel ? "unisex" : null,
     age_group: apparel ? "adult" : null
@@ -9108,6 +9162,12 @@ function buildGoogleMerchantItemXml(product) {
   if (product.item_group_id) {
     rows.push(
       `      <g:item_group_id>${escapeXml(product.item_group_id)}</g:item_group_id>`
+    );
+  }
+
+  if (product.custom_label_0) {
+    rows.push(
+      `      <g:custom_label_0>${escapeXml(product.custom_label_0)}</g:custom_label_0>`
     );
   }
 
