@@ -1,6 +1,6 @@
 /**
  * MBW Stripe Invoices -> Invoices Sync
- * Production drop-in v1.5.5
+ * Production drop-in v1.5.6
  *
  * Purpose:
  * - Leaves all historical rows untouched.
@@ -80,7 +80,6 @@ function setupStripeInvoiceSync() {
 
   removeStripeInvoiceSyncTriggers_();
   ScriptApp.newTrigger(MBW_SYNC_HANDLER).timeBased().everyMinutes(5).create();
-  ScriptApp.newTrigger(MBW_EXPENSE_SYNC_HANDLER).timeBased().everyMinutes(15).create();
 
   var result = {
     ok: true,
@@ -88,7 +87,7 @@ function setupStripeInvoiceSync() {
     cursor_preserved: existingCursor !== null,
     historical_rows_imported: 0,
     trigger: "invoice import every 5 minutes",
-    expense_trigger: "expense reconciliation every 15 minutes",
+    expense_trigger: "inline after each invoice import; manual on demand",
     expense_sync_enabled: true
   };
   console.log(JSON.stringify(result));
@@ -99,16 +98,6 @@ function setupStripeInvoiceSync() {
  * Automatic sync handler. It can also be run manually for testing.
  */
 function syncStripeInvoicesToInvoices(e) {
-  if (e && e.triggerUid) {
-    var triggerSecond = Number(Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "ss"));
-    if (triggerSecond < 35) {
-      return logSyncResult_({
-        ok: true,
-        skipped: true,
-        reason: "legacy_duplicate_trigger_window"
-      });
-    }
-  }
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) {
     return logSyncResult_({
@@ -221,7 +210,13 @@ function syncStripeInvoicesToInvoices(e) {
     recovered += auditResult.recovered;
     backfilled += auditResult.backfilled;
 
-    if (imported > 0 || recovered > 0 || backfilled > 0 || (depositResult && depositResult.created > 0)) {
+    var invoiceRowsChanged = imported > 0 || recovered > 0 || backfilled > 0;
+    if (invoiceRowsChanged || (depositResult && depositResult.created > 0)) {
+      SpreadsheetApp.flush();
+    }
+    var expenseResult = null;
+    if (invoiceRowsChanged) {
+      expenseResult = syncInvoicesToExpensesUnlocked_(ss);
       SpreadsheetApp.flush();
     }
     var remainingRows = Math.max(sourceLastRow - processedThrough, 0);
@@ -240,7 +235,8 @@ function syncStripeInvoicesToInvoices(e) {
       last_synced_row: processedThrough,
       remaining_rows: remainingRows,
       partial_batch: remainingRows > 0,
-      expenses_deferred_to_separate_trigger: true
+      expenses: expenseResult,
+      expenses_deferred_to_separate_trigger: false
     });
   } finally {
     lock.releaseLock();
@@ -414,6 +410,9 @@ function checkStripeInvoiceSyncStatus() {
   var expenseTriggerCount = ScriptApp.getProjectTriggers().filter(function (trigger) {
     return trigger.getHandlerFunction() === MBW_EXPENSE_SYNC_HANDLER;
   }).length;
+  var staleRetryTriggerCount = ScriptApp.getProjectTriggers().filter(function (trigger) {
+    return trigger.getHandlerFunction() === "retryInvoicesToExpenses";
+  }).length;
 
   var result = {
     ok: true,
@@ -422,7 +421,8 @@ function checkStripeInvoiceSyncStatus() {
     current_source_last_row: source.getLastRow(),
     pending_rows: cursor === null ? null : Math.max(source.getLastRow() - Number(cursor), 0),
     trigger_count: triggerCount,
-    expense_trigger_count: expenseTriggerCount
+    expense_trigger_count: expenseTriggerCount,
+    stale_retry_trigger_count: staleRetryTriggerCount
   };
   console.log(JSON.stringify(result));
   return result;
@@ -439,7 +439,9 @@ function syncInvoicesToExpenses() {
     return logSyncResult_({
       ok: true,
       skipped: true,
-      reason: "another_sync_is_running"
+      reason: "another_sync_is_running",
+      retry_scheduled: false,
+      retry_source: "next_invoice_sync"
     });
   }
   try {
@@ -1976,10 +1978,12 @@ function requireSyncSheet_(ss, name) {
 function removeStripeInvoiceSyncTriggers_() {
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
     var handler = trigger.getHandlerFunction();
-    if (handler === MBW_SYNC_HANDLER || handler === MBW_EXPENSE_SYNC_HANDLER) {
+    if (handler === MBW_SYNC_HANDLER || handler === MBW_EXPENSE_SYNC_HANDLER ||
+        handler === "retryInvoicesToExpenses") {
       ScriptApp.deleteTrigger(trigger);
     }
   });
+  PropertiesService.getScriptProperties().deleteProperty("MBW_EXPENSE_SYNC_RETRY_SCHEDULED_AT");
 }
 
 function logSyncResult_(result) {

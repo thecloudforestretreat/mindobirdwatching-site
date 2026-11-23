@@ -88,9 +88,9 @@ assert.doesNotMatch(
 
 const syncHandler = source.match(/function syncStripeInvoicesToInvoices\(e\) \{[\s\S]*?var lock = LockService\.getScriptLock\(\);/)?.[0] || "";
 assert(syncHandler, "sync handler must accept the time-trigger event");
-assert.match(syncHandler, /e && e\.triggerUid/);
-assert.match(syncHandler, /triggerSecond < 35/);
-assert.match(syncHandler, /legacy_duplicate_trigger_window/);
+assert.doesNotMatch(syncHandler, /triggerSecond < 35/);
+assert.doesNotMatch(syncHandler, /legacy_duplicate_trigger_window/);
+assert.match(syncHandler, /LockService\.getScriptLock\(\)/);
 
 assert.match(
   source,
