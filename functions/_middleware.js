@@ -16,6 +16,7 @@ const NEST_GUIDE_ASSETS = new Set([
 ]);
 let cachedKeys;
 let keysExpireAt = 0;
+let cachedCryptoKeys = new Map();
 
 export function hasTrustedAudience(aud) {
   return Array.isArray(aud) && aud.some(value => AUDIENCES.has(value));
@@ -43,11 +44,16 @@ export async function verifyIdentity(token) {
     const body = await response.json();
     if (!Array.isArray(body.keys)) throw new Error("Invalid signing keys");
     cachedKeys = body.keys;
+    cachedCryptoKeys = new Map();
     keysExpireAt = Date.now() + 300000;
   }
   const jwk = cachedKeys.find(key => key.kid === header.kid && key.kty === "RSA");
   if (!jwk) throw new Error("Unknown signing key");
-  const key = await crypto.subtle.importKey("jwk", jwk, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, false, ["verify"]);
+  let key = cachedCryptoKeys.get(header.kid);
+  if (!key) {
+    key = await crypto.subtle.importKey("jwk", jwk, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, false, ["verify"]);
+    cachedCryptoKeys.set(header.kid, key);
+  }
   if (!await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, decode(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1]))) throw new Error("Invalid signature");
   return claims.email.trim().toLowerCase();
 }
