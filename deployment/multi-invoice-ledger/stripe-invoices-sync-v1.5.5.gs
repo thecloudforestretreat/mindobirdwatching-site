@@ -214,11 +214,12 @@ function syncStripeInvoicesToInvoices(e) {
     if (invoiceRowsChanged || (depositResult && depositResult.created > 0)) {
       SpreadsheetApp.flush();
     }
-    var expenseResult = null;
-    if (invoiceRowsChanged) {
-      expenseResult = syncInvoicesToExpensesUnlocked_(ss);
-      SpreadsheetApp.flush();
-    }
+    // Reconcile on every scheduled pass, not only when Stripe imported a new
+    // row. Staff frequently assign a guide or mark a service complete after the
+    // invoice first arrives; those later edits must still create/update the
+    // matching expense and guide-payment records.
+    var expenseResult = syncInvoicesToExpensesUnlocked_(ss);
+    SpreadsheetApp.flush();
     var remainingRows = Math.max(sourceLastRow - processedThrough, 0);
     if (remainingRows === 0) {
       properties.setProperty(MBW_SYNC_LAST_SUCCESS_PROPERTY, String(Date.now()));
@@ -549,8 +550,7 @@ function syncGuidePaymentQueue_(ss, invoiceObjects) {
   invoiceObjects.forEach(function (invoiceRow) {
     var tourDate = normalizeSyncDate_(invoiceRow.tour_date);
     var tourDateKey = dateKeySync_(tourDate);
-    if (!tourDate || !tourDateKey || tourDateKey < todayKey ||
-        cleanSyncValue_(invoiceRow.tour_completed).toLowerCase() === "yes") {
+    if (!tourDate || !tourDateKey) {
       outcome.skipped++;
       return;
     }
@@ -566,6 +566,12 @@ function syncGuidePaymentQueue_(ss, invoiceObjects) {
       outcome.skipped++;
       return;
     }
+    var isCompleted = cleanSyncValue_(invoiceRow.tour_completed).toLowerCase() === "yes";
+    var obligationNote = isCompleted
+      ? "Completed service; payment due."
+      : (tourDateKey < todayKey
+        ? "Past service date; completion review required before payment."
+        : "Future service obligation; not payable until completed.");
     var amountDue = roundSyncMoney_(Math.abs(parseSyncMoney_(invoiceRow.total_amount_owed_to_guide)));
     if (!(amountDue > 0)) {
       var basePayout = Math.abs(parseSyncMoney_(invoiceRow.guide_base_payout));
@@ -589,8 +595,16 @@ function syncGuidePaymentQueue_(ss, invoiceObjects) {
         var remainingDue = roundSyncMoney_(Math.max(0, amountDue - cashPaid - advanceWithheld - otherOffset));
         sheet.getRange(existingRow, headers.index.amount_due + 1).setValue(amountDue);
         sheet.getRange(existingRow, headers.index.remaining_due + 1).setValue(remainingDue);
+        sheet.getRange(existingRow, headers.index.notes + 1).setValue(obligationNote);
       }
       outcome.existing++;
+      return;
+    }
+    // Do not backfill historical/completed queue rows. Existing queue rows are
+    // refreshed above, while newly created obligations remain limited to
+    // current/future uncompleted services.
+    if (tourDateKey < todayKey || isCompleted) {
+      outcome.skipped++;
       return;
     }
     if (!(amountDue > 0)) {
@@ -614,7 +628,7 @@ function syncGuidePaymentQueue_(ss, invoiceObjects) {
       payment_status: "Pending",
       settlement_id: "",
       receipt_reference: "",
-      notes: "Future service obligation; not payable until completed.",
+      notes: obligationNote,
       cash_payment_date: "",
       offset_reference: "",
       settled_date: ""

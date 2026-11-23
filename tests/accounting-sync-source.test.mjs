@@ -45,14 +45,23 @@ test('service expense rejects zero and negative payables instead of converting t
   assert.equal(context.buildServiceExpense_({ ...base, total_amount_owed_to_guide: 8.96 }).amount, -8.96);
 });
 
-test('expense sync runs inline after invoice changes without creating competing triggers', () => {
+test('expense sync runs on every invoice pass without creating competing triggers', () => {
   assert.match(source, /reason:\s*"another_sync_is_running"[\s\S]*retry_scheduled:\s*false[\s\S]*retry_source:\s*"next_invoice_sync"/);
   assert.doesNotMatch(source, /ScriptApp\.newTrigger\(MBW_EXPENSE_RETRY_HANDLER\)/);
   assert.doesNotMatch(source, /newTrigger\(MBW_EXPENSE_SYNC_HANDLER\)/);
   const syncHandler = source.match(/function syncStripeInvoicesToInvoices\(e\) \{[\s\S]*?\n\}/)?.[0] || '';
   assert.match(syncHandler, /invoiceRowsChanged\s*=\s*imported > 0 \|\| recovered > 0 \|\| backfilled > 0/);
   assert.match(syncHandler, /expenseResult\s*=\s*syncInvoicesToExpensesUnlocked_\(ss\)/);
+  assert.doesNotMatch(syncHandler, /if \(invoiceRowsChanged\) \{\s*expenseResult\s*=\s*syncInvoicesToExpensesUnlocked_\(ss\)/);
   assert.match(syncHandler, /expenses_deferred_to_separate_trigger:\s*false/);
+});
+
+test('guide queue refreshes existing obligations when completion changes', () => {
+  const queueSync = source.match(/function syncGuidePaymentQueue_\(ss, invoiceObjects\) \{[\s\S]*?\n\}/)?.[0] || '';
+  assert.match(queueSync, /Completed service; payment due\./);
+  assert.match(queueSync, /Past service date; completion review required before payment\./);
+  assert.match(queueSync, /headers\.index\.notes \+ 1\)\.setValue\(obligationNote\)/);
+  assert.match(queueSync, /if \(tourDateKey < todayKey \|\| isCompleted\)/);
 });
 
 test('dropdown values are canonicalized without losing the approved label', () => {
