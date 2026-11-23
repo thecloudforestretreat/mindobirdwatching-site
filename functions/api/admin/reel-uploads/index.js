@@ -15,7 +15,10 @@ export async function onRequestPost({request,env}){
    if(!/^[a-f0-9]{32}$/.test(id)||!/^\d{1,10}$/.test(offset)||! /^[a-f0-9]{64}$/.test(sha))return reply({ok:false,message:'Invalid upload chunk.'},400);
    const length=Number(request.headers.get('content-length'));
    if(!length||length>CHUNK)return reply({ok:false,message:'Upload chunks must be no larger than 8 MiB.'},400);
-   body=await request.arrayBuffer();if(!body.byteLength||body.byteLength>CHUNK)return reply({ok:false,message:'Invalid chunk size.'},400);
+   // Forward the incoming stream without materializing the full 8 MiB chunk in
+   // the Worker. Buffering every chunk consumed enough CPU to trigger
+   // Cloudflare Error 1102 on the Pages Functions per-request allowance.
+   body=request.body;if(!body)return reply({ok:false,message:'Invalid chunk size.'},400);
    Object.assign(headers,{'content-type':'application/octet-stream','x-upload-id':id,'x-upload-offset':offset,'x-chunk-sha256':sha});
   }else{
    if(Number(request.headers.get('content-length'))>4096)return reply({ok:false,message:'Upload request too large.'},400);

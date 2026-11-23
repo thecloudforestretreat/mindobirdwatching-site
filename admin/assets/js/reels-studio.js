@@ -189,6 +189,32 @@
     return data;
   }
 
+  function uploadFailureMessage(response, text) {
+    var ray = clean(response.headers.get("cf-ray"));
+    if (!ray) {
+      var match = String(text || "").match(/Ray ID:\s*([A-Za-z0-9-]+)/i);
+      ray = match ? match[1] : "";
+    }
+    if (/Error\s*1102|Worker exceeded resource limits/i.test(text || "")) {
+      return "The upload service exceeded its Cloudflare CPU limit. The reel was not submitted. " + (ray ? "Ray ID: " + ray + ". " : "") + "Do not retry repeatedly; refresh and try once after the service is healthy.";
+    }
+    return "Video upload service returned " + response.status + ". The reel was not submitted." + (ray ? " Ray ID: " + ray + "." : "");
+  }
+
+  async function sendUploadAction(action, body, extra) {
+    var response = await fetch('/api/admin/reel-uploads?action=' + action, { method: 'POST', headers: Object.assign({ 'content-type': action === 'chunk' ? 'application/octet-stream' : 'application/json' }, extra || {}), body: action === 'chunk' ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000) });
+    var text = await response.text();
+    var data;
+    try { data = JSON.parse(text || "{}"); }
+    catch (_) { data = { ok: false, message: uploadFailureMessage(response, text) }; }
+    if (!response.ok || !data.ok) {
+      var error = new Error(data.message || uploadFailureMessage(response, text));
+      error.retryable = response.status >= 500 && !/Error\s*1102|Worker exceeded resource limits|CPU limit/i.test(text + " " + error.message);
+      throw error;
+    }
+    return data;
+  }
+
   async function loadHealth() {
     var panel = $("systemHealth"), button = $("refreshHealth");
     if (!panel || !button) return;
@@ -366,27 +392,21 @@
     item.querySelector('[data-reel-file]').disabled = true;
     item.querySelector('[data-remove-row]').disabled = true;
     url.readOnly = true; $("submitBatch").disabled = true;
-    async function send(action, body, extra) {
-      var response = await fetch('/api/admin/reel-uploads?action=' + action, { method: 'POST', headers: Object.assign({ 'content-type': action === 'chunk' ? 'application/octet-stream' : 'application/json' }, extra || {}), body: action === 'chunk' ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000) });
-      var data = await response.json();
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Upload failed. No reel was submitted.');
-      return data;
-    }
     try {
       status.textContent = "Starting upload…";
-      var session = await send('start', { name: file.name, bytes: file.size });
+      var session = await sendUploadAction('start', { name: file.name, bytes: file.size });
       for (var offset = 0; offset < file.size; offset += session.chunk_bytes) {
         var chunk = await file.slice(offset, offset + session.chunk_bytes).arrayBuffer();
         var hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', chunk))).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
         var result;
         for (var attempt = 0; attempt < 2; attempt++) {
-          try { result = await send('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
-          catch (error) { if (attempt) throw error; }
+          try { result = await sendUploadAction('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
+          catch (error) { if (attempt || error.retryable === false) throw error; }
         }
         status.textContent = "Uploading " + file.name + " · " + Math.floor(result.received / file.size * 100) + "%";
       }
       status.textContent = "Upload complete. Checking video format, checksum and backup…";
-      var saved = await send('finish', { upload_id: session.upload_id });
+      var saved = await sendUploadAction('finish', { upload_id: session.upload_id });
       url.value = saved.url; preview.src = saved.url; preview.hidden = false;
       status.textContent = file.name + " ready · " + saved.width + " × " + saved.height + " · " + saved.duration.toFixed(1) + " seconds · original quality preserved. " + (saved.backup_verified ? "Independent backup verified." : "Backup pending: connect the backup drive before removing any originals.") + " Add a description and generate the draft when ready.";
     } catch (error) { status.textContent = error.message; url.value = ""; }
@@ -402,27 +422,21 @@
     var controls=Array.from(content.querySelectorAll('button,input,textarea')).concat(Array.from($("reviewActions").querySelectorAll('button')));
     var previous=controls.map(function(control){return control.disabled;});controls.forEach(function(control){control.disabled=true;});
     state.replacementUploading=true;
-    async function send(action, body, extra) {
-      var response = await fetch('/api/admin/reel-uploads?action=' + action, { method: 'POST', headers: Object.assign({ 'content-type': action === 'chunk' ? 'application/octet-stream' : 'application/json' }, extra || {}), body: action === 'chunk' ? body : JSON.stringify(body), signal: AbortSignal.timeout(120000) });
-      var data = await response.json();
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Upload failed. No reel was submitted.');
-      return data;
-    }
     try {
       status.textContent="Starting replacement upload…";
-      var session = await send('start', { name: file.name, bytes: file.size });
+      var session = await sendUploadAction('start', { name: file.name, bytes: file.size });
       for (var offset = 0; offset < file.size; offset += session.chunk_bytes) {
         var chunk = await file.slice(offset, offset + session.chunk_bytes).arrayBuffer();
         var hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', chunk))).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
         var result;
         for (var attempt = 0; attempt < 2; attempt++) {
-          try { result = await send('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
-          catch (error) { if (attempt) throw error; }
+          try { result = await sendUploadAction('chunk', chunk, { 'x-upload-id': session.upload_id, 'x-upload-offset': String(offset), 'x-chunk-sha256': hash }); break; }
+          catch (error) { if (attempt || error.retryable === false) throw error; }
         }
         status.textContent = "Uploading " + file.name + " · " + Math.floor(result.received / file.size * 100) + "%";
       }
       status.textContent = "Upload complete. Checking video format, checksum and backup…";
-      var saved = await send('finish', { upload_id: session.upload_id });
+      var saved = await sendUploadAction('finish', { upload_id: session.upload_id });
       if(!saved.backup_verified)throw new Error("Upload saved, but replacement requires a verified independent backup. Connect the backup drive and retry.");
       if(state.selected!==row)throw new Error("Upload saved. Reopen this reel to attach the replacement.");
       url.value=saved.url;
