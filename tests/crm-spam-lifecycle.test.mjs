@@ -20,6 +20,8 @@ test('spam is excluded from marketing and mobile operational work',()=>{
 });
 
 test('missing attribution is presented as a successful save',()=>{
-  assert.match(crm,/Guest saved\. Historical tracking reference is unavailable; booking data is unaffected\./);
+  assert.match(crm,/No Reference ID supplied\. This manual inquiry was saved normally\./);
+  assert.match(crm,/Guest saved\. \$\{attributionWarning\}/);
+  assert.doesNotMatch(crm,/Saved without a Reference ID; attribution is unavailable/);
   assert.doesNotMatch(crm,/attribution reference preserved but unavailable/);
 });
