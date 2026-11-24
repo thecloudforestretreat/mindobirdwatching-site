@@ -27,3 +27,45 @@ test("both Google Sheets writes retain bounded retry handling",()=>{
     assert.equal(node.waitBetweenTries,2000,name);
   }
 });
+
+test("every CRM inquiry write node uses the same current sheet schema",()=>{
+  const writeNodeNames=[
+    "Append CRM Inquiry - New Guest",
+    "Append CRM Inquiry - Returning Guest",
+    "Update CRM Inquiry - Google Sheets",
+  ];
+  const nodes=writeNodeNames.map(name=>{
+    const node=workflow.nodes.find(item=>item.name===name);
+    assert.ok(node,`Missing CRM write node: ${name}`);
+    return node;
+  });
+  const expectedIds=nodes[2].parameters.columns.schema.map(column=>column.id);
+
+  for(const node of nodes){
+    const columns=node.parameters.columns;
+    const ids=columns.schema.map(column=>column.id);
+    assert.deepEqual(ids,expectedIds,`${node.name} has stale or reordered sheet columns`);
+    assert.equal(new Set(ids).size,ids.length,`${node.name} contains duplicate sheet columns`);
+    assert.equal(columns.mappingMode,"defineBelow");
+  }
+
+  assert.deepEqual(nodes[2].parameters.columns.matchingColumns,["inquiry_id"]);
+});
+
+test("CRM inquiry write mappings cover the same writable columns",()=>{
+  const writeNodeNames=[
+    "Append CRM Inquiry - New Guest",
+    "Append CRM Inquiry - Returning Guest",
+    "Update CRM Inquiry - Google Sheets",
+  ];
+  const nodes=writeNodeNames.map(name=>workflow.nodes.find(item=>item.name===name));
+  const expectedKeys=Object.keys(nodes[2].parameters.columns.value).sort();
+
+  for(const node of nodes){
+    assert.deepEqual(
+      Object.keys(node.parameters.columns.value).sort(),
+      expectedKeys,
+      `${node.name} is missing one or more CRM field mappings`,
+    );
+  }
+});

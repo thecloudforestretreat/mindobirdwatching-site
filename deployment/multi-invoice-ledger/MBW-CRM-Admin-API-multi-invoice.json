@@ -874,7 +874,10 @@
             "pricing_model": "={{ $json.inquiry_row?.pricing_model ?? $json.record?.pricing_model ?? \"retail\" }}",
             "rate_sheet_version": "={{ $json.inquiry_row?.rate_sheet_version ?? $json.record?.rate_sheet_version ?? \"\" }}",
             "rates_sent_at": "={{ $json.inquiry_row?.rates_sent_at ?? $json.record?.rates_sent_at ?? \"\" }}",
-            "referring_partner_id": "={{ $json.inquiry_row?.referring_partner_id ?? $json.record?.referring_partner_id ?? \"\" }}"
+            "referring_partner_id": "={{ $json.inquiry_row?.referring_partner_id ?? $json.record?.referring_partner_id ?? \"\" }}",
+            "inquiry_studio_id": "={{ $json.inquiry_row?.inquiry_studio_id || $json.record?.inquiry_studio_id || '' }}",
+            "inquiry_studio_status": "={{ $json.inquiry_row?.inquiry_studio_status || $json.record?.inquiry_studio_status || '' }}",
+            "inquiry_studio_updated_at": "={{ $json.inquiry_row?.inquiry_studio_updated_at || $json.record?.inquiry_studio_updated_at || '' }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -2047,6 +2050,47 @@
               "type": "string",
               "canBeUsedToMatch": true,
               "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "inquiry_studio_id",
+              "displayName": "inquiry_studio_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_studio_status",
+              "displayName": "inquiry_studio_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_studio_updated_at",
+              "displayName": "inquiry_studio_updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -2204,7 +2248,16 @@
             "pricing_model": "={{ $json.inquiry_row?.pricing_model ?? $json.record?.pricing_model ?? \"retail\" }}",
             "rate_sheet_version": "={{ $json.inquiry_row?.rate_sheet_version ?? $json.record?.rate_sheet_version ?? \"\" }}",
             "rates_sent_at": "={{ $json.inquiry_row?.rates_sent_at ?? $json.record?.rates_sent_at ?? \"\" }}",
-            "referring_partner_id": "={{ $json.inquiry_row?.referring_partner_id ?? $json.record?.referring_partner_id ?? \"\" }}"
+            "referring_partner_id": "={{ $json.inquiry_row?.referring_partner_id ?? $json.record?.referring_partner_id ?? \"\" }}",
+            "country": "={{ $json.record?.country || '' }}",
+            "home_country": "={{ $json.record?.home_country || $json.record?.country || '' }}",
+            "itinerary_json": "={{ $json.record?.itinerary_json || '' }}",
+            "itinerary_updated_at": "={{ $json.record?.itinerary_updated_at || '' }}",
+            "itinerary_version": "={{ $json.record?.itinerary_version || '' }}",
+            "itinerary_status": "={{ $json.record?.itinerary_status || '' }}",
+            "inquiry_studio_id": "={{ $json.inquiry_row?.inquiry_studio_id || $json.record?.inquiry_studio_id || '' }}",
+            "inquiry_studio_status": "={{ $json.inquiry_row?.inquiry_studio_status || $json.record?.inquiry_studio_status || '' }}",
+            "inquiry_studio_updated_at": "={{ $json.inquiry_row?.inquiry_studio_updated_at || $json.record?.inquiry_studio_updated_at || '' }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -2589,36 +2642,6 @@
               "removed": false
             },
             {
-              "id": "invoice_no",
-              "displayName": "invoice_no",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "date_paid",
-              "displayName": "date_paid",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "payment_method",
-              "displayName": "payment_method",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
               "id": "quoted_amount",
               "displayName": "quoted_amount",
               "required": false,
@@ -2899,8 +2922,8 @@
               "removed": false
             },
             {
-              "id": "guest_calendar_event_id",
-              "displayName": "guest_calendar_event_id",
+              "id": "phone_number",
+              "displayName": "phone_number",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2909,8 +2932,8 @@
               "removed": false
             },
             {
-              "id": "guest_calendar_event_url",
-              "displayName": "guest_calendar_event_url",
+              "id": "interest_category",
+              "displayName": "interest_category",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2919,8 +2942,8 @@
               "removed": false
             },
             {
-              "id": "guest_calendar_status",
-              "displayName": "guest_calendar_status",
+              "id": "requested_date",
+              "displayName": "requested_date",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2929,8 +2952,8 @@
               "removed": false
             },
             {
-              "id": "guest_calendar_sent_at",
-              "displayName": "guest_calendar_sent_at",
+              "id": "invoice_no",
+              "displayName": "invoice_no",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2939,8 +2962,88 @@
               "removed": false
             },
             {
-              "id": "guest_calendar_synced_at",
-              "displayName": "guest_calendar_synced_at",
+              "id": "date_paid",
+              "displayName": "date_paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_completed",
+              "displayName": "tour_completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tour_content",
+              "displayName": "tour_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "itinerary_json",
+              "displayName": "itinerary_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "itinerary_updated_at",
+              "displayName": "itinerary_updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "itinerary_version",
+              "displayName": "itinerary_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "itinerary_status",
+              "displayName": "itinerary_status",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -3271,6 +3374,97 @@
             {
               "id": "meta_ad_id",
               "displayName": "meta_ad_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_calendar_event_id",
+              "displayName": "guest_calendar_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_calendar_event_url",
+              "displayName": "guest_calendar_event_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_calendar_status",
+              "displayName": "guest_calendar_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_calendar_sent_at",
+              "displayName": "guest_calendar_sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "guest_calendar_synced_at",
+              "displayName": "guest_calendar_synced_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "inquiry_studio_id",
+              "displayName": "inquiry_studio_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_studio_status",
+              "displayName": "inquiry_studio_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inquiry_studio_updated_at",
+              "displayName": "inquiry_studio_updated_at",
               "required": false,
               "defaultMatch": false,
               "display": true,
