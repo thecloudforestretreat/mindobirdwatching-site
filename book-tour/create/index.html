@@ -758,14 +758,9 @@
           </div>
 
           <div class="field">
-            <label class="req" for="pickupLocationLabel">Pickup location label</label>
-            <input id="pickupLocationLabel" type="text" placeholder="Hotel, Airbnb, Meeting point" />
+            <label class="req" for="pickupAddress">Pickup address or hotel name</label>
+            <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
           </div>
-        </div>
-
-        <div class="field">
-          <label class="req" for="pickupAddress">Pickup address or hotel name</label>
-          <input id="pickupAddress" type="text" placeholder="Pickup address or hotel name" />
         </div>
 
         <div class="field">
@@ -939,7 +934,8 @@
     priorPaymentStatus: "",
     homeCountry: "",
     excludedPriorInvoiceItems: [],
-    promoAppliedAt: ""
+    promoAppliedAt: "",
+    invoiceDueDaysTouched: false
   };
 
   const els = {
@@ -978,7 +974,6 @@
     additionalInvoiceState: document.getElementById("additionalInvoiceState"),
     priorInvoiceDetails: document.getElementById("priorInvoiceDetails"),
     defaultLanguage: document.getElementById("defaultLanguage"),
-    pickupLocationLabel: document.getElementById("pickupLocationLabel"),
     pickupAddress: document.getElementById("pickupAddress"),
     globalNotes: document.getElementById("globalNotes"),
     confirmModal: document.getElementById("confirmModal"),
@@ -1350,13 +1345,25 @@
     return ["mbw", "mindo-tours", "choco-andino"].includes(value) ? value : "mbw";
   }
 
-  function getDefaultTomorrowISO() {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+  function getTodayInMindoISO(now = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Guayaquil",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(now);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function recommendedInvoiceDueDays(items = state.items, today = getTodayInMindoISO()) {
+    const dates = items.map(item => item.tour_date).filter(Boolean).sort();
+    return dates.length && dates[0] <= today ? 1 : 2;
+  }
+
+  function syncInvoiceDueDaysDefault(force = false) {
+    if (!force && state.invoiceDueDaysTouched) return;
+    els.invoiceDueDays.value = String(recommendedInvoiceDueDays());
   }
 
   function getTourByCodeAndLanguage(code, language) {
@@ -1391,7 +1398,7 @@ function createItem(initial = {}) {
   return {
     id: crypto.randomUUID(),
     tour_code: initial.tour_code || "",
-    tour_date: initial.tour_date || getDefaultTomorrowISO(),
+    tour_date: initial.tour_date || getTodayInMindoISO(),
     quantity: initial.quantity || 1,
     language: initial.language || els.defaultLanguage.value || "en",
     item_notes: initial.item_notes || "",
@@ -1557,7 +1564,7 @@ function createItem(initial = {}) {
     const notes = [item.notes || item.note || "", pickup ? `Pickup: ${pickup}` : ""].filter(Boolean).join(" | ");
     return createItem({
       tour_code: tourCode,
-      tour_date: item.date || item.tour_date || getInboundValue(data, "tour_date", "date", "requested_date") || getDefaultTomorrowISO(),
+      tour_date: item.date || item.tour_date || getInboundValue(data, "tour_date", "date", "requested_date") || getTodayInMindoISO(),
       quantity: isVehicleTour(tour)?(getInboundValue(data,"party","guests","guest_count")||item.passenger_count||1):(item.guests || item.quantity || getInboundValue(data, "party", "guests", "guest_count") || 1),
       language,
       item_notes: notes,
@@ -1679,9 +1686,9 @@ function createItem(initial = {}) {
     const phone = getInboundValue(data, "guest_phone", "phone", "phone_number", "guestPhone");
     const homeCountry = getInboundValue(data, "home_country", "country");
     const whatsapp = getInboundValue(data, "whatsapp_number", "whatsapp", "guest_phone", "phone", "phone_number");
-    const pickup = getInboundValue(data, "pickup_address_or_hotel", "pickup_location", "pickup", "pickupLocation");
-    const pickupLabel = getInboundValue(data, "pickup_location_label") || (pickup ? "Pickup location" : "");
-    const notes = getInboundValue(data, "notes", "message_questions", "guest_notes");
+    const rootPickup = getInboundValue(data, "pickup_address_or_hotel", "pickup_location", "pickup", "pickupLocation");
+    const invoiceNotes = getInboundValue(data, "invoice_notes");
+    const agentId = getInboundValue(data, "agent_id", "agentId");
     const promoCode = getInboundValue(data, "promo_code", "promoCode").toUpperCase();
     const promoAppliedAt = getInboundValue(data, "promo_applied_at", "promoAppliedAt");
     const language = getInboundValue(data, "lang", "language") === "es" ? "es" : "en";
@@ -1702,6 +1709,10 @@ function createItem(initial = {}) {
     const inboundItems = state.additionalInvoiceEligible
       ? allInboundItems.filter(item => !isPreviouslyBookedInboundItem(item))
       : allInboundItems;
+    const itemPickup = inboundItems
+      .map(item => String(item.pickup_location || item.pickup || "").trim())
+      .find(Boolean) || "";
+    const pickup = itemPickup || rootPickup;
     enableVerifiedAdditionalInvoice(state.excludedPriorInvoiceItems, inboundItems);
     if (state.excludedPriorInvoiceItems.length) {
       const excludedCount = state.excludedPriorInvoiceItems.length;
@@ -1715,7 +1726,7 @@ function createItem(initial = {}) {
     state.homeCountry = homeCountry;
     state.promoAppliedAt = promoAppliedAt;
     setFieldValue(els.whatsappNumber, whatsapp);
-    setFieldValue(els.pickupLocationLabel, pickupLabel);
+    setFieldValue(els.agentId, agentId);
     setFieldValue(els.pickupAddress, pickup);
     setFieldValue(els.defaultLanguage, language);
     setFieldValue(els.inquiryId, inquiryId);
@@ -1724,12 +1735,7 @@ function createItem(initial = {}) {
     setFieldValue(els.quoteId, quoteId);
     els.depositLookupBtn.disabled = !inquiryId;
 
-    if (notes || tourText) {
-      const noteLines = [];
-      if (tourText) noteLines.push(`CRM tour interest: ${tourText}`);
-      if (notes) noteLines.push(notes);
-      setFieldValue(els.globalNotes, noteLines.join("\n\n"));
-    }
+    setFieldValue(els.globalNotes, invoiceNotes);
 
     if (inboundItems.length) {
       state.items = inboundItems.flatMap(item => createInboundBookingItems(item, data, language));
@@ -1740,7 +1746,7 @@ function createItem(initial = {}) {
     } else if (state.additionalInvoiceEligible && state.excludedPriorInvoiceItems.length) {
       state.items = [createItem({
         language,
-        tour_date: tourDate || getDefaultTomorrowISO(),
+        tour_date: getTodayInMindoISO(),
         quantity: quantity || 1
       })];
       applyAcceptedQuote(data);
@@ -1765,6 +1771,7 @@ function createItem(initial = {}) {
       els.promoCode.value = promoCode;
       applyPromotionToItems();
     }
+    syncInvoiceDueDaysDefault(true);
 
     if (firstName || lastName || email || phone || pickup || tourDate || quantity || tourText) {
       const missingItems = inboundItems.filter(item => !inboundTourCode(item, language));
@@ -1798,6 +1805,7 @@ function createItem(initial = {}) {
     const item = state.items.find(x => x.id === id);
     if (!item) return;
     item[key] = value;
+    if (key === "tour_date") syncInvoiceDueDaysDefault();
     clearGeneratedResult();
     renderSummary();
     updateModeUI();
@@ -1845,7 +1853,7 @@ function createItem(initial = {}) {
       langSelect.value = item.language;
       tourSelect.value = item.tour_code;
       dateInput.value = item.tour_date;
-      dateInput.min = getDefaultTomorrowISO();
+      dateInput.min = getTodayInMindoISO();
       qtyInput.value = item.quantity;
       notesInput.value = item.item_notes;
       priceOverrideInput.value = item.price_override_per_person;
@@ -2166,7 +2174,6 @@ function createItem(initial = {}) {
       if (!els.mainEmail.value.trim()) errors.push("Email is required.");
       if (!els.mainPhone.value.trim()) errors.push("Phone is required.");
       if (!els.whatsappNumber.value.trim()) errors.push("WhatsApp number is required.");
-      if (!els.pickupLocationLabel.value.trim()) errors.push("Pickup location label is required.");
       if (!els.pickupAddress.value.trim()) errors.push("Pickup address or hotel name is required.");
     }
 
@@ -2247,7 +2254,7 @@ function createItem(initial = {}) {
       main_contact_phone: els.mainPhone.value.trim(),
       home_country: state.homeCountry,
       whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
+      pickup_location_label: els.pickupAddress.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),
       notes: buildCombinedNotes(item),
       tour_date: item.tour_date,
@@ -2294,7 +2301,7 @@ function createItem(initial = {}) {
       main_contact_phone: els.mainPhone.value.trim(),
       home_country: state.homeCountry,
       whatsapp_number: els.whatsappNumber.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
+      pickup_location_label: els.pickupAddress.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),
       notes: [
         state.additionalInvoiceMode ? `Additional approved services. Prior paid invoice: ${state.priorInvoiceNo}. Original accepted total: $${state.acceptedQuoteTotal} USD.` : "",
@@ -2360,7 +2367,6 @@ function createItem(initial = {}) {
     const email = els.mainEmail.value.trim();
     const phone = els.mainPhone.value.trim();
     const whatsapp = els.whatsappNumber.value.trim();
-    const pickupLabel = els.pickupLocationLabel.value.trim();
     const pickupAddress = els.pickupAddress.value.trim();
     const notes = els.globalNotes.value.trim();
 
@@ -2369,7 +2375,7 @@ function createItem(initial = {}) {
     if (email) params.set("guest_email", email);
     if (phone) params.set("guest_phone", phone);
     if (whatsapp) params.set("whatsapp_number", whatsapp);
-    if (pickupLabel) params.set("pickup_location_label", pickupLabel);
+    if (pickupAddress) params.set("pickup_location_label", pickupAddress);
     if (pickupAddress) params.set("pickup_address_or_hotel", pickupAddress);
     if (notes) params.set("notes", notes);
 
@@ -2399,7 +2405,7 @@ function createItem(initial = {}) {
       guest_last_name: els.mainLastName.value.trim(),
       guest_email: els.mainEmail.value.trim(),
       guest_phone: els.mainPhone.value.trim(),
-      pickup_location_label: els.pickupLocationLabel.value.trim(),
+      pickup_location_label: els.pickupAddress.value.trim(),
       pickup_address_or_hotel: els.pickupAddress.value.trim(),
       notes: buildCombinedNotes(item),
       items: [{
@@ -2792,6 +2798,10 @@ function createItem(initial = {}) {
     renderSummary();
   });
 
+  els.invoiceDueDays.addEventListener("input", () => {
+    state.invoiceDueDaysTouched = true;
+  });
+
   [
     els.stripeEnvironment,
     els.invoiceDueDays,
@@ -2801,7 +2811,6 @@ function createItem(initial = {}) {
     els.mainPhone,
     els.whatsappNumber,
     els.agentId,
-    els.pickupLocationLabel,
     els.pickupAddress,
     els.globalNotes
   ].forEach(el => {

@@ -103,12 +103,44 @@ for(const background of [false,true])test((background?'background':'manual')+' r
  await h.q.refreshCrm(background);assert.equal(h.calls.length,0);assert.equal(h.q.hasUnsavedTourChanges(),true);assert.equal(h.q.tourFormSnapshot().includes('2099-11-30'),true);
 });
 
+test('refresh protection covers ordinary CRM fields, not only activity rows',async()=>{
+ const h=harness({product_selected:'MBW006',notes:'Saved note'});h.load();h.q.state.tourFormSnapshot=h.q.tourFormSnapshot();
+ h.node('notesInput').value='Unsaved operational note';
+ assert.equal(h.q.hasUnsavedTourChanges(),true);
+ await h.q.refreshCrm(false);
+ assert.equal(h.calls.length,0);
+ assert.equal(h.node('notesInput').value,'Unsaved operational note');
+});
+
 
 test('save uses the returned persisted row and rejects an acknowledgement without it',async()=>{
  const h=harness({tour_add_ons:'Night Walk'});h.load();
  h.q.setApi(async()=>({ok:true}));assert.equal(await h.q.saveRecord(),false);
  h.q.setApi(async(action,payload)=>({...payload.record,updated_at:'2099-12-01T00:00:00Z'}));
  assert.equal(await h.q.saveRecord(),true);assert.equal(h.q.state.records[0].updated_at,'2099-12-01T00:00:00Z');
+});
+test('save verifies a committed write by canonical readback when the write returns only an acknowledgement',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});h.load();let committed;
+ h.q.setApi(async(action,payload)=>{
+  if(action==='update_inquiry'){committed={...payload.record,updated_at:'2099-12-02T00:00:00Z'};return {ok:true};}
+  if(action==='list_inquiries')return {ok:true,records:[committed]};
+  throw new Error('Unexpected action '+action);
+ });
+ assert.equal(await h.q.saveRecord(),true);assert.equal(h.q.state.records[0].updated_at,'2099-12-02T00:00:00Z');
+});
+test('save verifies a committed write by canonical readback after an uncertain write response',async()=>{
+ const h=harness({tour_add_ons:'Night Walk'});h.load();let committed;
+ h.q.setApi(async(action,payload)=>{
+  if(action==='update_inquiry'){committed={...payload.record,updated_at:'2099-12-03T00:00:00Z'};throw new Error('Live CRM save failed: CRM did not confirm the save');}
+  if(action==='list_inquiries')return {ok:true,records:[committed]};
+  throw new Error('Unexpected action '+action);
+ });
+ assert.equal(await h.q.saveRecord(),true);assert.equal(h.q.state.records[0].updated_at,'2099-12-03T00:00:00Z');
+});
+test('save rejects a readback whose record fields do not match the requested edit',async()=>{
+ const h=harness({tour_add_ons:'Night Walk',status:'quoted'});h.load();h.node('recordStatusInput').value='booked';
+ h.q.setApi(async action=>action==='update_inquiry'?{ok:true}:{ok:true,records:[{...h.base,status:'quoted'}]});
+ assert.equal(await h.q.saveRecord(),false);assert.equal(h.node('recordStatusInput').value,'booked');
 });
 test('save rejects stale returned activity rows and preserves the edited form',async()=>{
  const h=harness({tour_add_ons:'Night Walk'});const {extras}=h.load();extras[0].date='2099-11-30';extras[0].status='booked';

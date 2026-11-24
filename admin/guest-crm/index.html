@@ -590,7 +590,7 @@
       const fields = ["referenceIdInput","apiUrlInput","searchInput","viewFilter","statusFilter","quoteFilter","paymentFilter","repFilter","inlineSearchInput","inlineStatusFilter","inlineRepFilter","sortInput","sortDirectionInput","modeInput","guestIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","promoCodeInput","notesInput","internalInput","recordTypeInput","organizationNameInput","contactRoleInput","relationshipStageInput","partnerTypeInput","companyWebsiteInput","pricingModelInput","rateSheetVersionInput","ratesSentAtInput","referringPartnerIdInput"];
       fields.push("marketingBrandInput","billingBrandDisplay");
       document.addEventListener("DOMContentLoaded", init);
-      function init(){cache();els.zelleToAcctBtn=document.getElementById("zelleToAcctBtn");["assignmentEndTime","repFilter","inlineRepFilter","assignedToInput","statPaymentPending"].forEach(id=>els[id]=document.getElementById(id));renderPrimaryProductOptions();populateAssignmentTimeOptions();bind();clearInteractionForm();clearAssignmentForm();initQuickFilters();loadSettings();loadLocalRecords();if(!state.records.length)loadDemoRecords(false);els.sortInput.value=localStorage.getItem("mbwCrmSort")||"created_at";els.sortDirectionInput.value=localStorage.getItem("mbwCrmSortDirection")||"desc";els.followupAudienceInput.value=localStorage.getItem("mbwCrmFollowupAudience")||"all";render();loadGuidePlans();window.addEventListener("online",()=>{refreshRetryAttempt=0;scheduleRefreshRetry(500);});window.addEventListener("storage",event=>{if(event.key==="mbwCrmItinerarySaved"&&event.newValue)syncSavedItineraryFromOtherTab();});window.addEventListener("focus",()=>{if(localStorage.getItem("mbwCrmItinerarySaved"))syncSavedItineraryFromOtherTab();loadGuidePlans();});if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)refreshCrm();}
+      function init(){cache();els.zelleToAcctBtn=document.getElementById("zelleToAcctBtn");["assignmentEndTime","repFilter","inlineRepFilter","assignedToInput","statPaymentPending"].forEach(id=>els[id]=document.getElementById(id));renderPrimaryProductOptions();populateAssignmentTimeOptions();bind();clearInteractionForm();clearAssignmentForm();initQuickFilters();loadSettings();loadLocalRecords();if(!state.records.length)loadDemoRecords(false);els.sortInput.value=localStorage.getItem("mbwCrmSort")||"created_at";els.sortDirectionInput.value=localStorage.getItem("mbwCrmSortDirection")||"desc";els.followupAudienceInput.value=localStorage.getItem("mbwCrmFollowupAudience")||"all";render();loadGuidePlans();window.addEventListener("online",()=>{refreshRetryAttempt=0;scheduleRefreshRetry(500);});window.addEventListener("storage",event=>{if(event.key==="mbwCrmItinerarySaved"&&event.newValue)syncSavedItineraryFromOtherTab();});window.addEventListener("focus",()=>{if(localStorage.getItem("mbwCrmItinerarySaved"))syncSavedItineraryFromOtherTab();loadGuidePlans();});window.addEventListener("beforeunload",event=>{if(!hasUnsavedTourChanges())return;event.preventDefault();event.returnValue="";});if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT)refreshCrm();}
       function cache(){ ["addNewBtn","refreshBtn","saveBtn","bottomSaveBtn","detailTopSaveBtn","advancedBtn","quickFiltersPanel","quickFiltersToggle","quickFiltersContent","priorityRecords","recordList","calendarTitle","calendarGrid","agendaDate","agendaRecords","calendarModeInput","calendarPrevBtn","calendarNextBtn","calendarTodayBtn","calendarMonthViewBtn","calendarListViewBtn","calendarMonthPanel","calendarPipelineListPanel","calendarPipelineRecords","calendarPipelineCount","calendarNavigationRow","calendarLegendToggle","calendarLegends","pipelineStatusFilter","pipelineSortInput","selectedActionsToggle","selectedActionsBody","reportRangeInput","reportStartInput","reportEndInput","reportTypeInput","reportStatusInput","reportRangeHint","reportActivityCount","reportGuestCount","reportBookedCount","reportActionCount","reportTableBody","copyReportBtn","downloadReportBtn","printReportBtn","copyGuideReportBtn","queueNav","queueNavEyebrow","queueNavText","queuePrevBtn","queueNextBtn","lastRefreshText","duplicateNotice","guestHistory","addTourItemBtn","tourItemsList","quoteOptionsPanel","quoteOptionsList","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","markQuotesSentBtn","statusField","statTotal","statUpcoming","statNew","statContacted","statPlanning","statQualified","statFollowUp","statActivePipeline","statQuoted","statDepositPending","statDepositPaid","statBooked","statCompleted","statCancelled","statDidNotBook","clearFiltersBtn","emailToolBtn","zelleToolBtn","stripeToolBtn","confirmationToolBtn","classicConfirmationToolBtn","copyInvoiceTsvBtn","copyInvoiceBackendTsvBtn","copyDepositLinkBtn","whatsAppBtn","detailEmailToolBtn","detailZelleToolBtn","detailStripeToolBtn","detailConfirmationToolBtn","detailClassicConfirmationToolBtn","detailCopyInvoiceTsvBtn","detailCopyInvoiceBackendTsvBtn","detailCopyDepositLinkBtn","detailWhatsAppBtn","markContactedBtn","markDuplicateBtn","detailMarkDuplicateBtn","copyGuideMessageBtn","copyStatusMessageBtn","generateItineraryBtn","editSavedItineraryBtn","guidePlanWorkflow","guidePlanSummary","reviewGuidePlanBtn","openGuidePlanGeneratorBtn","copyReviewWhatsAppBtn","copyReviewEmailBtn","collaborationToAcctBtn","saveSettingsBtn","importCsvBtn","csvInput","loadDemoBtn","clearLocalBtn","detailTable","actionTable","payloadOutput","advancedPanel","toast","inquiryIdDisplay","activityContext","activityEmpty","activityWorkspace","interactionDirection","interactionChannel","interactionType","interactionStaff","interactionOccurredAt","interactionNote","interactionFollowup","interactionFollowupFields","interactionFollowupAt","clearInteractionBtn","saveInteractionBtn","interactionSaveStatus","interactionCount","interactionTimeline","operationsContext","operationsEmpty","operationsWorkspace","assignmentId","assignmentGroupId","assignmentService","assignmentStatus","assignmentDate","assignmentTime","assignmentProvider","assignmentProviderOtherWrap","assignmentProviderOther","assignmentPickup","assignmentDropoff","assignmentDirection","assignmentCost","assignmentExtraCost","assignmentStaff","assignmentInformed","assignmentNote","clearAssignmentBtn","saveAssignmentBtn","assignmentCount","assignmentList","messageServiceFilter","messageIncludeCosts","generateMessageBtn","copyOperationsMessageBtn","operationsMessage","communicationSectionMeta","assignmentsSectionMeta","communicationSectionBody","assignmentsSectionBody"].concat(fields).forEach(id => els[id]=document.getElementById(id)); }
       ["followupFilter","followupAudienceInput","worklistSummary","copyWorklistBtn","downloadWorklistBtn","attributionPanel","attributionPanelBody","attributionSummary","followupFieldState","paymentLedger","paymentLedgerSummary","paymentLedgerList","paymentLedgerWarning","attachStripeInvoiceInput","attachStripeInvoiceBtn","tradePartnerPanel","moveTradePartnerBtn","moveCollaborationBtn","statTradePartners","statCollaborations"].forEach(id=>els[id]=document.getElementById(id));
       els.assignmentTourItem=document.getElementById("assignmentTourItem");
@@ -1433,8 +1433,13 @@
         }
         return apiWithoutMealSummary(action,data);
       };
+      const recordDirtyFieldIds=["referenceIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","promoCodeInput","notesInput","internalInput","marketingBrandInput","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","recordTypeInput","organizationNameInput","contactRoleInput","relationshipStageInput","partnerTypeInput","companyWebsiteInput","pricingModelInput","rateSheetVersionInput","ratesSentAtInput","referringPartnerIdInput"];
       function tourFormSnapshot(){
-        return JSON.stringify({primary:["productSelectedInput","serviceTypeInput","dateInput","guestCountInput","durationInput","recordStatusInput"].map(id=>els[id]?.value||""),additional:collectTourItems()});
+        return JSON.stringify({
+          fields:recordDirtyFieldIds.map(id=>[id,els[id]?.value||""]),
+          quoteOptions:collectQuoteOptions(),
+          additional:collectTourItems()
+        });
       }
       function hasUnsavedTourChanges(){return els.modeInput?.value==="update"&&Boolean(state.tourFormSnapshot)&&state.tourFormSnapshot!==tourFormSnapshot();}
       function scheduleRefreshRetry(delay){
@@ -1537,6 +1542,10 @@
         if(!saved) throw new Error("Save not verified. Your edits are kept; the CRM did not return the saved inquiry.");
         const fingerprint=row=>serializeTourItems(normalizeTourItems(row));
         if(fingerprint(saved)!==fingerprint(requested)) throw new Error("Activity save not verified. Your edits are kept; the CRM returned different services. Do not refresh before reviewing.");
+        const requestedRow=normalizeCrmRecord(requested),savedRow=normalizeCrmRecord(saved);
+        const verificationFields=["status","assigned_to","first_name","last_name","email","phone_normalized","country","requested_date_start","requested_date_end","guest_count","tour_type","service_type","product_selected","duration_preference","transportation_needed","pickup_location","priority","availability_status","quote_status","payment_status","followup_date","promo_code","is_archived","record_type","organization_name","contact_role","relationship_stage","partner_type","company_website","pricing_model","rate_sheet_version","rates_sent_at","referring_partner_id"];
+        const mismatched=verificationFields.filter(field=>clean(savedRow[field])!==clean(requestedRow[field]));
+        if(mismatched.length) throw new Error("Record save not verified. Your edits are kept; the CRM read-back differs in: "+mismatched.join(", ")+". Do not refresh before reviewing.");
         const verified={...requested,...saved};
         delete verified.lifecycle_override;
         return verified;
@@ -1564,6 +1573,25 @@
           throw new Error(`Guest saved, but meal-option verification failed (${savedOptions}/${expected.optionCount} options; ${savedGuests}/${expected.optionGuestCount} travelers). Your guest record is safe; do not recreate it.`);
         }
         return result;
+      }
+      async function saveInquiryWithReadback(action,payload){
+        let response=null,writeError=null;
+        try{
+          response=await api(action,payload);
+          return savedInquiryFromResponse(response,payload.record);
+        }catch(error){writeError=error;}
+
+        // A Google Sheets update can commit successfully while the workflow returns only
+        // an acknowledgement (or times out before returning the written row). Never retry
+        // the write: read the canonical CRM sheet once and accept success only when the
+        // saved row matches the requested record and service list.
+        try{
+          const readback=await api("list_inquiries",{filters:{inquiry_id:payload.record.inquiry_id},verification_only:true});
+          return savedInquiryFromResponse(readback,payload.record);
+        }catch(readError){
+          const detail=writeError&&writeError.message?writeError.message:"the CRM did not return the saved record";
+          throw new Error("CRM save outcome is not verified. Your edits are still on screen. Do not retry the save yet; refresh and search for the guest first. Initial result: "+detail);
+        }
       }
       function canPreserveUnavailableReference(error){
         return els.modeInput.value==="update"&&/contact_intent_not_found/i.test(clean(error&&error.message));
@@ -1637,8 +1665,7 @@
           }
           const reusedGuest=els.modeInput.value==="create"&&payload.action==="create_returning_inquiry";
           if(clean(els.apiUrlInput.value)||CRM_API_DEFAULT){
-            const response=await api(payload.action,payload);
-            const saved=savedInquiryFromResponse(response,payload.record);
+            const saved=await saveInquiryWithReadback(payload.action,payload);
             upsert(saved);
             await syncAndVerifyBookingOptions(saved);
 
@@ -1907,10 +1934,18 @@
         target.querySelectorAll(".record").forEach(el=>el.addEventListener("click",event=>{ if(event.target.closest("details")) return; selectRecord(el.dataset.id); }));
         target.querySelectorAll(".followupBadge[tabindex]").forEach(badge=>badge.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectRecord(badge.closest(".record").dataset.id);}}));
       }
-      function selectRecord(id){resetStripeDeposits();state.selectedId=id;resetCommunicationContext(getSelected());state.interactions=[];state.assignments=[];state.bookings=[];state.payments=[];state.editingPaymentId="";updateQueueCursor();fillForm(getSelected());clearAssignmentForm();els.assignedToInput.value=normalizeRep(getSelected()?.assigned_to);renderPaymentLedger();setView("intake");window.scrollTo({top:0,behavior:"smooth"});}
+      function selectRecord(id){
+        if(id!==state.selectedId&&hasUnsavedTourChanges()){
+          showToast("Save Record before opening another guest. Your unsaved edits are still on screen.");
+          return false;
+        }
+        resetStripeDeposits();state.selectedId=id;resetCommunicationContext(getSelected());state.interactions=[];state.assignments=[];state.bookings=[];state.payments=[];state.editingPaymentId="";updateQueueCursor();fillForm(getSelected());clearAssignmentForm();els.assignedToInput.value=normalizeRep(getSelected()?.assigned_to);renderPaymentLedger();setView("intake");window.scrollTo({top:0,behavior:"smooth"});
+        return true;
+      }
       function countStatus(status){ return state.records.filter(r=>normalizeStatus(r.status)===status).length; }
       function normalizeStatus(value){ const status=clean(value).toLowerCase().replace(/[-\s]+/g,"_"); if(status==="confirmed") return "booked"; if(status==="closed") return "did_not_book"; if(status==="active") return "contacted"; return status||"new"; }
       function normalizeRep(value){const rep=clean(value).toUpperCase();if(["J","JUAN","JPG"].includes(rep))return"JPG";if(["S","SUSANA","SS"].includes(rep))return"SS";return"";}
+      function assignedAgentId(record){const rep=normalizeRep(record&&record.assigned_to);return rep==="JPG"?"003":rep==="SS"?"002":"";}
       function repBadgeHtml(value,showName=false){const rep=normalizeRep(value),name=rep==="JPG"?"Juan":rep==="SS"?"Susana":"Unassigned",kind=rep==="JPG"?"juan":rep==="SS"?"susana":"unassigned";return `<span class="repBadge ${kind}" title="Assigned to ${name}" role="img" aria-label="Assigned to ${name}"></span>${showName?`<span class="repName">${name}</span>`:""}`;}
       function yesValue(value){ return ["1","true","yes","y"].includes(clean(value).toLowerCase()); }
       function isArchivedStatus(value){ return value&&typeof value==="object"?(yesValue(value.is_archived)||normalizeStatus(value.status)==="duplicate"):normalizeStatus(value)==="duplicate"; }
@@ -2178,7 +2213,7 @@
       function updateQueueCursor(){ const records=getFiltered(); const idx=records.findIndex(r=>r.inquiry_id===state.selectedId); if(idx>=0) state.queueCursorIndex=idx; }
       function queueLabel(value){const labels={all:"Guest Leads",tradePartners:"Trade Partners",collaborations:"Collaborations",allContacts:"All Contacts",upcoming7:"Upcoming 7",followups:"Follow-ups",urgent:"Urgent",new:"New",contacted:"Contacted",planning:"Planning",qualified:"Qualified",followUp:"Follow Up",activePipeline:"Active Pipeline",quoted:"Quoted",depositPending:"Deposit Pending",depositPaid:"Deposit Paid",paymentPending:"Payment Pending",booked:"Booked",completed:"Completed",cancelled:"Cancelled",didNotBook:"Did Not Book",duplicate:"Duplicate"};return labels[value]||"Current";}
       function getSelected(){ return state.records.find(r=>r.inquiry_id===state.selectedId)||null; }
-      function fillForm(r){ resetCommunicationContext(r); if(!r)return; referenceMatch=null; referenceGeneration++; if(els.referenceIdInput)els.referenceIdInput.value=r.contact_intent_id||""; referenceStatus(r.contact_intent_id?"Saved reference; checked again on save.":"Paste an ID or a guest message containing one Reference / Referencia."); if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); if(els.assignmentTourItem)renderAssignmentTourItems(els.assignmentTourItem.value); state.tourFormSnapshot=tourFormSnapshot(); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
+      function fillForm(r){ resetCommunicationContext(r); if(!r)return; referenceMatch=null; referenceGeneration++; if(els.referenceIdInput)els.referenceIdInput.value=r.contact_intent_id||""; referenceStatus(r.contact_intent_id?"Saved reference; checked again on save.":"Paste an ID or a guest message containing one Reference / Referencia."); if(!r) return; const status=normalizeStatus(r.status||"new"); const primary=primaryTourItemFromRecord(r); els.modeInput.value="update"; if(els.inquiryIdDisplay) els.inquiryIdDisplay.value=r.inquiry_id||""; els.guestIdInput.value=r.guest_id||""; setSelectValue(els.sourceInput,r.source_type||r.source_tab||"manual_whatsapp"); els.firstNameInput.value=capitalizeInitial(r.first_name||""); els.lastNameInput.value=capitalizeInitial(r.last_name||""); els.fullNameInput.value=[els.firstNameInput.value,els.lastNameInput.value].filter(Boolean).join(" ")||r.full_name||""; els.phoneInput.value=r.phone_number||""; els.emailInput.value=r.email||""; els.countryInput.value=r.country||r.home_country||""; setSelectValue(els.tourInput,normalizeTourCategory(r.tour_type||r.tour_category)); els.guestCountInput.value=r.guest_count||""; els.dateInput.value=toDateValue(r.requested_date||r.requested_date_start); els.recordStatusInput.value=status; updateStatusField(); updateStatusMessageButton(); els.quoteStatusInput.value=r.quote_status||"not_sent"; els.paymentStatusInput.value=normalizePayment(r.payment_status||"unpaid"); els.invoiceNoInput.value=r.invoice_no||""; els.datePaidInput.value=toDateValue(r.date_paid)||""; els.paymentMethodInput.value=r.payment_method||""; setSelectValue(els.serviceTypeInput,r.service_type||deriveServiceType(primary.tour||r.tour_type)); setSelectValue(els.productSelectedInput,productLabelFromCode(r.product_selected||primary.product_selected)); setSelectValue(els.durationInput,normalizeDuration(r.duration_preference||primary.duration)); els.transportInput.value=normalizeTransportation(r.transportation_needed); els.followupInput.value=toDateValue(r.followup_date)||""; els.priorityInput.value=isClosedStatus(status)?"":normalizePriority(r.priority||autoPriority(r.requested_date)); els.availabilityInput.value=r.availability_status||"pending"; els.groupingPreferenceInput.value=r.grouping_preference||"unknown"; els.groupingStatusInput.value=r.grouping_status||"unmatched"; els.pickupLocationInput.value=r.pickup_location||""; els.quotedAmountInput.value=r.quoted_amount||""; els.notesInput.value=r.notes||""; els.internalInput.value=r.internal_notes||""; state.tourItems=additionalTourItemsForForm(r); renderTourItems(); if(els.assignmentTourItem)renderAssignmentTourItems(els.assignmentTourItem.value); renderDuplicateNotice(); updateDuplicateActionButtons(r); toggleReviewActions(r); toggleInvoiceActions(r); }
       const fillFormWithoutQuoteOptions=fillForm; fillForm=function(record){fillFormWithoutQuoteOptions(record);if(record&&els.referenceIdInput){const primary=primaryReferenceId(record.contact_intent_id);const count=recordReferenceIds(record).length;els.referenceIdInput.value=primary;referenceStatus(primary?("Saved primary reference; "+count+" linked reference"+(count===1?"":"s")+" preserved in the audit trail."):"Paste an ID or a guest message containing one Reference / Referencia.");}els.marketingBrandInput.value=clean(record?.marketing_brand_id||record?.brand_id||record?.brandId)||"mbw";els.billingBrandDisplay.value="Mindo Bird Watching";fillQuoteOptions(record);updateItineraryActions(record);state.toolHandoffSnapshot=toolHandoffSnapshot()};
       const fillFormWithoutPromotion=fillForm;
       fillForm=function(record){
@@ -2186,6 +2221,7 @@
         if(record&&els.promoCodeInput){
           setSelectValue(els.promoCodeInput,clean(record.promo_code).toUpperCase());
         }
+        state.tourFormSnapshot=tourFormSnapshot();
         state.toolHandoffSnapshot=toolHandoffSnapshot();
       };
       const fillFormWithoutRecordType=fillForm;
@@ -2669,6 +2705,7 @@
           guest_phone:r.phone_number||"",
           whatsapp:r.phone_number||"",
           whatsapp_number:r.phone_number||"",
+          agent_id:assignedAgentId(r),
           guests:r.guest_count||"",
           guest_count:r.guest_count||"",
           party:r.guest_count||"",
@@ -2698,7 +2735,7 @@
           payment_status:r.payment_status||"",
           payment_request:depositMode?"deposit":"full",
           deposit_amount:"100",
-          notes:r.notes||""
+          invoice_notes:""
         });
         window.open(url+(url.includes("?")?"&":"?")+params.toString(),"_blank","noopener,noreferrer");
       }
