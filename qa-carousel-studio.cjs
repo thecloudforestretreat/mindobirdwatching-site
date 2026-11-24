@@ -31,12 +31,15 @@ function compileWorkflow(path) {
   }
   assert(html.includes("2–10"), "UI must state the supported slide count");
   assert(html.includes("1080 × 1350"), "UI must disclose the output dimensions");
-  assert(html.includes("carousel-studio-v10.css") && html.includes("carousel-studio.js?v=17"), "Carousel asset cache keys must expose reliable schedule editing");
+  assert(html.includes("carousel-studio-v10.css?v=2") && html.includes("carousel-studio.js?v=18"), "Carousel asset cache keys must expose aligned schedule editing");
+  assert(css.includes("scheduleCadenceNote") && css.includes("grid-column:1/-1"), "The publishing cadence note must span the schedule editor without breaking alignment");
   assert(ui.includes('c==="HUMAN_EDITED"?"Human edited"'), "Approved human edits must not be presented as a failing legacy quality score");
   assert(html.includes("Carousel subject") && html.includes("recent night walks") && !html.includes("Bird name</span>"), "Intake must accept birds, trips, tours, and open-ended subjects");
   assert(ui.includes("America/New_York"), "UI must use the fixed Eastern timezone");
   assert(html.includes('id="scheduledDate"') && html.includes('id="scheduledTime"'), "Carousel intake must expose editable date and time fields");
-  assert(ui.includes("function defaultSchedule(){return{date:addDays(today(),1),time:\"07:00\"}}"), "New carousels must default to tomorrow at 7:00 AM Eastern");
+  assert(ui.includes("function defaultSchedule(){return{date:addDays(today(),1),time:\"07:10\"}}"), "New carousels must default to tomorrow at the 7:10 AM publisher pass");
+  assert(ui.includes("function alignPublisherSlot") && ui.includes("Carousels publish hourly at :10"), "Carousel times must align to and explain the hourly :10 publisher pass");
+  assert(html.includes('value="07:10" step="3600"') && html.includes("other times move forward to the next :10 pass"), "Carousel intake must expose truthful publisher-aligned scheduling");
   assert(ui.includes('$("scheduledDate").min=today()'), "Carousel intake must still allow a future time today");
   assert(!ui.includes("Date.now()+15*60000"), "Carousel intake must not default to the next 15-minute slot");
   assert(ui.includes("already 1 carousel") && ui.includes("scheduled for this date"), "UI must warn about same-date scheduling");
