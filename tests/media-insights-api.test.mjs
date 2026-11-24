@@ -10,6 +10,8 @@ test("media insights proxy preserves measured patterns and validated AI guidance
     observed_patterns:[{id:"format:carousel",metric:"views_or_reach",sample_size:8}],
     ai_guidance:{available:true,metric:"result",items:[{evidence_id:"format:carousel",interpretation:"Measured interpretation",experiment:"Controlled experiment"}]},
     data_health:{stale:false,platforms:{}},
+    youtube_audience:{available:true,europe_share_percent:18.4,geographies:[{country:"DE",views:44}]},
+    recommendations:{slots:[],experiments:[{id:"youtube:europe:midday",target:"Europe"}]},
     last_successful_sync_at:"2026-10-22T22:18:32Z",
     reddit:{overall:{username:"MindoBirdWatching",followers:58,posts_published:100},retention:{note:"Retained permanently."}},
     platforms:{instagram:{connected:true,metrics:{reach:288}},reddit:{connected:true,metrics:{views:991221},coverage_percent:100}},
@@ -26,6 +28,8 @@ test("media insights proxy preserves measured patterns and validated AI guidance
     assert.equal(body.reddit.overall.username,"MindoBirdWatching");
     assert.equal(body.reddit.overall.posts_published,100);
     assert.equal(body.last_successful_sync_at,"2026-10-22T22:18:32Z");
+    assert.equal(body.youtube_audience.geographies[0].country,"DE");
+    assert.equal(body.recommendations.experiments[0].target,"Europe");
   }finally{globalThis.fetch=original}
 });
 

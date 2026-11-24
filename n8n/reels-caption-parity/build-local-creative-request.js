@@ -110,6 +110,7 @@ Grounding rules:
 - When bird names were detected from the description, copy those names exactly into featured_birds. They override any model guess.
 - verified_details must briefly restate only supplied facts.
 - A verified note beginning "Opening 0–3 seconds:" describes visible footage. It may guide the first concrete sentence, but never mention editing, seconds, an overlay, or the soundtrack in public copy unless that detail is part of the story itself.
+- A verified note beginning "Opening text already in video:" records words already burned into the video. Do not repeat or describe those words mechanically in the public caption.
 - Stable destination facts may add useful local context. Do not turn a regional characteristic into a claim about the exact weather or conditions during this specific outing.
 - Words such as moonlit, moonlight, lantern, canopy, plumage, elusive, rare, river, current, rapids, nest, feeding, dawn, or glow may be used only when that fact appears in the supplied description or optional fields. For Mindo, general cloud-forest, mist, humidity, and rain context is permitted by the destination fact pack; specific conditions in the footage still require intake evidence.
 
@@ -120,7 +121,8 @@ Creative rules:
 - Use ordinary words, contractions when they fit, and varied sentence lengths. It is acceptable for the caption to be understated.
 - Open with a concrete supplied detail. Do not open with "During this outing", "This reel", "This video", "One birding", "Two birds, two...", or a generic statement about Mindo.
 - Avoid stock AI/travel-copy phrases, including "This reel follows", "This reel shows", "The video shows", "Imagine", "Step into", "hidden paradise", "nature's symphony", "mist-kissed", "living tapestry", "feathered wonders", "where time slows down", "set the scene", "rich avian diversity", "the mix of species shows", "cloud forest delivered", "were observed", "splash of color", "striking species", "in its own way", "just long enough", "one of the best chances", "what makes this special", "a reminder that", and "witness ... up close".
-- Do not end with "Which one caught your eye?", "Which one caught your attention?", "What would you notice first?", or another engagement question unless the intake explicitly asks for audience participation.
+- Use at most one engagement device. A specific observation question may be used when it follows directly from verified footage; otherwise use the supplied CTA guidance. Never add generic engagement bait such as "Which one caught your eye?"
+- A save-worthy fact may be used only when it is explicitly supplied in the intake or verified destination context. Never manufacture a fact to create a CTA.
 - Prefer plain observations a local guide would actually say. Do not pad the caption with generic atmosphere, an inspirational conclusion, a summary sentence, or claims that the sighting "showcases" Mindo.
 - Do not claim rarity, reliability, guarantees, emotions, behavior, habitat, weather, or sightings that were not supplied. Avoid unsupported taglines such as "Reliable morning birding."
 - First-person language such as "we saw" or "our guests" is allowed only when the factual intake uses we, us, our, guests, or tourists.

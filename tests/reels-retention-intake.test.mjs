@@ -8,15 +8,20 @@ const activePrompt = readFileSync(new URL('../n8n/reels-caption-parity/build-loc
 const apiSource = readFileSync(new URL('../functions/api/admin/reels/index.js', import.meta.url), 'utf8');
 
 assert.match(html, /data-field="opening_action_0_3"[^>]*[\s\S]*?required/);
-assert.match(html, /visible action should still work with sound muted/);
-assert.match(html, /reels-studio\.js\?v=21/);
+assert.match(html, /data-field="opening_text"/);
+assert.match(html, /Stacked text may use more than two lines/);
+assert.match(html, /reels-studio\.js\?v=22/);
 assert.equal((ui.match(/type="checkbox" data-creative-check/g) || []).length, 2);
 assert.match(ui, /Music over muted footage is a valid default/);
 assert.match(ui, /Complete both opening and retention checks/);
+assert.match(ui, /data-opening-second/);
+assert.doesNotMatch(ui, /no more than 2 short lines/);
 assert.match(prompt, /original camera audio is normally muted and replaced with a music soundtrack/);
 assert.match(prompt, /Do not claim that a bird call, wing sound, river sound, or other natural audio can be heard/);
 assert.match(activePrompt, /original camera audio is normally muted and replaced with a music soundtrack/);
 assert.match(activePrompt, /A verified note beginning "Opening 0–3 seconds:" describes visible footage/);
+assert.match(prompt, /Opening text already in video/);
+assert.match(activePrompt, /Opening text already in video/);
 
 const { onRequestPost } = await import('data:text/javascript;base64,' + Buffer.from(apiSource).toString('base64'));
 const mediaUrl = 'https://n8n.mindobirdwatching.com/media-delivery/v1/' + 'a'.repeat(32) + '/original.mp4';
@@ -28,6 +33,7 @@ const payload = {
     video_url: mediaUrl,
     reel_description: 'A Torrent Duck swims through the rapids in Mindo, Ecuador.',
     opening_action_0_3: 'The duck is already swimming against the rapids as the camera moves closer.',
+    opening_text: 'DID YOU SPOT IT?',
     scheduled_date: '2099-01-01',
     scheduled_time: '07:00',
     post_to_instagram: true
@@ -44,7 +50,7 @@ try {
   globalThis.fetch = async (_url, options) => { forwarded = JSON.parse(options.body); return Response.json({ ok: true }); };
   const accepted = await onRequestPost({ request: makeRequest(payload), env: { N8N_ADMIN_REELS_WEBHOOK_URL: 'https://example.test/reels' } });
   assert.equal(accepted.status, 200);
-  assert.equal(forwarded.reels[0].verified_details, 'Opening 0–3 seconds: The duck is already swimming against the rapids as the camera moves closer.');
+  assert.equal(forwarded.reels[0].verified_details, 'Opening 0–3 seconds: The duck is already swimming against the rapids as the camera moves closer. | Opening text already in video: DID YOU SPOT IT?');
 
   const missing = structuredClone(payload);
   delete missing.reels[0].opening_action_0_3;
