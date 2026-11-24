@@ -5,13 +5,9 @@ const html = fs.readFileSync("admin/media/reels/index.html", "utf8");
 const ui = fs.readFileSync("admin/assets/js/reels-studio.js", "utf8");
 const api = fs.readFileSync("functions/api/admin/reels/index.js", "utf8");
 
-assert(
-  ui.includes('var API = "https://mindobirdwatching.com/api/admin/reels";'),
-  "Reels Studio must use the main-site Pages Function, not the static admin host"
-);
-assert(!ui.includes('var API = "/api/admin/reels";'), "Relative Reels API URL would resolve to the static admin host");
-assert(html.includes('reels-studio.js?v=14'), "Reels Studio asset cache key must expose deterministic copy checks");
-assert(html.includes('reels-studio.css?v=5'), "Reels Studio CSS cache key must expose service health styles");
+assert(ui.includes('var API = "/api/admin/reels";'), "Reels Studio must use the unified same-origin Pages Function");
+assert(html.includes('reels-studio.js?v=21'), "Reels Studio asset cache key must expose retention checks");
+assert(html.includes('reels-studio-v9.css'), "Reels Studio CSS cache key must expose retention check styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('copyValidationIssues(row).length === 0'), "Reels Studio must verify copy content instead of trusting a stored quality score");
 assert(ui.includes('caption must contain 35–100 words'), "Reels Studio must explain the caption-length requirement");
@@ -33,7 +29,7 @@ assert(api.includes("payload.video_url = videoUrl"), "Reels API must forward onl
 assert(api.includes("function withDerivedLinks(row)"), "Reels API must repair missing YouTube URLs from saved video IDs");
 assert(api.includes(".map(withDerivedLinks)"), "Every returned reel must receive link enrichment");
 assert(ui.includes('request("replace_media"'), "Reels Studio must call the media-only replacement action");
-assert(ui.includes("Captions, hashtags, title, schedule, quality score, and approval remain exactly as they are."), "The replacement UI must clearly describe preserved fields");
+assert(ui.includes("Captions, hashtags, title and schedule stay unchanged."), "The replacement UI must clearly describe preserved fields");
 assert(ui.includes("mediaCanBeReplaced"), "Reels Studio must lock media replacement after publishing starts");
 assert(ui.includes('activeStatus: "review"'), "Reels Studio must open on the actionable approval queue");
 assert(html.indexOf('data-status="review"') < html.indexOf('data-status="upcoming"'), "Needs approval must appear before Upcoming");
@@ -50,10 +46,15 @@ assert(ui.includes('function defaultStartDate() { return addDays(todayInEastern(
 assert(ui.includes('start.min = todayInEastern()'), "Reel batches must still allow a future time today");
 assert(ui.includes('setDefaultBatchSchedule(true);') && ui.includes('setDefaultBatchSchedule(false);'), "Reel scheduling defaults must reset after submission without overwriting an active edit");
 assert(!html.includes("Defaults to tomorrow; today remains available."), "Reel intake must keep the batch-default row aligned without helper copy");
+assert(html.includes('data-field="opening_action_0_3"'), "Reel intake must capture the visible opening action");
+assert(ui.includes('opening_action_0_3: clean('), "Reel intake must forward the visible opening action");
+assert((ui.match(/type="checkbox" data-creative-check/g) || []).length === 2, "Approval must require exactly two retention-focused visual checks");
+assert(ui.includes("Music over muted footage is a valid default."), "Review must preserve the music-first production workflow");
+assert(api.includes('verified_details: `Opening 0–3 seconds: ${openingAction}`'), "The API must store opening action as verified context");
 
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v14",
+  cacheKey: "v21",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));

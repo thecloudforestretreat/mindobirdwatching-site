@@ -96,11 +96,13 @@ function identifier(input) {
 function normalizeReel(input, timezone) {
   const videoUrl = clean(input.video_url, 1000);
   const description = clean(input.reel_description, 1200);
+  const openingAction = clean(input.opening_action_0_3, 240);
   const scheduledDate = clean(input.scheduled_date, 10);
   const scheduledTime = clean(input.scheduled_time, 5);
   const reelTimezone = ALLOWED_TIMEZONES.has(input.timezone) ? input.timezone : timezone;
   if (!validVideoUrl(videoUrl)) throw new Error("Each reel needs a supported HTTPS video URL from the media delivery service.");
   if (description.length < 8) throw new Error("Each reel needs a factual description of at least 8 characters.");
+  if (openingAction.length < 8) throw new Error("Each reel needs a short description of the visible action during the first 0–3 seconds.");
   if (!validDate(scheduledDate) || !validTime(scheduledTime)) throw new Error("Each reel needs a valid scheduled date and time.");
   if (!futureEastern(scheduledDate, scheduledTime)) throw new Error("Choose a future Eastern date and time.");
   return {
@@ -109,6 +111,7 @@ function normalizeReel(input, timezone) {
     source: "admin_reels_studio",
     video_url: videoUrl,
     reel_description: description,
+    verified_details: `Opening 0–3 seconds: ${openingAction}`,
     scheduled_date: scheduledDate,
     scheduled_time: scheduledTime,
     timezone: reelTimezone,

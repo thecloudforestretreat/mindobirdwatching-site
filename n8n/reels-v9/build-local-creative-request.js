@@ -49,6 +49,9 @@ Post type: ${clean(row.post_type)}
 VERIFIED DESTINATION CONTEXT:
 ${destinationContext}
 
+PRODUCTION DEFAULT:
+The original camera audio is normally muted and replaced with a music soundtrack because distant bird audio and guest conversation are often unusable. Do not claim that a bird call, wing sound, river sound, or other natural audio can be heard unless the intake explicitly says that sound was preserved.
+
 RECENT INSTAGRAM COPY TO AVOID REPEATING:
 ${recent.length ? recent.join('\n') : 'No recent copy supplied.'}
 
@@ -62,6 +65,7 @@ Grounding rules:
 - If no different location is explicitly stated, use exactly "Mindo, Ecuador".
 - featured_birds must contain clean common names only, in the order mentioned.
 - verified_details must briefly restate only supplied facts.
+- A verified note beginning "Opening 0–3 seconds:" describes visible footage. It may guide the first concrete sentence, but never mention editing, seconds, an overlay, or the soundtrack in public copy unless that detail is part of the story itself.
 - Stable destination facts may add useful local context. Do not turn a regional characteristic into a claim about the exact weather or conditions during this specific outing.
 - Do not add sensory staging, scenery, habitat, appearance, behavior, weather, or atmosphere that is not literally supplied.
 - Preserve the user's nouns precisely: locations are not automatically habitats, and a surprise is not automatically a sighting.
