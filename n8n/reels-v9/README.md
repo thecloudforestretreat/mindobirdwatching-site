@@ -47,6 +47,15 @@ social publishing call. The admin API returns HTTP 503 with an explicit Mac mini
 message when it cannot reach the workflow. An independent external uptime monitor is
 still required to notify operators while the Mac mini itself is powered off.
 
-The production Reels and Carousel schedule triggers run once per hour at minute `:00`.
-Due rows remain eligible on later runs, so the hourly cadence reduces unnecessary Mac
-mini work without abandoning a post after a temporary outage.
+The production Reels publisher checks due rows once per hour at minute `:00`. The
+Carousel publisher checks at minute `:10`. These are lightweight queue polls, not
+separate assurance workflows. Due rows remain eligible on later runs, so a temporary
+outage does not permanently abandon a post and the two publishing jobs do not start
+at the same time.
+
+Social analytics no longer adds another hourly job. Its background refresh runs once
+daily at 2:35 AM Eastern, while opening the Analytics screen can still request current
+data on demand. Media Studio performs the 60-minute readiness check from the queue data
+it already loads and applies a 10-minute receipt grace period after the scheduled time.
+The weekly GitHub assurance test validates these rules without creating a social post
+or calling a platform publishing API.

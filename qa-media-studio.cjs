@@ -19,6 +19,10 @@ assert(script.includes("function publishingAssurance(row,type)"), "Reels and car
 assert(script.includes("assurance.partial||assurance.ambiguous||assurance.verification_overdue"), "Partial cross-post results must need attention");
 assert(script.includes("Pre-publication · next 60 minutes"), "Media Studio must show the automatic pre-publication window");
 assert(script.includes("Every selected destination must have a saved platform post ID or publication date."), "Post-publication verification must require durable receipts");
+assert(script.includes("Publishing work is staggered"), "Media Studio must explain the low-volume workflow cadence");
+assert(script.includes('class="assuranceHistory"'), "Each post must expose a publication history");
+assert(script.includes("result.next_action"), "Each post must show the next safe action");
+assert(styles.includes(".assuranceHistory"), "Publication history must be styled responsively");
 assert(script.includes("data.observed_patterns||[]"), "Observed guidance must come from the evidence-gated workflow payload");
 assert(!script.match(/function renderObservedPatterns\([^)]*\)\{[^\n]*analyticsEngine\(\)\.observedPatterns/), "Observed guidance must not be recomputed from lifetime totals in the browser");
 assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
@@ -55,4 +59,4 @@ assert(!script.includes("Connected · incomplete data"), "Connection status must
 assert(script.includes("Historical coverage varies by platform"), "Analytics notice must explain coverage without calling healthy connections incomplete");
 assert(script.includes("URL recovery"), "YouTube URL fallback must be visible in data-health evidence");
 
-console.log(JSON.stringify({ ok: true, checks: 42, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true, nonComparableVisibilityGuard: true, allPlatformComparisons: true, crossPlatformTopicMatrix: true, unresolvedInstagramEvidence: true, visibilityCoverage: true, hourlyFreshness: true }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: 46, youtubeIdFallback: true, savedUrlPrecedence: true, deletedCloudinaryFallback: true, directCalendarEditing: true, deepLinkedEditors: true, preservedReturnLocation: true, strictCarouselReadiness: true, imminentReviewAlert: true, explicitCalendarStatus: true, nonComparableVisibilityGuard: true, allPlatformComparisons: true, crossPlatformTopicMatrix: true, unresolvedInstagramEvidence: true, visibilityCoverage: true, hourlyFreshness: true, publicationHistory: true, staggeredCadence: true }, null, 2));

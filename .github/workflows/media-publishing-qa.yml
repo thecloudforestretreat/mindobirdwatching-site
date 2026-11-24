@@ -1,0 +1,59 @@
+name: Media publishing assurance QA
+
+on:
+  pull_request:
+    paths:
+      - 'admin/assets/js/media-assurance.js'
+      - 'admin/assets/js/media-studio*.js'
+      - 'admin/assets/css/media-studio*.css'
+      - 'admin/media/**'
+      - 'n8n/build_carousel_publish_guard.mjs'
+      - 'n8n/build_social_media_analytics.mjs'
+      - 'n8n/publishing-cadence.mjs'
+      - 'tests/media-assurance.test.cjs'
+      - 'tests/publishing-cadence.test.mjs'
+      - 'qa-media-studio.cjs'
+      - '.github/workflows/media-publishing-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'admin/assets/js/media-assurance.js'
+      - 'admin/assets/js/media-studio*.js'
+      - 'admin/assets/css/media-studio*.css'
+      - 'admin/media/**'
+      - 'n8n/build_carousel_publish_guard.mjs'
+      - 'n8n/build_social_media_analytics.mjs'
+      - 'n8n/publishing-cadence.mjs'
+      - 'tests/media-assurance.test.cjs'
+      - 'tests/publishing-cadence.test.mjs'
+      - 'qa-media-studio.cjs'
+      - '.github/workflows/media-publishing-qa.yml'
+  schedule:
+    - cron: '20 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: media-publishing-assurance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run publishing safety tests
+        run: node --test tests/media-assurance.test.cjs tests/publishing-cadence.test.mjs tests/carousel-publish-guard.test.mjs tests/reels-gateway-approval.test.mjs
+      - name: Run Media Studio regression checks
+        run: node qa-media-studio.cjs
+      - name: Validate generated workflow cadence
+        run: |
+          node n8n/build_carousel_publish_guard.mjs
+          MBW_ANALYTICS_OUTPUT=/tmp/mbw-social-analytics.json node n8n/build_social_media_analytics.mjs
+          git diff --exit-code -- 'n8n/generated/MBW - AI Carousels v14 - Publish State Guard - IMPORT.json'

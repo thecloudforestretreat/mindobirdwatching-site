@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PUBLISHING_CADENCE, validatePublishingCadence } from "./publishing-cadence.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const output = process.env.MBW_ANALYTICS_OUTPUT || path.join("/tmp", "MBW_Social_Media_Analytics_v5.json");
@@ -29,8 +30,10 @@ add("[API] Media Insights", "n8n-nodes-base.webhook", 2, [-1100, -120], {
   options: {},
 }, { webhookId: "mbw-media-insights-v5" });
 add("[TEST] Manual Trigger", "n8n-nodes-base.manualTrigger", 1, [-1100, 40], {});
-add("[SYNC] Hourly Trigger", "n8n-nodes-base.scheduleTrigger", 1.2, [-1100, 200], {
-  rule: { interval: [{ field: "hours", triggerAtMinute: 17 }] },
+const cadenceErrors = validatePublishingCadence();
+if (cadenceErrors.length) throw new Error(cadenceErrors.join(" "));
+add("[SYNC] Daily Trigger", "n8n-nodes-base.scheduleTrigger", 1.2, [-1100, 200], {
+  rule: { interval: [{ ...PUBLISHING_CADENCE.analytics }] },
 });
 
 add("[CORE] Reporting Context", "n8n-nodes-base.code", 2, [-860, 40], {
@@ -468,7 +471,7 @@ add("[API] Respond", "n8n-nodes-base.respondToWebhook", 1.1, [1660, 100], {
 const connections = {
   "[API] Media Insights": { main: [[{ node: "[CORE] Reporting Context", type: "main", index: 0 }]] },
   "[TEST] Manual Trigger": { main: [[{ node: "[CORE] Reporting Context", type: "main", index: 0 }]] },
-  "[SYNC] Hourly Trigger": { main: [[{ node: "[CORE] Reporting Context", type: "main", index: 0 }]] },
+  "[SYNC] Daily Trigger": { main: [[{ node: "[CORE] Reporting Context", type: "main", index: 0 }]] },
   "[CORE] Reporting Context": { main: [[
     { node: "[DATA] Load Reels", type: "main", index: 0 },
     { node: "[DATA] Load Carousels", type: "main", index: 0 },
