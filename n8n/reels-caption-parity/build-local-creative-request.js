@@ -92,6 +92,9 @@ Post type: ${clean(row.post_type)}
 VERIFIED DESTINATION CONTEXT:
 ${destinationContext}
 
+PRODUCTION DEFAULT:
+The original camera audio is normally muted and replaced with a music soundtrack because distant bird audio and guest conversation are often unusable. Do not claim that a bird call, wing sound, river sound, or other natural audio can be heard unless the intake explicitly says that sound was preserved.
+
 RECENT INSTAGRAM COPY TO AVOID REPEATING:
 ${recent.length ? recent.join('\n') : 'No recent copy supplied.'}
 
@@ -106,6 +109,7 @@ Grounding rules:
 - featured_birds must contain clean common names only, in the order mentioned.
 - When bird names were detected from the description, copy those names exactly into featured_birds. They override any model guess.
 - verified_details must briefly restate only supplied facts.
+- A verified note beginning "Opening 0–3 seconds:" describes visible footage. It may guide the first concrete sentence, but never mention editing, seconds, an overlay, or the soundtrack in public copy unless that detail is part of the story itself.
 - Stable destination facts may add useful local context. Do not turn a regional characteristic into a claim about the exact weather or conditions during this specific outing.
 - Words such as moonlit, moonlight, lantern, canopy, plumage, elusive, rare, river, current, rapids, nest, feeding, dawn, or glow may be used only when that fact appears in the supplied description or optional fields. For Mindo, general cloud-forest, mist, humidity, and rain context is permitted by the destination fact pack; specific conditions in the footage still require intake evidence.
 
@@ -161,4 +165,3 @@ row._ollama_body = {
 };
 
 return { json: row };
-  
