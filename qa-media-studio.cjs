@@ -13,7 +13,7 @@ assert(script.includes('matches(".detailPreview video")'), "Video load failures 
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
 assert(page.includes("media-studio-v36.css"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=7"), "Media analytics cache key must be current");
-assert(page.includes("media-assurance.js?v=1"), "Shared publishing assurance must load before Media Studio");
+assert(page.includes("media-assurance.js?v=2"), "Shared publishing assurance cache key must be current");
 assert(page.includes("media-studio-v49.js?v=2"), "Media Studio JS cache key must be current");
 assert(script.includes("function publishingAssurance(row,type)"), "Reels and carousels must use one assurance evaluator");
 assert(script.includes("assurance.partial||assurance.ambiguous||assurance.verification_overdue"), "Partial cross-post results must need attention");
