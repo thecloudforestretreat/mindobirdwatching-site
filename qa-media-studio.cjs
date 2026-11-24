@@ -1,9 +1,9 @@
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
 
-const script = fs.readFileSync("admin/assets/js/media-studio.js", "utf8");
+const script = fs.readFileSync("admin/assets/js/media-studio-v49.js", "utf8");
 const page = fs.readFileSync("admin/media/index.html", "utf8");
-const styles = fs.readFileSync("admin/assets/css/media-studio.css", "utf8");
+const styles = fs.readFileSync("admin/assets/css/media-studio-v36.css", "utf8");
 
 assert(script.includes("function youtubeId(row)"), "Media Studio must derive a YouTube ID from stored reel data");
 assert(script.indexOf("values=[row.youtube_url,row.youtube_permalink]") < script.indexOf('return/^[A-Za-z0-9_-]{11}$/.test(id)?id:""'), "A valid saved YouTube URL must override a stale post ID");
@@ -11,9 +11,14 @@ assert(script.includes('"https://www.youtube.com/watch?v="+encodeURIComponent(id
 assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary previews must fall back to the published YouTube video");
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
-assert(page.includes("media-studio.css?v=21"), "Media Studio CSS cache key must be current");
-assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=27"), "Media Studio JS cache key must be current");
+assert(page.includes("media-studio-v36.css"), "Media Studio CSS cache key must be current");
+assert(page.includes("media-analytics.js?v=7"), "Media analytics cache key must be current");
+assert(page.includes("media-assurance.js?v=1"), "Shared publishing assurance must load before Media Studio");
+assert(page.includes("media-studio-v49.js?v=2"), "Media Studio JS cache key must be current");
+assert(script.includes("function publishingAssurance(row,type)"), "Reels and carousels must use one assurance evaluator");
+assert(script.includes("assurance.partial||assurance.ambiguous||assurance.verification_overdue"), "Partial cross-post results must need attention");
+assert(script.includes("Pre-publication · next 60 minutes"), "Media Studio must show the automatic pre-publication window");
+assert(script.includes("Every selected destination must have a saved platform post ID or publication date."), "Post-publication verification must require durable receipts");
 assert(script.includes("data.observed_patterns||[]"), "Observed guidance must come from the evidence-gated workflow payload");
 assert(!script.match(/function renderObservedPatterns\([^)]*\)\{[^\n]*analyticsEngine\(\)\.observedPatterns/), "Observed guidance must not be recomputed from lifetime totals in the browser");
 assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
@@ -31,8 +36,8 @@ assert(script.includes('if(["scheduled","publishing","ready"].includes(s)&&carou
 assert(script.includes('due within 2 days and not ready'), "Media Studio must warn about imminent posts that are not ready");
 assert(script.includes("typeLabel+' · '+esc(stateLabel)"), "Calendar cards must spell out their readiness state");
 assert(page.includes('<option value="result">Platform visibility</option>'), "Analytics must not label mixed platform visibility as one views/reach metric");
-assert(script.includes('Reach, media views, and views are different measures and are not added together.'), "Cross-platform visibility totals must be blocked");
-assert(script.includes('function comparisonPlatforms(){return[{key:"instagram",label:"Instagram",metric:"Reach"},{key:"facebook",label:"Facebook",metric:"Media views"},{key:"youtube",label:"YouTube",metric:"Views"}]}'), "All-platform analytics must expose Instagram, Facebook, and YouTube together with valid metric labels");
+assert(script.includes('Cross-platform visibility totals are never combined.'), "Cross-platform visibility totals must be blocked");
+assert(script.includes('function comparisonPlatforms(){return[{key:"instagram",label:"Instagram",metric:"Reach"},{key:"facebook",label:"Facebook",metric:"Media views"},{key:"youtube",label:"YouTube",metric:"Views"},{key:"reddit",label:"Reddit",metric:"Views"}]}'), "All-platform analytics must expose every connected platform with valid metric labels");
 assert(script.includes('renderPlatformComparison("Performance by publish date"'), "Default visibility analytics must render platform comparisons instead of empty notices");
 assert(script.includes('renderPlatformComparison("Publishing heatmap"'), "All-platform timing analytics must remain visible without choosing a platform");
 assert(script.includes('renderPlatformComparison("Observed patterns"'), "All-platform guidance must remain visible without choosing a platform");
@@ -40,7 +45,7 @@ assert(script.includes('renderPlatformComparison("Response versus visibility","C
 assert(script.includes('function renderCrossPlatformTags(posts,metric)'), "Topics and species must use one cross-platform comparison matrix");
 assert(script.includes('renderCrossPlatformTags(current,metric)'), "The default analytics view must render the comparison matrix");
 assert(script.includes("instagramUnresolved"), "Data health must name unresolved Instagram records");
-assert(script.includes('textSummaryCard("Platform visibility","3 separate metrics"'), "Mixed visibility summary must explain the three measures without prompting for a platform choice");
+assert(script.includes('textSummaryCard("Visibility context","4 native metrics","Reach and views stay on their own platform scales.")'), "Mixed visibility summary must explain native metrics without combining them");
 assert(styles.includes('.platformComparisonGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'), "Platform comparisons must use a responsive three-column layout");
 assert(script.includes('key==="facebook"?"Media views"'), "Facebook visibility must be labeled as media views");
 assert(script.includes('visibility coverage'), "Analytics data health must report visibility coverage");
