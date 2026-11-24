@@ -451,7 +451,7 @@
     var defaults = selectedDefaults();
     var timezone = $("batchTimezone").value;
     var rows = Array.from($("batchItems").children).map(function (item) {
-      return { video_url: clean(item.querySelector('[data-field="video_url"]').value), reel_description: clean(item.querySelector('[data-field="reel_description"]').value), scheduled_date: item.querySelector('[data-field="scheduled_date"]').value, scheduled_time: item.querySelector('[data-field="scheduled_time"]').value, timezone: timezone, location: "Mindo, Ecuador", post_to_instagram: defaults.instagram, post_to_facebook: defaults.facebook, post_on_youtube: defaults.youtube, post_on_tiktok: defaults.tiktok };
+      return { video_url: clean(item.querySelector('[data-field="video_url"]').value), reel_description: clean(item.querySelector('[data-field="reel_description"]').value), opening_action_0_3: clean(item.querySelector('[data-field="opening_action_0_3"]').value), scheduled_date: item.querySelector('[data-field="scheduled_date"]').value, scheduled_time: item.querySelector('[data-field="scheduled_time"]').value, timezone: timezone, location: "Mindo, Ecuador", post_to_instagram: defaults.instagram, post_to_facebook: defaults.facebook, post_on_youtube: defaults.youtube, post_on_tiktok: defaults.tiktok };
     });
     return { mode: $("batchMode").value, timezone: timezone, reels: rows };
   }
@@ -548,6 +548,13 @@
       '<div class="mediaEditorFooter"><small>This changes only the video file. Captions, hashtags, title and schedule stay unchanged. The replacement must be reviewed before publishing.</small><button class="button buttonGhost" type="button" data-action="replace-media">Replace video</button></div>' +
       '<p class="mediaEditorStatus" data-media-status role="status" aria-live="polite"></p></section>';
   }
+  function creativePreflight(row) {
+    if (bucket(row) === "published") return "";
+    return '<section class="mediaEditor creativePreflight"><div class="mediaEditorHeader"><strong>Opening and retention check</strong><span>Watch from 0:00</span></div>' +
+      '<p>Music over muted footage is a valid default. Keep natural sound only when it is clean and useful. Confirm these two visual checks after watching the opening.</p>' +
+      '<label><input type="checkbox" data-creative-check /> The strongest visible action starts within 2 seconds, with no black frame, logo, or dead setup first.</label>' +
+      '<label><input type="checkbox" data-creative-check /> Opening text uses no more than 2 short lines, does not cover the subject, and the opening still works with sound muted.</label></section>';
+  }
   function openReview(id) {
     var row = state.rows.find(function (candidate) { return rowId(candidate) === clean(id); });
     if (!row) return;
@@ -566,6 +573,7 @@
     var links = [row.instagram_url && ["Instagram", row.instagram_url], row.facebook_url && ["Facebook", row.facebook_url], youtube && ["Watch on YouTube", youtube], row.tiktok_url && ["TikTok", row.tiktok_url]].filter(Boolean);
     $("reviewTitle").textContent = reelTitle(row);
     $("reviewContent").innerHTML = '<video class="reviewVideo" src="' + esc(row.video_url) + '" preload="metadata" muted playsinline controls></video>' +
+      creativePreflight(row) +
       mediaEditor(row) +
       '<section class="reviewMeta"><article><small>Status</small><strong>' + esc(statusLabel(row).label) + '</strong></article><article><small>Schedule</small><strong>' + esc(scheduledValue(row) || "Not scheduled") + '</strong></article><article><small>Quality</small><strong>' + esc(formatQuality(row)) + '</strong></article></section>' +
       (reviewNotice ? '<div class="warningBox"' + (validationIssues.length ? ' data-copy-validation-notice' : '') + '>' + esc(reviewNotice) + "</div>" : "") +
@@ -601,6 +609,13 @@
   }
   function validateReviewEdits(edits, action) {
     if (!confirmSchedule([{ scheduled_date: edits.scheduled_date, scheduled_time: edits.scheduled_time }], rowId(state.selected))) return false;
+    if (action === "approve") {
+      var creativeChecks = Array.from($("reviewContent").querySelectorAll("[data-creative-check]"));
+      if (creativeChecks.length !== 2 || creativeChecks.some(function (check) { return !check.checked; })) {
+        window.alert("Complete both opening and retention checks after watching the reel from the beginning.");
+        return false;
+      }
+    }
     if (platformSelected(state.selected, "instagram")) {
       var tags = clean(edits.instagram_hashtags).split(/\s+/).filter(Boolean);
       if (tags.length !== 5 || tags.some(function (tag) { return !/^#[A-Za-z0-9_]+$/.test(tag); })) {
