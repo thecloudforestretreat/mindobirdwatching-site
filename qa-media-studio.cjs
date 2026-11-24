@@ -11,9 +11,14 @@ assert(script.includes('"https://www.youtube.com/watch?v="+encodeURIComponent(id
 assert(script.includes("www.youtube-nocookie.com/embed/"), "Broken Cloudinary previews must fall back to the published YouTube video");
 assert(script.includes('matches(".detailPreview video")'), "Video load failures must trigger the preview fallback");
 assert(script.includes("The original preview file is no longer available."), "Records without any fallback must explain the missing preview");
-assert(page.includes("media-studio.css?v=21"), "Media Studio CSS cache key must be current");
+assert(page.includes("media-studio.css?v=22"), "Media Studio CSS cache key must be current");
 assert(page.includes("media-analytics.js?v=6"), "Media analytics cache key must be current");
-assert(page.includes("media-studio.js?v=27"), "Media Studio JS cache key must be current");
+assert(page.includes("media-assurance.js?v=1"), "Shared publishing assurance must load before Media Studio");
+assert(page.includes("media-studio.js?v=28"), "Media Studio JS cache key must be current");
+assert(script.includes("function publishingAssurance(row,type)"), "Reels and carousels must use one assurance evaluator");
+assert(script.includes("assurance.partial||assurance.ambiguous||assurance.verification_overdue"), "Partial cross-post results must need attention");
+assert(script.includes("Pre-publication · next 60 minutes"), "Media Studio must show the automatic pre-publication window");
+assert(script.includes("Every selected destination must have a saved platform post ID or publication date."), "Post-publication verification must require durable receipts");
 assert(script.includes("data.observed_patterns||[]"), "Observed guidance must come from the evidence-gated workflow payload");
 assert(!script.match(/function renderObservedPatterns\([^)]*\)\{[^\n]*analyticsEngine\(\)\.observedPatterns/), "Observed guidance must not be recomputed from lifetime totals in the browser");
 assert(script.includes("Action required: reconnect Meta analytics"), "Expired Meta credentials must be surfaced as an action, not as incomplete coverage");
