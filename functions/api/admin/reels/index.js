@@ -97,6 +97,7 @@ function normalizeReel(input, timezone) {
   const videoUrl = clean(input.video_url, 1000);
   const description = clean(input.reel_description, 1200);
   const openingAction = clean(input.opening_action_0_3, 240);
+  const openingText = clean(input.opening_text, 160);
   const scheduledDate = clean(input.scheduled_date, 10);
   const scheduledTime = clean(input.scheduled_time, 5);
   const reelTimezone = ALLOWED_TIMEZONES.has(input.timezone) ? input.timezone : timezone;
@@ -111,7 +112,7 @@ function normalizeReel(input, timezone) {
     source: "admin_reels_studio",
     video_url: videoUrl,
     reel_description: description,
-    verified_details: `Opening 0–3 seconds: ${openingAction}`,
+    verified_details: [`Opening 0–3 seconds: ${openingAction}`, openingText ? `Opening text already in video: ${openingText}` : ""].filter(Boolean).join(" | "),
     scheduled_date: scheduledDate,
     scheduled_time: scheduledTime,
     timezone: reelTimezone,

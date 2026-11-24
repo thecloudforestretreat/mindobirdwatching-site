@@ -130,3 +130,20 @@ test("analytics recommendations use comparable snapshots and evidence gates",()=
   assert.match(report,/showing the last successful analytics snapshot/);
   assert.equal(nodeMap["[API] Respond"].onError,"continueRegularOutput");
 });
+
+test("analytics workflow closes the 24-hour and 7-day learning loop and measures Europe",()=>{
+  const workflow=buildWorkflow();
+  const nodeMap=Object.fromEntries(workflow.nodes.map(node=>[node.name,node]));
+  const report=nodeMap["[REPORT] Build Dashboard Payload"].parameters.jsCode;
+  assert.ok(nodeMap["[YT] Geography Analytics"]);
+  assert.match(nodeMap["[YT] Geography Analytics"].parameters.url,/yt_geography_url/);
+  assert.match(report,/normalized_24h_engagements/);
+  assert.match(report,/normalized_7d_engagements/);
+  assert.match(report,/normalized_24h_details/);
+  assert.match(report,/normalized_7d_details/);
+  assert.match(report,/youtube_audience/);
+  assert.match(report,/europe_share_percent/);
+  assert.match(report,/minimum_comparable_posts:5/);
+  assert.match(report,/measurement_windows:\['24 hours','7 days'\]/);
+  assert.match(report,/measures:\['platform visibility','engagement rate','shares','saves','European audience share'\]/);
+});
