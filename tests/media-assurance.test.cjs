@@ -35,3 +35,23 @@ test('ambiguous claims require reconciliation instead of an automatic repost',()
   const result=assurance.evaluate(row,'carousel',{now});
   assert.equal(result.ambiguous,true);assert.equal(result.tone,'error');
 });
+
+test('saved reel blurb satisfies YouTube description readiness',()=>{
+  const row={...reel,youtube_description:'',blurb:'A factual YouTube description saved by the reel workflow.'};
+  const result=assurance.evaluate(row,'reel',{now});
+  assert.equal(result.ready,true);
+});
+
+test('publication history shows claims, receipts, and the next safe action',()=>{
+  const row={...reel,scheduled_time:'08:30',submitted_at:'2026-11-23T16:00:00Z',approval_timestamp:'2026-11-23T17:00:00Z',instagram_post_id:'ig-1',facebook_publish_claim_id:'claim-fb',facebook_publish_claimed_at:'2026-11-24T13:31:00Z'};
+  const result=assurance.evaluate(row,'reel',{now});
+  assert.ok(result.timeline.some(step=>step.key==='instagram'&&step.state==='complete'));
+  assert.ok(result.timeline.some(step=>step.key==='facebook'&&step.state==='attention'));
+  assert.match(result.next_action,/Reconcile/i);
+});
+
+test('unsupported reel media is blocked before publishing',()=>{
+  const result=assurance.evaluate({...reel,video_url:'https://media.example/reel.jpg'},'reel',{now});
+  assert.equal(result.ready,false);
+  assert.equal(result.checks.find(check=>check.key==='media').ok,false);
+});

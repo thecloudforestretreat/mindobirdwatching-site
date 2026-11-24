@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PUBLISHING_CADENCE, validatePublishingCadence } from './publishing-cadence.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sourcePath = path.join(here, 'generated', 'MBW - AI Carousels - Admin Trigger - IMPORT.json');
@@ -18,7 +19,9 @@ delete workflow.id;
 delete workflow.versionId;
 delete workflow.active;
 
-node('[CORE] Scheduled Trigger').parameters.rule.interval = [{ field: 'hours', hoursInterval: 1, triggerAtMinute: 10 }];
+const cadenceErrors = validatePublishingCadence();
+if (cadenceErrors.length) throw new Error(cadenceErrors.join(' '));
+node('[CORE] Scheduled Trigger').parameters.rule.interval = [{ ...PUBLISHING_CADENCE.carouselPublisher }];
 
 node('Classify Carousel').parameters.jsCode = String.raw`function has(v) { return v !== null && v !== undefined && String(v).trim() !== ''; }
 function bool(v, defaultValue = false) {
@@ -165,7 +168,7 @@ if (!previewStatus.includes("['PASS','HUMAN_EDITED']")) throw new Error('Preview
 if (!node('[TG] Build Preview Message').parameters.jsCode.includes("['PASS','HUMAN_EDITED']")) throw new Error('Telegram review-ready guard was not applied');
 if (!node('[CORE] Validate and Lock').parameters.jsCode.includes("reviewStatus!=='HUMAN_EDITED'") || node('[CORE] Validate and Lock').parameters.jsCode.includes('swipe through')) throw new Error('Platform copy validation guard was not applied');
 if (!node('[CORE] Finalize Status').parameters.jsCode.includes("r.publishing_lock=''")) throw new Error('Publishing lock finalizer was not applied');
-if (JSON.stringify(node('[CORE] Scheduled Trigger').parameters.rule.interval) !== JSON.stringify([{ field: 'hours', hoursInterval: 1, triggerAtMinute: 10 }])) throw new Error('Hourly schedule is not configured for minute 10');
+if (JSON.stringify(node('[CORE] Scheduled Trigger').parameters.rule.interval) !== JSON.stringify([{ ...PUBLISHING_CADENCE.carouselPublisher }])) throw new Error('Carousel publisher cadence does not match the shared policy');
 
 fs.writeFileSync(outputPath, JSON.stringify(workflow, null, 2) + '\n');
 console.log(outputPath);

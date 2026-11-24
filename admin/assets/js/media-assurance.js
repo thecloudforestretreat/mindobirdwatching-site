@@ -39,7 +39,7 @@
   }
   function copyReady(type,row,destinations){
     if(type==="carousel")return has(row.carousel_title)&&(!destinations.some(function(x){return x.key==="instagram"})||(has(row.caption)&&has(row.instagram_hashtags)))&&(!destinations.some(function(x){return x.key==="facebook"})||(has(row.facebook_caption||row.caption)&&has(row.facebook_hashtags||row.instagram_hashtags)));
-    var socialReady=!destinations.some(function(x){return x.key==="instagram"||x.key==="facebook"})||has(row.instagram_caption_final||row.instagram_caption_raw),youtubeReady=!destinations.some(function(x){return x.key==="youtube"})||(has(row.youtube_title)&&has(row.youtube_description));
+    var socialReady=!destinations.some(function(x){return x.key==="instagram"||x.key==="facebook"})||has(row.instagram_caption_final||row.instagram_caption_raw),youtubeReady=!destinations.some(function(x){return x.key==="youtube"})||(has(row.youtube_title)&&has(row.youtube_description||row.blurb||row.instagram_caption_raw));
     return socialReady&&youtubeReady;
   }
   function approvalReady(type,row){
@@ -47,14 +47,33 @@
     if(type==="carousel")return approval==="APPROVED"&&["PASS","HUMAN_EDITED"].includes(review)&&(review==="HUMAN_EDITED"||score>=92);
     return approval==="APPROVED"&&["FINAL","PASS","HUMAN_EDITED"].some(function(value){return review.includes(value)})&&(review.includes("HUMAN_EDITED")||score>=92);
   }
+  function lifecycle(row,type,checks,platforms,context){
+    var submittedAt=clean(row.submitted_at||row.created_at),approvedAt=clean(row.approval_timestamp||row.approved_at),claimTimes=platforms.map(function(platform){return clean(row[platform.platform+"_publish_claimed_at"])}).filter(Boolean),hasClaim=claimTimes.length>0||platforms.some(function(platform){return platform.ambiguous||platform.verified}),steps=[
+      {key:"queue",label:"Added to queue",state:submittedAt?"complete":"pending",at:submittedAt},
+      {key:"schedule",label:"Schedule recorded",state:checks.find(function(check){return check.key==="schedule"}).ok?"complete":"attention",at:[clean(row.scheduled_date),clean(row.scheduled_time)].filter(Boolean).join(" ")},
+      {key:"approval",label:"Approved for publishing",state:checks.find(function(check){return check.key==="approval"}).ok?"complete":"attention",at:approvedAt},
+      {key:"claim",label:"Publishing attempt started",state:hasClaim?"complete":context.minutesUntil!=null&&context.minutesUntil<0?"attention":"pending",at:claimTimes.sort()[0]||clean(row.publishing_lock)}
+    ];
+    platforms.forEach(function(platform){steps.push({key:platform.platform,label:platform.platform.charAt(0).toUpperCase()+platform.platform.slice(1)+" receipt",state:platform.verified?"complete":platform.ambiguous?"attention":"pending",at:platform.date||platform.id})});
+    steps.push({key:"verification",label:"All selected platforms verified",state:context.verified?"complete":context.verificationOverdue||context.partial||context.ambiguous?"attention":"pending",at:""});
+    var nextAction="No action needed.";
+    if(context.verified)nextAction="Publication is complete on every selected platform.";
+    else if(context.ambiguous)nextAction="Reconcile the existing platform claim before any retry.";
+    else if(context.partial)nextAction="Review the missing platform receipt; successful destinations must not be reposted.";
+    else if(context.verificationOverdue)nextAction="Inspect the latest publisher execution and confirm the missing platform receipt.";
+    else if(!context.ready)nextAction="Complete the failed readiness checks before the scheduled time.";
+    else if(context.preflightWindow)nextAction="No action needed; this post passed preflight.";
+    else nextAction="No action needed until the scheduled publisher pass.";
+    return{steps:steps,next_action:nextAction};
+  }
   function evaluate(row,type,options){
     row=row||{};options=options||{};
     var now=options.now||easternNow(),date=clean(row.scheduled_date),time=time24(row.scheduled_time),destinations=selected(type,row),platforms=receipts(type,row),checks=[];
-    checks.push({key:"schedule",label:"Future Eastern schedule",ok:validDate(date)&&Boolean(time)});
+    checks.push({key:"schedule",label:"Eastern schedule recorded",ok:validDate(date)&&Boolean(time)});
     checks.push({key:"destinations",label:"At least one automated destination",ok:destinations.length>0});
     if(type==="carousel"){
       var urls=imageUrls(row);checks.push({key:"media",label:"2–10 unique carousel images",ok:urls.length>=2&&urls.length<=10&&new Set(urls).size===urls.length})
-    }else checks.push({key:"media",label:"Reachable HTTPS video recorded",ok:/^https:\/\//i.test(clean(row.video_url))});
+    }else checks.push({key:"media",label:"Playable HTTPS video (MP4, MOV or M4V)",ok:/^https:\/\/.+\.(?:mp4|mov|m4v)(?:[?#].*)?$/i.test(clean(row.video_url))});
     checks.push({key:"copy",label:"Selected-platform copy complete",ok:copyReady(type,row,destinations)});
     checks.push({key:"approval",label:"Approved copy passed review",ok:approvalReady(type,row)});
     var scheduled=validDate(date)&&Boolean(time),minutesUntil=scheduled?minuteKey(date,time)-minuteKey(now.date,now.time):null,ready=checks.every(function(check){return check.ok}),verified=platforms.length>0&&platforms.every(function(platform){return platform.verified}),partial=platforms.some(function(platform){return platform.verified})&&!verified,ambiguous=platforms.some(function(platform){return platform.ambiguous}),verificationOverdue=scheduled&&minutesUntil<=-10&&!verified,preflightWindow=scheduled&&minutesUntil>=0&&minutesUntil<=60;
@@ -64,7 +83,8 @@
     else if(!ready){tone=preflightWindow?"error":"warning";label=preflightWindow?"Scheduled within 60 minutes but not ready":"Preparation is incomplete"}
     else if(preflightWindow){label="Preflight passed for the next 60 minutes"}
     else if(scheduled&&minutesUntil<0){tone="warning";label="Waiting for platform receipts"}
-    return{type:type,ready:ready,verified:verified,partial:partial,ambiguous:ambiguous,verification_overdue:verificationOverdue,preflight_window:preflightWindow,minutes_until:minutesUntil,checks:checks,platforms:platforms,tone:tone,label:label};
+    var history=lifecycle(row,type,checks,platforms,{ready:ready,verified:verified,partial:partial,ambiguous:ambiguous,verificationOverdue:verificationOverdue,preflightWindow:preflightWindow,minutesUntil:minutesUntil});
+    return{type:type,ready:ready,verified:verified,partial:partial,ambiguous:ambiguous,verification_overdue:verificationOverdue,preflight_window:preflightWindow,minutes_until:minutesUntil,checks:checks,platforms:platforms,timeline:history.steps,next_action:history.next_action,tone:tone,label:label};
   }
   return{evaluate:evaluate,easternNow:easternNow,time24:time24};
 });

@@ -6,7 +6,7 @@ const ui = fs.readFileSync("admin/assets/js/reels-studio.js", "utf8");
 const api = fs.readFileSync("functions/api/admin/reels/index.js", "utf8");
 
 assert(ui.includes('var API = "/api/admin/reels";'), "Reels Studio must use the unified same-origin Pages Function");
-assert(html.includes('reels-studio.js?v=21'), "Reels Studio asset cache key must expose retention checks");
+assert(html.includes('reels-studio.js?v=22'), "Reels Studio asset cache key must expose retention checks");
 assert(html.includes('reels-studio-v9.css'), "Reels Studio CSS cache key must expose retention check styles");
 assert(ui.includes('Number(row.quality_score || 0) >= 92'), "Reels Studio must not present copy below quality 92 as approved");
 assert(ui.includes('copyValidationIssues(row).length === 0'), "Reels Studio must verify copy content instead of trusting a stored quality score");
@@ -50,11 +50,11 @@ assert(html.includes('data-field="opening_action_0_3"'), "Reel intake must captu
 assert(ui.includes('opening_action_0_3: clean('), "Reel intake must forward the visible opening action");
 assert((ui.match(/type="checkbox" data-creative-check/g) || []).length === 2, "Approval must require exactly two retention-focused visual checks");
 assert(ui.includes("Music over muted footage is a valid default."), "Review must preserve the music-first production workflow");
-assert(api.includes('verified_details: `Opening 0–3 seconds: ${openingAction}`'), "The API must store opening action as verified context");
+assert(api.includes('`Opening 0–3 seconds: ${openingAction}`') && api.includes('`Opening text already in video: ${openingText}`'), "The API must store opening action and supplied opening text as verified context");
 
 console.log(JSON.stringify({
   ok: true,
   api: "https://mindobirdwatching.com/api/admin/reels",
-  cacheKey: "v21",
+  cacheKey: "v22",
   handlers: ["GET", "POST", "OPTIONS"]
 }, null, 2));
