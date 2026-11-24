@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../admin/media/reels/index.html', import.meta.url), 'utf8');
 const ui = readFileSync(new URL('../admin/assets/js/reels-studio.js', import.meta.url), 'utf8');
 const prompt = readFileSync(new URL('../n8n/reels-v9/build-local-creative-request.js', import.meta.url), 'utf8');
+const activePrompt = readFileSync(new URL('../n8n/reels-caption-parity/build-local-creative-request.js', import.meta.url), 'utf8');
 const apiSource = readFileSync(new URL('../functions/api/admin/reels/index.js', import.meta.url), 'utf8');
 
 assert.match(html, /data-field="opening_action_0_3"[^>]*[\s\S]*?required/);
@@ -14,6 +15,8 @@ assert.match(ui, /Music over muted footage is a valid default/);
 assert.match(ui, /Complete both opening and retention checks/);
 assert.match(prompt, /original camera audio is normally muted and replaced with a music soundtrack/);
 assert.match(prompt, /Do not claim that a bird call, wing sound, river sound, or other natural audio can be heard/);
+assert.match(activePrompt, /original camera audio is normally muted and replaced with a music soundtrack/);
+assert.match(activePrompt, /A verified note beginning "Opening 0–3 seconds:" describes visible footage/);
 
 const { onRequestPost } = await import('data:text/javascript;base64,' + Buffer.from(apiSource).toString('base64'));
 const mediaUrl = 'https://n8n.mindobirdwatching.com/media-delivery/v1/' + 'a'.repeat(32) + '/original.mp4';
