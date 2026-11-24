@@ -7,7 +7,18 @@
   function clean(value){return String(value==null?"":value).trim()}
   function truthy(value){return value===true||["true","1","yes","y","on"].includes(clean(value).toLowerCase())}
   function has(value){return clean(value)!==""}
-  function validDate(value){return /^\d{4}-\d{2}-\d{2}$/.test(clean(value))}
+  function normalizeDate(value){
+    var text=clean(value),match=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+    if(!match){
+      match=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if(match)match=[match[0],match[3],String(match[1]).padStart(2,"0"),String(match[2]).padStart(2,"0")];
+    }
+    if(!match)return"";
+    var year=Number(match[1]),month=Number(match[2]),day=Number(match[3]),candidate=new Date(Date.UTC(year,month-1,day));
+    if(candidate.getUTCFullYear()!==year||candidate.getUTCMonth()!==month-1||candidate.getUTCDate()!==day)return"";
+    return String(year).padStart(4,"0")+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+  }
+  function validDate(value){return Boolean(normalizeDate(value))}
   function time24(value){
     var text=clean(value),match=text.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
     if(match){var hour=Number(match[1])%12+(match[3].toUpperCase()==="PM"?12:0);return String(hour).padStart(2,"0")+":"+match[2]}
@@ -68,7 +79,7 @@
   }
   function evaluate(row,type,options){
     row=row||{};options=options||{};
-    var now=options.now||easternNow(),date=clean(row.scheduled_date),time=time24(row.scheduled_time),destinations=selected(type,row),platforms=receipts(type,row),checks=[];
+    var now=options.now||easternNow(),date=normalizeDate(row.scheduled_date),time=time24(row.scheduled_time),destinations=selected(type,row),platforms=receipts(type,row),checks=[];
     checks.push({key:"schedule",label:"Eastern schedule recorded",ok:validDate(date)&&Boolean(time)});
     checks.push({key:"destinations",label:"At least one automated destination",ok:destinations.length>0});
     if(type==="carousel"){
@@ -86,5 +97,5 @@
     var history=lifecycle(row,type,checks,platforms,{ready:ready,verified:verified,partial:partial,ambiguous:ambiguous,verificationOverdue:verificationOverdue,preflightWindow:preflightWindow,minutesUntil:minutesUntil});
     return{type:type,ready:ready,verified:verified,partial:partial,ambiguous:ambiguous,verification_overdue:verificationOverdue,preflight_window:preflightWindow,minutes_until:minutesUntil,checks:checks,platforms:platforms,timeline:history.steps,next_action:history.next_action,tone:tone,label:label};
   }
-  return{evaluate:evaluate,easternNow:easternNow,time24:time24};
+  return{evaluate:evaluate,easternNow:easternNow,time24:time24,normalizeDate:normalizeDate};
 });

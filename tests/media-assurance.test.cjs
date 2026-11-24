@@ -12,6 +12,21 @@ test('reel and carousel share the 60-minute readiness window',()=>{
   assert.equal(r.ready,true);assert.equal(c.ready,true);assert.equal(r.preflight_window,true);assert.equal(c.preflight_window,true);
 });
 
+test('sheet-style US dates are normalized before Eastern schedule checks',()=>{
+  const row={...carousel,scheduled_date:'11/24/2026',scheduled_time:'3:00 PM'};
+  const result=assurance.evaluate(row,'carousel',{now:{date:'2026-11-24',time:'11:58'}});
+  assert.equal(assurance.normalizeDate(row.scheduled_date),'2026-11-24');
+  assert.equal(result.checks.find(check=>check.key==='schedule').ok,true);
+  assert.equal(result.ready,true);
+  assert.equal(result.minutes_until,182);
+});
+
+test('invalid calendar dates do not pass readiness',()=>{
+  const result=assurance.evaluate({...carousel,scheduled_date:'02/30/2026'},'carousel',{now});
+  assert.equal(result.checks.find(check=>check.key==='schedule').ok,false);
+  assert.equal(result.ready,false);
+});
+
 test('one successful destination never hides a missing cross-post receipt',()=>{
   const row={...reel,scheduled_time:'08:30',instagram_post_id:'ig-1',instagram_published_date:'2026-11-24',facebook_post_id:'',youtube_post_id:''};
   const result=assurance.evaluate(row,'reel',{now});
