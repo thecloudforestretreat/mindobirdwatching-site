@@ -6296,7 +6296,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const request = $('Normalize Request').first().json;\nconst record = $('Process CRM Assignments').item.json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\n\nfunction normalizeTime(value) {\n  const raw = clean(value).toLowerCase();\n  if (!raw) return '';\n  const m = raw.match(/^(\\d{1,2}):(\\d{2})(?:\\s*(am|pm))?/);\n  if (!m) return '';\n  let h = Number(m[1]);\n  const min = Number(m[2]);\n  if (m[3] === 'pm' && h < 12) h += 12;\n  if (m[3] === 'am' && h === 12) h = 0;\n  if (h > 23 || min > 59) return '';\n  return String(h).padStart(2,'0') + ':' + String(min).padStart(2,'0');\n}\n\nfunction addMinutesLocal(date, time, minutes) {\n  const [y,m,d] = date.split('-').map(Number);\n  const [hh,mm] = time.split(':').map(Number);\n  const dt = new Date(Date.UTC(y,m-1,d,hh,mm,0));\n  dt.setUTCMinutes(dt.getUTCMinutes() + minutes);\n  const yyyy = dt.getUTCFullYear();\n  const mo = String(dt.getUTCMonth()+1).padStart(2,'0');\n  const da = String(dt.getUTCDate()).padStart(2,'0');\n  const h = String(dt.getUTCHours()).padStart(2,'0');\n  const mi = String(dt.getUTCMinutes()).padStart(2,'0');\n  return { date: `${yyyy}-${mo}-${da}`, time: `${h}:${mi}` };\n}\n\nconst date = clean(record.service_date);\nconst startTime = normalizeTime(record.start_time);\nconst endTimeRaw = normalizeTime(record.end_time);\nconst calendarId = clean(record.google_calendar_id) || 'mindobirdwatching@gmail.com';\nconst existingEventId = clean(record.google_calendar_event_id);\nconst providerNameForColor = (clean(record.provider_name) === 'Other' ? clean(record.provider_name_other) : clean(record.provider_name)).toLowerCase();\nconst calendarColorId = providerNameForColor === 'chicho' ? '10'\n  : providerNameForColor === 'juan' ? '9'\n  : providerNameForColor === 'neicer' ? '5'\n  : '';\nconst cancelled = yes(record.is_deleted) || clean(record.assignment_status).toLowerCase() === 'cancelled';\n\nlet calendarAction = 'skip';\nlet skipReason = '';\n\nif (cancelled) {\n  calendarAction = existingEventId ? 'delete' : 'skip';\n  if (!existingEventId) skipReason = 'No Google Calendar event exists to delete.';\n} else if (!date || !startTime) {\n  calendarAction = 'skip';\n  skipReason = !date ? 'Service date is missing.' : 'Start time is missing.';\n} else {\n  calendarAction = existingEventId ? 'update' : 'create';\n}\n\nlet endDate = date;\nlet endTime = endTimeRaw;\nlet endWasDefaulted = false;\n\nif (!cancelled && date && startTime && !endTime) {\n  const fallback = addMinutesLocal(date, startTime, 60);\n  endDate = fallback.date;\n  endTime = fallback.time;\n  endWasDefaulted = true;\n} else if (!cancelled && date && startTime && endTime && endTime <= startTime) {\n  const overnight = addMinutesLocal(date, endTime, 24 * 60);\n  endDate = overnight.date;\n}\n\nconst titleParts = [\n  clean(record.service_type) || 'Scheduled Service',\n  clean(record.guest_name),\n  clean(record.guest_count) ? `${clean(record.guest_count)} guest${clean(record.guest_count)==='1'?'':'s'}` : ''\n].filter(Boolean);\n\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || record.guest_phone || record.phone_number || record.phone_normalized || record.phone_raw);\nconst descriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  '',\n  clean(record.guest_name) ? `Guest: ${html(record.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(record.service_type) ? `Service: ${html(record.service_type)}` : '',\n  clean(record.product_selected) ? `<b>Product / Service:</b> ${html(record.product_selected)}` : '',\n  clean(record.guest_count) ? `Guests: ${html(record.guest_count)}` : '',\n  clean(record.provider_name) || clean(record.provider_name_other) ? `Assigned provider: ${html(clean(record.provider_name)==='Other' ? clean(record.provider_name_other) : clean(record.provider_name))}` : '',\n  clean(record.pickup_location) ? `Pickup: ${html(record.pickup_location)}` : '',\n  clean(record.dropoff_location) ? `Drop-off: ${html(record.dropoff_location)}` : '',\n  clean(record.trip_direction) ? `Direction: ${html(record.trip_direction)}` : '',\n  clean(record.assignment_status) ? `Assignment status: ${html(record.assignment_status)}` : '',\n  endWasDefaulted ? 'End time: Not set in CRM. Calendar currently uses a temporary 1-hour block.' : '',\n  clean(record.confirmation_note) ? `Confirmation note: ${html(record.confirmation_note)}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(record.assignment_id) ? `CRM Assignment: ${html(record.assignment_id)}` : ''\n].filter(Boolean);\n\nreturn [{\n  json: {\n    ...record,\n    calendar_id: calendarId,\n    calendar_event_id: existingEventId,\n    calendar_action: calendarAction,\n    calendar_skip_reason: skipReason,\n    calendar_timezone: 'America/Guayaquil',\n    calendar_start: date && startTime ? `${date}T${startTime}:00-05:00` : '',\n    calendar_end: endDate && endTime ? `${endDate}T${endTime}:00-05:00` : '',\n    calendar_summary: titleParts.join(' | '),\n    calendar_description: descriptionLines.join('<br>'),\n    calendar_location: clean(record.pickup_location) || clean(record.dropoff_location),\n    calendar_color_id: calendarColorId,\n    calendar_end_defaulted: endWasDefaulted\n  }\n}];"
+        "jsCode": "const request = $('Normalize Request').first().json;\nconst record = $('Process CRM Assignments').first().json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\n\nfunction normalizeTime(value) {\n  const raw = clean(value).toLowerCase();\n  if (!raw) return '';\n  const m = raw.match(/^(\\d{1,2}):(\\d{2})(?:\\s*(am|pm))?/);\n  if (!m) return '';\n  let h = Number(m[1]);\n  const min = Number(m[2]);\n  if (m[3] === 'pm' && h < 12) h += 12;\n  if (m[3] === 'am' && h === 12) h = 0;\n  if (h > 23 || min > 59) return '';\n  return String(h).padStart(2,'0') + ':' + String(min).padStart(2,'0');\n}\n\nfunction addMinutesLocal(date, time, minutes) {\n  const [y,m,d] = date.split('-').map(Number);\n  const [hh,mm] = time.split(':').map(Number);\n  const dt = new Date(Date.UTC(y,m-1,d,hh,mm,0));\n  dt.setUTCMinutes(dt.getUTCMinutes() + minutes);\n  const yyyy = dt.getUTCFullYear();\n  const mo = String(dt.getUTCMonth()+1).padStart(2,'0');\n  const da = String(dt.getUTCDate()).padStart(2,'0');\n  const h = String(dt.getUTCHours()).padStart(2,'0');\n  const mi = String(dt.getUTCMinutes()).padStart(2,'0');\n  return { date: `${yyyy}-${mo}-${da}`, time: `${h}:${mi}` };\n}\n\nconst date = clean(record.service_date);\nconst startTime = normalizeTime(record.start_time);\nconst endTimeRaw = normalizeTime(record.end_time);\nconst calendarId = clean(record.google_calendar_id) || 'mindobirdwatching@gmail.com';\nconst existingEventId = clean(record.google_calendar_event_id);\nconst providerNameForColor = (clean(record.provider_name) === 'Other' ? clean(record.provider_name_other) : clean(record.provider_name)).toLowerCase();\nconst calendarColorId = providerNameForColor === 'chicho' ? '10'\n  : providerNameForColor === 'juan' ? '9'\n  : providerNameForColor === 'neicer' ? '5'\n  : '';\nconst cancelled = yes(record.is_deleted) || clean(record.assignment_status).toLowerCase() === 'cancelled';\n\nlet calendarAction = 'skip';\nlet skipReason = '';\n\nif (cancelled) {\n  calendarAction = existingEventId ? 'delete' : 'skip';\n  if (!existingEventId) skipReason = 'No Google Calendar event exists to delete.';\n} else if (!date || !startTime) {\n  calendarAction = 'skip';\n  skipReason = !date ? 'Service date is missing.' : 'Start time is missing.';\n} else {\n  calendarAction = existingEventId ? 'update' : 'create';\n}\n\nlet endDate = date;\nlet endTime = endTimeRaw;\nlet endWasDefaulted = false;\n\nif (!cancelled && date && startTime && !endTime) {\n  const fallback = addMinutesLocal(date, startTime, 60);\n  endDate = fallback.date;\n  endTime = fallback.time;\n  endWasDefaulted = true;\n} else if (!cancelled && date && startTime && endTime && endTime <= startTime) {\n  const overnight = addMinutesLocal(date, endTime, 24 * 60);\n  endDate = overnight.date;\n}\n\nconst titleParts = [\n  clean(record.service_type) || 'Scheduled Service',\n  clean(record.guest_name),\n  clean(record.guest_count) ? `${clean(record.guest_count)} guest${clean(record.guest_count)==='1'?'':'s'}` : ''\n].filter(Boolean);\n\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || record.guest_phone || record.phone_number || record.phone_normalized || record.phone_raw);\nconst MEAL_PRODUCTS = [\"MBW005\",\"MBW006\",\"MBW007\",\"MBW008\",\"MBW010\"];\n\n// The saved tour is authoritative; a CRM draft or legacy assignment note is not.\nfunction calendarMealBlock(service, rows) {\n  const code = value => clean(value).toUpperCase().match(/\\bMBW\\d{3}\\b/)?.[0] || '';\n  const date = value => {\n    const text = clean(value);\n    const iso = text.match(/^(\\d{4}-\\d{2}-\\d{2})(?:$|T| )/);\n    if (iso) return iso[1];\n    const us = text.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);\n    return us ? us[3] + '-' + us[1].padStart(2, '0') + '-' + us[2].padStart(2, '0') : '';\n  };\n  const product = code(service.product_selected);\n  const day = date(service.service_date);\n  const inquiryId = clean(service.inquiry_id);\n  if (!inquiryId || !day || !MEAL_PRODUCTS.includes(product) || /transport/i.test(clean(service.service_type))) return '';\n  const matches = rows.filter(row => clean(row.inquiry_id) === inquiryId);\n  if (matches.length !== 1) return '';\n  const inquiry = matches[0];\n  if (['yes','true','1','y'].includes(clean(inquiry.is_archived).toLowerCase())) return '';\n  if (clean(service.guest_id) && clean(inquiry.guest_id) && clean(service.guest_id) !== clean(inquiry.guest_id)) return '';\n  const raw = inquiry.tour_items_json || inquiry.tour_items;\n  if (!raw) return '';\n  let items;\n  try { items = Array.isArray(raw) ? raw : JSON.parse(raw); }\n  catch { throw new Error('Calendar meals: the saved itinerary could not be read. Calendar was not changed.'); }\n  if (!Array.isArray(items)) throw new Error('Calendar meals: the saved itinerary is not a tour list. Calendar was not changed.');\n  const link = clean(service.tour_item_id);\n  const candidates = items.filter(item => item && product === code(item.product_selected || item.tour)\n    && day === date(item.date || item.tour_date)\n    && (!link || (clean(item.id) || 'primary') === link)\n    && !['cancelled', 'canceled'].includes(clean(item.status || item.booking_status).toLowerCase()));\n  if (candidates.length !== 1) return '';\n  const options = candidates[0].meal_options;\n  if (!options) return '';\n  const labels = { chicken: 'Chicken', pork: 'Pork', trout: 'Trout', other: 'Other' };\n  const pay = { reserve_onsite: 'Pay at reserve', mbw: 'Payment handled by MBW', complimentary: 'Complimentary' };\n  const lines = [];\n  const dietary = new Set();\n  for (const type of ['breakfast','lunch']) {\n    const meal = options[type];\n    if (meal?.guest_decision !== 'yes' || meal?.finalization_status !== 'finalized' || !Array.isArray(meal.travelers)) continue;\n    const guests = meal.travelers.filter(guest => guest && (guest.finalization_status || meal.finalization_status) === 'finalized'\n      && guest.participation_status === 'included' && (type === 'breakfast' || Object.hasOwn(labels, guest.meal_selection)));\n    if (!guests.length) continue;\n    const choice = type === 'lunch'\n      ? Object.entries(labels).map(([key,label]) => [guests.filter(guest => guest.meal_selection === key).length,label])\n        .filter(([count]) => count).map(([count,label]) => label + ' × ' + count).join(', ')\n      : guests.length + (guests.length === 1 ? ' guest' : ' guests');\n    const payment = Object.hasOwn(pay, meal.payment_route) ? pay[meal.payment_route] : 'Payment not recorded';\n    const label = type === 'breakfast' ? 'Breakfast' : 'Lunch';\n    lines.push('<b>' + label + ':</b> ' + html(choice) + ' · ' + html(payment));\n    guests.forEach(guest => {\n      const note = html(clean(guest.allergy_dietary_notes).replace(/\\s+/g, ' '));\n      if (note) dietary.add('Guest ' + html(guest.traveler_index || guests.indexOf(guest) + 1) + ': ' + note);\n    });\n  }\n  if (!lines.length) return '';\n  if (dietary.size) lines.push('<b>Dietary notes:</b> ' + [...dietary].join('; '));\n  return '<br><b>RESERVE MEALS</b><br>' + lines.join('<br>') + '<br>';\n}\n\nfunction nonMealConfirmationNote(value) {\n  const note = clean(value);\n  const lines = note.split(/\\r?\\n/);\n  // Old CRM versions wrote the preview into this field. Keep real staff notes.\n  if (/^(BREAKFAST|LUNCH): \\d+ · /.test(lines[0])\n    && lines.every(line => /^(BREAKFAST|LUNCH): \\d+ · |^DIETARY NOTES: /.test(line))) return '';\n  return note;\n}\n\nconst mealRead = $(\"Read Calendar Meal Inquiry\");\nconst mealBlock = calendarMealBlock(record, mealRead.isExecuted ? mealRead.all().map(item => item.json) : []);\nconst descriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  mealBlock,\n  '',\n  clean(record.guest_name) ? `Guest: ${html(record.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(record.service_type) ? `Service: ${html(record.service_type)}` : '',\n  clean(record.product_selected) ? `<b>Product / Service:</b> ${html(record.product_selected)}` : '',\n  clean(record.guest_count) ? `Guests: ${html(record.guest_count)}` : '',\n  clean(record.provider_name) || clean(record.provider_name_other) ? `Assigned provider: ${html(clean(record.provider_name)==='Other' ? clean(record.provider_name_other) : clean(record.provider_name))}` : '',\n  clean(record.pickup_location) ? `Pickup: ${html(record.pickup_location)}` : '',\n  clean(record.dropoff_location) ? `Drop-off: ${html(record.dropoff_location)}` : '',\n  clean(record.trip_direction) ? `Direction: ${html(record.trip_direction)}` : '',\n  clean(record.assignment_status) ? `Assignment status: ${html(record.assignment_status)}` : '',\n  endWasDefaulted ? 'End time: Not set in CRM. Calendar currently uses a temporary 1-hour block.' : '',\n  nonMealConfirmationNote(record.confirmation_note) ? `Confirmation note: ${html(nonMealConfirmationNote(record.confirmation_note))}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(record.assignment_id) ? `CRM Assignment: ${html(record.assignment_id)}` : ''\n].filter(Boolean);\n\nreturn [{\n  json: {\n    ...record,\n    calendar_id: calendarId,\n    calendar_event_id: existingEventId,\n    calendar_action: calendarAction,\n    calendar_skip_reason: skipReason,\n    calendar_timezone: 'America/Guayaquil',\n    calendar_start: date && startTime ? `${date}T${startTime}:00-05:00` : '',\n    calendar_end: endDate && endTime ? `${endDate}T${endTime}:00-05:00` : '',\n    calendar_summary: titleParts.join(' | '),\n    calendar_description: descriptionLines.join('<br>'),\n    calendar_location: clean(record.pickup_location) || clean(record.dropoff_location),\n    calendar_color_id: calendarColorId,\n    calendar_end_defaulted: endWasDefaulted\n  }\n}];"
       },
       "id": "16381670-543c-4b09-8794-cd49e161016b",
       "name": "Prepare Assignment Calendar Sync",
@@ -7060,7 +7060,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const assignment = $('Process CRM Assignments').item.json;\nconst request = $('Normalize Request').first().json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $input.all()\n  .map(item => item.json || item)\n  .filter(row => row && Object.keys(row).length);\n\nconst providerName = clean(assignment.provider_name) === 'Other'\n  ? clean(assignment.provider_name_other)\n  : clean(assignment.provider_name);\n\nconst provider = rows.find(row =>\n  clean(row.provider_name).toLowerCase() === providerName.toLowerCase()\n) || {};\n\nif (!providerName) throw new Error('No guide/driver is assigned.');\nif (!Object.keys(provider).length) throw new Error(`Provider not found in crm_providers: ${providerName}`);\n\nconst enabled = yes(provider.calendar_invites_enabled);\nif (!enabled) throw new Error(`Calendar invites are disabled for ${providerName}.`);\n\nconst email = clean(provider.google_calendar_email || provider.provider_email || provider.email);\nif (!email || email.toUpperCase() === 'PENDING') {\n  throw new Error(`Calendar email is missing for ${providerName}.`);\n}\n\nconst providerColorName = providerName.toLowerCase();\nconst calendarColorId = providerColorName === 'chicho' ? '10'\n  : providerColorName === 'juan' ? '9'\n  : providerColorName === 'neicer' ? '5'\n  : '';\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || assignment.guest_phone || assignment.phone_number || assignment.phone_normalized || assignment.phone_raw);\nconst inviteDescriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  '',\n  clean(assignment.guest_name) ? `Guest: ${html(assignment.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(assignment.service_type) ? `Service: ${html(assignment.service_type)}` : '',\n  clean(assignment.product_selected) ? `<b>Product / Service:</b> ${html(assignment.product_selected)}` : '',\n  clean(assignment.guest_count) ? `Guests: ${html(assignment.guest_count)}` : '',\n  providerName ? `Assigned provider: ${html(providerName)}` : '',\n  clean(assignment.pickup_location) ? `Pickup: ${html(assignment.pickup_location)}` : '',\n  clean(assignment.dropoff_location) ? `Drop-off: ${html(assignment.dropoff_location)}` : '',\n  clean(assignment.trip_direction) ? `Direction: ${html(assignment.trip_direction)}` : '',\n  clean(assignment.assignment_status) ? `Assignment status: ${html(assignment.assignment_status)}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(assignment.assignment_id) ? `CRM Assignment: ${html(assignment.assignment_id)}` : ''\n].filter(Boolean);\nconst calendarDescription = inviteDescriptionLines.join('<br>');\nconst eventId = clean(assignment.google_calendar_event_id);\nif (!eventId) throw new Error('This assignment does not have a Google Calendar event yet.');\n\nconst staff = clean(request.created_by || request.staff || assignment.created_by).toUpperCase();\nif (staff && !['SS','JPG'].includes(staff)) throw new Error('created_by must be SS or JPG.');\n\nreturn [{\n  json: {\n    assignment_id: assignment.assignment_id,\n    calendar_id: clean(assignment.google_calendar_id) || 'mindobirdwatching@gmail.com',\n    calendar_event_id: eventId,\n    guide_name: providerName,\n    guide_email: email,\n    calendar_color_id: calendarColorId,\n    calendar_description: calendarDescription,\n    provider_informed_by: staff || 'JPG'\n  }\n}];"
+        "jsCode": "const assignment = $('Process CRM Assignments').first().json;\nconst request = $('Normalize Request').first().json;\nconst clean = value => String(value ?? '').trim();\nconst html = value => clean(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\\"/g,'&quot;').replace(/'/g,'&#39;');\nconst yes = value => ['yes','true','1','y'].includes(clean(value).toLowerCase());\nconst rows = $('Read Provider For Calendar Invite').all()\n  .map(item => item.json || item)\n  .filter(row => row && Object.keys(row).length);\n\nconst providerName = clean(assignment.provider_name) === 'Other'\n  ? clean(assignment.provider_name_other)\n  : clean(assignment.provider_name);\n\nconst provider = rows.find(row =>\n  clean(row.provider_name).toLowerCase() === providerName.toLowerCase()\n) || {};\n\nif (!providerName) throw new Error('No guide/driver is assigned.');\nif (!Object.keys(provider).length) throw new Error(`Provider not found in crm_providers: ${providerName}`);\n\nconst enabled = yes(provider.calendar_invites_enabled);\nif (!enabled) throw new Error(`Calendar invites are disabled for ${providerName}.`);\n\nconst email = clean(provider.google_calendar_email || provider.provider_email || provider.email);\nif (!email || email.toUpperCase() === 'PENDING') {\n  throw new Error(`Calendar email is missing for ${providerName}.`);\n}\n\nconst providerColorName = providerName.toLowerCase();\nconst calendarColorId = providerColorName === 'chicho' ? '10'\n  : providerColorName === 'juan' ? '9'\n  : providerColorName === 'neicer' ? '5'\n  : '';\nconst requestAssignment = request.assignment || request.record || {};\nconst guestPhone = clean(request.guest_phone || requestAssignment.guest_phone || assignment.guest_phone || assignment.phone_number || assignment.phone_normalized || assignment.phone_raw);\nconst MEAL_PRODUCTS = [\"MBW005\",\"MBW006\",\"MBW007\",\"MBW008\",\"MBW010\"];\n\n// The saved tour is authoritative; a CRM draft or legacy assignment note is not.\nfunction calendarMealBlock(service, rows) {\n  const code = value => clean(value).toUpperCase().match(/\\bMBW\\d{3}\\b/)?.[0] || '';\n  const date = value => {\n    const text = clean(value);\n    const iso = text.match(/^(\\d{4}-\\d{2}-\\d{2})(?:$|T| )/);\n    if (iso) return iso[1];\n    const us = text.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);\n    return us ? us[3] + '-' + us[1].padStart(2, '0') + '-' + us[2].padStart(2, '0') : '';\n  };\n  const product = code(service.product_selected);\n  const day = date(service.service_date);\n  const inquiryId = clean(service.inquiry_id);\n  if (!inquiryId || !day || !MEAL_PRODUCTS.includes(product) || /transport/i.test(clean(service.service_type))) return '';\n  const matches = rows.filter(row => clean(row.inquiry_id) === inquiryId);\n  if (matches.length !== 1) return '';\n  const inquiry = matches[0];\n  if (['yes','true','1','y'].includes(clean(inquiry.is_archived).toLowerCase())) return '';\n  if (clean(service.guest_id) && clean(inquiry.guest_id) && clean(service.guest_id) !== clean(inquiry.guest_id)) return '';\n  const raw = inquiry.tour_items_json || inquiry.tour_items;\n  if (!raw) return '';\n  let items;\n  try { items = Array.isArray(raw) ? raw : JSON.parse(raw); }\n  catch { throw new Error('Calendar meals: the saved itinerary could not be read. Calendar was not changed.'); }\n  if (!Array.isArray(items)) throw new Error('Calendar meals: the saved itinerary is not a tour list. Calendar was not changed.');\n  const link = clean(service.tour_item_id);\n  const candidates = items.filter(item => item && product === code(item.product_selected || item.tour)\n    && day === date(item.date || item.tour_date)\n    && (!link || (clean(item.id) || 'primary') === link)\n    && !['cancelled', 'canceled'].includes(clean(item.status || item.booking_status).toLowerCase()));\n  if (candidates.length !== 1) return '';\n  const options = candidates[0].meal_options;\n  if (!options) return '';\n  const labels = { chicken: 'Chicken', pork: 'Pork', trout: 'Trout', other: 'Other' };\n  const pay = { reserve_onsite: 'Pay at reserve', mbw: 'Payment handled by MBW', complimentary: 'Complimentary' };\n  const lines = [];\n  const dietary = new Set();\n  for (const type of ['breakfast','lunch']) {\n    const meal = options[type];\n    if (meal?.guest_decision !== 'yes' || meal?.finalization_status !== 'finalized' || !Array.isArray(meal.travelers)) continue;\n    const guests = meal.travelers.filter(guest => guest && (guest.finalization_status || meal.finalization_status) === 'finalized'\n      && guest.participation_status === 'included' && (type === 'breakfast' || Object.hasOwn(labels, guest.meal_selection)));\n    if (!guests.length) continue;\n    const choice = type === 'lunch'\n      ? Object.entries(labels).map(([key,label]) => [guests.filter(guest => guest.meal_selection === key).length,label])\n        .filter(([count]) => count).map(([count,label]) => label + ' × ' + count).join(', ')\n      : guests.length + (guests.length === 1 ? ' guest' : ' guests');\n    const payment = Object.hasOwn(pay, meal.payment_route) ? pay[meal.payment_route] : 'Payment not recorded';\n    const label = type === 'breakfast' ? 'Breakfast' : 'Lunch';\n    lines.push('<b>' + label + ':</b> ' + html(choice) + ' · ' + html(payment));\n    guests.forEach(guest => {\n      const note = html(clean(guest.allergy_dietary_notes).replace(/\\s+/g, ' '));\n      if (note) dietary.add('Guest ' + html(guest.traveler_index || guests.indexOf(guest) + 1) + ': ' + note);\n    });\n  }\n  if (!lines.length) return '';\n  if (dietary.size) lines.push('<b>Dietary notes:</b> ' + [...dietary].join('; '));\n  return '<br><b>RESERVE MEALS</b><br>' + lines.join('<br>') + '<br>';\n}\n\nfunction nonMealConfirmationNote(value) {\n  const note = clean(value);\n  const lines = note.split(/\\r?\\n/);\n  // Old CRM versions wrote the preview into this field. Keep real staff notes.\n  if (/^(BREAKFAST|LUNCH): \\d+ · /.test(lines[0])\n    && lines.every(line => /^(BREAKFAST|LUNCH): \\d+ · |^DIETARY NOTES: /.test(line))) return '';\n  return note;\n}\n\nconst mealRead = $(\"Read Guide Invite Meal Inquiry\");\nconst mealBlock = calendarMealBlock(assignment, mealRead.isExecuted ? mealRead.all().map(item => item.json) : []);\nconst inviteDescriptionLines = [\n  '<b>Mindo Bird Watching - Operations</b>',\n  mealBlock,\n  '',\n  clean(assignment.guest_name) ? `Guest: ${html(assignment.guest_name)}` : '',\n  guestPhone ? `Guest phone: ${html(guestPhone)}` : '',\n  clean(assignment.service_type) ? `Service: ${html(assignment.service_type)}` : '',\n  clean(assignment.product_selected) ? `<b>Product / Service:</b> ${html(assignment.product_selected)}` : '',\n  clean(assignment.guest_count) ? `Guests: ${html(assignment.guest_count)}` : '',\n  providerName ? `Assigned provider: ${html(providerName)}` : '',\n  clean(assignment.pickup_location) ? `Pickup: ${html(assignment.pickup_location)}` : '',\n  clean(assignment.dropoff_location) ? `Drop-off: ${html(assignment.dropoff_location)}` : '',\n  clean(assignment.trip_direction) ? `Direction: ${html(assignment.trip_direction)}` : '',\n  clean(assignment.assignment_status) ? `Assignment status: ${html(assignment.assignment_status)}` : '',\n  nonMealConfirmationNote(assignment.confirmation_note) ? `Confirmation note: ${html(nonMealConfirmationNote(assignment.confirmation_note))}` : '',\n  '',\n  'Booking contact: <a href=\"mailto:bookings@mindobirdwatching.com\">bookings@mindobirdwatching.com</a>',\n  clean(assignment.assignment_id) ? `CRM Assignment: ${html(assignment.assignment_id)}` : ''\n].filter(Boolean);\nconst calendarDescription = inviteDescriptionLines.join('<br>');\nconst eventId = clean(assignment.google_calendar_event_id);\nif (!eventId) throw new Error('This assignment does not have a Google Calendar event yet.');\n\nconst staff = clean(request.created_by || request.staff || assignment.created_by).toUpperCase();\nif (staff && !['SS','JPG'].includes(staff)) throw new Error('created_by must be SS or JPG.');\n\nreturn [{\n  json: {\n    assignment_id: assignment.assignment_id,\n    calendar_id: clean(assignment.google_calendar_id) || 'mindobirdwatching@gmail.com',\n    calendar_event_id: eventId,\n    guide_name: providerName,\n    guide_email: email,\n    calendar_color_id: calendarColorId,\n    calendar_description: calendarDescription,\n    provider_informed_by: staff || 'JPG'\n  }\n}];"
       },
       "id": "b294a3f1-b299-49c7-9f5b-22167b2bae45",
       "name": "Prepare Guide Calendar Invite",
@@ -13122,6 +13122,176 @@
         50120,
         16000
       ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ (() => {\n  const a = $('Process CRM Assignments').first().json;\n  const code = String(a.product_selected || '').trim().toUpperCase().match(/\\bMBW\\d{3}\\b/)?.[0];\n  return !!String(a.inquiry_id || '').trim() && [\"MBW005\",\"MBW006\",\"MBW007\",\"MBW008\",\"MBW010\"].includes(code)\n    && !/transport/i.test(String(a.service_type || ''))\n    && !['yes','true','1','y'].includes(String(a.is_deleted || '').trim().toLowerCase())\n    && !['cancelled','canceled'].includes(String(a.assignment_status || '').trim().toLowerCase());\n})() ? \"lookup\" : \"skip\" }}",
+                    "rightValue": "lookup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "1ba56c81-08ef-4f86-8a24-d4bdc8e1648c",
+      "name": "Route Calendar Meal Lookup",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2368,
+        3664
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit?gid=613590723#gid=613590723",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 613590723,
+          "mode": "list",
+          "cachedResultName": "crm_inquiries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit#gid=613590723"
+        },
+        "options": {
+          "returnFirstMatch": false
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "inquiry_id",
+              "lookupValue": "={{ String($(\"Process CRM Assignments\").first().json.inquiry_id || \"\").trim() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2496,
+        3664
+      ],
+      "id": "f19eee44-9f86-48bf-9f21-9ef6e2882a47",
+      "name": "Read Calendar Meal Inquiry",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ (() => {\n  const a = $('Process CRM Assignments').first().json;\n  const code = String(a.product_selected || '').trim().toUpperCase().match(/\\bMBW\\d{3}\\b/)?.[0];\n  return !!String(a.inquiry_id || '').trim() && [\"MBW005\",\"MBW006\",\"MBW007\",\"MBW008\",\"MBW010\"].includes(code)\n    && !/transport/i.test(String(a.service_type || ''))\n    && !['yes','true','1','y'].includes(String(a.is_deleted || '').trim().toLowerCase())\n    && !['cancelled','canceled'].includes(String(a.assignment_status || '').trim().toLowerCase());\n})() ? \"lookup\" : \"skip\" }}",
+                    "rightValue": "lookup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "6e4d325e-ea00-48c3-8d37-52885a3ffc10",
+      "name": "Route Guide Invite Meal Lookup",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2192,
+        4400
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit?gid=613590723#gid=613590723",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 613590723,
+          "mode": "list",
+          "cachedResultName": "crm_inquiries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rdPmYmhCehx_3bI737dkg8NyiutwIu3NAav7B-mbwlw/edit#gid=613590723"
+        },
+        "options": {
+          "returnFirstMatch": false
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "inquiry_id",
+              "lookupValue": "={{ String($(\"Process CRM Assignments\").first().json.inquiry_id || \"\").trim() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2384,
+        4400
+      ],
+      "id": "a1347e1f-9060-4599-ae83-b2394f033172",
+      "name": "Read Guide Invite Meal Inquiry",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sJdVMmql2IyZ94ti",
+          "name": "Google Sheets - MBW"
+        }
+      },
+      "alwaysOutputData": true
     }
   ],
   "pinData": {},
@@ -13596,7 +13766,7 @@
       "main": [
         [
           {
-            "node": "Prepare Assignment Calendar Sync",
+            "node": "Route Calendar Meal Lookup",
             "type": "main",
             "index": 0
           }
@@ -13782,7 +13952,7 @@
       "main": [
         [
           {
-            "node": "Prepare Guide Calendar Invite",
+            "node": "Route Guide Invite Meal Lookup",
             "type": "main",
             "index": 0
           }
@@ -14400,6 +14570,64 @@
         [
           {
             "node": "Respond to Admin Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Calendar Meal Lookup": {
+      "main": [
+        [
+          {
+            "node": "Read Calendar Meal Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Assignment Calendar Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Calendar Meal Inquiry": {
+      "main": [
+        [
+          {
+            "node": "Prepare Assignment Calendar Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Guide Invite Meal Lookup": {
+      "main": [
+        [
+          {
+            "node": "Read Guide Invite Meal Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Guide Calendar Invite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Guide Invite Meal Inquiry": {
+      "main": [
+        [
+          {
+            "node": "Prepare Guide Calendar Invite",
             "type": "main",
             "index": 0
           }

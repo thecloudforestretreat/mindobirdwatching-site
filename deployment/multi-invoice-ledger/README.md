@@ -33,6 +33,14 @@ Keep `invoices-logger-v8.gs` and `stripe-invoices-sync-v1.4.4.gs`; both already 
 
 Restore the website from the backup Git branch and import the previous n8n export. The new spreadsheet tabs are additive, so they can remain in place during rollback without affecting the legacy workflow.
 
+## Guide calendar reserve meals
+
+Apply `node scripts/add-guide-calendar-meals.mjs <current-live-workflow-export.json>` to a copy of the active export; keep the unmodified export as the rollback. Review the diff before activating (four nodes added; two existing calendar-description builders changed; no accounting or payment changes). Release the CRM preview change after the workflow.
+
+In a test calendar, create an eligible assignment and send a test invite. Both descriptions should have a bold **RESERVE MEALS** section near the top, with one line per finalized meal, lunch quantities by choice, the payment route, and any relevant dietary notes. Change a meal in the saved CRM itinerary, then edit/save the same assignment and verify the event ID, guest list, and RSVP stay intact. A normal save does not send another notice. Verify a transportation assignment, an ambiguous unlinked occurrence, and a pending meal all omit the section.
+
+Existing events are not backfilled. To refresh one, confirm the saved CRM selection first, edit/save the existing assignment, inspect the event, and notify the guide separately if needed.
+
 ## Archived intake preservation — 27 October 2026
 
 Raw intake now uses mergeImportedInquiry_ to preserve an existing archive decision and clear follow-up work on repeated imports. Exact source-submission or same dated-trip matches still merge audit information. Archived records are excluded from broad email/phone fallback matching, so a different-date or undated request can create a separate inquiry. Staff restore and active-record merging retain their prior behavior.

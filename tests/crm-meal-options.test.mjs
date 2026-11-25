@@ -23,10 +23,10 @@ test("meal selections persist inside each tour item", () => {
 
 test("guide summary is operational and separated by breakfast and lunch", () => {
   assert.match(source, /BREAKFAST: \$\{breakfastCount\}/);
-  assert.match(source, /LUNCH: \$\{lunchRows\.length\}/);
+  assert.match(source, /LUNCH: \$\{selected\}/);
   assert.match(source, /DIETARY NOTES:/);
   assert.doesNotMatch(source.match(/function guideMealSummary[\s\S]*?function mealOptionsHtml/)?.[0] || "", /discussed_stage|invoice|supplier cost/i);
-  assert.match(source, /confirmation_note:summary/);
+  assert.doesNotMatch(source, /confirmation_note:summary/);
 });
 
 test("CRM save verifies normalized booking-option persistence", () => {
