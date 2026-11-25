@@ -1086,22 +1086,25 @@
       function mealTravelerRows(type,travelers){return travelers.map((traveler,index)=>{const selection=type==="breakfast"?[["pending","Undecided"],["included","Eating breakfast"],["not_eating","Not eating"]]:[["undecided","Undecided"],["chicken","Chicken"],["pork","Pork"],["trout","Trout"],["not_eating","Not eating"],["other","Other"]];return `<div class="travelerMealRow" data-meal-traveler="${index}"><div class="travelerMealName">#${index+1}</div><label class="field">Traveler name<input data-meal-traveler-field="name" value="${esc(traveler.traveler_name)}" placeholder="Guest ${index+1}"></label><label class="field">${type==="breakfast"?"Breakfast":"Lunch choice"}<select data-meal-traveler-field="selection">${selection.map(([key,label])=>`<option value="${key}" ${clean(type==="breakfast"?traveler.participation_status:traveler.meal_selection)===key?"selected":""}>${label}</option>`).join("")}</select></label><label class="field">Allergies / dietary notes<input data-meal-traveler-field="notes" value="${esc(traveler.allergy_dietary_notes)}" placeholder="Optional"></label></div>`;}).join("");}
       function guideMealSummary(options){
         options=normalizeMealOptions(options,Math.max(options?.breakfast?.travelers?.length||0,options?.lunch?.travelers?.length||0,1));
-        const lines=[];
+        const lines=[],dietary=new Set();
         const breakfast=options.breakfast,lunch=options.lunch;
-        const breakfastCount=breakfast.travelers.filter(row=>row.participation_status==="included").length;
-        const lunchRows=lunch.travelers.filter(row=>!["undecided","not_eating",""].includes(clean(row.meal_selection)));
-        const payLabel=value=>value==="mbw"?"paid to MBW":value==="reserve_onsite"?"pay at reserve":value==="complimentary"?"complimentary":"payment pending";
-        if(breakfast.guest_decision==="yes"||breakfastCount) lines.push(`BREAKFAST: ${breakfastCount} · ${payLabel(breakfast.payment_route)}`);
-        if(lunch.guest_decision==="yes"||lunchRows.length){
-          const counts={chicken:0,pork:0,trout:0,other:0};
-          lunchRows.forEach(row=>counts[row.meal_selection]=(counts[row.meal_selection]||0)+1);
-          const choices=Object.entries(counts).filter(([,count])=>count).map(([choice,count])=>`${count} ${choice}`).join(", ");
-          lines.push(`LUNCH: ${lunchRows.length} · ${payLabel(lunch.payment_route)}${choices?" · "+choices:""}`);
+        const choices={chicken:"Chicken",pork:"Pork",trout:"Trout",other:"Other"};
+        const payLabel=value=>value==="mbw"?"Payment handled by MBW":value==="reserve_onsite"?"Pay at reserve":value==="complimentary"?"Complimentary":"Payment not recorded";
+        const finalized=(meal,type)=>meal.guest_decision==="yes"&&meal.finalization_status==="finalized"
+          ?meal.travelers.filter(row=>row.participation_status==="included"&&row.finalization_status==="finalized"&&(type==="breakfast"||Object.hasOwn(choices,row.meal_selection))):[];
+        const breakfastRows=finalized(breakfast,"breakfast"),lunchRows=finalized(lunch,"lunch");
+        const breakfastCount=breakfastRows.length;
+        if(breakfastCount) lines.push(`BREAKFAST: ${breakfastCount} ${breakfastCount===1?"guest":"guests"} · ${payLabel(breakfast.payment_route)}`);
+        if(lunchRows.length){
+          const selected=Object.entries(choices).map(([key,label])=>[lunchRows.filter(row=>row.meal_selection===key).length,label])
+            .filter(([count])=>count).map(([count,label])=>`${label} × ${count}`).join(", ");
+          lines.push(`LUNCH: ${selected} · ${payLabel(lunch.payment_route)}`);
         }
-        const dietary=[...breakfast.travelers,...lunch.travelers]
-          .filter(row=>clean(row.allergy_dietary_notes))
-          .map(row=>`${clean(row.traveler_name)||`Guest ${row.traveler_index||""}`}: ${clean(row.allergy_dietary_notes)}`);
-        if(dietary.length) lines.push("DIETARY NOTES: "+[...new Set(dietary)].join("; "));
+        [...breakfastRows,...lunchRows].forEach(row=>{
+          const note=clean(row.allergy_dietary_notes).replace(/\s+/g," ");
+          if(note)dietary.add(`Guest ${row.traveler_index}: ${note}`);
+        });
+        if(dietary.size) lines.push("DIETARY NOTES: "+[...dietary].join("; "));
         return lines.join("\n");
       }
       function mealOptionsHtml(item){if(!isMealEligible(item))return "";const options=normalizeMealOptions(Object.assign({},item.meal_options||{},{__item:item}),item.guests);const card=type=>{const meal=options[type];return `<section class="mealCard" data-meal-type="${type}"><h5>${type}</h5><div class="mealCardGrid"><label class="field">Discussed<select data-meal-field="discussed_stage"><option value="not_discussed" ${meal.discussed_stage==="not_discussed"?"selected":""}>Not discussed</option><option value="prebooking" ${meal.discussed_stage==="prebooking"?"selected":""}>Pre-booking</option><option value="postbooking" ${meal.discussed_stage==="postbooking"?"selected":""}>Post-booking</option></select></label><label class="field">Guest decision<select data-meal-field="guest_decision"><option value="pending" ${meal.guest_decision==="pending"?"selected":""}>Pending</option><option value="yes" ${meal.guest_decision==="yes"?"selected":""}>Yes</option><option value="no" ${meal.guest_decision==="no"?"selected":""}>No</option></select></label><label class="field">Payment<select data-meal-field="payment_route"><option value="undecided" ${meal.payment_route==="undecided"?"selected":""}>Undecided</option><option value="mbw" ${meal.payment_route==="mbw"?"selected":""}>Paid / paying MBW</option><option value="reserve_onsite" ${meal.payment_route==="reserve_onsite"?"selected":""}>Pay at reserve</option><option value="complimentary" ${meal.payment_route==="complimentary"?"selected":""}>Complimentary</option></select></label><label class="field">Price per person<input data-meal-field="unit_price" inputmode="decimal" value="${esc(meal.unit_price)}"></label><label class="field">Finalization<select data-meal-field="finalization_status"><option value="not_finalized" ${meal.finalization_status==="not_finalized"?"selected":""}>Not finalized</option><option value="finalized" ${meal.finalization_status==="finalized"?"selected":""}>Finalized</option><option value="changed" ${meal.finalization_status==="changed"?"selected":""}>Changed</option><option value="cancelled" ${meal.finalization_status==="cancelled"?"selected":""}>Cancelled</option></select></label></div><div class="travelerMealTable">${mealTravelerRows(type,meal.travelers)}</div></section>`};return `<section class="reserveMeals" data-meal-options><div class="reserveMealsHead"><div><h4>Reserve meals · ${esc(productCodeFromValue(item.product_selected))}</h4><p>Saved to this exact tour and date. Guide invites receive only the finalized operational summary.</p></div></div><div class="mealCards">${card("breakfast")}${card("lunch")}</div><div class="mealGuidePreview">Guide invite preview\n${esc(guideMealSummary(options)||"No meal selections finalized")}</div></section>`;}
@@ -1436,15 +1439,6 @@
           return response.ok&&(await response.json()).enabled===true;
         }catch{return false;}
       }
-      const apiWithoutMealSummary=api;
-      api=async function(action,data){
-        if(["create_assignment","update_assignment"].includes(action)&&data&&data.assignment){
-          const tourItem=typeof selectedAssignmentTourItem==="function"?selectedAssignmentTourItem():null;
-          const summary=tourItem&&tourItem.meal_options?guideMealSummary(tourItem.meal_options):"";
-          if(summary)data=Object.assign({},data,{assignment:Object.assign({},data.assignment,{confirmation_note:summary})});
-        }
-        return apiWithoutMealSummary(action,data);
-      };
       const recordDirtyFieldIds=["referenceIdInput","sourceInput","assignedToInput","firstNameInput","lastNameInput","fullNameInput","phoneInput","emailInput","countryInput","tourInput","guestCountInput","dateInput","recordStatusInput","quoteStatusInput","paymentStatusInput","invoiceNoInput","datePaidInput","paymentMethodInput","serviceTypeInput","productSelectedInput","durationInput","transportInput","followupInput","priorityInput","availabilityInput","groupingPreferenceInput","groupingStatusInput","pickupLocationInput","quotedAmountInput","promoCodeInput","notesInput","internalInput","marketingBrandInput","quoteSentAtInput","quoteSentChannelInput","quoteNotesInput","recordTypeInput","organizationNameInput","contactRoleInput","relationshipStageInput","partnerTypeInput","companyWebsiteInput","pricingModelInput","rateSheetVersionInput","ratesSentAtInput","referringPartnerIdInput"];
       function tourFormSnapshot(){
         return JSON.stringify({

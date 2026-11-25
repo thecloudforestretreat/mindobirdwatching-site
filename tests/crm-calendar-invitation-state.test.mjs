@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const workflow=JSON.parse(fs.readFileSync(new URL('../deployment/multi-invoice-ledger/MBW-CRM-Admin-API-multi-invoice.json',import.meta.url),'utf8'));
 const node=name=>workflow.nodes.find(n=>n.name===name);
 function run(name,{request={},rows=[],base={},result={}}={}){
- const $=name=>({first:()=>({json:request}),item:{json:base},all:()=>rows.map(json=>({json}))});
+ const $=name=>({first:()=>({json:name==='Process CRM Assignments'?base:request}),item:{json:base},all:()=>rows.map(json=>({json})),isExecuted:false});
  return new Function('$','$input','$json',node(name).parameters.jsCode)($,{all:()=>rows.map(json=>({json}))},result)[0].json;
 }
 const original={assignment_id:'QA-ASSIGNMENT',guest_id:'QA-GUEST',inquiry_id:'QA-INQUIRY',service_type:'Transportation',provider_name:'QA Driver',provider_id:'P1',service_date:'2099-11-26',start_time:'03:00',end_time:'05:00',assignment_status:'confirmed',created_by:'JPG',provider_informed:'Yes',provider_informed_by:'JPG',google_calendar_event_id:'event-keep',google_calendar_id:'qa@example.invalid',calendar_event_url:'https://calendar.google.com/calendar/event?eid=qa',calendar_sync_status:'guide_invited'};
