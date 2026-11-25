@@ -1372,7 +1372,13 @@
       async function api(action,data){
         const url=clean(els.apiUrlInput.value)||localStorage.getItem("mbwCrmApiUrl")||CRM_API_DEFAULT;
         if(!url) throw new Error("Add CRM API webhook URL in Settings");
+        if(data?.verified_save&&url===CRM_API_DEFAULT&&location.origin==="https://admin.mindobirdwatching.com"){
+          // Never fall through to the legacy write after routing to the guard.
+          const guarded=await guardedCrmSave(action,data);
+          if(guarded)return guarded;
+        }
         const payload={action,...data};
+        delete payload.verified_save;
         const isRead=action.startsWith("list_");
         const attempts=isRead?4:1;
         let lastError=null;
@@ -1423,6 +1429,12 @@
             ?"mobile browser could not reach the CRM API. Check the connection and deploy the mobile-safe n8n workflow."
             :(lastError&&lastError.message)||"unknown network error");
         throw new Error(prefix+": "+detail);
+      }
+      async function crmSaveGuardEnabled(){
+        try{
+          const response=await fetch("/api/admin/crm-save",{credentials:"same-origin",cache:"no-store",signal:AbortSignal.timeout(4000)});
+          return response.ok&&(await response.json()).enabled===true;
+        }catch{return false;}
       }
       const apiWithoutMealSummary=api;
       api=async function(action,data){
@@ -1574,12 +1586,53 @@
         }
         return result;
       }
+      async function guardedCrmSave(action,payload){
+        const create=action!=="update_inquiry",record=payload.record;
+        const omit=new Set(["updated_at","created_at","stage_changed_at","last_contacted_at","promo_applied_at"]);
+        if(create)omit.add("inquiry_id");
+        if(action==="create_guest_and_inquiry")omit.add("guest_id");
+        const fields=Object.entries(record).filter(([key])=>!omit.has(key)).sort(([a],[b])=>a.localeCompare(b));
+        const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify([action,fields])));
+        const key="mbw.crm.save."+Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,"0")).join("");
+        // Store only a digest and opaque IDs, not the guest's form values.
+        let claim;
+        try{claim=JSON.parse(sessionStorage.getItem(key)||"null");}catch{}
+        // Only a positive preflight switches new saves. An unresolved guarded
+        // request keeps its original idempotency key even if the flag changes.
+        if(!claim&&!await crmSaveGuardEnabled())return null;
+        if(!claim){
+          claim={id:crypto.randomUUID(),inquiry:record.inquiry_id,guest:record.guest_id};
+          sessionStorage.setItem(key,JSON.stringify(claim));
+        }
+        if(create){
+          record.inquiry_id=claim.inquiry;
+          record.guest_id=claim.guest;
+          payload.guest_row.guest_id=claim.guest;
+        }
+        try{
+          const response=await fetch("/api/admin/crm-save",{
+            method:"POST",credentials:"same-origin",cache:"no-store",signal:AbortSignal.timeout(29000),
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action,request_id:claim.id,record,guest_row:payload.guest_row})
+          });
+          const result=await response.json();
+          if(!response.ok||result.ok!==true||result.request_id!==claim.id){
+            if(result.error==="save_guard_unavailable")throw new Error("Save protection is unavailable. Your edits are still on screen. Check CRM sync health before retrying.");
+            throw new Error("The CRM did not verify this save. Compare the existing inquiry before changing the draft.");
+          }
+          savedInquiryFromResponse(result,record);
+          sessionStorage.removeItem(key);
+          return result;
+        }catch(error){
+          throw Object.assign(new Error((error.name==="TimeoutError"?"CRM confirmation timed out; the write was not retried.":error.message)+" Reference: "+claim.id),{guardedSave:true});
+        }
+      }
       async function saveInquiryWithReadback(action,payload){
         let response=null,writeError=null;
         try{
-          response=await api(action,payload);
+          response=await api(action,{...payload,verified_save:true});
           return savedInquiryFromResponse(response,payload.record);
-        }catch(error){writeError=error;}
+        }catch(error){if(error.guardedSave)throw error;writeError=error;}
 
         // A Google Sheets update can commit successfully while the workflow returns only
         // an acknowledgement (or times out before returning the written row). Never retry

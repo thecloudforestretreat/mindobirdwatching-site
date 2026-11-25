@@ -1,4 +1,5 @@
 import { authorize } from "../whatsapp/index.js";
+import { accountingExceptions, freshness } from "../../lib/accounting-integrity.mjs";
 
 const TABS = ["daily_recon", "guide_payment_queue", "guide_settlements", "guide_ledger", "expenses", "growth_dashboard", "invoices", "report_income_summary", "deposits"];
 const reply = (status, body) => Response.json(body, { status, headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
@@ -36,7 +37,14 @@ async function secureSource(env) {
   for (const name of [...TABS, "recon_meta_ads_import"]) {
     if (!Array.isArray(payload.tabs[name])) throw new Error(`${name}_unavailable`);
   }
-  return { tabs: payload.tabs, generatedAt: text(payload.generated_at || record.generated_at), receivedAt: text(record.received_at) };
+  return { tabs: payload.tabs, columns:payload.columns, heartbeats:payload.heartbeats, generatedAt: text(payload.generated_at || record.generated_at), receivedAt: text(record.received_at) };
+}
+
+async function lastVerifiedCrmSave(env) {
+  const db=env.MBW_PORTFOLIO_DB || env.MBW_ATTRIBUTION_DB;
+  try {
+    return (await db?.prepare("SELECT MAX(verified_at) AS at FROM crm_save_requests").first())?.at || null;
+  } catch { return null; } // An idle/new CRM should not break accounting reporting.
 }
 
 function latestTimestamp(rows, fields) {
@@ -245,7 +253,7 @@ function pipelineSummary(deposits, today) {
 export async function onRequestGet({ request, env }) {
   const denied = await authorize(request); if (denied) return denied;
   try {
-    const source = await secureSource(env), tabs = source.tabs;
+    const [source, lastCrmSave] = await Promise.all([secureSource(env),lastVerifiedCrmSave(env)]), tabs = source.tabs;
     const [daily, queue, settlements, ledger, expenses, growth, invoices, income, deposits, metaAds] = [...TABS, "recon_meta_ads_import"].map(name => tabs[name]);
     const today = guayaquilToday(), month = today.slice(0, 7), year = today.slice(0, 4);
     const latestRecon = [...daily].filter(row => validDate(row.date) && text(row.date) <= today).sort((a, b) => text(a.date).localeCompare(text(b.date))).at(-1) || {};
@@ -272,6 +280,8 @@ export async function onRequestGet({ request, env }) {
       invoiceEarnedProfit: number(invoiceProjection.earnedProfit),
     }, weekly = weeklySummary(invoices, year), currentWeekStart = weekStart(today), currentWeek = weekly.find(row => row.week === currentWeekStart) || { week: currentWeekStart, revenue: 0, profit: 0, guests: 0, services: 0 }, completedWeeks = weekly.filter(row => row.week < currentWeekStart).slice(-8), completedMonths = monthly.filter(row => row.month < month).slice(-3), priorMonth = addDays(`${month}-01`, -1).slice(0, 7);
     const cash = { date: text(latestRecon.date), ledger_balance: number(latestRecon.running_expected_balance), restricted_ad_fund: number(latestRecon.restricted_ad_fund), available_operating_cash: number(latestRecon.available_operating_cash) };
+    const now=Date.now(), snapshot=freshness(source.generatedAt,now,45);
+    const accountingSync=freshness(source.heartbeats?.stripe_accounting_sync,now,30);
     const sourceHealth = {
       status: "current",
       issues: [],
@@ -283,7 +293,14 @@ export async function onRequestGet({ request, env }) {
       monthly_summary_through: monthly.at(-1)?.month || "",
       snapshot_generated_at: source.generatedAt,
       snapshot_received_at: source.receivedAt,
-      row_counts: { invoices: invoices.length, expenses: expenses.length, deposits: deposits.length, monthly: monthly.length },
+      row_counts: { invoices: invoices.length, expenses: expenses.length, deposits: deposits.length, monthly: monthly.length, guide_queue:queue.length },
+      workflows: {
+        snapshot,
+        stripe_accounting_sync: accountingSync,
+        crm_last_verified_save: lastCrmSave,
+        latest_stripe_invoice_payment_recorded: latestTimestamp(invoices.filter(row=>/^stripe$/i.test(text(row.payment_method))),["paid_at","date_paid"]),
+        latest_guide_queue_update: latestTimestamp(queue,["updated_at"]),
+      },
     };
     if (!Object.keys(ytd).length) sourceHealth.issues.push(`${year} YTD growth summary is missing`);
     if (!Object.keys(current).length) sourceHealth.issues.push("Current Month growth summary is missing");
@@ -292,11 +309,13 @@ export async function onRequestGet({ request, env }) {
     else if (daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`) > 3) sourceHealth.issues.push(`Daily reconciliation is ${daysSince(today, `${sourceHealth.reconciliation_through}T12:00:00Z`)} days old`);
     if (!invoices.length) sourceHealth.issues.push("Invoice source returned no rows");
     if (!expenses.length) sourceHealth.issues.push("Expense source returned no rows");
-    if (!sourceHealth.snapshot_generated_at) sourceHealth.issues.push("Accounting snapshot timestamp is missing");
-    else if (daysSince(today, sourceHealth.snapshot_generated_at) > 1) sourceHealth.issues.push(`Accounting snapshot is ${daysSince(today, sourceHealth.snapshot_generated_at)} days old`);
+    if (snapshot.status==="unknown") sourceHealth.issues.push("Accounting snapshot timestamp is missing or invalid");
+    else if (snapshot.status==="delayed") sourceHealth.issues.push(`Accounting snapshot is ${snapshot.age_minutes} minutes old`);
+    if (accountingSync.status==="delayed") sourceHealth.issues.push(`Last recorded Stripe accounting sync success was ${accountingSync.age_minutes} minutes ago`);
     sourceHealth.status = sourceHealth.issues.length ? "attention" : "current";
     return reply(200, {
       ok: true, generated_at: new Date().toISOString(), updated_at: new Date().toISOString(), control_date: today, source_health: sourceHealth,
+      exception_queue: accountingExceptions(tabs,source.columns,today,snapshot,now),
       cash,
       summary: { year, revenue: number(ytd.earned_revenue), profit: number(ytd.earned_profit), margin: number(ytd.earned_margin) / 100, guests: number(ytd.guests_served), services: number(ytd.completed_services), expenses: number(ytd.operating_expenses), net: number(ytd.net_income), currentMonthRevenue: number(current.earned_revenue), currentMonthProfit: number(current.earned_profit), currentMonthNet: number(current.net_income) },
       projection, monthly,

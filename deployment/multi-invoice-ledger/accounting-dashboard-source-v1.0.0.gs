@@ -8,7 +8,7 @@
  * admin site and this endpoint remain private.
  */
 
-var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.0.2-2026-11-17";
+var ACCOUNTING_DASHBOARD_SOURCE_VERSION = "v1.1.0-2026-11-25";
 var ACCOUNTING_DASHBOARD_SHEET_ID = "1ckRUChk3pp4QlO1BIDkOeF8CIwHBidYbBmjb39dbGIU";
 var ACCOUNTING_DASHBOARD_SYNC_URL_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_URL";
 var ACCOUNTING_DASHBOARD_SYNC_TOKEN_PROPERTY = "ACCOUNTING_DASHBOARD_SYNC_TOKEN";
@@ -20,12 +20,12 @@ var ACCOUNTING_DASHBOARD_HEADER_ALIASES = {
 };
 var ACCOUNTING_DASHBOARD_FIELDS = {
   daily_recon: ["date", "running_expected_balance", "restricted_ad_fund", "available_operating_cash"],
-  guide_payment_queue: ["guide", "remaining_due", "tour_date", "tour_key"],
+  guide_payment_queue: ["guide", "remaining_due", "tour_date", "tour_key", "amount_due", "payment_status", "updated_at"],
   guide_settlements: ["settlement_id", "status"],
   guide_ledger: ["ledger_id", "transaction_type", "contribution_due", "contribution_collected", "ad_spend_used", "contribution_due_balance", "advertising_fund_balance", "notes"],
-  expenses: ["expense_date", "expense_month", "accrual_month", "expense_type", "expense_category", "expense_status", "amount", "reconciled", "receipt_link", "payment_method", "tour_key", "invoice_no", "created_at", "updated_at", "paid_at"],
+  expenses: ["expense_date", "expense_month", "accrual_month", "expense_type", "expense_category", "expense_status", "amount", "reconciled", "receipt_link", "payment_method", "tour_key", "invoice_no", "created_at", "updated_at", "paid_at", "expense_key", "paid_to"],
   growth_dashboard: ["MBW Growth Dashboard period", "year", "earned_revenue", "earned_profit", "earned_margin", "guests_served", "completed_services", "operating_expenses", "net_income"],
-  invoices: ["date_paid", "tour_date", "tour_completed", "party_size", "service_type", "product_selected", "tour_title", "tour_key", "booking_status", "revenue_status", "earned_month", "mbw_gross_actual", "mbw_profit_accrual", "mbw_gross_expected", "mbw_profit_expected", "expense_reconciled_flag", "created_at", "updated_at", "paid_at"],
+  invoices: ["date_paid", "tour_date", "tour_completed", "party_size", "service_type", "product_selected", "tour_title", "tour_key", "booking_status", "revenue_status", "earned_month", "mbw_gross_actual", "mbw_profit_accrual", "mbw_gross_expected", "mbw_profit_expected", "expense_reconciled_flag", "created_at", "updated_at", "paid_at", "invoice_no", "home_country", "tour_guide", "total_amount_owed_to_guide", "amount_received", "payment_method"],
   report_income_summary: ["month_ky", "cash_collected", "earned_revenue", "earned_profit", "expense_total", "net_income", "earned_margin"],
   deposits: ["deposit_date", "tour_date", "balance_due_date", "booking_status", "deposit_status", "party_size", "total_booking_price", "total_amount_paid", "balance_remaining", "created_at", "updated_at", "paid_at"],
   recon_meta_ads_import: ["Expense Month", "Net Spend", "expense_month", "net_spend"]
@@ -104,14 +104,19 @@ function auditAccountingDashboardPush() {
 
 function buildAccountingDashboardSource_() {
   var spreadsheet = SpreadsheetApp.openById(ACCOUNTING_DASHBOARD_SHEET_ID);
-  var tabs = {};
+  var tabs = {}, columns = {};
   Object.keys(ACCOUNTING_DASHBOARD_FIELDS).forEach(function(sheetName) {
-    tabs[sheetName] = readAccountingDashboardTab_(spreadsheet, sheetName, ACCOUNTING_DASHBOARD_FIELDS[sheetName]);
+    tabs[sheetName] = readAccountingDashboardTab_(spreadsheet, sheetName, ACCOUNTING_DASHBOARD_FIELDS[sheetName], columns);
   });
-  return { ok: true, version: ACCOUNTING_DASHBOARD_SOURCE_VERSION, generated_at: new Date().toISOString(), tabs: tabs };
+  var properties = PropertiesService.getScriptProperties();
+  var lastSync = Number(properties.getProperty("MBW_STRIPE_INVOICES_LAST_SUCCESS_AT") || 0);
+  return {
+    ok: true, version: ACCOUNTING_DASHBOARD_SOURCE_VERSION, generated_at: new Date().toISOString(), tabs: tabs, columns: columns,
+    heartbeats: { stripe_accounting_sync: Number.isFinite(lastSync) && lastSync > 0 && lastSync <= Date.now() ? new Date(lastSync).toISOString() : null }
+  };
 }
 
-function readAccountingDashboardTab_(spreadsheet, sheetName, wantedFields) {
+function readAccountingDashboardTab_(spreadsheet, sheetName, wantedFields, columns) {
   var sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) throw new Error("Missing sheet: " + sheetName);
   var headerRow = sheetName === "recon_meta_ads_import" ? 6 : (sheetName === "growth_dashboard" ? 2 : 1);
@@ -127,6 +132,7 @@ function readAccountingDashboardTab_(spreadsheet, sheetName, wantedFields) {
     }
     return -1;
   });
+  if (columns) columns[sheetName] = wantedFields.filter(function(_, index) { return indices[index] >= 0; });
   if (lastRow === headerRow) return [];
   var keyValues = sheet.getRange(headerRow + 1, 1, lastRow - headerRow, 1).getDisplayValues();
   var meaningfulRows = 0;
