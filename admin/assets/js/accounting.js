@@ -149,6 +149,7 @@
   function renderBalances(){if(!balances){$("balanceSummary").textContent="Feed unavailable";$("balanceRows").innerHTML='<tr><td colspan="7">Customer balances unavailable.</td></tr>';return}const rows=(balances.records||[]).filter(row=>num(row.balance)>0&&row.status!=="paid").sort((a,b)=>{const rank={overdue:0,due_soon:1,review:2,undated:3,upcoming:4,unknown:5};return(rank[a.status]??9)-(rank[b.status]??9)||clean(a.dueDate).localeCompare(clean(b.dueDate))}),total=rows.reduce((sum,row)=>sum+num(row.balance),0);$("balanceSummary").textContent=moneyExact(total)+" · "+rows.length+" bookings";$("balanceRows").innerHTML=rows.slice(0,25).map(row=>`<tr><td><strong>${esc(row.name)}</strong></td><td>${esc(row.tourDate||"—")}</td><td>${row.total==null?"—":moneyExact(row.total)}</td><td>${row.paid==null?"—":moneyExact(row.paid)}</td><td>${moneyExact(row.balance)}</td><td>${esc(row.dueDate||"Not recorded")}</td><td><span class="statusBadge" data-tone="${row.status==="overdue"?"danger":row.status==="due_soon"||row.status==="review"?"warn":"good"}">${esc(clean(row.status).replaceAll("_"," "))}</span></td></tr>`).join("")||'<tr><td colspan="7">No open customer balances.</td></tr>'}
 
   function renderControls(){
+    renderExceptionQueue();
     const records=balances?.records||[],review=records.filter(row=>row.status==="review").length,overdue=records.filter(row=>row.status==="overdue").length,unmatched=num(balances?.unmatched),profitVariance=num(ops?.controls?.profit_variance),controls=ops?.controls||{},health=ops?.source_health||{},healthIssues=health.issues||[];
     const checks=[
       [accounting?"good":"danger","Invoice reporting feed",accounting?integer(accounting.accounting_summary?.paid_invoice_count)+" paid invoice rows verified":"Unavailable"],
@@ -171,10 +172,44 @@
     const fees=ops?.fee_allocation||{},feeRows=[["Mindo Bird Watching",fees.mbw],["Guides",fees.guides],["Guests",fees.guests]],feeCheck=Math.abs(num(fees.check?.ytd)),feeAvailable=fees.available===true;
     $("feeAllocationStatus").textContent=!feeAvailable?"Unavailable":feeCheck<=.01?"Matched":"Review";$("feeAllocationStatus").dataset.tone=feeAvailable&&feeCheck<=.01?"good":"warn";
     $("feeAllocationMetrics").innerHTML=feeAvailable?`<div class="feeTotal"><span>YTD Stripe fees</span><strong>${moneyExact(fees.total?.ytd)}</strong><small>${monthTitle(fees.month)}: ${moneyExact(fees.total?.current)}</small></div>`+feeRows.map(([label,row])=>`<div class="feeRow"><div><span>${esc(label)}</span><small>${pct(row?.share)} of YTD fees</small></div><strong>${moneyExact(row?.ytd)}</strong><b>${moneyExact(row?.current)} MTD</b></div>`).join(""):'<div class="emptyState">Fee allocation rows are missing from the growth dashboard.</div>';
-    $("sourceHealthMetrics").innerHTML=[["Status",health.status==="current"?"Current":"Attention"],["Reconciled through",formatDate(health.reconciliation_through)],["Monthly summary through",monthTitle(health.monthly_summary_through)],["Latest invoice activity",formatDate(health.latest_invoice_update)],["Latest expense activity",formatDate(health.latest_expense_update)],["Latest deposit activity",formatDate(health.latest_deposit_update)]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${esc(item[1])}</strong></div>`).join("");
+    const workflows=health.workflows||{};
+    const stamp=value=>{
+      if(!value)return "Not reported";
+      const date=new Date(value);
+      return Number.isFinite(date.getTime())?new Intl.DateTimeFormat("en-US",{timeZone:"America/Guayaquil",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(date)+" Mindo":"Not reported";
+    };
+    const heartbeat=signal=>signal?.at?stamp(signal.at)+(signal.status==="delayed"?" · delayed":""):"Not reported";
+    $("sourceHealthMetrics").innerHTML=[
+      ["Status",!ops?"Unavailable":health.status==="current"?"Current snapshot":"Attention"],
+      ["Accounting snapshot",heartbeat(workflows.snapshot)],
+      ["Stripe → invoice, expense & queue sync",heartbeat(workflows.stripe_accounting_sync)],
+      ["Last verified CRM save",stamp(workflows.crm_last_verified_save)],
+      ["Latest Stripe payment in invoices",formatDate(workflows.latest_stripe_invoice_payment_recorded)],
+      ["Latest invoice activity",formatDate(health.latest_invoice_update)],
+      ["Latest expense activity",formatDate(health.latest_expense_update)],
+      ["Latest deposit activity",formatDate(health.latest_deposit_update)],
+      ["Guide queue rows in snapshot",health.row_counts?.guide_queue==null?"Not reported":integer(health.row_counts.guide_queue)],
+      ["Latest guide queue activity",formatDate(workflows.latest_guide_queue_update)],
+      ["Reconciled through",formatDate(health.reconciliation_through)],
+      ["Monthly summary through",health.monthly_summary_through?monthTitle(health.monthly_summary_through):"Not reported"],
+    ].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${esc(item[1])}</strong></div>`).join("");
     const fund=ops?.advertising_fund||{},cash=ops?.cash||{};
     $("adMetrics").innerHTML=[["Available",moneyExact(fund.available)],["Outstanding from guides",moneyExact(fund.outstanding_from_guides)],["Collected",moneyExact(fund.contribution_collected)],["Ad spend used",moneyExact(fund.ad_spend_used)]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("");
     $("reconMetrics").innerHTML=[["Ledger balance",moneyExact(cash.ledger_balance)],["Restricted",moneyExact(cash.restricted_ad_fund)],["Spendable operating cash",moneyExact(cash.available_operating_cash)],["Through",cash.date||"—"]].map(item=>`<div class="stackMetric"><span>${esc(item[0])}</span><strong>${item[1]}</strong></div>`).join("");
+  }
+
+  function renderExceptionQueue(){
+    const queue=ops?.exception_queue;
+    const status=$("exceptionStatus"),scope=$("exceptionScope"),rows=$("exceptionRows");
+    const inactive=!queue||queue.status==="snapshot_not_current";
+    const partial=queue?.status==="partial";
+    status.textContent=inactive?"Not verified":queue.total?`${integer(queue.total)} to review`:partial?"Partial coverage":"No exceptions found";
+    status.dataset.tone=inactive||partial||queue.total?"warn":"good";
+    const notChecked=Object.entries(queue?.coverage||{}).filter(([,available])=>!available).map(([key])=>({metadata:"invoice fields",provider_expenses:"provider expenses",guide_queue:"guide queue"})[key]);
+    scope.textContent=inactive
+      ?"A current accounting snapshot is required. Refresh checks the latest snapshot; it does not rerun imports or change records."
+      :`Paid invoices from the last ${queue.lookback_days} days after the posting grace period. ${partial?"Not checked: "+notChecked.join(", ")+". ":""}${queue.issues.length<queue.total?"Showing the first "+queue.issues.length+" flags. ":""}Verify flagged records in the accounting sheet before taking action.`;
+    rows.innerHTML=(queue?.issues||[]).map(row=>`<tr><td><strong>${esc(row.invoice)}</strong></td><td>${esc(row.product||"—")}</td><td>${esc(row.tour_date||"—")}</td><td>${esc(row.detail)}</td></tr>`).join("")||`<tr><td colspan="4">${inactive?"Exceptions cannot be verified yet.":partial?"No flags in the checks that could run.":"No exceptions found in the checks above."}</td></tr>`;
   }
 
   function fillGoals(){const fields={goalRevenue:"revenue",goalProfit:"profit",goalMargin:"margin",goalGuests:"guests",goalServices:"services",goalMonthlyProfit:"monthlyProfit",goalOperatingCash:"operatingCash"};Object.entries(fields).forEach(([id,key])=>$(id).value=goals[key])}
