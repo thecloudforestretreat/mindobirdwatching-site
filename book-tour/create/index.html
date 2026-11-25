@@ -1536,16 +1536,12 @@ function createItem(initial = {}) {
   }
 
   function inboundTourCode(item, language) {
-    const product = String(item.product_selected || item.product || "").trim();
-    const codeMatch = product.match(/\b[A-Z]{2,}\d{2,}\b/i);
-    if (codeMatch) {
-      const exact = state.tours.find(tour =>
-        tour.language === language &&
-        String(tour.tour_code || "").toUpperCase() === codeMatch[0].toUpperCase()
-      );
-      if (exact) return exact.tour_code;
-    }
-    return findInboundTourCode(product || item.tour || item.description || "", language);
+    const product = String(item.product_selected || item.product || item.tour_code || "").trim();
+    const code = product.split(/\s+[-–—]\s+/, 1)[0].toUpperCase();
+    const exact = state.tours.find(tour =>
+      tour.language === language && String(tour.tour_code || "").toUpperCase() === code
+    );
+    return exact?.tour_code || "";
   }
 
   function isVehicleTour(tour){return /^TRANS/i.test(String(tour&&tour.tour_code||""));}
@@ -1561,7 +1557,8 @@ function createItem(initial = {}) {
       ? quotedPrice - standardPrice
       : 0;
     const pickup = String(item.pickup_location || item.pickup || "").trim();
-    const notes = [item.notes || item.note || "", pickup ? `Pickup: ${pickup}` : ""].filter(Boolean).join(" | ");
+    const requested = item.product_selected || item.product || item.tour || item.description;
+    const notes = [!tourCode && requested ? `CRM requested: ${requested}` : "", item.notes || item.note || "", pickup ? `Pickup: ${pickup}` : ""].filter(Boolean).join(" | ");
     return createItem({
       tour_code: tourCode,
       tour_date: item.date || item.tour_date || getInboundValue(data, "tour_date", "date", "requested_date") || getTodayInMindoISO(),
@@ -1695,8 +1692,10 @@ function createItem(initial = {}) {
     const tourDate = getInboundValue(data, "tour_date", "date", "requested_date");
     const quantity = getInboundValue(data, "party", "guests", "guest_count", "number_of_people");
     const tourText = getInboundValue(data, "tour", "tour_type", "tour_interest");
-    const tourCode = findInboundTourCode(tourText, language);
     const inquiryId = getInboundValue(data, "inquiry_id", "inquiryId");
+    const tourCode = inquiryId
+      ? inboundTourCode({product_selected:getInboundValue(data, "product_selected", "tour_code")}, language)
+      : findInboundTourCode(tourText, language);
     const guestId = getInboundValue(data, "guest_id", "guestId");
     const bookingId = getInboundValue(data, "booking_id", "bookingId");
     const quoteId = getInboundValue(data, "quote_id", "quoteId");
@@ -1756,7 +1755,7 @@ function createItem(initial = {}) {
     } else if (state.items.length) {
       Object.assign(state.items[0], {
         language,
-        tour_code: tourCode || state.items[0].tour_code,
+        tour_code: inquiryId ? tourCode : tourCode || state.items[0].tour_code,
         tour_date: tourDate || state.items[0].tour_date,
         quantity: quantity || state.items[0].quantity,
         item_notes: tourText && !tourCode ? `CRM tour interest: ${tourText}` : state.items[0].item_notes

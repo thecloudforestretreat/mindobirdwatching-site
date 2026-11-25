@@ -1086,7 +1086,8 @@ const TOURS = [
   {
     "tour_code": "MBW013",
     "language": "en",
-    "status": "inactive",
+    "status": "active",
+    "use_inline_price": true,
     "tour_title": "Waterfall Hike",
     "service_type": "Nature Excursion",
     "pricing_model": "per_person",
@@ -1110,7 +1111,8 @@ const TOURS = [
   {
     "tour_code": "MBW013",
     "language": "es",
-    "status": "inactive",
+    "status": "active",
+    "use_inline_price": true,
     "tour_title": "Waterfall Hike",
     "service_type": "Nature Excursion",
     "pricing_model": "per_person",
